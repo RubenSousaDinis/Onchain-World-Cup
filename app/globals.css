@@ -1,0 +1,310 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Championship Manager 01/02 Retro Color Palette */
+  --background: oklch(0.12 0.02 240); /* Dark blue-black */
+  --foreground: oklch(0.95 0 0); /* Off white text */
+
+  /* Navy sidebar background */
+  --sidebar-bg: oklch(0.15 0.05 250); /* Deep navy blue */
+  --sidebar-text: oklch(0.92 0 0); /* Light gray text */
+
+  /* Purple navigation and accents */
+  --nav-purple: oklch(0.25 0.12 285); /* Deep purple for tabs */
+  --nav-purple-hover: oklch(0.3 0.12 285); /* Lighter purple on hover */
+
+  /* Yellow/Lime highlights (like CM 01/02) */
+  --highlight-yellow: oklch(0.85 0.15 95); /* Bright yellow for highlights */
+  --highlight-lime: oklch(0.82 0.18 125); /* Lime green accent */
+
+  /* Gray panels for data */
+  --panel-gray: oklch(0.45 0.01 240); /* Medium gray panels */
+  --panel-light: oklch(0.55 0.01 240); /* Lighter gray */
+
+  /* ETH/Crypto green accents */
+  --crypto-green: oklch(0.65 0.19 155); /* Crypto green */
+  --crypto-blue: oklch(0.55 0.15 230); /* Base blue */
+
+  --card: oklch(0.18 0.03 245);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.16 0.03 245);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: var(--highlight-yellow);
+  --primary-foreground: oklch(0.1 0 0);
+  --secondary: var(--nav-purple);
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: var(--panel-gray);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: var(--highlight-lime);
+  --accent-foreground: oklch(0.1 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(0.3 0.05 250);
+  --input: oklch(0.22 0.04 245);
+  --ring: var(--highlight-yellow);
+
+  --radius: 0.125rem; /* Minimal radius for retro blocky look */
+
+  /* Chart colors for prize pools */
+  --chart-1: var(--crypto-green);
+  --chart-2: var(--crypto-blue);
+  --chart-3: var(--highlight-yellow);
+  --chart-4: oklch(0.65 0.2 30);
+  --chart-5: oklch(0.7 0.18 330);
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius));
+  --radius-md: calc(var(--radius));
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Retro CM 01/02 specific styles */
+.cm-sidebar {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+.cm-nav-tab {
+  background: var(--nav-purple);
+  color: var(--foreground);
+  border: 1px solid oklch(0.35 0.12 285);
+  transition: background 0.15s ease;
+}
+
+.cm-nav-tab:hover {
+  background: var(--nav-purple-hover);
+}
+
+.cm-nav-tab.active {
+  background: var(--highlight-yellow);
+  color: oklch(0.1 0 0);
+  border-color: var(--highlight-yellow);
+}
+
+.cm-panel {
+  background: var(--panel-gray);
+  border: 1px solid oklch(0.35 0.05 250);
+  position: relative;
+}
+
+/* Enhanced section header styling */
+.cm-section-header {
+  background: var(--nav-purple);
+  color: var(--highlight-yellow);
+  border-bottom: 2px solid var(--border);
+}
+
+.cm-highlight {
+  color: var(--highlight-yellow);
+  font-weight: 600;
+}
+
+.cm-score {
+  color: var(--highlight-yellow);
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 255, 100, 0.3);
+}
+
+/* Enhanced hover row styling */
+.cm-hover-row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.15s ease;
+}
+
+.cm-hover-row:hover {
+  background: var(--nav-purple);
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+/* More authentic soccer field with visible grass stripes and center circle */
+.soccer-field-bg {
+  /* Enhanced soccer field with better visibility and contrast */
+  /* Vignette overlay for depth */
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.75) 100%),
+    /* Vertical grass stripes - more visible */
+    repeating-linear-gradient(
+      90deg,
+      rgba(60, 145, 60, 0.8) 0px,
+      rgba(60, 145, 60, 0.8) 50px,
+      rgba(45, 120, 45, 0.8) 50px,
+      rgba(45, 120, 45, 0.8) 100px
+    ), /* Base vibrant green soccer field */ linear-gradient(180deg, #1e5a1e 0%, #154015 100%);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border: 2px solid #3d7a3d;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Center circle and field lines - more prominent */
+.soccer-field-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* More visible field markings with white lines */
+  /* Center circle */
+  background-image: radial-gradient(
+      circle at center,
+      transparent 40px,
+      rgba(255, 255, 255, 0.6) 40px,
+      rgba(255, 255, 255, 0.6) 43px,
+      transparent 43px
+    ), /* Center spot */ radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 3px, transparent 3px),
+    /* Center line */
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent calc(50% - 2px),
+      rgba(255, 255, 255, 0.5) calc(50% - 2px),
+      rgba(255, 255, 255, 0.5) calc(50% + 2px),
+      transparent calc(50% + 2px)
+    );
+  pointer-events: none;
+}
+
+/* Add penalty box style to cards */
+.soccer-field-bg::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Add retro CRT monitor scanline effect for authentic CM 01/02 feel */
+.cm-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.05) 0px,
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure child elements are above the scanline effect */
+.cm-panel > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Hide scrollbar for mobile nav tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 1024px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+}
