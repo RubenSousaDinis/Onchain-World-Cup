@@ -8,42 +8,42 @@ This guide ensures all pages maintain the authentic Championship Manager 01/02 a
 ## 🎨 Color Palette
 
 ### Primary Colors
-```css
+\`\`\`css
 --cm-navy: #001a4d           /* Dark navy blue - sidebar, main backgrounds */
 --cm-royal-blue: #0033cc     /* Royal blue - active states */
 --cm-deep-purple: #1a0066    /* Deep purple - navigation tabs */
 --cm-medium-purple: #2d1b69  /* Medium purple - section headers */
-```
+\`\`\`
 
 ### Accent Colors
-```css
+\`\`\`css
 --cm-yellow: #ffff00         /* Bright yellow - highlights, scores, important text */
 --cm-lime: #d4ff00           /* Lime yellow - secondary highlights */
 --cm-cyan: #00ffff           /* Cyan - special indicators */
-```
+\`\`\`
 
 ### Neutrals
-```css
+\`\`\`css
 --cm-gray-dark: #2a2a2a      /* Dark gray - data panels */
 --cm-gray-medium: #4a4a4a    /* Medium gray - borders */
 --cm-gray-light: #666666     /* Light gray - secondary text */
 --cm-white: #ffffff          /* White - primary text */
 --cm-off-white: #f0f0f0      /* Off-white - table backgrounds */
-```
+\`\`\`
 
 ### Soccer Field Colors
-```css
+\`\`\`css
 --field-green-dark: #1a4d2e  /* Dark green - field stripes */
 --field-green-light: #2d5f3f /* Light green - alternating stripes */
 --field-line-white: rgba(255, 255, 255, 0.6) /* Field markings */
-```
+\`\`\`
 
 ---
 
 ## 📐 Layout Structure
 
 ### Page Container Pattern
-```tsx
+\`\`\`tsx
 <div className="flex h-screen overflow-hidden bg-[#001a4d]">
   {/* Sidebar - Desktop Only */}
   <RetroSidebar />
@@ -62,24 +62,24 @@ This guide ensures all pages maintain the authentic Championship Manager 01/02 a
   {/* Mobile Navigation - Bottom */}
   <MobileNav />
 </div>
-```
+\`\`\`
 
 ### Section Header Pattern
 Always use this pattern for page sections:
-```tsx
+\`\`\`tsx
 <div className="cm-section-header">
   <h2 className="text-xl md:text-2xl font-bold text-[#ffff00] uppercase tracking-wider">
     Section Title
   </h2>
 </div>
-```
+\`\`\`
 
 ---
 
 ## 🏗️ Core Components
 
 ### 1. CM Panel (Data Container)
-```tsx
+\`\`\`tsx
 <div className="cm-panel">
   <div className="cm-panel-header">
     Header Title
@@ -88,10 +88,10 @@ Always use this pattern for page sections:
     {/* Content */}
   </div>
 </div>
-```
+\`\`\`
 
 **CSS Classes:**
-```css
+\`\`\`css
 .cm-panel {
   background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
   border: 2px solid #4a4a4a;
@@ -110,10 +110,10 @@ Always use this pattern for page sections:
 .cm-panel-body {
   padding: 1rem;
 }
-```
+\`\`\`
 
 ### 2. CM Table
-```tsx
+\`\`\`tsx
 <div className="cm-table-container">
   <table className="cm-table">
     <thead>
@@ -130,10 +130,10 @@ Always use this pattern for page sections:
     </tbody>
   </table>
 </div>
-```
+\`\`\`
 
 **CSS Classes:**
-```css
+\`\`\`css
 .cm-table-container {
   overflow-x: auto;
   border: 2px solid #4a4a4a;
@@ -175,10 +175,10 @@ Always use this pattern for page sections:
   color: #ffffff;
   border-right: 1px solid #3a3a3a;
 }
-```
+\`\`\`
 
 ### 3. Match Card (Score Display)
-```tsx
+\`\`\`tsx
 <Link href={`/matches/${match.id}`} className="cm-match-card">
   {/* Team 1 */}
   <div className="flex items-center justify-between flex-1">
@@ -199,10 +199,10 @@ Always use this pattern for page sections:
     </Link>
   </div>
 </Link>
-```
+\`\`\`
 
 **CSS Classes:**
-```css
+\`\`\`css
 .cm-match-card {
   background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
   border: 2px solid #4a4a4a;
@@ -242,7 +242,7 @@ Always use this pattern for page sections:
   padding: 0 0.5rem;
   opacity: 0.6;
 }
-```
+\`\`\`
 
 ---
 
@@ -251,7 +251,7 @@ Always use this pattern for page sections:
 ### Implementation
 Every page should have soccer field styling in headers and backgrounds:
 
-```tsx
+\`\`\`tsx
 // Page wrapper
 <div className="soccer-field-bg">
   {/* Content */}
@@ -261,10 +261,10 @@ Every page should have soccer field styling in headers and backgrounds:
 <div className="soccer-field-header">
   <h1>Title</h1>
 </div>
-```
+\`\`\`
 
 **CSS Classes:**
-```css
+\`\`\`css
 .soccer-field-bg {
   background: 
     linear-gradient(to bottom, 
@@ -312,40 +312,40 @@ Every page should have soccer field styling in headers and backgrounds:
   border: 3px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
 }
-```
+\`\`\`
 
 ---
 
 ## 🎯 Typography
 
 ### Font Stack
-```css
+\`\`\`css
 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-```
+\`\`\`
 
 ### Text Styles
 
 **Headers:**
-```css
+\`\`\`css
 h1: uppercase, font-weight: bold, color: #ffff00, font-size: 1.5rem-2rem
 h2: uppercase, font-weight: bold, color: #ffff00, font-size: 1.25rem-1.5rem
 h3: uppercase, font-weight: 600, color: #ffffff, font-size: 1rem-1.125rem
-```
+\`\`\`
 
 **Body Text:**
-```css
+\`\`\`css
 Regular: color: #ffffff, font-size: 0.875rem-1rem
 Secondary: color: #cccccc, font-size: 0.875rem
 Small: color: #999999, font-size: 0.75rem-0.875rem
-```
+\`\`\`
 
 **Numeric Data (Scores, Stats):**
-```css
+\`\`\`css
 color: #ffff00
 font-weight: bold
 font-family: monospace
 font-size: 1.125rem-1.5rem
-```
+\`\`\`
 
 ---
 
@@ -354,13 +354,13 @@ font-size: 1.125rem-1.5rem
 ### Buttons
 
 **Primary Button:**
-```tsx
+\`\`\`tsx
 <button className="cm-button-primary">
   Vote Now
 </button>
-```
+\`\`\`
 
-```css
+\`\`\`css
 .cm-button-primary {
   background: linear-gradient(to bottom, #0044cc 0%, #0033aa 100%);
   border: 2px solid #0066ff;
@@ -377,10 +377,10 @@ font-size: 1.125rem-1.5rem
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
-```
+\`\`\`
 
 **Secondary Button:**
-```css
+\`\`\`css
 .cm-button-secondary {
   background: linear-gradient(to bottom, #2d1b69 0%, #1a0d4d 100%);
   border: 2px solid #4a4a4a;
@@ -391,10 +391,10 @@ font-size: 1.125rem-1.5rem
   border-color: #ffff00;
   color: #ffff00;
 }
-```
+\`\`\`
 
 ### Links
-```css
+\`\`\`css
 a {
   color: #ffffff;
   text-decoration: none;
@@ -404,19 +404,19 @@ a {
 a:hover {
   color: #ffff00;
 }
-```
+\`\`\`
 
 ---
 
 ## 📱 Responsive Design
 
 ### Breakpoints
-```css
+\`\`\`css
 sm: 640px   /* Mobile landscape */
 md: 768px   /* Tablet */
 lg: 1024px  /* Desktop */
 xl: 1280px  /* Large desktop */
-```
+\`\`\`
 
 ### Mobile Considerations
 - Hide sidebar on mobile, show MobileNav at bottom
@@ -457,40 +457,40 @@ xl: 1280px  /* Large desktop */
 ## 🎨 Common Patterns
 
 ### Stat Display
-```tsx
+\`\`\`tsx
 <div className="flex justify-between items-center p-3 border-b border-[#4a4a4a]">
   <span className="text-[#cccccc] uppercase text-sm">Label</span>
   <span className="text-[#ffff00] font-bold text-lg font-mono">123</span>
 </div>
-```
+\`\`\`
 
 ### Team/User Link
-```tsx
+\`\`\`tsx
 <Link 
   href="/teams/brazil"
   className="text-white font-bold uppercase hover:text-[#ffff00] transition-colors"
 >
   Brazil
 </Link>
-```
+\`\`\`
 
 ### Status Badge
-```tsx
+\`\`\`tsx
 <span className="inline-block px-3 py-1 bg-gradient-to-b from-[#0044cc] to-[#0033aa] border border-[#0066ff] text-[#ffff00] text-xs font-bold uppercase">
   ACTIVE
 </span>
-```
+\`\`\`
 
 ### Section Divider
-```tsx
+\`\`\`tsx
 <div className="h-0.5 bg-gradient-to-r from-transparent via-[#ffff00] to-transparent my-6" />
-```
+\`\`\`
 
 ---
 
 ## 🏆 Example Page Structure
 
-```tsx
+\`\`\`tsx
 export default function ExamplePage() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#001a4d]">
@@ -530,7 +530,7 @@ export default function ExamplePage() {
     </div>
   )
 }
-```
+\`\`\`
 
 ---
 

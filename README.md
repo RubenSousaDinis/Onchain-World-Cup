@@ -24,20 +24,20 @@ A full-stack Next.js application for ETH-based voting/betting on World Cup 2026 
 ## Getting Started
 
 1. **Install dependencies**:
-   ```bash
+   \`\`\`bash
    npm install
-   ```
+   \`\`\`
 
 2. **Set up environment variables**:
    Create a `.env.local` file:
-   ```
+   \`\`\`
    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id_here
-   ```
+   \`\`\`
 
 3. **Run development server**:
-   ```bash
+   \`\`\`bash
    npm run dev
-   ```
+   \`\`\`
 
 4. **Open** [http://localhost:3000](http://localhost:3000)
 
@@ -52,7 +52,7 @@ See `/contracts/README.md` for deployment instructions.
 
 ## Project Structure
 
-```
+\`\`\`
 ├── app/                    # Next.js app directory
 │   ├── page.tsx           # Home page (live matches)
 │   ├── my-bets/           # User bets dashboard
@@ -69,7 +69,7 @@ See `/contracts/README.md` for deployment instructions.
 │   ├── contracts/         # Contract ABIs
 │   └── hooks/            # Custom React hooks
 └── public/               # Static assets
-```
+\`\`\`
 
 ## Key Features
 
@@ -91,9 +91,9 @@ See `/contracts/README.md` for deployment instructions.
 
 Deploy to Vercel with one click or via CLI:
 
-```bash
+\`\`\`bash
 vercel deploy
-```
+\`\`\`
 
 Make sure to set up environment variables in your Vercel project settings.
 
