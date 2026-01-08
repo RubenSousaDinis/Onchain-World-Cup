@@ -2,7 +2,7 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, TrendingUp, Users } from "lucide-react"
+import { Trophy, Clock, TrendingUp, Users, Info, Calculator } from "lucide-react"
 
 export default function HowItWorksPage() {
   return (
@@ -46,6 +46,21 @@ export default function HowItWorksPage() {
               </div>
             </div>
             <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
+              <div className="text-accent font-bold text-xl lg:text-3xl">2</div>
+              <div>
+                <div className="font-bold text-sm mb-1">Vote on Both Teams</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  You can vote for BOTH teams in a match to hedge your position. Your votes for the winning team will
+                  earn rewards.
+                </div>
+                <div className="bg-green-500/10 rounded-sm px-3 py-2 border border-green-500/30">
+                  <div className="text-xs text-green-400">
+                    <strong>Strategy tip:</strong> Spread your votes across both teams to guarantee some returns!
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
               <div className="cm-highlight font-bold text-xl lg:text-3xl">10%</div>
               <div>
                 <div className="font-bold text-sm mb-1">Platform Fee</div>
@@ -66,19 +81,68 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
-        {/* Pricing Phases Table */}
+        <div className="cm-panel rounded-sm border border-border mb-4 overflow-hidden">
+          <div className="bg-primary/20 px-4 py-3 border-b border-border flex items-center gap-2">
+            <Calculator className="w-5 h-5 cm-highlight" />
+            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Pricing Formulas</h2>
+          </div>
+          <div className="divide-y divide-border">
+            <div className="p-4 hover:bg-accent/5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="text-green-500 font-bold text-base lg:text-xl">Phase 1</div>
+                <span className="text-xs text-muted-foreground">(First 2 hours)</span>
+              </div>
+              <div className="bg-secondary/30 rounded-sm p-3 mb-3 font-mono text-sm">
+                <div className="text-green-400 font-bold mb-1">Linear Pricing:</div>
+                <div className="text-foreground">Price(n) = Base × (1 + 0.005 × n)</div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Each vote costs <strong className="text-green-400">0.5% more</strong> than the previous one. Vote #1 =
+                Base, Vote #2 = Base × 1.005, Vote #3 = Base × 1.01, etc.
+              </div>
+            </div>
+            <div className="p-4 hover:bg-accent/5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="text-orange-500 font-bold text-base lg:text-xl">Phase 2</div>
+                <span className="text-xs text-muted-foreground">(Hours 2-24)</span>
+              </div>
+              <div className="bg-secondary/30 rounded-sm p-3 mb-3 font-mono text-sm">
+                <div className="text-orange-400 font-bold mb-1">Exponential Pricing:</div>
+                <div className="text-foreground">Price(n) = Base × 1.02^n</div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Each vote costs <strong className="text-orange-400">2% more</strong> than the previous (compounding).
+                Prices rise much faster - vote early for better rates!
+              </div>
+            </div>
+            <div className="p-4 bg-accent/5">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                <div className="text-xs">
+                  <strong className="text-accent">Why dynamic pricing?</strong>
+                  <p className="text-muted-foreground mt-1">
+                    Early voters get rewarded with lower prices. As more people vote, prices increase, creating urgency
+                    and larger prize pools. The price is based on the total number of votes already cast in the match.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing Phases Table - Updated */}
         <div className="cm-panel rounded-sm border border-border mb-4 overflow-hidden">
           <div className="bg-primary/20 px-4 py-3 border-b border-border flex items-center gap-2">
             <Clock className="w-5 h-5 cm-highlight" />
-            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Pricing Phases</h2>
+            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Timing Phases</h2>
           </div>
           <div className="divide-y divide-border">
             <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
-              <div className="text-green-500 font-bold text-base lg:text-xl">Phase 1</div>
+              <div className="text-green-500 font-bold text-base lg:text-xl">0-2h</div>
               <div>
-                <div className="font-bold text-sm mb-1">Hours 0-2: Linear Pricing</div>
+                <div className="font-bold text-sm mb-1">Phase 1: Best Rates</div>
                 <div className="text-xs text-muted-foreground mb-2">
-                  Vote cost increases steadily during first 2 hours. Best time to vote for lower costs.
+                  Linear +0.5% per vote. This is the best time to vote - prices are lowest!
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-green-500" />
@@ -87,15 +151,15 @@ export default function HowItWorksPage() {
               </div>
             </div>
             <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
-              <div className="text-red-500 font-bold text-base lg:text-xl">Phase 2</div>
+              <div className="text-orange-500 font-bold text-base lg:text-xl">2-24h</div>
               <div>
-                <div className="font-bold text-sm mb-1">Hours 2-24: Exponential Pricing</div>
+                <div className="font-bold text-sm mb-1">Phase 2: Rising Fast</div>
                 <div className="text-xs text-muted-foreground mb-2">
-                  Vote costs rise dramatically as match approaches. Late voters pay significantly more.
+                  Exponential +2% compounding. Late voters pay significantly more per vote.
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-red-500" />
-                  <span className="text-xs text-red-500 font-bold">High cost period</span>
+                  <TrendingUp className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs text-orange-500 font-bold">Higher cost, still earning opportunity</span>
                 </div>
               </div>
             </div>
@@ -103,7 +167,7 @@ export default function HowItWorksPage() {
         </div>
 
         {/* How to Play Table */}
-        <div className="cm-panel rounded-sm border border-border mb-20 lg:mb-4 overflow-hidden">
+        <div className="cm-panel rounded-sm border border-border mb-4 overflow-hidden">
           <div className="bg-primary/20 px-4 py-3 border-b border-border">
             <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">How to Play</h2>
           </div>
@@ -124,21 +188,21 @@ export default function HowItWorksPage() {
             <div className="p-3 lg:p-4 flex gap-3 hover:bg-accent/5">
               <div className="cm-highlight font-bold text-base lg:text-lg w-6 lg:w-8 flex-shrink-0">3.</div>
               <div>
-                <span className="font-bold">Vote with ETH</span> - Enter amount and pick winning team. Cost varies by
-                timing phase
+                <span className="font-bold">Buy votes</span> - Select number of votes and pick a team (you can vote for
+                both teams!)
               </div>
             </div>
             <div className="p-3 lg:p-4 flex gap-3 hover:bg-accent/5">
               <div className="cm-highlight font-bold text-base lg:text-lg w-6 lg:w-8 flex-shrink-0">4.</div>
               <div>
-                <span className="font-bold">Track results</span> - Team with most ETH voted wins the match pool
+                <span className="font-bold">Track results</span> - Team with most votes wins the match
               </div>
             </div>
             <div className="p-3 lg:p-4 flex gap-3 hover:bg-accent/5">
               <div className="cm-highlight font-bold text-base lg:text-lg w-6 lg:w-8 flex-shrink-0">5.</div>
               <div>
-                <span className="font-bold">Claim winnings</span> - Winners share 90% of prize pool proportional to
-                their vote
+                <span className="font-bold">Claim winnings</span> - All voters for the winning team share 90% of the
+                prize pool proportionally
               </div>
             </div>
           </div>
@@ -147,18 +211,18 @@ export default function HowItWorksPage() {
         {/* Example Calculation */}
         <div className="cm-panel rounded-sm border border-primary/50 mb-20 lg:mb-4 overflow-hidden">
           <div className="bg-primary/30 px-4 py-3 border-b border-border">
-            <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Example: Multiple Winners</h3>
+            <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Example: How Winnings Work</h3>
           </div>
           <div className="p-4 space-y-3 text-xs lg:text-sm">
             <div className="bg-secondary/20 rounded-sm p-3 mb-3">
-              <div className="font-bold text-sm mb-2 text-accent">Scenario: Brazil Wins</div>
+              <div className="font-bold text-sm mb-2 text-accent">Scenario: Brazil Wins the Match</div>
               <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Total prize pool:</span>
                 <span className="font-bold font-mono">23.0 ETH</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Total votes for Brazil (winner):</span>
-                <span className="font-bold font-mono">15.0 ETH</span>
+                <span className="font-bold font-mono">150 votes</span>
               </div>
               <div className="flex justify-between py-1 border-t border-border pt-2 mt-2">
                 <span className="text-muted-foreground">Winners share (90%):</span>
@@ -167,28 +231,27 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="border-t border-border pt-3">
-              <div className="font-bold text-sm mb-2">Your Individual Winnings:</div>
+              <div className="font-bold text-sm mb-2">Your Winnings Calculation:</div>
               <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Your votes for Brazil:</span>
-                <span className="font-bold font-mono">2.0 ETH</span>
+                <span className="font-bold font-mono">15 votes</span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-muted-foreground">Your share of winners pool:</span>
-                <span className="font-mono text-xs">(2.0 / 15.0) × 20.7</span>
+                <span className="font-mono text-xs">(15 / 150) × 20.7 ETH</span>
               </div>
               <div className="border-t border-border pt-3 mt-2 flex justify-between items-center">
                 <span className="font-bold">You receive:</span>
-                <span className="cm-highlight font-bold text-lg lg:text-2xl font-mono">2.76 ETH</span>
+                <span className="cm-highlight font-bold text-lg lg:text-2xl font-mono">2.07 ETH</span>
               </div>
-              <div className="text-green-500 text-xs text-right">+38% profit (you paid 2.0 ETH)</div>
             </div>
 
             <div className="bg-accent/10 rounded-sm p-3 mt-3 border border-accent/30">
               <div className="flex items-start gap-2">
                 <Users className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                 <div className="text-xs text-foreground">
-                  <strong className="text-accent">All winning voters split the 90% pool proportionally.</strong> The
-                  more votes you cast for the winning team compared to other winners, the larger your share.
+                  <strong className="text-accent">Everyone who voted for the winning team shares the pool!</strong> The
+                  more votes you have for the winning team compared to other voters, the larger your share.
                 </div>
               </div>
             </div>
