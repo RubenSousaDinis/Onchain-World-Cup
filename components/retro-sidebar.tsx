@@ -44,7 +44,11 @@ export function RetroSidebar() {
       <nav className="flex-1 flex flex-col gap-3 w-full px-2">
         {sidebarItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/" && pathname.startsWith(item.href)) ||
+            (item.href === "/tournament" && pathname.startsWith("/matches")) || // Matches activate Tournament
+            (item.href === "/leaderboard" && pathname.startsWith("/users")) // User pages activate Leaderboard
           return (
             <Link
               key={item.href}

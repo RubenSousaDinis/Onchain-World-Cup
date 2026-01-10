@@ -6,6 +6,9 @@ import Link from "next/link"
 
 const mockUserData = {
   address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+  farcasterUsername: "cryptoking",
+  farcasterProfilePic: "/crypto-king-avatar.png",
+  hasFarcaster: true,
   totalWinnings: "45.8 ETH",
   totalBets: 23,
   winRate: 78,
@@ -96,12 +99,32 @@ export default function UserProfilePage({ params }: { params: { address: string 
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-4 lg:p-8">
             <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
-              <div className="w-16 lg:w-24 h-16 lg:h-24 rounded-full bg-primary flex items-center justify-center">
-                <Trophy className="w-8 lg:w-12 h-8 lg:h-12 text-primary-foreground" />
-              </div>
+              {mockUserData.hasFarcaster ? (
+                <img
+                  src={mockUserData.farcasterProfilePic || "/placeholder.svg"}
+                  alt={mockUserData.farcasterUsername}
+                  className="w-16 lg:w-24 h-16 lg:h-24 rounded-full border-4 border-primary"
+                />
+              ) : (
+                <div className="w-16 lg:w-24 h-16 lg:h-24 rounded-full bg-primary flex items-center justify-center">
+                  <Trophy className="w-8 lg:w-12 h-8 lg:h-12 text-primary-foreground" />
+                </div>
+              )}
               <div className="text-center lg:text-left flex-1">
-                <div className="text-xs text-muted-foreground mb-1">Wallet Address</div>
-                <h1 className="text-lg lg:text-2xl font-bold cm-highlight font-mono mb-2 break-all">{address}</h1>
+                {mockUserData.hasFarcaster ? (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-1">Farcaster User</div>
+                    <h1 className="text-lg lg:text-2xl font-bold cm-highlight mb-2">
+                      @{mockUserData.farcasterUsername}
+                    </h1>
+                    <div className="text-xs text-muted-foreground font-mono break-all">{address}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-1">Wallet Address</div>
+                    <h1 className="text-lg lg:text-2xl font-bold cm-highlight font-mono mb-2 break-all">{address}</h1>
+                  </>
+                )}
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-primary" />

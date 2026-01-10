@@ -20,9 +20,24 @@ const mockTeams = {
     form: ["W", "W", "D"],
     totalVotes: "45.2 ETH",
     topVoters: [
-      { address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", amount: "8.5 ETH" },
-      { address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", amount: "6.2 ETH" },
-      { address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", amount: "5.1 ETH" },
+      {
+        address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+        amount: "8.5 ETH",
+        farcasterUsername: "cryptoking",
+        farcasterProfilePic: "/crypto-king-avatar.png",
+      },
+      {
+        address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        amount: "6.2 ETH",
+        farcasterUsername: "worldcupfan",
+        farcasterProfilePic: "/world-cup-fan-avatar.jpg",
+      },
+      {
+        address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        amount: "5.1 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
     ],
     upcomingMatches: [
       {
@@ -56,9 +71,24 @@ const mockTeams = {
     form: ["W", "L", "W"],
     totalVotes: "52.8 ETH",
     topVoters: [
-      { address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", amount: "9.2 ETH" },
-      { address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", amount: "7.8 ETH" },
-      { address: "0x514910771AF9Ca656af840dff83E8264EcF986CA", amount: "6.5 ETH" },
+      {
+        address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+        amount: "9.2 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        amount: "7.8 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+        amount: "6.5 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
     ],
     upcomingMatches: [
       { id: "1", opponent: "Brazil", flag: "🇧🇷", date: "June 15, 2026", stadium: "MetLife Stadium", time: "20:00 ET" },
@@ -85,9 +115,24 @@ const mockTeams = {
     form: ["W", "W", "W"],
     totalVotes: "38.7 ETH",
     topVoters: [
-      { address: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE", amount: "7.1 ETH" },
-      { address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", amount: "5.9 ETH" },
-      { address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", amount: "4.8 ETH" },
+      {
+        address: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
+        amount: "7.1 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+        amount: "5.9 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9",
+        amount: "4.8 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
     ],
     upcomingMatches: [
       { id: "10", opponent: "France", flag: "🇫🇷", date: "June 16, 2026", stadium: "SoFi Stadium", time: "17:00 PT" },
@@ -121,9 +166,24 @@ const mockTeams = {
     form: ["W", "D", "W"],
     totalVotes: "41.5 ETH",
     topVoters: [
-      { address: "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72", amount: "8.1 ETH" },
-      { address: "0x6B175474E89094C44Da98b954EedeAC495271d0F", amount: "6.7 ETH" },
-      { address: "0x0000000000085d4780B73119b644AE5ecd22b376", amount: "5.5 ETH" },
+      {
+        address: "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
+        amount: "8.1 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        amount: "6.7 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
+      {
+        address: "0x0000000000085d4780B73119b644AE5ecd22b376",
+        amount: "5.5 ETH",
+        farcasterUsername: null,
+        farcasterProfilePic: null,
+      },
     ],
     upcomingMatches: [
       { id: "10", opponent: "Germany", flag: "🇩🇪", date: "June 16, 2026", stadium: "SoFi Stadium", time: "17:00 PT" },
@@ -274,9 +334,22 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground text-sm flex-shrink-0">
                         #{idx + 1}
                       </div>
-                      <span className="text-sm font-mono text-foreground truncate">
-                        {voter.address.slice(0, 8)}...{voter.address.slice(-6)}
-                      </span>
+                      {voter.farcasterUsername ? (
+                        <>
+                          {voter.farcasterProfilePic && (
+                            <img
+                              src={voter.farcasterProfilePic || "/placeholder.svg"}
+                              alt={voter.farcasterUsername}
+                              className="w-8 h-8 rounded-full flex-shrink-0"
+                            />
+                          )}
+                          <span className="text-sm font-bold text-foreground truncate">@{voter.farcasterUsername}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-mono text-foreground truncate">
+                          {voter.address.slice(0, 8)}...{voter.address.slice(-6)}
+                        </span>
+                      )}
                     </div>
                     <span className="text-sm font-mono font-bold cm-highlight flex-shrink-0">{voter.amount}</span>
                   </Link>

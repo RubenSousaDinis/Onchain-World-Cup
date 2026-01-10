@@ -215,9 +215,10 @@ export default function TeamsPage() {
                       </div>
                       <div className="space-y-2">
                         {team.upcomingMatches.map((match, idx) => (
-                          <div
+                          <Link
                             key={idx}
-                            className="bg-card/30 hover:bg-card/50 transition-colors p-3 rounded-sm flex items-center justify-between gap-2"
+                            href={`/matches/${idx + 1}`}
+                            className="bg-card/30 hover:bg-card/50 transition-colors p-3 rounded-sm flex items-center justify-between gap-2 block cursor-pointer"
                           >
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <span className="text-lg lg:text-xl flex-shrink-0">{match.flag}</span>
@@ -229,7 +230,7 @@ export default function TeamsPage() {
                             <div className="text-right flex-shrink-0">
                               <div className="text-[10px] cm-highlight font-mono font-bold">{match.date}</div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     </div>
@@ -241,9 +242,10 @@ export default function TeamsPage() {
                       </div>
                       <div className="space-y-2">
                         {team.pastMatches.map((match, idx) => (
-                          <div
+                          <Link
                             key={idx}
-                            className="bg-card/30 hover:bg-card/50 transition-colors p-3 rounded-sm flex items-center justify-between gap-2"
+                            href={`/matches/${idx + 10}`}
+                            className="bg-card/30 hover:bg-card/50 transition-colors p-3 rounded-sm flex items-center justify-between gap-2 block cursor-pointer"
                           >
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               <span className="text-lg lg:text-xl flex-shrink-0">{match.flag}</span>
@@ -262,10 +264,10 @@ export default function TeamsPage() {
                                       : "text-red-400"
                                 }`}
                               >
-                                {match.result}
+                                {match.result.startsWith("W") ? "WON" : match.result.startsWith("D") ? "DRAW" : "LOST"}
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     </div>

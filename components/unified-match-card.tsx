@@ -105,7 +105,7 @@ export function UnifiedMatchCard({
           </div>
         )}
 
-        <Link href={`/matches/${id}`} className="block cursor-pointer">
+        <Link href={`/matches/${contractAddress}`} className="block cursor-pointer">
           {/* Match Header */}
           <div className="soccer-field-bg p-3 lg:p-4">
             <div className="flex items-center justify-between mb-2 lg:mb-3">

@@ -22,7 +22,11 @@ export function MobileNav() {
         <div className="flex items-center justify-around px-2 py-2">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href)) ||
+              (item.href === "/tournament" && pathname.startsWith("/matches")) ||
+              (item.href === "/leaderboard" && pathname.startsWith("/users"))
             return (
               <Link
                 key={item.href}
