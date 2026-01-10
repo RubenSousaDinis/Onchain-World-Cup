@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type KeyboardEvent } from "react"
 import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi"
 import { parseEther } from "viem"
@@ -50,16 +50,20 @@ export function VoteModal({
   const basePrice = 0.001 // Starting price in ETH
   const pricePerVote =
     pricePhase === "linear"
-      ? basePrice * (1 + 0.005 * voteCount) // Phase 1: +0.5% per vote (linear)
-      : basePrice * Math.pow(1.02, voteCount) // Phase 2: +2% compounding per vote (exponential)
+      ? basePrice * (1 + 0.01) // Simplified for demo - real price from contract
+      : basePrice * (1 + 0.03) // Simplified for demo - real price from contract
 
-  const totalCost =
-    pricePhase === "linear"
-      ? basePrice * voteCount * (1 + (0.005 * (voteCount + 1)) / 2) // Sum of linear series
-      : (basePrice * (Math.pow(1.02, voteCount) - 1)) / 0.02 // Sum of geometric series
+  const totalCost = pricePerVote * voteCount
 
-  const nextVotePrice =
-    pricePhase === "linear" ? basePrice * (1 + 0.005 * (voteCount + 1)) : basePrice * Math.pow(1.02, voteCount + 1)
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [isOpen, onClose])
 
   useEffect(() => {
     if ((isSuccess || isDemoVote) && !votePlaced) {
@@ -150,7 +154,7 @@ export function VoteModal({
               {pricePhase === "linear" ? (
                 <>
                   <Zap className="w-4 h-4 text-green-400" />
-                  <span className="text-xs font-bold text-green-400 uppercase">Early Bird Pricing Active</span>
+                  <span className="text-xs font-bold text-green-400 uppercase">Early Bird Window - Vote Now!</span>
                 </>
               ) : (
                 <>
@@ -161,8 +165,8 @@ export function VoteModal({
             </div>
             <p className="text-[10px] text-foreground/70">
               {pricePhase === "linear"
-                ? "You're getting the best rates! Prices increase after Phase 1 ends."
-                : "Vote now before prices increase further. Every minute counts!"}
+                ? "First 2 hours! Prices increase gradually with each vote."
+                : "Hours 2-24. Prices rise exponentially - earlier is better!"}
             </p>
           </div>
 
@@ -180,27 +184,25 @@ export function VoteModal({
             <div className="cm-panel p-3 rounded-sm mb-3">
               <div className="flex items-start gap-2 mb-2">
                 <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                <div className="text-xs font-bold text-accent">Pricing Formula</div>
+                <div className="text-xs font-bold text-accent">Current Pricing Phase</div>
               </div>
               {pricePhase === "linear" ? (
-                <div className="text-xs text-foreground font-mono bg-secondary/30 p-2 rounded">
-                  Price = Base × (1 + 0.5% × vote_number)
+                <div className="text-xs text-foreground bg-secondary/30 p-2 rounded">
+                  <strong className="text-green-400">Phase 1: Early Bird (0-2 hours)</strong>
                   <br />
-                  <span className="text-muted-foreground">Each vote costs 0.5% more than the previous</span>
+                  <span className="text-muted-foreground">Price increases gradually with each vote. Best rates!</span>
                 </div>
               ) : (
-                <div className="text-xs text-foreground font-mono bg-secondary/30 p-2 rounded">
-                  Price = Base × 1.02^vote_number
+                <div className="text-xs text-foreground bg-secondary/30 p-2 rounded">
+                  <strong className="text-orange-400">Phase 2: Standard (2-24 hours)</strong>
                   <br />
-                  <span className="text-muted-foreground">Each vote costs 2% more than the previous (compounds)</span>
+                  <span className="text-muted-foreground">Price rises exponentially. Still 22 hours to vote!</span>
                 </div>
               )}
             </div>
 
             <div className="text-xs text-muted-foreground">
-              {pricePhase === "linear"
-                ? "First 2 hours after match opens. Best time to vote!"
-                : "Hours 2-24. Prices rise rapidly - vote early for better rates."}
+              Voting is open for 24 hours total. The earlier you vote, the better your price!
             </div>
           </div>
 
@@ -255,18 +257,8 @@ export function VoteModal({
                 <span className="text-sm font-mono font-bold cm-highlight">{voteCount}</span>
               </div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Base Price:</span>
-                <span className="text-sm font-mono text-foreground">{basePrice.toFixed(4)} ETH</span>
-              </div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Price for Vote #{voteCount}:</span>
-                <span className="text-sm font-mono text-foreground">
-                  {(pricePhase === "linear"
-                    ? basePrice * (1 + 0.005 * voteCount)
-                    : basePrice * Math.pow(1.02, voteCount)
-                  ).toFixed(4)}{" "}
-                  ETH
-                </span>
+                <span className="text-sm text-muted-foreground">Price per Vote:</span>
+                <span className="text-sm font-mono text-foreground">{pricePerVote.toFixed(4)} ETH</span>
               </div>
               <div className="h-px bg-border my-2" />
               <div className="flex items-center justify-between">
@@ -278,8 +270,9 @@ export function VoteModal({
                 <div className="flex items-center gap-2 text-[10px] text-orange-400">
                   <TrendingUp className="w-3 h-3" />
                   <span>
-                    Vote #{voteCount + 1} will cost {nextVotePrice.toFixed(4)} ETH (+
-                    {pricePhase === "linear" ? "0.5%" : "2%"} more)
+                    {pricePhase === "linear"
+                      ? "Phase 2 starts in under 2 hours - prices will rise exponentially!"
+                      : "Voting in Phase 2 - prices rising fast with each new vote"}
                   </span>
                 </div>
               </div>
@@ -305,7 +298,7 @@ export function VoteModal({
               <Users className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
               <p className="text-xs text-foreground">
                 <strong>All winning voters share 90% of prize pool proportionally.</strong> Your share = (Your Votes /
-                Total Winning Votes) x 90% Pool.
+                Total Winning Votes) × 90% Pool. You have 24 hours to vote!
               </p>
             </div>
           </div>

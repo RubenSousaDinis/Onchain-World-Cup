@@ -7,8 +7,9 @@ import { useAccount } from "wagmi"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 
 const mockUserBets = [
   {
@@ -139,6 +140,24 @@ export default function MyBetsPage() {
   const [selectedBet, setSelectedBet] = useState<(typeof mockUserBets)[0] | null>(null)
   const [showDemoData, setShowDemoData] = useState(true)
 
+  const [displayedBets, setDisplayedBets] = useState(5)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
+    hasMore: displayedBets < mockUserBets.length,
+    isLoading: isLoadingMore,
+  })
+
+  useEffect(() => {
+    if (shouldLoadMore) {
+      setIsLoadingMore(true)
+      setTimeout(() => {
+        setDisplayedBets((prev) => Math.min(prev + 5, mockUserBets.length))
+        setIsLoadingMore(false)
+      }, 300)
+    }
+  }, [shouldLoadMore])
+
   const totalVotes = mockUserBets.reduce((sum, bet) => sum + bet.votes, 0)
   const totalSpent = mockUserBets.reduce((sum, bet) => sum + Number.parseFloat(bet.costPaid), 0)
   const activeBets = mockUserBets.filter((b) => b.status === "active").length
@@ -217,16 +236,16 @@ export default function MyBetsPage() {
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-primary">
                 <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Votes</div>
                 <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">{totalVotes}</div>
-                <div className="text-[10px] text-muted-foreground">({totalSpent.toFixed(3)} ETH spent)</div>
+                <div className="text-[10px] text-muted-foreground">votes placed</div>
+              </div>
+              <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
+                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
+                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{totalSpent.toFixed(3)}</div>
+                <div className="text-[10px] text-muted-foreground">ETH total</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-accent">
                 <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Active</div>
                 <div className="text-lg lg:text-2xl font-bold text-accent font-mono">{activeBets}</div>
-                <div className="text-[10px] text-muted-foreground">matches</div>
-              </div>
-              <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Settled</div>
-                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{settledBets}</div>
                 <div className="text-[10px] text-muted-foreground">matches</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-green-500">
@@ -239,6 +258,7 @@ export default function MyBetsPage() {
                 <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">
                   {totalEarnings.toFixed(3)} ETH
                 </div>
+                <div className="text-[10px] text-muted-foreground">ETH earned</div>
               </div>
             </div>
 
@@ -255,7 +275,7 @@ export default function MyBetsPage() {
             </div>
 
             <div className="space-y-3 lg:space-y-4">
-              {mockUserBets.map((bet, index) => (
+              {mockUserBets.slice(0, displayedBets).map((bet, index) => (
                 <div key={`${bet.matchId}-${bet.votedTeam}-${index}`} className="cm-panel rounded-sm overflow-hidden">
                   <div className="bg-secondary/40 px-3 lg:px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-0 border-b-2 border-border">
                     <Link
@@ -318,7 +338,6 @@ export default function MyBetsPage() {
                           Votes Placed
                         </div>
                         <div className="text-base lg:text-lg font-mono font-bold cm-highlight">{bet.votes} votes</div>
-                        <div className="text-[10px] text-muted-foreground">(paid {bet.costPaid} ETH)</div>
                       </div>
                       {bet.status === "settled" && bet.winningTeam && (
                         <div className="bg-card/50 p-2 rounded-sm">
@@ -384,6 +403,12 @@ export default function MyBetsPage() {
                   </div>
                 </div>
               ))}
+
+              {displayedBets < mockUserBets.length && (
+                <div ref={sentinelRef} className="cm-panel rounded-sm p-4 text-center">
+                  <div className="text-xs text-muted-foreground">Loading more bets...</div>
+                </div>
+              )}
             </div>
           </>
         )}

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { MatchCard } from "@/components/match-card"
+import { UnifiedMatchCard } from "@/components/unified-match-card"
 import { PrizePoolDisplay } from "@/components/prize-pool-display"
 import { RetroSearch } from "@/components/retro-search"
 
@@ -102,7 +102,7 @@ export default function HomePageClient() {
           ) : (
             <>
               {filteredMatches.map((match) => (
-                <MatchCard key={match.id} {...match} />
+                <UnifiedMatchCard key={match.id} {...match} status="voting" />
               ))}
 
               <PrizePoolDisplay

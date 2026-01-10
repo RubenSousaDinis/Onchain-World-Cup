@@ -2,12 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, Shield, HelpCircle } from "lucide-react"
+import { Calendar, Users, Wallet, Shield, HelpCircle } from "lucide-react"
 
 const navItems = [
-  { icon: Trophy, label: "Matches", href: "/" },
+  { icon: Calendar, label: "Cup", href: "/tournament" },
   { icon: Shield, label: "Teams", href: "/teams" },
-  { icon: Calendar, label: "Schedule", href: "/schedule" },
   { icon: Users, label: "Leaders", href: "/leaderboard" },
   { icon: Wallet, label: "My Bets", href: "/my-bets" },
   { icon: HelpCircle, label: "How", href: "/how-it-works" },

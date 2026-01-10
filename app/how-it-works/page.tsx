@@ -81,48 +81,48 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
+        {/* Updated Pricing Phases Table */}
         <div className="cm-panel rounded-sm border border-border mb-4 overflow-hidden">
           <div className="bg-primary/20 px-4 py-3 border-b border-border flex items-center gap-2">
             <Calculator className="w-5 h-5 cm-highlight" />
-            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Pricing Formulas</h2>
+            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Pricing Phases</h2>
           </div>
           <div className="divide-y divide-border">
             <div className="p-4 hover:bg-accent/5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="text-green-500 font-bold text-base lg:text-xl">Phase 1</div>
-                <span className="text-xs text-muted-foreground">(First 2 hours)</span>
+                <span className="text-xs text-muted-foreground">(First 2 hours after voting opens)</span>
               </div>
-              <div className="bg-secondary/30 rounded-sm p-3 mb-3 font-mono text-sm">
+              <div className="bg-secondary/30 rounded-sm p-3 mb-3">
                 <div className="text-green-400 font-bold mb-1">Linear Pricing:</div>
-                <div className="text-foreground">Price(n) = Base × (1 + 0.005 × n)</div>
+                <div className="text-foreground text-sm">Price increases gradually with each new vote</div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Each vote costs <strong className="text-green-400">0.5% more</strong> than the previous one. Vote #1 =
-                Base, Vote #2 = Base × 1.005, Vote #3 = Base × 1.01, etc.
+                Best time to vote! Prices start low and increase slowly as more people vote. Lock in lower prices before
+                Phase 2 starts.
               </div>
             </div>
             <div className="p-4 hover:bg-accent/5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="text-orange-500 font-bold text-base lg:text-xl">Phase 2</div>
-                <span className="text-xs text-muted-foreground">(Hours 2-24)</span>
+                <span className="text-xs text-muted-foreground">(Hours 2-24 after voting opens)</span>
               </div>
-              <div className="bg-secondary/30 rounded-sm p-3 mb-3 font-mono text-sm">
+              <div className="bg-secondary/30 rounded-sm p-3 mb-3">
                 <div className="text-orange-400 font-bold mb-1">Exponential Pricing:</div>
-                <div className="text-foreground">Price(n) = Base × 1.02^n</div>
+                <div className="text-foreground text-sm">Price rises rapidly with each new vote</div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Each vote costs <strong className="text-orange-400">2% more</strong> than the previous (compounding).
-                Prices rise much faster - vote early for better rates!
+                Price increases exponentially. Still 22 hours to vote, but early voters got better rates!
               </div>
             </div>
             <div className="p-4 bg-accent/5">
               <div className="flex items-start gap-2">
                 <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                 <div className="text-xs">
-                  <strong className="text-accent">Why dynamic pricing?</strong>
+                  <strong className="text-accent">24-Hour Voting Window</strong>
                   <p className="text-muted-foreground mt-1">
-                    Early voters get rewarded with lower prices. As more people vote, prices increase, creating urgency
-                    and larger prize pools. The price is based on the total number of votes already cast in the match.
+                    You have 24 hours total to vote on any match from when voting opens. Prices are based on how many
+                    votes have already been placed, so voting early gets you better rates!
                   </p>
                 </div>
               </div>
@@ -130,19 +130,19 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
-        {/* Pricing Phases Table - Updated */}
+        {/* Updated Timing Phases Table */}
         <div className="cm-panel rounded-sm border border-border mb-4 overflow-hidden">
           <div className="bg-primary/20 px-4 py-3 border-b border-border flex items-center gap-2">
             <Clock className="w-5 h-5 cm-highlight" />
-            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Timing Phases</h2>
+            <h2 className="text-base lg:text-lg font-bold cm-highlight uppercase">Voting Timeline</h2>
           </div>
           <div className="divide-y divide-border">
             <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
               <div className="text-green-500 font-bold text-base lg:text-xl">0-2h</div>
               <div>
-                <div className="font-bold text-sm mb-1">Phase 1: Best Rates</div>
+                <div className="font-bold text-sm mb-1">Phase 1: Early Bird (Linear Pricing)</div>
                 <div className="text-xs text-muted-foreground mb-2">
-                  Linear +0.5% per vote. This is the best time to vote - prices are lowest!
+                  Best time to vote - prices rise gradually! Get in early for maximum value.
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-green-500" />
@@ -153,13 +153,22 @@ export default function HowItWorksPage() {
             <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 hover:bg-accent/5">
               <div className="text-orange-500 font-bold text-base lg:text-xl">2-24h</div>
               <div>
-                <div className="font-bold text-sm mb-1">Phase 2: Rising Fast</div>
+                <div className="font-bold text-sm mb-1">Phase 2: Standard (Exponential Pricing)</div>
                 <div className="text-xs text-muted-foreground mb-2">
-                  Exponential +2% compounding. Late voters pay significantly more per vote.
+                  Prices rise exponentially with each vote. Still time to participate, but early birds got better rates.
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-orange-500" />
-                  <span className="text-xs text-orange-500 font-bold">Higher cost, still earning opportunity</span>
+                  <span className="text-xs text-orange-500 font-bold">Rapid price increases</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-[80px_1fr] lg:grid-cols-[120px_1fr] p-4 gap-3 lg:gap-4 bg-accent/5">
+              <div className="text-accent font-bold text-base lg:text-xl">24h+</div>
+              <div>
+                <div className="font-bold text-sm mb-1">Voting Closed</div>
+                <div className="text-xs text-muted-foreground">
+                  Match results finalized. Winners can claim their share of the prize pool!
                 </div>
               </div>
             </div>

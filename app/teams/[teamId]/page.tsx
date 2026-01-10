@@ -294,7 +294,11 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
           <div className="p-4">
             <div className="space-y-3">
               {team.upcomingMatches.map((match) => (
-                <div key={match.id} className="cm-hover-row p-4 rounded-sm flex items-center justify-between gap-4">
+                <Link
+                  key={match.id}
+                  href={`/matches/${match.id}`}
+                  className="cm-hover-row p-4 rounded-sm flex items-center justify-between gap-4 cursor-pointer block"
+                >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <span className="text-3xl flex-shrink-0">{match.flag}</span>
                     <div className="flex-1 min-w-0">
@@ -306,7 +310,7 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                     <div className="text-xs text-accent font-mono">{match.date}</div>
                     <div className="text-xs text-muted-foreground">{match.time}</div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -320,13 +324,17 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
           <div className="p-4">
             <div className="space-y-3">
               {team.pastMatches.map((match) => (
-                <div key={match.id} className="cm-hover-row p-4 rounded-sm flex items-center justify-between gap-4">
+                <Link
+                  key={match.id}
+                  href={`/matches/${match.id}`}
+                  className="cm-hover-row p-4 rounded-sm flex items-center justify-between gap-4 cursor-pointer block"
+                >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <span className="text-3xl flex-shrink-0">{match.flag}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-base truncate">{match.opponent}</div>
                       <div className="text-xs text-muted-foreground">{match.date}</div>
-                      <div className="text-xs text-accent font-mono mt-1">Total: {match.totalVotes}</div>
+                      <div className="text-xs text-accent font-mono mt-1">Total Pool: {match.totalVotes}</div>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
@@ -339,10 +347,11 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                             : "text-red-400"
                       }`}
                     >
-                      {match.result}
+                      {match.result.startsWith("W") ? "WON" : match.result.startsWith("D") ? "DRAW" : "LOST"}
                     </div>
+                    <div className="text-xs text-muted-foreground mt-1">Click for details</div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

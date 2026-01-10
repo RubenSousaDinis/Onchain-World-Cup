@@ -5,6 +5,8 @@ import type React from "react"
 import { useState } from "react"
 import { Trophy, Flame, Star, Zap, Crown, Target, Award, Rocket, Shield } from "lucide-react"
 import { ShareModal } from "./share-modal"
+import { NFTMintModal } from "./nft-mint-modal"
+import { MilestoneNFTCard } from "./milestone-nft-card"
 
 interface Milestone {
   id: string
@@ -130,6 +132,7 @@ const rarityTextColors = {
 
 export function UserMilestones() {
   const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null)
 
   const unlockedCount = milestones.filter((m) => m.unlocked).length
@@ -138,6 +141,11 @@ export function UserMilestones() {
   const handleShare = (milestone: Milestone) => {
     setSelectedMilestone(milestone)
     setShareModalOpen(true)
+  }
+
+  const handleMintNFT = (milestone: Milestone) => {
+    setSelectedMilestone(milestone)
+    setNftMintModalOpen(true)
   }
 
   return (
@@ -220,7 +228,26 @@ export function UserMilestones() {
               </div>
 
               {milestone.unlocked && (
-                <div className="absolute bottom-2 right-2 text-[10px] text-accent">Tap to share</div>
+                <div className="absolute bottom-2 right-2 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleMintNFT(milestone)
+                    }}
+                    className="text-[10px] text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
+                  >
+                    Mint NFT
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleShare(milestone)
+                    }}
+                    className="text-[10px] text-accent hover:text-primary transition-colors"
+                  >
+                    Share
+                  </button>
+                </div>
               )}
             </div>
           ))}
@@ -228,18 +255,43 @@ export function UserMilestones() {
       </div>
 
       {selectedMilestone && (
-        <ShareModal
-          isOpen={shareModalOpen}
-          onClose={() => setShareModalOpen(false)}
-          type="milestone"
-          data={{
-            milestone: {
+        <>
+          <ShareModal
+            isOpen={shareModalOpen}
+            onClose={() => setShareModalOpen(false)}
+            type="milestone"
+            data={{
+              milestone: {
+                title: selectedMilestone.title,
+                description: selectedMilestone.description,
+                icon: selectedMilestone.icon,
+              },
+            }}
+          />
+
+          <NFTMintModal
+            isOpen={nftMintModalOpen}
+            onClose={() => setNftMintModalOpen(false)}
+            type="milestone"
+            data={{
               title: selectedMilestone.title,
               description: selectedMilestone.description,
-              icon: selectedMilestone.icon,
-            },
-          }}
-        />
+              imageComponent: (
+                <MilestoneNFTCard
+                  title={selectedMilestone.title}
+                  description={selectedMilestone.description}
+                  icon={selectedMilestone.icon}
+                  rarity={selectedMilestone.rarity}
+                  unlockedAt={selectedMilestone.unlockedAt || "Recently"}
+                  address="0x1234...5678"
+                />
+              ),
+              metadata: {
+                milestone: selectedMilestone,
+              },
+            }}
+          />
+        </>
       )}
     </>
   )

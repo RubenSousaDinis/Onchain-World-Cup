@@ -6,6 +6,7 @@ import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { Clock, TrendingUp, Trophy } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { NFTMintModal } from "@/components/nft-mint-modal"
 
 interface MatchDetailPageProps {
   params: {
@@ -45,6 +46,7 @@ const mockBets = [
 
 export default function MatchDetailPage({ params }: MatchDetailPageProps) {
   const [activeTab, setActiveTab] = useState("bets")
+  const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
   const { matchId } = params
 
   const totalPool = mockMatchData.team1.eth + mockMatchData.team2.eth
@@ -143,9 +145,18 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
             </div>
 
             <div className="bg-secondary/30 px-4 py-3 border-t border-border">
-              <div className="text-xs">
-                <span className="text-muted-foreground">Current Vote Price:</span>
-                <span className="ml-2 cm-highlight font-mono font-bold">{mockMatchData.currentPrice} ETH</span>
+              <div className="flex items-center justify-between">
+                <div className="text-xs">
+                  <span className="text-muted-foreground">Current Vote Price:</span>
+                  <span className="ml-2 cm-highlight font-mono font-bold">{mockMatchData.currentPrice} ETH</span>
+                </div>
+                <button
+                  onClick={() => setNftMintModalOpen(true)}
+                  className="text-xs cm-highlight hover:text-accent transition-colors font-bold uppercase flex items-center gap-1"
+                >
+                  <Trophy className="w-3 h-3" />
+                  Mint NFT
+                </button>
               </div>
             </div>
           </div>
@@ -303,6 +314,49 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
           </div>
         )}
       </main>
+
+      <NFTMintModal
+        isOpen={nftMintModalOpen}
+        onClose={() => setNftMintModalOpen(false)}
+        type="match"
+        data={{
+          title: `${mockMatchData.team1.name} vs ${mockMatchData.team2.name}`,
+          description: `${mockMatchData.team1.votes} - ${mockMatchData.team2.votes} • ${mockMatchData.matchDate}`,
+          imageComponent: (
+            <div className="w-full aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg p-6 flex flex-col justify-between soccer-field-bg">
+              <div className="text-center">
+                <div className="text-xs text-white/70 mb-4">CRYPTO WORLD CUP 2026</div>
+                <div className="flex items-center justify-center gap-8">
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{mockMatchData.team1.flag}</div>
+                    <div className="text-lg font-bold text-white">{mockMatchData.team1.name}</div>
+                  </div>
+                  <div className="text-4xl font-bold text-white">{mockMatchData.team1.votes}</div>
+                  <div className="text-2xl text-white/50">-</div>
+                  <div className="text-4xl font-bold text-white">{mockMatchData.team2.votes}</div>
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{mockMatchData.team2.flag}</div>
+                    <div className="text-lg font-bold text-white">{mockMatchData.team2.name}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-white/80 mb-2">{mockMatchData.stadium}</div>
+                <div className="text-xs text-white/60">{mockMatchData.matchDate}</div>
+                <div className="mt-4 bg-white/10 rounded px-4 py-2">
+                  <div className="text-xs text-white/70">Total Prize Pool</div>
+                  <div className="text-2xl font-bold text-white">{totalPool.toFixed(2)} ETH</div>
+                </div>
+              </div>
+            </div>
+          ),
+          metadata: {
+            matchId,
+            teams: [mockMatchData.team1.name, mockMatchData.team2.name],
+            score: [mockMatchData.team1.votes, mockMatchData.team2.votes],
+          },
+        }}
+      />
     </div>
   )
 }

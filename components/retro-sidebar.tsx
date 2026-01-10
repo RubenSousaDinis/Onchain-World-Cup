@@ -2,14 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, HelpCircle, Wallet, Shield } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Shield } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const sidebarItems = [
-  { icon: Trophy, label: "Matches", href: "/" },
+  { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Shield, label: "Teams", href: "/teams" },
-  { icon: Calendar, label: "Schedule", href: "/schedule" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Wallet, label: "My Bets", href: "/my-bets" },
   { icon: HelpCircle, label: "How it Works", href: "/how-it-works" },
@@ -27,7 +26,7 @@ export function RetroSidebar() {
       {/* Logo/Brand */}
       <div className="flex flex-col items-center gap-2">
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center">
-          <Trophy className="w-7 h-7 text-primary-foreground" />
+          {/* Removed Trophy icon from matches */}
         </div>
         <div className="text-[10px] text-center leading-tight">
           <div className="cm-highlight">CRYPTO</div>

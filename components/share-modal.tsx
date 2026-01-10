@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap } from "lucide-react"
 
 interface ShareModalProps {
@@ -15,7 +15,7 @@ interface ShareModalProps {
     amount?: string
     votes?: number
     matchId?: string
-    result?: "won" | "lost"
+    result?: "won" | "lost" | "earned"
     winnings?: string
     milestone?: {
       title: string
@@ -27,6 +27,16 @@ interface ShareModalProps {
 
 export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
@@ -42,7 +52,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     }
 
     if (type === "result") {
-      if (data.result === "won") {
+      if (data.result === "won" || data.result === "earned") {
         return {
           title: "I won!",
           text: `I just won ${data.winnings} betting on ${data.teamFlag} ${data.team} in the Crypto World Cup 2026!\n\nJoin the action and vote for your favorite teams.\n\n#CryptoWorldCup #WorldCup2026 #Base`,
@@ -115,7 +125,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             <div>
               <div className="text-lg font-bold cm-highlight">
                 {type === "vote" && "Vote Placed!"}
-                {type === "result" && (data.result === "won" ? "You Won!" : "Match Ended")}
+                {type === "result" && (data.result === "won" || data.result === "earned" ? "You Won!" : "Match Ended")}
                 {type === "milestone" && "Achievement Unlocked!"}
               </div>
               <div className="text-xs text-foreground/80">Share with your friends</div>
@@ -146,7 +156,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             <div className="text-center">
               <div className="text-4xl mb-2">{data.teamFlag}</div>
               <div className="text-xl font-bold text-foreground mb-2">{data.team}</div>
-              {data.result === "won" ? (
+              {data.result === "won" || data.result === "earned" ? (
                 <div className="inline-block bg-green-500/20 border border-green-500 px-4 py-2 rounded-sm">
                   <div className="text-xs text-green-400 mb-1">WINNINGS</div>
                   <div className="text-2xl font-bold text-green-400 font-mono">{data.winnings}</div>

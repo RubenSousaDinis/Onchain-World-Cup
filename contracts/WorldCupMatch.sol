@@ -27,9 +27,8 @@ contract WorldCupMatch {
     // Pricing constants
     uint256 public constant PHASE_1_DURATION = 2 hours;
     uint256 public constant PHASE_2_DURATION = 22 hours;
+    uint256 public constant TOTAL_VOTING_DURATION = 24 hours;
     uint256 public constant BASE_PRICE = 0.001 ether;
-    uint256 public constant LINEAR_FEE_PERCENT = 5; // 5% in Phase 1
-    uint256 public constant EXPONENTIAL_FEE_PERCENT = 15; // 15% in Phase 2
     uint256 public constant WINNER_SHARE_PERCENT = 90; // 90% to winners
     uint256 public constant PLATFORM_FEE_PERCENT = 10; // 10% platform fee
     
@@ -47,17 +46,16 @@ contract WorldCupMatch {
     constructor(
         string memory _team1Name,
         string memory _team2Name,
-        uint256 _matchStartTime,
+        uint256 _deployTime,
         address _platformAddress
     ) {
-        require(_matchStartTime > block.timestamp, "Match start must be in future");
         require(_platformAddress != address(0), "Invalid platform address");
         
         team1Name = _team1Name;
         team2Name = _team2Name;
-        matchStartTime = _matchStartTime;
-        votingEndTime = _matchStartTime; // Voting closes when match starts
-        matchEndTime = _matchStartTime + 24 hours;
+        matchStartTime = _deployTime;
+        votingEndTime = _deployTime + TOTAL_VOTING_DURATION;
+        matchEndTime = votingEndTime + 2 hours; // Allow 2 hours after voting closes to finalize
         platformAddress = _platformAddress;
     }
     
@@ -68,38 +66,45 @@ contract WorldCupMatch {
     function getCurrentPhase() public view returns (uint8) {
         if (block.timestamp >= votingEndTime) return 0; // Voting closed
         
-        uint256 timeElapsed = block.timestamp - (matchStartTime - PHASE_1_DURATION - PHASE_2_DURATION);
+        uint256 timeElapsed = block.timestamp - matchStartTime;
         
         if (timeElapsed <= PHASE_1_DURATION) {
-            return 1; // Phase 1: Linear
-        } else if (timeElapsed <= PHASE_1_DURATION + PHASE_2_DURATION) {
-            return 2; // Phase 2: Exponential
+            return 1; // Phase 1: First 2 hours
+        } else if (timeElapsed <= TOTAL_VOTING_DURATION) {
+            return 2; // Phase 2: Hours 2-24
         }
         
         return 0; // Voting closed
     }
     
     /**
-     * @dev Calculate current vote price with phase-based fees
-     * @param amount The amount of ETH to vote
-     * @return total The total cost including fees
+     * @dev Calculate current vote price
+     * Phase 1: Linear increase based on existing votes
+     * Phase 2: Exponential increase based on existing votes
+     * @param teamIndex 0 for team1, 1 for team2
+     * @return price The price for the next vote
      */
-    function calculateVotePrice(uint256 amount) public view returns (uint256) {
+    function calculateVotePrice(uint8 teamIndex) public view returns (uint256) {
         uint8 phase = getCurrentPhase();
         require(phase > 0, "Voting is closed");
+        require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
         
-        uint256 baseCost = amount;
-        uint256 fee;
+        uint256 existingVotes = teamIndex == 0 ? team1TotalVotes : team2TotalVotes;
+        uint256 voteCount = existingVotes / BASE_PRICE; // Number of votes placed
         
         if (phase == 1) {
-            // Phase 1: Linear - 5% fee
-            fee = (baseCost * LINEAR_FEE_PERCENT) / 100;
+            // Phase 1: Linear - price increases gradually
+            // Formula: BASE_PRICE * (1 + voteCount * 0.005)
+            return BASE_PRICE + (BASE_PRICE * voteCount * 5) / 1000;
         } else {
-            // Phase 2: Exponential - 15% fee
-            fee = (baseCost * EXPONENTIAL_FEE_PERCENT) / 100;
+            // Phase 2: Exponential - price increases rapidly
+            // Formula: BASE_PRICE * (1.02 ^ voteCount)
+            uint256 price = BASE_PRICE;
+            for (uint256 i = 0; i < voteCount && i < 100; i++) {
+                price = (price * 102) / 100; // 2% increase per vote
+            }
+            return price;
         }
-        
-        return baseCost + fee;
     }
     
     /**
@@ -132,10 +137,10 @@ contract WorldCupMatch {
     
     /**
      * @dev Finalize match and determine winner
-     * Can be called by anyone after match ends
+     * Can be called by anyone after voting ends
      */
     function finalizeMatch() external {
-        require(block.timestamp >= matchEndTime, "Match not ended yet");
+        require(block.timestamp >= votingEndTime, "Voting not ended yet");
         require(!matchFinalized, "Match already finalized");
         
         matchFinalized = true;
