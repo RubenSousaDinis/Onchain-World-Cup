@@ -1,6 +1,22 @@
-# Contract Pricing Formula - Critical Fix Needed
+# ⚠️ DEPRECATED - Contract Pricing Formula
 
-## Status: ⚠️ NEEDS FIXING BEFORE DEPLOYMENT
+## Status: DEPRECATED
+
+**This document is DEPRECATED and kept for historical reference only.**
+
+The system has been redesigned with a two-phase architecture:
+- **Phase 1 (Qualification):** Fixed-price voting (0.001 ETH) - See [QUALIFICATION_CONTRACT_SPEC.md](../contracts/QUALIFICATION_CONTRACT_SPEC.md)
+- **Phase 2 (Tournament):** Dynamic pricing matches - See [TOURNAMENT_CONTRACT_SPEC.md](../contracts/TOURNAMENT_CONTRACT_SPEC.md)
+
+**Refer to the new contract specifications instead of this document.**
+
+---
+
+## Original Document (FOR REFERENCE ONLY)
+
+### Original Title: Contract Pricing Formula - Critical Fix Needed
+
+### Original Status: ⚠️ NEEDS FIXING BEFORE DEPLOYMENT
 
 ## Summary
 

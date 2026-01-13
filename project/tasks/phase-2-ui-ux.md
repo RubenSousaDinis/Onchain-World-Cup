@@ -1,7 +1,7 @@
 # Phase 2: UI/UX Foundation & App Initialization
 
 ## Overview
-Build the foundational user interface, design system, and app initialization logic. This phase establishes the UI framework that will later be connected to blockchain functionality. Focus on responsive design, component structure, and context-aware rendering for both desktop and Farcaster environments.
+Build the foundational user interface, design system, and app initialization logic for the **two-phase system**: Qualification (fixed-price support voting) and Tournament (match-based betting). This phase establishes the UI framework that will later be connected to blockchain functionality. Focus on responsive design, component structure, and context-aware rendering for both desktop and Farcaster environments.
 
 ## Sub-tasks
 
@@ -60,18 +60,85 @@ File: `styles/globals.css`
 ### 2.3 Create Responsive Layout
 File: `components/Layout.tsx`
 
-- [ ] Navigation header
+- [ ] Navigation header with phase indicator
 - [ ] Main content area
 - [ ] Footer
 - [ ] Responsive sidebar (desktop only)
 - [ ] Mobile-optimized for Farcaster
 - [ ] Sticky navigation
 - [ ] Loading states
+- [ ] Phase-aware navigation (Qualification vs Tournament links)
 
-### 2.4 Build Match Card Component
+### 2.3.5 Create Phase Switcher Component
+File: `components/PhaseSwitcher.tsx`
+
+**This component helps users understand the current phase**:
+- [ ] Display current phase (Qualification or Tournament)
+- [ ] Show phase countdown timer
+- [ ] Link to qualification page when in qualification phase
+- [ ] Link to tournament page when in tournament phase
+- [ ] Visual indicator of phase status
+- [ ] Responsive design
+
+### 2.4 Build Qualification UI Components
+
+#### Qualification Standings Component
+File: `components/QualificationStandings.tsx`
+
+**Live rankings for all countries during qualification**:
+- [ ] Display all countries in ranked order
+- [ ] Show for each country:
+  - Current rank
+  - Country name and flag
+  - Total votes received
+  - Total ETH (after fees)
+  - Qualification status (top 48 highlighted)
+- [ ] Real-time updates as votes come in
+- [ ] Filter options (qualified, not qualified, search)
+- [ ] Responsive table/card layout
+- [ ] Mobile-optimized for Farcaster
+
+#### Country Support Card Component
+File: `components/CountrySupportCard.tsx`
+
+**Individual country voting interface**:
+- [ ] Display country flag and name
+- [ ] Show current rank
+- [ ] Display total votes and ETH
+- [ ] Show qualification status
+- [ ] "Support" button with fixed price (0.001 ETH)
+- [ ] Display current time-based fee percentage
+- [ ] Show user's previous votes for this country
+- [ ] Responsive design
+
+#### Qualification Home Page
+File: `app/qualification/page.tsx`
+
+**Main qualification interface**:
+- [ ] Hero section explaining qualification
+- [ ] Live standings table/grid
+- [ ] Top 48 highlighted
+- [ ] Search/filter countries
+- [ ] Current fee percentage display
+- [ ] Qualification deadline countdown
+- [ ] Link to user's qualification votes
+- [ ] Share to Farcaster functionality
+
+#### User Qualification Stats Component
+File: `components/UserQualificationStats.tsx`
+
+**User's qualification activity**:
+- [ ] Total votes cast during qualification
+- [ ] Total ETH contributed
+- [ ] Countries supported (with vote counts)
+- [ ] Potential rewards if countries qualify
+- [ ] Claimable rewards (after qualification ends)
+- [ ] Visual breakdown
+
+### 2.5 Build Tournament Match Card Component
 File: `components/MatchCard.tsx`
 
-This is a core component displayed throughout the app.
+**This is for Tournament phase only** (match-based voting with dynamic pricing).
 
 #### Match Card Design
 - [ ] Display team names and flags
@@ -133,46 +200,64 @@ File: `app/matches/[id]/page.tsx`
 ### 2.6 Create Home Page
 File: `app/page.tsx`
 
+**Phase-aware home page that adapts to current phase**:
+
 #### Home Page Sections
 - [ ] Hero section
   - App title and description
-  - Call-to-action (View Matches, Connect Wallet)
-  - Current tournament phase indicator
-- [ ] Active matches section
-  - Matches currently open for voting
-  - Sort by deadline (soonest first)
-  - Card grid layout
-- [ ] Upcoming matches section
-  - Matches starting soon
-  - Card grid layout
-- [ ] Completed matches section
-  - Recent results
-  - Winners highlighted
-- [ ] Statistics dashboard
-  - Total ETH in all pools
-  - Number of active matches
-  - Number of voters
-  - Total votes cast
+  - Current phase indicator (Qualification or Tournament)
+  - Phase-specific call-to-action:
+    - Qualification: "Support Your Country"
+    - Tournament: "Vote on Matches"
+  - Countdown to next phase
+- [ ] Phase-specific content:
+  - **During Qualification**:
+    - Link to qualification standings
+    - Top 48 preview
+    - Featured countries
+    - Qualification deadline countdown
+  - **During Tournament**:
+    - Active matches section (open for voting)
+    - Upcoming matches section
+    - Completed matches section
+    - Tournament bracket preview
+- [ ] Statistics dashboard (phase-specific)
+  - **Qualification**: Total votes, total countries, total ETH, qualified count
+  - **Tournament**: Total ETH in pools, active matches, total votes
+- [ ] Recent activity feed
+  - Recent votes (qualification or tournament)
+  - Real-time updates
 
 #### Context-Specific Home
-- [ ] Desktop: Full-featured home page
+- [ ] Desktop: Full-featured home page with both phase sections
 - [ ] Farcaster: Optimized for embedded view
-  - Focus on active matches
+  - Focus on current phase only
   - Simplified layout
   - Touch-friendly
 
 ### 2.7 Create Dashboard Components
 
+**Phase-aware dashboard showing combined stats from both phases**:
+
 #### User Stats Component
 File: `components/UserStats.tsx`
 
-- [ ] Total ETH wagered
-- [ ] Total votes cast
-- [ ] Active matches count
-- [ ] Claimable amount
-- [ ] Total winnings
-- [ ] Win rate percentage
-- [ ] Visual charts/graphs
+- [ ] **Qualification Stats**:
+  - Total qualification votes cast
+  - Total ETH contributed to qualification
+  - Countries supported
+  - Claimable qualification rewards (if applicable)
+- [ ] **Tournament Stats**:
+  - Total tournament votes cast
+  - Total ETH wagered on matches
+  - Active matches count
+  - Claimable match winnings
+  - Win rate percentage
+- [ ] **Combined Stats**:
+  - Total ETH spent across both phases
+  - Total votes cast (qualification + tournament)
+  - Total winnings
+  - Visual charts/graphs
 
 #### Active Matches Component
 File: `components/ActiveMatches.tsx`
@@ -403,7 +488,13 @@ High - Comprehensive UI/UX requires attention to detail
 - Must call `sdk.actions.ready()` after app initialization (Farcaster)
 - Desktop and Farcaster experiences should both be excellent
 - Real-time updates enhance engagement
-- Clear display of vote count (not just ETH) is critical for payout understanding
+- **Two-Phase System**: UI must adapt to show Qualification or Tournament based on current phase
+  - **Qualification**: Fixed-price support voting, standings-based, NO matches
+  - **Tournament**: Match-based betting with dynamic pricing
+- Clear display of vote count (not just ETH) is critical for tournament payout understanding
+- Qualification rewards are proportional to ETH contributed to qualified countries
 - Mobile touch targets must be large enough
 - Loading states prevent perceived slowness
 - Error messages should be helpful, not technical
+- Phase indicator should be prominent throughout the app
+- See `/docs/ROADMAP.md` and `/docs/architecture/TWO_PHASE_SYSTEM.md` for details

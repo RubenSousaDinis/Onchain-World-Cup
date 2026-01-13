@@ -11,6 +11,13 @@ The application uses a modern data fetching stack:
 - **HTTP Client**: Axios for making API requests
 - **Type Safety**: Full TypeScript support with typed hooks and API responses
 
+## Two-Phase System
+
+The Onchain World Cup has two phases with separate APIs:
+
+1. **Qualification Phase**: Fixed-price voting, rankings-based
+2. **Tournament Phase**: Match-based voting, dynamic pricing
+
 ## Architecture
 
 \`\`\`
@@ -21,13 +28,18 @@ The application uses a modern data fetching stack:
 └──────────┬──────────┘
            │
            ▼
-┌─────────────────────┐
-│  Custom Hooks       │
-│  (TanStack Query)   │
-│  - useMatches()     │
-│  - useCountries()   │
-│  - useLeaderboard() │
-└──────────┬──────────┘
+┌─────────────────────────────────────┐
+│  Custom Hooks (TanStack Query)      │
+│  Qualification:                      │
+│  - useQualificationStandings()      │
+│  - useQualificationCountries()      │
+│  - useQualificationUserVotes()      │
+│  - useQualificationRewards()        │
+│  Tournament:                         │
+│  - useMatches()                      │
+│  - useMatch()                        │
+│  - useLeaderboard()                  │
+└──────────┬──────────────────────────┘
            │
            ▼
 ┌─────────────────────┐
@@ -50,7 +62,110 @@ The application uses a modern data fetching stack:
 
 ## Client-Side Usage
 
-### 1. Fetching Data with Hooks
+### 1. Qualification Phase Hooks
+
+#### Qualification Standings
+
+\`\`\`tsx
+import { useQualificationStandings } from '@/hooks/use-qualification'
+
+function QualificationStandings() {
+  // Fetch live standings
+  const { data, isLoading, error } = useQualificationStandings()
+
+  if (isLoading) return <div>Loading standings...</div>
+  if (error) return <div>Error loading standings</div>
+
+  return (
+    <div>
+      {data?.data.map((standing, index) => (
+        <div key={standing.country_code}>
+          <span>#{standing.rank}</span>
+          <span>{standing.country_code}</span>
+          <span>{standing.total_votes} votes</span>
+          <span>{standing.total_eth} ETH</span>
+          {standing.is_qualified && <span>✓ Qualified</span>}
+        </div>
+      ))}
+    </div>
+  )
+}
+\`\`\`
+
+#### User's Qualification Votes
+
+\`\`\`tsx
+import { useQualificationUserVotes } from '@/hooks/use-qualification'
+
+function MyQualificationVotes({ userAddress }: { userAddress: string }) {
+  const { data } = useQualificationUserVotes(userAddress)
+
+  return (
+    <div>
+      <h3>My Support</h3>
+      {data?.data.map((vote) => (
+        <div key={vote.country_code}>
+          <span>{vote.country_code}</span>
+          <span>{vote.vote_count} votes</span>
+          <span>{vote.total_eth} ETH</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+\`\`\`
+
+#### Claimable Rewards
+
+\`\`\`tsx
+import { useQualificationRewards } from '@/hooks/use-qualification'
+
+function ClaimRewards({ userAddress }: { userAddress: string }) {
+  const { data, isLoading } = useQualificationRewards(userAddress)
+
+  if (isLoading) return <div>Calculating rewards...</div>
+
+  const claimable = data?.data.claimable_amount || 0
+
+  return (
+    <div>
+      <h3>Qualification Rewards</h3>
+      <p>Claimable: {claimable} ETH</p>
+      {claimable > 0 && (
+        <button onClick={() => claimReward()}>
+          Claim {claimable} ETH
+        </button>
+      )}
+    </div>
+  )
+}
+\`\`\`
+
+#### Qualified Countries
+
+\`\`\`tsx
+import { useQualifiedCountries } from '@/hooks/use-qualification'
+
+function QualifiedList() {
+  // Fetch final top 48 (only available after qualification ends)
+  const { data } = useQualifiedCountries()
+
+  return (
+    <div>
+      <h3>Qualified for Tournament</h3>
+      {data?.data.map((country) => (
+        <div key={country.country_code}>
+          <span>#{country.final_rank}</span>
+          <span>{country.country_code}</span>
+          <span>{country.total_votes} votes</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+\`\`\`
+
+### 2. Tournament Phase Hooks
 
 #### Matches
 
@@ -297,6 +412,82 @@ revalidateTag('countries')       // Invalidate all countries
 revalidateTag('group-standings') // Invalidate all standings
 revalidateTag('group-123')       // Invalidate specific group
 \`\`\`
+
+## API Endpoints Reference
+
+### Qualification Phase Endpoints
+
+**GET `/api/qualification/standings`**
+- Returns live qualification rankings for all countries
+- Response: `{ data: QualificationStanding[] }`
+- Cache: 1 minute (live data)
+
+**GET `/api/qualification/countries`**
+- Returns all countries with vote stats
+- Response: `{ data: Country[] }`
+- Cache: 5 minutes
+
+**POST `/api/qualification/vote`**
+- Index a qualification vote transaction
+- Body: `{ txHash: string, countryCode?: string }`
+- Returns: Vote details after indexing
+
+**GET `/api/qualification/user/:address`**
+- Returns user's qualification votes and stats
+- Response: `{ data: UserQualificationStats }`
+- Cache: 30 seconds
+
+**GET `/api/qualification/rewards/:address`**
+- Returns claimable rewards for user
+- Response: `{ data: { claimable_amount: number, votes_on_qualified: number } }`
+- Only available after qualification ends
+- Cache: 1 minute
+
+**POST `/api/qualification/snapshot`**
+- Admin endpoint to finalize top 48
+- Body: `{ txHash: string }`
+- Only callable after qualification deadline
+- Requires admin authentication
+
+**GET `/api/qualification/qualified`**
+- Returns final top 48 countries
+- Response: `{ data: QualifiedCountry[] }`
+- Only available after snapshot
+- Cache: 1 hour
+
+### Tournament Phase Endpoints
+
+**GET `/api/matches`**
+- Returns all tournament matches
+- Query params: `status`, `phase_id`, `group_id`, `limit`, `offset`
+- Response: `{ data: Match[], count: number }`
+- Cache: 1 hour
+
+**GET `/api/matches/:id`**
+- Returns match details
+- Response: `{ data: Match }`
+- Cache: 1 hour
+
+**POST `/api/matches/:id/vote`**
+- Index a match vote transaction
+- Body: `{ txHash: string, team: number }`
+- Returns: Vote details after indexing
+
+**GET `/api/matches/:id/user/:address`**
+- Returns user's votes for this match
+- Response: `{ data: UserMatchStats }`
+- Cache: 30 seconds
+
+**GET `/api/matches/:id/rewards/:address`**
+- Returns claimable winnings for user
+- Response: `{ data: { claimable_amount: number, vote_count: number } }`
+- Only available after match finalized
+- Cache: 1 minute
+
+**POST `/api/matches/:id/finalize`**
+- Index match finalization transaction
+- Body: `{ txHash: string }`
+- Returns: Match result after indexing
 
 ## Direct API Client Usage
 
