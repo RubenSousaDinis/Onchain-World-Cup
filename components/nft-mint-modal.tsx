@@ -5,6 +5,9 @@ import { useState, useEffect } from "react"
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import type React from "react"
 
+// Debug logging - only enable in development
+const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
+
 interface NFTMintModalProps {
   isOpen: boolean
   onClose: () => void
@@ -44,7 +47,9 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
       // In a real implementation, you would:
       // 1. Upload metadata to IPFS
       // 2. Call the mint function on the NFT contract
-      console.log("[v0] Minting NFT with data:", data)
+      if (DEBUG) {
+        console.log("Minting NFT with data:", data)
+      }
 
       // Simulate minting for demo
       setTimeout(() => {
@@ -53,14 +58,16 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
         onClose()
       }, 2000)
     } catch (error) {
-      console.error("[v0] Error minting NFT:", error)
+      console.error("Error minting NFT:", error)
       setIsMinting(false)
     }
   }
 
   const handleDownload = () => {
     // In production, this would download the actual generated image
-    console.log("[v0] Downloading NFT image")
+    if (DEBUG) {
+      console.log("Downloading NFT image")
+    }
     alert("Download feature coming soon!")
   }
 

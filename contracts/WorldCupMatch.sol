@@ -1,255 +1,442 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+/**
+ * @title IWorldCupEventHub
+ * @dev Interface for WorldCupEventHub contract
+ */
+interface IWorldCupEventHub {
+    function logMatchCreated(string memory team1Name, string memory team2Name, uint256 matchStartTime) external;
+    function logVotePlaced(address voter, uint8 teamIndex, uint256 voteCount, uint256 totalCost, uint256 platformFee, uint256 prizePoolAmount) external;
+    function logMatchFinalized(uint8 winningTeam, uint256 team1TotalETH, uint256 team2TotalETH, uint256 totalPrizePool) external;
+    function logWinningsWithdrawn(address voter, uint256 amount, uint256 voteCount) external;
+    function logPlatformFeeTransferred(address platformAddress, uint256 amount) external;
+}
+
 /**
  * @title WorldCupMatch
  * @dev Smart contract for ETH-based voting/betting on World Cup matches
  * Features 2-phase time-based pricing:
- * - Phase 1 (0-2 hours): Linear price increase
- * - Phase 2 (2-24 hours): Exponential price increase
- * Winner determined by most ETH voted. 90% to winners, 10% platform fee.
+ * - Phase 1 (0-2 hours): Linear price increase (0.001 + voteCount × 0.0001)
+ * - Phase 2 (2-24 hours): Exponential price increase (phase1EndPrice × 1.1^voteCount)
+ * Winner determined by most ETH voted. Prize pool distributed proportional to VOTE COUNT.
+ *
+ * IMPORTANT: Payouts are based on NUMBER OF VOTES, not ETH amount.
+ * Early voters benefit by getting more votes at lower prices.
+ *
+ * FEATURES:
+ * - Multiple votes in single transaction (batch voting)
+ * - Platform fee transferred immediately on vote
+ * - Auto-finalize on first withdrawal
+ * - Owner can update platform address and fee
+ * - Emergency pause capability
+ * - Unified event logging through EventHub
  */
-contract WorldCupMatch {
+contract WorldCupMatch is Ownable {
+    // Event Hub for unified logging
+    IWorldCupEventHub public immutable eventHub;
+
     // Match details
     string public team1Name;
     string public team2Name;
     uint256 public matchStartTime;
     uint256 public votingEndTime;
     uint256 public matchEndTime;
-    
-    // Voting state
-    uint256 public team1TotalVotes;
-    uint256 public team2TotalVotes;
-    mapping(address => mapping(uint8 => uint256)) public userVotes; // user => teamIndex => amount
+
+    // Vote count tracking (critical for payouts)
+    uint256 public team1VoteCount;
+    uint256 public team2VoteCount;
+    mapping(address => mapping(uint8 => uint256)) public userVoteCount;
+
+    // ETH tracking (prize pool only, platform fee sent immediately)
+    uint256 public team1TotalETH;
+    uint256 public team2TotalETH;
+    mapping(address => mapping(uint8 => uint256)) public userETH;
+
+    // Platform fee tracking
+    uint256 public totalPlatformFeesCollected;
+
+    // Voter tracking
     address[] public voters;
     mapping(address => bool) public hasVoted;
-    
-    // Pricing constants
+    mapping(address => bool) public hasWithdrawn;
+
+    // Phase 1 state tracking (per-team)
+    uint256 public team1Phase1Votes;
+    uint256 public team2Phase1Votes;
+    bool public phase1Ended;
+
+    // Configurable parameters (owner can update)
+    address public platformAddress;
+    uint256 public platformFeePercent; // Basis points (1000 = 10%)
+
+    // Emergency controls
+    bool public paused;
+
+    // Constants
     uint256 public constant PHASE_1_DURATION = 2 hours;
-    uint256 public constant PHASE_2_DURATION = 22 hours;
     uint256 public constant TOTAL_VOTING_DURATION = 24 hours;
     uint256 public constant BASE_PRICE = 0.001 ether;
-    uint256 public constant WINNER_SHARE_PERCENT = 90; // 90% to winners
-    uint256 public constant PLATFORM_FEE_PERCENT = 10; // 10% platform fee
-    
+    uint256 public constant LINEAR_INCREMENT = 0.0001 ether;
+    uint256 public constant MAX_VOTES_PER_TX = 100;
+    uint256 public constant MAX_FEE_PERCENT = 2000; // Max 20%
+
     // Winner tracking
     bool public matchFinalized;
-    uint8 public winningTeam; // 0 for team1, 1 for team2
-    address public platformAddress;
-    
-    // Events
-    event VotePlaced(address indexed voter, uint8 indexed teamIndex, uint256 amount, uint256 timestamp);
+    uint8 public winningTeam; // 0 for team1, 1 for team2, 255 for tie
+
+    // Local events (also emitted globally via EventHub)
+    event VotesPlaced(
+        address indexed voter,
+        uint8 indexed teamIndex,
+        uint256 voteCount,
+        uint256 totalCost,
+        uint256 platformFee,
+        uint256 prizePoolAmount
+    );
     event MatchFinalized(uint8 indexed winningTeam, uint256 team1Total, uint256 team2Total);
-    event WinningsWithdrawn(address indexed voter, uint256 amount);
-    event PlatformFeeWithdrawn(uint256 amount);
-    
+    event WinningsWithdrawn(address indexed voter, uint256 amount, uint256 voteCount);
+    event PlatformFeeTransferred(address indexed platform, uint256 amount);
+    event PlatformAddressUpdated(address indexed newPlatform);
+    event PlatformFeeUpdated(uint256 newFeePercent);
+    event Paused();
+    event Unpaused();
+
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+
     constructor(
         string memory _team1Name,
         string memory _team2Name,
         uint256 _deployTime,
-        address _platformAddress
-    ) {
+        address _platformAddress,
+        uint256 _platformFeePercent,
+        address _eventHub
+    ) Ownable(msg.sender) {
         require(_platformAddress != address(0), "Invalid platform address");
-        
+        require(bytes(_team1Name).length > 0, "Team 1 name required");
+        require(bytes(_team2Name).length > 0, "Team 2 name required");
+        require(_platformFeePercent <= MAX_FEE_PERCENT, "Fee too high");
+        require(_eventHub != address(0), "Invalid EventHub address");
+
         team1Name = _team1Name;
         team2Name = _team2Name;
         matchStartTime = _deployTime;
         votingEndTime = _deployTime + TOTAL_VOTING_DURATION;
-        matchEndTime = votingEndTime + 2 hours; // Allow 2 hours after voting closes to finalize
+        matchEndTime = votingEndTime + 2 hours;
         platformAddress = _platformAddress;
+        platformFeePercent = _platformFeePercent;
+        eventHub = IWorldCupEventHub(_eventHub);
     }
-    
+
     /**
      * @dev Get current pricing phase
-     * @return phase 1 for linear, 2 for exponential, 0 if voting closed
      */
     function getCurrentPhase() public view returns (uint8) {
-        if (block.timestamp >= votingEndTime) return 0; // Voting closed
-        
+        if (block.timestamp >= votingEndTime) return 0;
         uint256 timeElapsed = block.timestamp - matchStartTime;
-        
         if (timeElapsed <= PHASE_1_DURATION) {
-            return 1; // Phase 1: First 2 hours
-        } else if (timeElapsed <= TOTAL_VOTING_DURATION) {
-            return 2; // Phase 2: Hours 2-24
+            return 1;
+        } else {
+            return 2;
         }
-        
-        return 0; // Voting closed
     }
-    
+
     /**
-     * @dev Calculate current vote price
-     * Phase 1: Linear increase based on existing votes
-     * Phase 2: Exponential increase based on existing votes
-     * @param teamIndex 0 for team1, 1 for team2
-     * @return price The price for the next vote
+     * @dev Calculate price for a vote at specific vote count
      */
-    function calculateVotePrice(uint8 teamIndex) public view returns (uint256) {
+    function calculateVotePriceAt(uint8 teamIndex, uint256 atVoteCount) public view returns (uint256) {
         uint8 phase = getCurrentPhase();
         require(phase > 0, "Voting is closed");
         require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
-        
-        uint256 existingVotes = teamIndex == 0 ? team1TotalVotes : team2TotalVotes;
-        uint256 voteCount = existingVotes / BASE_PRICE; // Number of votes placed
-        
+
         if (phase == 1) {
-            // Phase 1: Linear - price increases gradually
-            // Formula: BASE_PRICE * (1 + voteCount * 0.005)
-            return BASE_PRICE + (BASE_PRICE * voteCount * 5) / 1000;
+            return BASE_PRICE + (atVoteCount * LINEAR_INCREMENT);
         } else {
-            // Phase 2: Exponential - price increases rapidly
-            // Formula: BASE_PRICE * (1.02 ^ voteCount)
-            uint256 price = BASE_PRICE;
-            for (uint256 i = 0; i < voteCount && i < 100; i++) {
-                price = (price * 102) / 100; // 2% increase per vote
+            uint256 teamPhase1Votes;
+            if (phase1Ended) {
+                teamPhase1Votes = teamIndex == 0 ? team1Phase1Votes : team2Phase1Votes;
+            } else {
+                teamPhase1Votes = atVoteCount;
             }
+
+            uint256 startPrice = BASE_PRICE + (teamPhase1Votes * LINEAR_INCREMENT);
+            uint256 phase2Votes = atVoteCount > teamPhase1Votes ? atVoteCount - teamPhase1Votes : 0;
+
+            uint256 price = startPrice;
+            for (uint256 i = 0; i < phase2Votes; i++) {
+                price = (price * 11) / 10;
+                require(price < type(uint256).max / 11, "Price overflow");
+            }
+
             return price;
         }
     }
-    
+
     /**
-     * @dev Place a vote for a team
-     * @param teamIndex 0 for team1, 1 for team2
+     * @dev Calculate price for next vote
      */
-    function vote(uint8 teamIndex) external payable {
+    function calculateVotePrice(uint8 teamIndex) public view returns (uint256) {
+        uint256 currentVoteCount = teamIndex == 0 ? team1VoteCount : team2VoteCount;
+        return calculateVotePriceAt(teamIndex, currentVoteCount);
+    }
+
+    /**
+     * @dev Place multiple votes for a team
+     * @param teamIndex 0 for team1, 1 for team2
+     * @param numVotes Number of votes to purchase (1-100)
+     */
+    function vote(uint8 teamIndex, uint256 numVotes) external payable whenNotPaused {
         require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
-        require(msg.value > 0, "Must send ETH to vote");
         require(getCurrentPhase() > 0, "Voting is closed");
         require(!matchFinalized, "Match already finalized");
-        
+        require(numVotes > 0 && numVotes <= MAX_VOTES_PER_TX, "Invalid vote count");
+
+        uint8 currentPhase = getCurrentPhase();
+
+        // Track phase transition
+        if (currentPhase == 2 && !phase1Ended) {
+            phase1Ended = true;
+            team1Phase1Votes = team1VoteCount;
+            team2Phase1Votes = team2VoteCount;
+        }
+
+        // Calculate total cost
+        uint256 totalCost = 0;
+        uint256 currentVoteCount = teamIndex == 0 ? team1VoteCount : team2VoteCount;
+
+        for (uint256 i = 0; i < numVotes; i++) {
+            uint256 votePrice = calculateVotePriceAt(teamIndex, currentVoteCount + i);
+            totalCost += votePrice;
+        }
+
+        require(msg.value >= totalCost, "Insufficient payment");
+
+        // Calculate fees
+        uint256 platformFee = (totalCost * platformFeePercent) / 10000; // Basis points
+        uint256 prizePoolAmount = totalCost - platformFee;
+
+        // Transfer platform fee immediately
+        (bool feeSuccess, ) = platformAddress.call{value: platformFee}("");
+        require(feeSuccess, "Platform fee transfer failed");
+        totalPlatformFeesCollected += platformFee;
+
         // Track voter
         if (!hasVoted[msg.sender]) {
             voters.push(msg.sender);
             hasVoted[msg.sender] = true;
         }
-        
-        // Record vote
-        userVotes[msg.sender][teamIndex] += msg.value;
-        
+
+        // Increment vote counts
+        userVoteCount[msg.sender][teamIndex] += numVotes;
         if (teamIndex == 0) {
-            team1TotalVotes += msg.value;
+            team1VoteCount += numVotes;
         } else {
-            team2TotalVotes += msg.value;
+            team2VoteCount += numVotes;
         }
-        
-        emit VotePlaced(msg.sender, teamIndex, msg.value, block.timestamp);
+
+        // Track prize pool ETH
+        userETH[msg.sender][teamIndex] += prizePoolAmount;
+        if (teamIndex == 0) {
+            team1TotalETH += prizePoolAmount;
+        } else {
+            team2TotalETH += prizePoolAmount;
+        }
+
+        // Refund overpayment
+        if (msg.value > totalCost) {
+            uint256 refund = msg.value - totalCost;
+            (bool refundSuccess, ) = msg.sender.call{value: refund}("");
+            require(refundSuccess, "Refund failed");
+        }
+
+        // Emit local event
+        emit VotesPlaced(msg.sender, teamIndex, numVotes, totalCost, platformFee, prizePoolAmount);
+
+        // Log to EventHub
+        eventHub.logVotePlaced(msg.sender, teamIndex, numVotes, totalCost, platformFee, prizePoolAmount);
+        eventHub.logPlatformFeeTransferred(platformAddress, platformFee);
+
+        emit PlatformFeeTransferred(platformAddress, platformFee);
     }
-    
+
     /**
-     * @dev Finalize match and determine winner
-     * Can be called by anyone after voting ends
+     * @dev Internal finalize function (called automatically on first withdrawal)
      */
-    function finalizeMatch() external {
+    function _finalizeMatch() internal {
         require(block.timestamp >= votingEndTime, "Voting not ended yet");
         require(!matchFinalized, "Match already finalized");
-        
+
         matchFinalized = true;
-        
-        // Determine winner by most ETH voted
-        if (team1TotalVotes > team2TotalVotes) {
+
+        // Determine winner by total ETH
+        if (team1TotalETH > team2TotalETH) {
             winningTeam = 0;
-        } else if (team2TotalVotes > team1TotalVotes) {
+        } else if (team2TotalETH > team1TotalETH) {
             winningTeam = 1;
         } else {
-            // In case of tie, refund all voters (no winner)
-            winningTeam = 255; // Special value for tie
+            winningTeam = 255; // Tie
         }
-        
-        emit MatchFinalized(winningTeam, team1TotalVotes, team2TotalVotes);
+
+        uint256 totalPrizePool = team1TotalETH + team2TotalETH;
+
+        emit MatchFinalized(winningTeam, team1TotalETH, team2TotalETH);
+        eventHub.logMatchFinalized(winningTeam, team1TotalETH, team2TotalETH, totalPrizePool);
     }
-    
+
     /**
      * @dev Calculate winnings for a voter
-     * @param voter Address of the voter
-     * @return amount Winnings amount
      */
     function calculateWinnings(address voter) public view returns (uint256) {
-        require(matchFinalized, "Match not finalized yet");
-        
-        // In case of tie, return full refund
+        if (!matchFinalized) return 0;
+
+        uint256 totalPrizePool = team1TotalETH + team2TotalETH;
+
+        // Tie: full refund
         if (winningTeam == 255) {
-            return userVotes[voter][0] + userVotes[voter][1];
+            return userETH[voter][0] + userETH[voter][1];
         }
-        
-        uint256 voterAmount = userVotes[voter][winningTeam];
-        if (voterAmount == 0) return 0;
-        
-        uint256 totalPrizePool = team1TotalVotes + team2TotalVotes;
-        uint256 winnerPool = (totalPrizePool * WINNER_SHARE_PERCENT) / 100;
-        uint256 winningTeamTotal = winningTeam == 0 ? team1TotalVotes : team2TotalVotes;
-        
-        // Calculate proportional share
-        return (winnerPool * voterAmount) / winningTeamTotal;
+
+        uint256 voterVoteCount = userVoteCount[voter][winningTeam];
+        if (voterVoteCount == 0) return 0;
+
+        uint256 winningTeamVoteCount = winningTeam == 0 ? team1VoteCount : team2VoteCount;
+        return (totalPrizePool * voterVoteCount) / winningTeamVoteCount;
     }
-    
+
     /**
-     * @dev Withdraw winnings for a voter
+     * @dev Withdraw winnings (auto-finalizes if needed)
      */
-    function withdrawWinnings() external {
-        require(matchFinalized, "Match not finalized yet");
-        
+    function withdrawWinnings() external whenNotPaused {
+        require(block.timestamp >= votingEndTime, "Voting not ended yet");
+
+        if (!matchFinalized) {
+            _finalizeMatch();
+        }
+
+        require(!hasWithdrawn[msg.sender], "Already withdrawn");
+
         uint256 winnings = calculateWinnings(msg.sender);
         require(winnings > 0, "No winnings to withdraw");
-        
-        // Mark as withdrawn
-        userVotes[msg.sender][0] = 0;
-        userVotes[msg.sender][1] = 0;
-        
-        // Transfer winnings
+
+        hasWithdrawn[msg.sender] = true;
+
+        uint256 voterVoteCount = userVoteCount[msg.sender][0] + userVoteCount[msg.sender][1];
+
         (bool success, ) = msg.sender.call{value: winnings}("");
-        require(success, "Transfer failed");
-        
-        emit WinningsWithdrawn(msg.sender, winnings);
+        require(success, "Withdrawal failed");
+
+        emit WinningsWithdrawn(msg.sender, winnings, voterVoteCount);
+        eventHub.logWinningsWithdrawn(msg.sender, winnings, voterVoteCount);
     }
-    
+
+    // ========== OWNER FUNCTIONS ==========
+
     /**
-     * @dev Withdraw platform fee (only platform address)
+     * @dev Update platform address
      */
-    function withdrawPlatformFee() external {
-        require(msg.sender == platformAddress, "Only platform can withdraw");
-        require(matchFinalized, "Match not finalized yet");
-        
-        uint256 totalPrizePool = team1TotalVotes + team2TotalVotes;
-        uint256 platformFee = (totalPrizePool * PLATFORM_FEE_PERCENT) / 100;
-        
-        require(platformFee > 0, "No fee to withdraw");
-        
-        // Transfer platform fee
-        (bool success, ) = platformAddress.call{value: platformFee}("");
-        require(success, "Transfer failed");
-        
-        emit PlatformFeeWithdrawn(platformFee);
+    function setPlatformAddress(address newPlatform) external onlyOwner {
+        require(newPlatform != address(0), "Invalid address");
+        platformAddress = newPlatform;
+        emit PlatformAddressUpdated(newPlatform);
     }
-    
+
     /**
-     * @dev Get match details
+     * @dev Update platform fee (max 20%)
      */
+    function setPlatformFee(uint256 newFeePercent) external onlyOwner {
+        require(newFeePercent <= MAX_FEE_PERCENT, "Fee too high");
+        require(!matchFinalized, "Cannot change after finalization");
+        platformFeePercent = newFeePercent;
+        emit PlatformFeeUpdated(newFeePercent);
+    }
+
+    /**
+     * @dev Emergency pause
+     */
+    function pause() external onlyOwner {
+        paused = true;
+        emit Paused();
+    }
+
+    /**
+     * @dev Unpause
+     */
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused();
+    }
+
+    // ========== VIEW FUNCTIONS ==========
+
+    function getTotalPrizePool() public view returns (uint256) {
+        return team1TotalETH + team2TotalETH;
+    }
+
     function getMatchDetails() external view returns (
         string memory _team1Name,
         string memory _team2Name,
         uint256 _team1Votes,
         uint256 _team2Votes,
+        uint256 _team1ETH,
+        uint256 _team2ETH,
         uint256 _totalPrizePool,
+        uint256 _totalPlatformFees,
         uint8 _currentPhase,
         bool _isFinalized,
-        uint8 _winningTeam
+        string memory _winner
     ) {
+        string memory winner = "";
+        if (matchFinalized) {
+            if (winningTeam == 0) winner = team1Name;
+            else if (winningTeam == 1) winner = team2Name;
+            else winner = "TIE";
+        }
+
         return (
             team1Name,
             team2Name,
-            team1TotalVotes,
-            team2TotalVotes,
-            team1TotalVotes + team2TotalVotes,
+            team1VoteCount,
+            team2VoteCount,
+            team1TotalETH,
+            team2TotalETH,
+            getTotalPrizePool(),
+            totalPlatformFeesCollected,
             getCurrentPhase(),
             matchFinalized,
-            winningTeam
+            winner
         );
     }
-    
-    /**
-     * @dev Get voter count
-     */
+
+    function getUserVoteStats(address user) external view returns (
+        uint256 team1Votes,
+        uint256 team2Votes,
+        uint256 team1ETH,
+        uint256 team2ETH,
+        uint256 potentialWinnings
+    ) {
+        return (
+            userVoteCount[user][0],
+            userVoteCount[user][1],
+            userETH[user][0],
+            userETH[user][1],
+            calculateWinnings(user)
+        );
+    }
+
     function getVoterCount() external view returns (uint256) {
         return voters.length;
+    }
+
+    function getPhase1Details() external view returns (
+        uint256 team1Votes,
+        uint256 team2Votes,
+        bool ended
+    ) {
+        return (team1Phase1Votes, team2Phase1Votes, phase1Ended);
     }
 }

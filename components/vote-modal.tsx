@@ -99,7 +99,7 @@ export function VoteModal({
         value: parseEther(totalCost.toString()),
       })
     } catch (error) {
-      console.error("[v0] Vote transaction failed:", error)
+      console.error("Vote transaction failed:", error)
     }
   }
 
