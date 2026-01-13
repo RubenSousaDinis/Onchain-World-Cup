@@ -1,0 +1,81 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabaseClient } from '@/lib/server/supabase'
+
+/**
+ * GET /api/users/[address]
+ * Fetch user statistics and voting history
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { address: string } }
+) {
+  try {
+    const supabase = getSupabaseClient()
+    const { address } = params
+    const normalizedAddress = address.toLowerCase()
+
+    // Fetch user stats
+    const { data: stats, error: statsError } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('wallet_address', normalizedAddress)
+      .single()
+
+    if (statsError && statsError.code !== 'PGRST116') {
+      console.error('Supabase error fetching user stats:', statsError)
+      return NextResponse.json(
+        { error: 'Failed to fetch user stats', details: statsError.message },
+        { status: 500 }
+      )
+    }
+
+    // If user doesn't exist yet, return default stats
+    if (!stats) {
+      return NextResponse.json({
+        data: {
+          wallet_address: normalizedAddress,
+          total_votes: 0,
+          total_spent_eth: '0',
+          total_won_eth: '0',
+          matches_participated: 0,
+          matches_won: 0,
+          rank: null,
+          votes: [],
+        },
+      })
+    }
+
+    // Fetch user's recent votes
+    const { data: votes, error: votesError } = await supabase
+      .from('votes')
+      .select(`
+        *,
+        match:matches(
+          id,
+          status,
+          team1:countries!matches_team1_id_fkey(name, code, flag_emoji),
+          team2:countries!matches_team2_id_fkey(name, code, flag_emoji)
+        )
+      `)
+      .eq('voter_address', normalizedAddress)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (votesError) {
+      console.error('Supabase error fetching user votes:', votesError)
+    }
+
+    return NextResponse.json({
+      data: {
+        ...stats,
+        votes: votes || [],
+      },
+    })
+  } catch (error) {
+    console.error('Unexpected error in GET /api/users/[address]:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

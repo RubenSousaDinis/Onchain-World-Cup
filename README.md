@@ -41,6 +41,15 @@ A full-stack Next.js application for ETH-based voting/betting on World Cup 2026 
 
 4. **Open** [http://localhost:3000](http://localhost:3000)
 
+## Documentation
+
+📚 **Comprehensive documentation available in `/docs`**:
+- Implementation plans and code reviews in `/docs/planning`
+- Technical references in `/docs/reference`
+- Detailed phase-by-phase tasks in `/features`
+
+See [docs/README.md](./docs/README.md) for full documentation guide.
+
 ## Smart Contracts
 
 The smart contracts are located in the `/contracts` directory:

@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
 import { FarcasterProvider } from "@/lib/farcaster-provider"
+import { QueryProvider } from "@/providers/query-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -14,8 +15,32 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Live Matches | Crypto World Cup 2026",
     description: "Vote on live World Cup 2026 matches with ETH.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 800,
+        alt: "Crypto World Cup 2026",
+      },
+    ],
   },
-    generator: 'v0.app'
+  other: {
+    // Farcaster Mini App meta tag
+    "fc:miniapp": JSON.stringify({
+      version: "1",
+      imageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/og-image.png`,
+      button: {
+        title: "Vote on Matches",
+        action: {
+          type: "launch_frame",
+          name: "Crypto World Cup 2026",
+          url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app",
+          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash.png`,
+          splashBackgroundColor: "#1e3a8a",
+        },
+      },
+    }),
+  },
 }
 
 export default function RootLayout({
@@ -26,9 +51,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Web3Provider>
-          <FarcasterProvider>{children}</FarcasterProvider>
-        </Web3Provider>
+        <QueryProvider>
+          <Web3Provider>
+            <FarcasterProvider>{children}</FarcasterProvider>
+          </Web3Provider>
+        </QueryProvider>
       </body>
     </html>
   )

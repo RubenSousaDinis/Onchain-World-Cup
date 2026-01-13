@@ -4,16 +4,15 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title WorldCupNFT
  * @dev NFT contract for minting milestone achievements and match result NFTs
  * Supports two types: Milestone NFTs and Match Result NFTs
+ * Updated for OpenZeppelin v5.0+ (removed deprecated Counters library)
  */
 contract WorldCupNFT is ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _tokenIdCounter;
     
     enum NFTType { MILESTONE, MATCH_RESULT }
     
@@ -43,22 +42,21 @@ contract WorldCupNFT is ERC721URIStorage, Ownable {
         string memory tokenURI,
         string memory milestoneData
     ) public returns (uint256) {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
-        
+        uint256 newTokenId = ++_tokenIdCounter;
+
         _safeMint(to, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
-        
+
         nftMetadata[newTokenId] = NFTMetadata({
             nftType: NFTType.MILESTONE,
             mintedAt: block.timestamp,
             data: milestoneData
         });
-        
+
         userNFTs[to].push(newTokenId);
-        
+
         emit MilestoneNFTMinted(to, newTokenId, milestoneData);
-        
+
         return newTokenId;
     }
     
@@ -73,22 +71,21 @@ contract WorldCupNFT is ERC721URIStorage, Ownable {
         string memory tokenURI,
         string memory matchData
     ) public returns (uint256) {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
-        
+        uint256 newTokenId = ++_tokenIdCounter;
+
         _safeMint(to, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
-        
+
         nftMetadata[newTokenId] = NFTMetadata({
             nftType: NFTType.MATCH_RESULT,
             mintedAt: block.timestamp,
             data: matchData
         });
-        
+
         userNFTs[to].push(newTokenId);
-        
+
         emit MatchResultNFTMinted(to, newTokenId, matchData);
-        
+
         return newTokenId;
     }
     
@@ -111,6 +108,6 @@ contract WorldCupNFT is ERC721URIStorage, Ownable {
      * @dev Get total supply
      */
     function totalSupply() public view returns (uint256) {
-        return _tokenIds.current();
+        return _tokenIdCounter;
     }
 }
