@@ -31,9 +31,9 @@ Replace all placeholder URLs in `farcaster.json` with your actual domain:
 ### Step 3: Verify Manifest
 
 After deployment, verify your manifest is accessible:
-```bash
+\`\`\`bash
 curl https://your-domain.vercel.app/.well-known/farcaster.json
-```
+\`\`\`
 
 Should return valid JSON with all fields properly filled.
 

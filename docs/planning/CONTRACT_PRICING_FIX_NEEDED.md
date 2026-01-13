@@ -9,32 +9,32 @@ The current `WorldCupMatch.sol` contract has **incorrect pricing formulas** and 
 ## Current Implementation (WRONG)
 
 ### Phase 1 Linear Pricing
-```solidity
+\`\`\`solidity
 // Current (INCORRECT)
 return BASE_PRICE + (BASE_PRICE * voteCount * 5) / 1000;
 // Translates to: 0.001 + (0.001 * voteCount * 0.005)
-```
+\`\`\`
 
 ### Phase 2 Exponential Pricing
-```solidity
+\`\`\`solidity
 // Current (INCORRECT)
 // Applies 2% increase per vote
 price = (price * 102) / 100
-```
+\`\`\`
 
 ### Vote Tracking
-```solidity
+\`\`\`solidity
 // Current (INCORRECT)
 // Tracks total ETH, NOT vote count
 team1TotalVotes += msg.value; // This is ETH amount, not vote count!
-```
+\`\`\`
 
 ## Expected Implementation (from PLAN.md)
 
 ### Phase 1 Linear Pricing
-```
+\`\`\`
 price = 0.001 + (voteCount × 0.0001)
-```
+\`\`\`
 **Example:**
 - Vote 1: 0.001 ETH
 - Vote 2: 0.0011 ETH
@@ -42,10 +42,10 @@ price = 0.001 + (voteCount × 0.0001)
 - Vote 100: 0.011 ETH
 
 ### Phase 2 Exponential Pricing
-```
+\`\`\`
 phase1EndPrice = 0.001 + (phase1VoteCount × 0.0001)
 price = phase1EndPrice × (1.1 ^ phase2VoteCount)
-```
+\`\`\`
 **Example (assuming 100 votes in Phase 1):**
 - Phase 1 ended at: 0.011 ETH
 - First vote in Phase 2: 0.011 × 1.1 = 0.0121 ETH
@@ -71,16 +71,16 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
 ### Issue 2: Payout Based on Wrong Metric
 
 **Current (WRONG):**
-```solidity
+\`\`\`solidity
 // Payout proportional to ETH contributed
 return (winnerPool * voterAmount) / winningTeamTotal;
-```
+\`\`\`
 
 **Expected (CORRECT):**
-```
+\`\`\`
 // Payout proportional to NUMBER of votes
 userShare = (userVoteCount / totalVoteCount) × winnerPool
-```
+\`\`\`
 
 **Why This Matters:**
 - **Early voter** votes 10 times @ 0.001 ETH = 0.01 ETH total, 10 votes
@@ -96,16 +96,16 @@ userShare = (userVoteCount / totalVoteCount) × winnerPool
 - Phase 2 pricing can't calculate correctly without these values
 
 **What's Needed:**
-```solidity
+\`\`\`solidity
 uint256 public phase1EndPrice;
 uint256 public phase1VoteCount;
 bool public phase1Ended;
-```
+\`\`\`
 
 ## Required Changes
 
 ### 1. Add New State Variables
-```solidity
+\`\`\`solidity
 // Track actual vote counts (not ETH amounts)
 uint256 public team1VoteCount;      // Number of votes for team 1
 uint256 public team2VoteCount;      // Number of votes for team 2
@@ -120,10 +120,10 @@ mapping(address => mapping(uint8 => uint256)) public userETH; // user => team =>
 uint256 public phase1EndPrice;
 uint256 public phase1VoteCount;
 bool public phase1Ended;
-```
+\`\`\`
 
 ### 2. Fix Phase 1 Pricing
-```solidity
+\`\`\`solidity
 function calculateVotePrice(uint8 teamIndex) public view returns (uint256) {
     uint8 phase = getCurrentPhase();
     require(phase > 0, "Voting is closed");
@@ -137,10 +137,10 @@ function calculateVotePrice(uint8 teamIndex) public view returns (uint256) {
         // Phase 2 logic...
     }
 }
-```
+\`\`\`
 
 ### 3. Fix Phase 2 Pricing
-```solidity
+\`\`\`solidity
 if (phase == 2) {
     // Get phase 1 end price (calculate or retrieve stored value)
     uint256 phase1Price = phase1EndPrice;
@@ -160,10 +160,10 @@ if (phase == 2) {
 
     return price;
 }
-```
+\`\`\`
 
 ### 4. Fix Vote Function
-```solidity
+\`\`\`solidity
 function vote(uint8 teamIndex) external payable {
     require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
     require(getCurrentPhase() > 0, "Voting is closed");
@@ -200,10 +200,10 @@ function vote(uint8 teamIndex) external payable {
 
     emit VotePlaced(msg.sender, teamIndex, currentPrice, block.timestamp);
 }
-```
+\`\`\`
 
 ### 5. Fix Payout Calculation
-```solidity
+\`\`\`solidity
 function calculateWinnings(address voter) public view returns (uint256) {
     require(matchFinalized, "Match not finalized yet");
 
@@ -224,7 +224,7 @@ function calculateWinnings(address voter) public view returns (uint256) {
     // Payout = (user votes / total votes) × winner pool
     return (winnerPool * voterVoteCount) / winningTeamVoteCount;
 }
-```
+\`\`\`
 
 ## Impact Analysis
 

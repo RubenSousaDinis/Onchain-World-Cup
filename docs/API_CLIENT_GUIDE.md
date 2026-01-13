@@ -13,7 +13,7 @@ The application uses a modern data fetching stack:
 
 ## Architecture
 
-```
+\`\`\`
 ┌─────────────────────┐
 │  React Components   │
 │                     │
@@ -46,7 +46,7 @@ The application uses a modern data fetching stack:
 ┌─────────────────────┐
 │   Supabase DB       │
 └─────────────────────┘
-```
+\`\`\`
 
 ## Client-Side Usage
 
@@ -54,7 +54,7 @@ The application uses a modern data fetching stack:
 
 #### Matches
 
-```tsx
+\`\`\`tsx
 import { useMatches, useMatch } from '@/hooks/use-matches'
 
 function MatchesList() {
@@ -82,11 +82,11 @@ function MatchDetail({ matchId }: { matchId: string }) {
 
   return <div>{data?.data.team1?.name} vs {data?.data.team2?.name}</div>
 }
-```
+\`\`\`
 
 #### Countries
 
-```tsx
+\`\`\`tsx
 import { useCountries } from '@/hooks/use-countries'
 
 function CountriesList() {
@@ -99,11 +99,11 @@ function CountriesList() {
   // Countries in Group A
   const { data: groupACountries } = useCountries({ group: 'A' })
 }
-```
+\`\`\`
 
 #### Leaderboard
 
-```tsx
+\`\`\`tsx
 import { useLeaderboard, useUserStats } from '@/hooks/use-leaderboard'
 
 function Leaderboard() {
@@ -122,11 +122,11 @@ function Leaderboard() {
     </div>
   )
 }
-```
+\`\`\`
 
 #### Tournament Groups & Standings
 
-```tsx
+\`\`\`tsx
 import {
   useTournamentGroups,
   useGroupStandings,
@@ -172,11 +172,11 @@ function GroupStandings({ groupId }: { groupId: string }) {
     </table>
   )
 }
-```
+\`\`\`
 
 ### 2. Mutations (Creating/Updating Data)
 
-```tsx
+\`\`\`tsx
 import { useCreateMatch, useUpdateMatch } from '@/hooks/use-matches'
 
 function AdminPanel() {
@@ -215,13 +215,13 @@ function AdminPanel() {
     </div>
   )
 }
-```
+\`\`\`
 
 ### 3. Loading & Error States
 
 TanStack Query provides helpful states:
 
-```tsx
+\`\`\`tsx
 function MyComponent() {
   const { data, isLoading, isFetching, error, isError } = useMatches()
 
@@ -235,11 +235,11 @@ function MyComponent() {
 
   return <MatchesList matches={data?.data} />
 }
-```
+\`\`\`
 
 ### 4. Manual Refetching
 
-```tsx
+\`\`\`tsx
 function RefreshButton() {
   const { refetch, isFetching } = useMatches()
 
@@ -249,13 +249,13 @@ function RefreshButton() {
     </button>
   )
 }
-```
+\`\`\`
 
 ### 5. Cache Invalidation
 
 Mutations automatically invalidate related queries, but you can also manually invalidate:
 
-```tsx
+\`\`\`tsx
 import { useQueryClient } from '@tanstack/react-query'
 import { matchesKeys } from '@/hooks/use-matches'
 
@@ -272,7 +272,7 @@ function MyComponent() {
 
   return <button onClick={invalidateMatches}>Refresh Data</button>
 }
-```
+\`\`\`
 
 ## Server-Side Caching
 
@@ -290,19 +290,19 @@ API routes use Next.js `unstable_cache` for server-side caching:
 
 Each endpoint has tags for targeted invalidation:
 
-```ts
+\`\`\`ts
 // In API routes
 revalidateTag('matches')         // Invalidate all matches
 revalidateTag('countries')       // Invalidate all countries
 revalidateTag('group-standings') // Invalidate all standings
 revalidateTag('group-123')       // Invalidate specific group
-```
+\`\`\`
 
 ## Direct API Client Usage
 
 For custom requests, use the axios client directly:
 
-```ts
+\`\`\`ts
 import { api } from '@/lib/api-client'
 
 // GET request
@@ -318,13 +318,13 @@ const newMatch = await api.post('/matches', {
 const votingMatches = await api.get('/matches', {
   params: { status: 'voting' },
 })
-```
+\`\`\`
 
 ## TypeScript Types
 
 All API responses are fully typed:
 
-```ts
+\`\`\`ts
 import type {
   Match,
   Country,
@@ -344,7 +344,7 @@ const match: Match = {
   status: 'voting', // Type-safe: 'upcoming' | 'voting' | 'completed'
   // ...
 }
-```
+\`\`\`
 
 ## React Query DevTools
 
@@ -366,7 +366,7 @@ In development, React Query DevTools are available at the bottom of the page:
 
 ## Example: Full CRUD Component
 
-```tsx
+\`\`\`tsx
 import {
   useMatches,
   useCreateMatch,
@@ -411,7 +411,7 @@ function MatchesManager() {
     </div>
   )
 }
-```
+\`\`\`
 
 ## Troubleshooting
 
@@ -419,11 +419,11 @@ function MatchesManager() {
 
 Make sure the mutation invalidates the correct query keys:
 
-```ts
+\`\`\`ts
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: matchesKeys.lists() })
 }
-```
+\`\`\`
 
 ### Too many requests
 
@@ -433,8 +433,8 @@ TanStack Query deduplicates requests automatically. Check DevTools to see actual
 
 Adjust `staleTime` in the query options:
 
-```ts
+\`\`\`ts
 useMatches({}, {
   staleTime: 5 * 60 * 1000, // 5 minutes
 })
-```
+\`\`\`

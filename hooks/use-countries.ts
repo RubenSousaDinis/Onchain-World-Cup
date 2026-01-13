@@ -31,4 +31,3 @@ export function useCountries(params: CountriesQueryParams = {}) {
     staleTime: 24 * 60 * 60 * 1000,
   })
 }
-

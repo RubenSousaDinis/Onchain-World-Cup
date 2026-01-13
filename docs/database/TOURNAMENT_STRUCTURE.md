@@ -16,7 +16,7 @@ The Crypto World Cup supports the full tournament lifecycle:
 #### `tournaments`
 Main tournament records (e.g., FIFA World Cup 2026).
 
-```sql
+\`\`\`sql
 - id: UUID (primary key)
 - name: Tournament name
 - year: Tournament year
@@ -26,12 +26,12 @@ Main tournament records (e.g., FIFA World Cup 2026).
 - end_date: Tournament end date
 - status: 'upcoming' | 'qualification' | 'group_stage' | 'knockout' | 'completed'
 - current_phase: Current phase name
-```
+\`\`\`
 
 #### `tournament_phases`
 Phases within a tournament (qualification, group stage, knockout rounds).
 
-```sql
+\`\`\`sql
 - id: UUID (primary key)
 - tournament_id: References tournaments
 - name: 'qualification' | 'group_stage' | 'round_of_16' | etc.
@@ -40,23 +40,23 @@ Phases within a tournament (qualification, group stage, knockout rounds).
 - start_date: Phase start date
 - end_date: Phase end date
 - status: 'upcoming' | 'active' | 'completed'
-```
+\`\`\`
 
 #### `groups`
 Groups for the group stage (Group A, B, C, etc.).
 
-```sql
+\`\`\`sql
 - id: UUID (primary key)
 - tournament_id: References tournaments
 - name: 'A' | 'B' | 'C' | etc.
 - display_name: 'Group A', 'Group B', etc.
 - max_teams: Maximum teams per group (usually 4)
-```
+\`\`\`
 
 #### `group_standings`
 Team standings within each group.
 
-```sql
+\`\`\`sql
 - id: UUID (primary key)
 - group_id: References groups
 - country_id: References countries
@@ -70,12 +70,12 @@ Team standings within each group.
 - points: Total points (3 per win, 1 per draw)
 - position: Rank within group (1-4)
 - qualified: Top 2 teams qualify for knockout
-```
+\`\`\`
 
 #### Updated `matches` Table
 Extended to support tournament context.
 
-```sql
+\`\`\`sql
 -- New fields:
 - tournament_id: References tournaments
 - phase_id: References tournament_phases
@@ -84,22 +84,22 @@ Extended to support tournament context.
 - is_qualification: Boolean flag for qualification matches
 - team1_score: Actual match result (for standings calculation)
 - team2_score: Actual match result (for standings calculation)
-```
+\`\`\`
 
 #### Updated `countries` Table
 Extended to track tournament participation.
 
-```sql
+\`\`\`sql
 -- New fields:
 - tournament_id: Which tournament they're participating in
 - qualification_status: 'competing' | 'qualified' | 'eliminated' | 'host'
-```
+\`\`\`
 
 ## Tournament Flow
 
 ### 1. Qualification Phase
 
-```
+\`\`\`
 qualification_matches
 ├── Match 1: Country A vs Country B
 ├── Match 2: Country C vs Country D
@@ -107,7 +107,7 @@ qualification_matches
 
 After qualification:
 └── 48 teams qualified → Assigned to groups
-```
+\`\`\`
 
 **API Flow:**
 1. Create qualification phase
@@ -116,7 +116,7 @@ After qualification:
 
 ### 2. Group Stage
 
-```
+\`\`\`
 World Cup 2026 (48 teams)
 ├── Group A (4 teams)
 │   ├── Team 1 vs Team 2
@@ -131,7 +131,7 @@ World Cup 2026 (48 teams)
 
 After group stage:
 └── Top 2 from each group (24 teams) → Knockout phase
-```
+\`\`\`
 
 **Group Stage Rules:**
 - Each group has 4 teams
@@ -150,7 +150,7 @@ After group stage:
 
 ### 3. Knockout Phase
 
-```
+\`\`\`
 Round of 16 (24 teams)
 ├── Match 1: 1A vs 2B
 ├── Match 2: 1C vs 2D
@@ -169,7 +169,7 @@ Third Place (2 teams)
 
 Final (2 teams)
 └── Winner SF1 vs Winner SF2
-```
+\`\`\`
 
 ## Automatic Standings Calculation
 
@@ -189,7 +189,7 @@ This function is **automatically triggered** when match results are updated.
 
 ### Tournaments
 
-```bash
+\`\`\`bash
 # Get all tournaments
 GET /api/tournaments
 
@@ -206,11 +206,11 @@ POST /api/tournaments
   "start_date": "2026-06-11",
   "end_date": "2026-07-19"
 }
-```
+\`\`\`
 
 ### Tournament Phases
 
-```bash
+\`\`\`bash
 # Get phases for a tournament
 GET /api/tournaments/{id}/phases
 
@@ -229,11 +229,11 @@ PATCH /api/tournaments/{id}/phases?phaseId={id}
 {
   "status": "active"
 }
-```
+\`\`\`
 
 ### Groups
 
-```bash
+\`\`\`bash
 # Get groups with standings
 GET /api/tournaments/{id}/groups
 
@@ -243,11 +243,11 @@ POST /api/tournaments/{id}/groups
   "name": "A",
   "max_teams": 4
 }
-```
+\`\`\`
 
 ### Group Standings
 
-```bash
+\`\`\`bash
 # Get standings for a group
 GET /api/groups/{id}/standings
 
@@ -259,11 +259,11 @@ POST /api/groups/{id}/standings
 
 # Manually recalculate standings
 PUT /api/groups/{id}/standings
-```
+\`\`\`
 
 ### Matches (Extended)
 
-```bash
+\`\`\`bash
 # Create group stage match
 POST /api/matches
 {
@@ -285,13 +285,13 @@ PATCH /api/matches/{id}
   "status": "completed",
   "winning_team": 0
 }
-```
+\`\`\`
 
 ## Example Workflow: Setting Up World Cup 2026
 
 ### Step 1: Create Tournament
 
-```sql
+\`\`\`sql
 INSERT INTO tournaments (name, year, host_countries, total_teams, start_date, end_date)
 VALUES (
   'FIFA World Cup 2026',
@@ -301,11 +301,11 @@ VALUES (
   '2026-06-11',
   '2026-07-19'
 );
-```
+\`\`\`
 
 ### Step 2: Create Phases
 
-```sql
+\`\`\`sql
 INSERT INTO tournament_phases (tournament_id, name, display_name, phase_order) VALUES
   (tournament_id, 'qualification', 'Qualification Phase', 1),
   (tournament_id, 'group_stage', 'Group Stage', 2),
@@ -313,32 +313,32 @@ INSERT INTO tournament_phases (tournament_id, name, display_name, phase_order) V
   (tournament_id, 'quarter_final', 'Quarter Finals', 4),
   (tournament_id, 'semi_final', 'Semi Finals', 5),
   (tournament_id, 'final', 'Final', 7);
-```
+\`\`\`
 
 ### Step 3: Create Groups
 
-```sql
+\`\`\`sql
 INSERT INTO groups (tournament_id, name, display_name) VALUES
   (tournament_id, 'A', 'Group A'),
   (tournament_id, 'B', 'Group B'),
   -- ... (Groups C-L)
   (tournament_id, 'L', 'Group L');
-```
+\`\`\`
 
 ### Step 4: Assign Teams to Groups
 
-```sql
+\`\`\`sql
 -- Group A
 INSERT INTO group_standings (group_id, country_id) VALUES
   (group_a_id, brazil_id),
   (group_a_id, mexico_id),
   (group_a_id, cameroon_id),
   (group_a_id, serbia_id);
-```
+\`\`\`
 
 ### Step 5: Create Group Matches
 
-```sql
+\`\`\`sql
 INSERT INTO matches (
   tournament_id, phase_id, group_id,
   team1_id, team2_id,
@@ -348,21 +348,21 @@ INSERT INTO matches (
   (tournament_id, group_stage_id, group_a_id,
    brazil_id, mexico_id,
    '0x...', '2026-06-12T15:00:00Z', 1);
-```
+\`\`\`
 
 ### Step 6: Update Match Results
 
-```sql
+\`\`\`sql
 UPDATE matches
 SET team1_score = 3, team2_score = 1, status = 'completed'
 WHERE id = match_id;
 
 -- Standings automatically recalculated via trigger!
-```
+\`\`\`
 
 ### Step 7: Check Standings
 
-```sql
+\`\`\`sql
 SELECT
   c.name,
   gs.matches_played,
@@ -379,13 +379,13 @@ FROM group_standings gs
 JOIN countries c ON gs.country_id = c.id
 WHERE gs.group_id = group_a_id
 ORDER BY gs.position;
-```
+\`\`\`
 
 ## Frontend Integration
 
 ### Display Group Standings
 
-```typescript
+\`\`\`typescript
 // Fetch group standings
 const response = await fetch('/api/groups/{groupId}/standings')
 const { data } = await response.json()
@@ -405,11 +405,11 @@ data.map(standing => ({
   points: standing.points,
   qualified: standing.qualified
 }))
-```
+\`\`\`
 
 ### Display Tournament Bracket
 
-```typescript
+\`\`\`typescript
 // Fetch knockout phase matches
 const response = await fetch('/api/matches?phase_id={roundOf16Id}')
 const { data: matches } = await response.json()
@@ -422,7 +422,7 @@ matches.map(match => ({
   score: `${match.team1_score} - ${match.team2_score}`,
   winner: match.winning_team === 0 ? match.team1 : match.team2
 }))
-```
+\`\`\`
 
 ## Database Migrations
 
@@ -431,11 +431,11 @@ Run migrations in order:
 1. `schema.sql` - Base tables (countries, matches, votes, user_stats)
 2. `002_add_tournament_structure.sql` - Tournament tables and functions
 
-```bash
+\`\`\`bash
 # In Supabase SQL Editor
 # 1. Run schema.sql
 # 2. Run 002_add_tournament_structure.sql
-```
+\`\`\`
 
 ## Best Practices
 

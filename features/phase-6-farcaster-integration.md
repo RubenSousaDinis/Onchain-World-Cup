@@ -59,7 +59,7 @@ File: `app/layout.tsx` and shareable pages
 - [ ] Add `fc:miniapp` meta tag (NOT `fc:frame`)
 - [ ] Meta tag content is JSON string
 - [ ] Structure:
-  ```typescript
+  \`\`\`typescript
   {
     version: "1",
     imageUrl: "https://...", // 3:2 aspect ratio OG image
@@ -74,7 +74,7 @@ File: `app/layout.tsx` and shareable pages
       }
     }
   }
-  ```
+  \`\`\`
 
 #### Implementation
 - [ ] Add to root layout (`app/layout.tsx`)

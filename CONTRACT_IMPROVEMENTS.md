@@ -7,15 +7,15 @@ We've implemented three major improvements to the WorldCupMatch contract based o
 ### 1. ✅ Multiple Votes Per Transaction
 
 **Before:**
-```solidity
+\`\`\`solidity
 function vote(uint8 teamIndex) external payable
-```
+\`\`\`
 Users had to submit 10 separate transactions to buy 10 votes.
 
 **After:**
-```solidity
+\`\`\`solidity
 function vote(uint8 teamIndex, uint256 numVotes) external payable
-```
+\`\`\`
 Users can now buy 1-100 votes in a single transaction!
 
 **Benefits:**
@@ -24,11 +24,11 @@ Users can now buy 1-100 votes in a single transaction!
 - Each vote still priced individually (maintains fair pricing)
 
 **Example:**
-```javascript
+\`\`\`javascript
 // Buy 10 votes for team 0 in one transaction
 const totalCost = await contract.calculateTotalCostForVotes(0, 10);
 await contract.vote(0, 10, { value: totalCost });
-```
+\`\`\`
 
 ### 2. ✅ Immediate Platform Fee Transfer
 
@@ -45,7 +45,7 @@ await contract.vote(0, 10, { value: totalCost });
 - Platform gets revenue instantly
 
 **Changes:**
-```solidity
+\`\`\`solidity
 // Removed:
 - withdrawPlatformFee() function
 - platformFeeWithdrawn state variable
@@ -53,7 +53,7 @@ await contract.vote(0, 10, { value: totalCost });
 // Added:
 - totalPlatformFeesCollected (for transparency)
 - PlatformFeeTransferred event (emitted on each vote)
-```
+\`\`\`
 
 **Benefits:**
 - Simpler contract logic
@@ -74,7 +74,7 @@ await contract.vote(0, 10, { value: totalCost });
 - Seamless UX
 
 **Changes:**
-```solidity
+\`\`\`solidity
 // Before:
 function finalizeMatch() external { ... }  // Manual call needed
 
@@ -88,7 +88,7 @@ function withdrawWinnings() external {
     }
     // ... withdraw logic
 }
-```
+\`\`\`
 
 **Benefits:**
 - Users don't need to know about finalization
@@ -99,13 +99,13 @@ function withdrawWinnings() external {
 
 Added helper function for better UX:
 
-```solidity
+\`\`\`solidity
 // Use team name instead of index
 function voteForTeam(string memory teamName, uint256 numVotes) external payable
 
 // Example:
 await contract.voteForTeam("Brazil", 5, { value: totalCost });
-```
+\`\`\`
 
 **Benefits:**
 - More intuitive frontend code
@@ -117,16 +117,16 @@ await contract.voteForTeam("Brazil", 5, { value: totalCost });
 ### Vote Function Signature Changed
 
 **Old:**
-```javascript
+\`\`\`javascript
 await contract.vote(0, { value: ethers.parseEther("0.001") });
-```
+\`\`\`
 
 **New:**
-```javascript
+\`\`\`javascript
 await contract.vote(0, 1, { value: ethers.parseEther("0.001") });
 //                    ^
 //                    numVotes parameter required
-```
+\`\`\`
 
 ### Removed Functions
 
@@ -141,19 +141,19 @@ await contract.vote(0, 1, { value: ethers.parseEther("0.001") });
 ### Updated Return Values
 
 **getMatchDetails()** now returns additional fields:
-```javascript
+\`\`\`javascript
 // Old:
 (team1Name, team2Name, votes, eth, pool, phase, isFinalized)
 
 // New:
 (team1Name, team2Name, votes, eth, pool, totalPlatformFees, phase, isFinalized, winner)
 //                                        ^^^ New fields ^^^
-```
+\`\`\`
 
 ### Updated Events
 
 **VotePlaced** → **VotesPlaced** (plural, more data):
-```solidity
+\`\`\`solidity
 // Old:
 event VotePlaced(address voter, uint8 teamIndex, uint256 voteCount, uint256 ethAmount, ...);
 
@@ -170,53 +170,53 @@ event VotesPlaced(
     uint8 phase,
     uint256 timestamp
 );
-```
+\`\`\`
 
 **New event:**
-```solidity
+\`\`\`solidity
 event PlatformFeeTransferred(address indexed platform, uint256 amount);
 // Emitted on every vote
-```
+\`\`\`
 
 ### ETH Tracking Changed
 
 **IMPORTANT:** ETH values now represent prize pool only (90%), not total cost!
 
 **Before:**
-```javascript
+\`\`\`javascript
 // team1TotalETH included platform fee
 expect(team1TotalETH).to.equal(parseEth("0.001")); // 100% of vote
-```
+\`\`\`
 
 **After:**
-```javascript
+\`\`\`javascript
 // team1TotalETH is only prize pool (90%)
 expect(team1TotalETH).to.equal(parseEth("0.0009")); // 90% of vote
-```
+\`\`\`
 
 ### Test Updates Needed
 
 1. **Add `numVotes` parameter to all `vote()` calls:**
-   ```javascript
+   \`\`\`javascript
    // Find/Replace:
    .vote(0, { value: → .vote(0, 1, { value:
    .vote(1, { value: → .vote(1, 1, { value:
-   ```
+   \`\`\`
 
 2. **Remove `finalizeMatch()` calls:**
-   ```javascript
+   \`\`\`javascript
    // Remove these lines:
    await worldCupMatch.finalizeMatch();
-   ```
+   \`\`\`
 
 3. **Update ETH expectations (multiply by 0.9):**
-   ```javascript
+   \`\`\`javascript
    // Old:
    expect(team1TotalETH).to.equal(parseEth("0.001"));
 
    // New:
    expect(team1TotalETH).to.equal(parseEth("0.0009")); // 90%
-   ```
+   \`\`\`
 
 4. **Remove Platform Fee test section:**
    - Delete entire "Platform Fee" describe block
@@ -227,7 +227,7 @@ expect(team1TotalETH).to.equal(parseEth("0.0009")); // 90% of vote
    - Keep tests that verify auto-finalization on withdrawal
 
 6. **Update event expectations:**
-   ```javascript
+   \`\`\`javascript
    // Old:
    .to.emit(contract, "VotePlaced")
    .withArgs(voter, teamIndex, voteCount, ethAmount, ...);
@@ -235,13 +235,13 @@ expect(team1TotalETH).to.equal(parseEth("0.0009")); // 90% of vote
    // New:
    .to.emit(contract, "VotesPlaced")
    .withArgs(voter, teamIndex, teamName, voteCount, totalCost, platformFee, prizePool, avgPrice, phase, timestamp);
-   ```
+   \`\`\`
 
 ## New Test Scenarios to Add
 
 ### Test Multiple Votes in One TX
 
-```javascript
+\`\`\`javascript
 it("Should allow buying multiple votes in one transaction", async function () {
     // Calculate cost for 5 votes
     let totalCost = 0n;
@@ -256,11 +256,11 @@ it("Should allow buying multiple votes in one transaction", async function () {
     expect(await contract.team1VoteCount()).to.equal(5);
     expect(await contract.userVoteCount(voter1.address, 0)).to.equal(5);
 });
-```
+\`\`\`
 
 ### Test Platform Fee Transfer
 
-```javascript
+\`\`\`javascript
 it("Should transfer platform fee immediately on vote", async function () {
     const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
 
@@ -272,11 +272,11 @@ it("Should transfer platform fee immediately on vote", async function () {
 
     expect(platformBalanceAfter - platformBalanceBefore).to.equal(expectedFee);
 });
-```
+\`\`\`
 
 ### Test Auto-Finalize
 
-```javascript
+\`\`\`javascript
 it("Should auto-finalize on first withdrawal", async function () {
     // Vote and wait
     await contract.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
@@ -291,18 +291,18 @@ it("Should auto-finalize on first withdrawal", async function () {
     // Now finalized
     expect(await contract.matchFinalized()).to.be.true;
 });
-```
+\`\`\`
 
 ### Test Team Name Voting
 
-```javascript
+\`\`\`javascript
 it("Should allow voting using team name", async function () {
     const price = await contract.calculateVotePrice(0);
     await contract.connect(voter1).voteForTeam("Brazil", 1, { value: price });
 
     expect(await contract.team1VoteCount()).to.equal(1);
 });
-```
+\`\`\`
 
 ## Migration Checklist
 

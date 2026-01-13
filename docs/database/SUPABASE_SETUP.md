@@ -32,18 +32,18 @@ This guide walks you through setting up Supabase for the Crypto World Cup projec
 
 1. Create `.env.local` file in project root:
 
-```bash
+\`\`\`bash
 cp .env.example .env.local
-```
+\`\`\`
 
 2. Edit `.env.local` and add your Supabase credentials:
 
-```env
+\`\`\`env
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+\`\`\`
 
 ⚠️ **Important**: Never commit `.env.local` to git!
 
@@ -77,13 +77,13 @@ If you want to test with sample data:
 
 1. Start the development server:
 
-```bash
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
 2. Test the API endpoints:
 
-```bash
+\`\`\`bash
 # Get all countries
 curl http://localhost:3000/api/countries
 
@@ -100,7 +100,7 @@ curl -X POST http://localhost:3000/api/countries \
 
 # Get matches
 curl http://localhost:3000/api/matches
-```
+\`\`\`
 
 ## Security Configuration (Optional but Recommended)
 
@@ -113,34 +113,34 @@ For production, enable RLS to add an extra security layer:
 2. For each table, create policies:
 
 **Countries** - Public read:
-```sql
+\`\`\`sql
 CREATE POLICY "Public read access" ON countries
 FOR SELECT TO anon USING (true);
-```
+\`\`\`
 
 **Matches** - Public read:
-```sql
+\`\`\`sql
 CREATE POLICY "Public read access" ON matches
 FOR SELECT TO anon USING (true);
-```
+\`\`\`
 
 **Votes** - Public read:
-```sql
+\`\`\`sql
 CREATE POLICY "Public read access" ON votes
 FOR SELECT TO anon USING (true);
-```
+\`\`\`
 
 **User Stats** - Public read:
-```sql
+\`\`\`sql
 CREATE POLICY "Public read access" ON user_stats
 FOR SELECT TO anon USING (true);
-```
+\`\`\`
 
 For INSERT/UPDATE/DELETE, only allow service role (which we use in API routes).
 
 ## Architecture Overview
 
-```
+\`\`\`
 ┌─────────────────┐
 │  Client (Web)   │
 │   "use client"  │
@@ -160,7 +160,7 @@ For INSERT/UPDATE/DELETE, only allow service role (which we use in API routes).
 │   Supabase DB   │
 │   PostgreSQL    │
 └─────────────────┘
-```
+\`\`\`
 
 **Key Points**:
 - ✅ Clients call API routes via HTTP

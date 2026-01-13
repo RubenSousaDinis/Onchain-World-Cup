@@ -3,15 +3,15 @@
 ## Pricing Model Recap
 
 **Phase 1 (First 2 Hours): Linear**
-```
+\`\`\`
 price = 0.001 + (voteCount × 0.0001)
-```
+\`\`\`
 
 **Phase 2 (Hours 2-24): Exponential**
-```
+\`\`\`
 phase1EndPrice = 0.001 + (phase1VoteCount × 0.0001)
 price = phase1EndPrice × (1.1 ^ phase2VoteCount)
-```
+\`\`\`
 
 **Platform Fee**: 10% of total prize pool
 
@@ -129,4 +129,3 @@ Assuming realistic participation:
 - In reality, votes split between teams, but total pool is the same
 - Platform fee is always 10% regardless of vote distribution
 - Gas costs for contract operations are separate from platform fee
-

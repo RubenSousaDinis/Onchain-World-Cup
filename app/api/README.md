@@ -4,12 +4,12 @@ Server-side API routes using Supabase for database access.
 
 ## Architecture
 
-```
+\`\`\`
 ┌─────────────┐      ┌──────────────┐      ┌──────────────┐
 │   Client    │─────▶│  API Routes  │─────▶│   Supabase   │
 │ (Frontend)  │      │  (Server)    │      │  (Database)  │
 └─────────────┘      └──────────────┘      └──────────────┘
-```
+\`\`\`
 
 **Important**:
 - Database access is ONLY through API routes
@@ -30,12 +30,12 @@ Fetch all matches with team information.
 - `offset` - Pagination offset (default: 0)
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/matches?status=voting&limit=10"
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "data": [
     {
@@ -51,39 +51,39 @@ curl "http://localhost:3000/api/matches?status=voting&limit=10"
   "limit": 10,
   "offset": 0
 }
-```
+\`\`\`
 
 #### `POST /api/matches`
 Create a new match (admin only).
 
 **Body:**
-```json
+\`\`\`json
 {
   "team1_id": "uuid",
   "team2_id": "uuid",
   "contract_address": "0x...",
   "match_start_time": "2026-06-12T15:00:00Z"
 }
-```
+\`\`\`
 
 #### `GET /api/matches/[id]`
 Fetch a single match with full details including votes.
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/matches/abc-123"
-```
+\`\`\`
 
 #### `PATCH /api/matches/[id]`
 Update a match (admin only).
 
 **Body:**
-```json
+\`\`\`json
 {
   "status": "completed",
   "winning_team": 0
 }
-```
+\`\`\`
 
 ### Countries
 
@@ -97,15 +97,15 @@ Fetch all countries.
 - `offset` - Pagination offset (default: 0)
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/countries?qualified=true&group=A"
-```
+\`\`\`
 
 #### `POST /api/countries`
 Create a new country (admin only).
 
 **Body:**
-```json
+\`\`\`json
 {
   "name": "Brazil",
   "code": "BRA",
@@ -113,7 +113,7 @@ Create a new country (admin only).
   "fifa_rank": 1,
   "qualified": true
 }
-```
+\`\`\`
 
 ### Votes
 
@@ -127,15 +127,15 @@ Fetch votes with optional filters.
 - `offset` - Pagination offset (default: 0)
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/votes?voter_address=0x123..."
-```
+\`\`\`
 
 #### `POST /api/votes`
 Record a vote event from blockchain (called by event indexer).
 
 **Body:**
-```json
+\`\`\`json
 {
   "match_id": "uuid",
   "voter_address": "0x...",
@@ -145,7 +145,7 @@ Record a vote event from blockchain (called by event indexer).
   "tx_hash": "0x...",
   "block_number": 12345
 }
-```
+\`\`\`
 
 ### Users
 
@@ -153,12 +153,12 @@ Record a vote event from blockchain (called by event indexer).
 Fetch user statistics and voting history.
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/users/0x123..."
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "data": {
     "wallet_address": "0x123...",
@@ -171,7 +171,7 @@ curl "http://localhost:3000/api/users/0x123..."
     "votes": [...]
   }
 }
-```
+\`\`\`
 
 ### Leaderboard
 
@@ -184,15 +184,15 @@ Fetch leaderboard of top users.
 - `offset` - Pagination offset (default: 0)
 
 **Example:**
-```bash
+\`\`\`bash
 curl "http://localhost:3000/api/leaderboard?sort_by=total_votes&limit=10"
-```
+\`\`\`
 
 ## Using the API in Frontend
 
 ### Client-Side Fetching
 
-```typescript
+\`\`\`typescript
 // components/match-list.tsx
 "use client"
 
@@ -215,11 +215,11 @@ export function MatchList() {
     </div>
   )
 }
-```
+\`\`\`
 
 ### Server Component Fetching
 
-```typescript
+\`\`\`typescript
 // app/matches/page.tsx
 import { getSupabaseClient } from '@/lib/server/supabase'
 
@@ -236,9 +236,9 @@ export default async function MatchesPage() {
     </div>
   )
 }
-```
+\`\`\`
 
-```typescript
+\`\`\`typescript
 // components/match-card.tsx
 "use client"
 
@@ -257,18 +257,18 @@ export function MatchCard() {
 
   return <div>{match?.team1.name}</div>
 }
-```
+\`\`\`
 
 ## Error Handling
 
 All API routes return consistent error format:
 
-```json
+\`\`\`json
 {
   "error": "Human-readable error message",
   "details": "Technical details (optional)"
 }
-```
+\`\`\`
 
 **HTTP Status Codes:**
 - `200` - Success

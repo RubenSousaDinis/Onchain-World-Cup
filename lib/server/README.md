@@ -21,7 +21,7 @@ Server-side Supabase client using the service role key.
 - Should only be used in trusted server environments
 
 **Usage:**
-```typescript
+\`\`\`typescript
 // ✅ CORRECT: In API route
 // app/api/matches/route.ts
 import { getSupabaseClient } from '@/lib/server/supabase'
@@ -31,14 +31,14 @@ export async function GET() {
   const { data, error } = await supabase.from('matches').select('*')
   return Response.json({ data, error })
 }
-```
+\`\`\`
 
-```typescript
+\`\`\`typescript
 // ❌ WRONG: In client component
 // components/match-list.tsx
 "use client"
 import { getSupabaseClient } from '@/lib/server/supabase' // DON'T DO THIS!
-```
+\`\`\`
 
 ## Security
 
@@ -53,6 +53,6 @@ import { getSupabaseClient } from '@/lib/server/supabase' // DON'T DO THIS!
 The `Database` interface in `supabase.ts` provides type safety for database queries.
 
 To generate types from your Supabase schema:
-```bash
+\`\`\`bash
 npx supabase gen types typescript --project-id <your-project-id> > lib/server/database.types.ts
-```
+\`\`\`

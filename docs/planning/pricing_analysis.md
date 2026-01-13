@@ -5,9 +5,9 @@
 ### Phase 1 (First 2 Hours): Linear Increase
 **Goal**: Encourage early participation with accessible, predictable prices
 
-```
+\`\`\`
 price = 0.001 + (voteCount × 0.0001)
-```
+\`\`\`
 
 **Example progression:**
 - Vote 1: 0.001 ETH
@@ -18,11 +18,11 @@ price = 0.001 + (voteCount × 0.0001)
 ### Phase 2 (Hours 2-24): Exponential Increase
 **Goal**: Create urgency, prevent sniping, maximize prize pool from remaining time
 
-```
+\`\`\`
 phase1EndPrice = 0.001 + (phase1VoteCount × 0.0001)
 phase2VoteCount = totalVotes - phase1VoteCount
 price = phase1EndPrice × (1.1 ^ phase2VoteCount)
-```
+\`\`\`
 
 **Example (assuming 30 votes in Phase 1):**
 - Phase 1 end price: 0.004 ETH (vote 30)
@@ -71,7 +71,7 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
 
 ## Smart Contract Implementation
 
-```solidity
+\`\`\`solidity
 uint256 constant PHASE1_DURATION = 2 hours;
 uint256 constant VOTING_DURATION = 24 hours;
 uint256 constant INITIAL_PRICE = 0.001 ether;
@@ -126,7 +126,7 @@ function vote(uint8 team) public payable {
     voteCount++;
     // ... rest of vote logic
 }
-```
+\`\`\`
 
 ## Alternative: Smoother Exponential
 

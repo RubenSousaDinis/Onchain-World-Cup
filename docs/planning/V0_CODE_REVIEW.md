@@ -67,22 +67,22 @@ Reviewed the V0-generated code on branch `project-ui`. This is an excellent foun
 
 #### 1. **Farcaster SDK Mismatch**
 **Issue**: Using wrong Farcaster SDK
-```typescript
+\`\`\`typescript
 // Currently using (WRONG):
 "@farcaster/frame-sdk": "^0.1.0"
 
 // Should be using:
 "@farcaster/miniapp-sdk": "latest"
-```
+\`\`\`
 - The Frame SDK is for Farcaster Frames (legacy)
 - You're building a Mini App, not a Frame
 - This is a **critical** fix needed
 
 **Fix Required**:
-```bash
+\`\`\`bash
 npm uninstall @farcaster/frame-sdk
 npm install @farcaster/miniapp-sdk
-```
+\`\`\`
 
 Then update Farcaster provider to call `sdk.actions.ready()`.
 
@@ -100,7 +100,7 @@ Then update Farcaster provider to call `sdk.actions.ready()`.
 **Issue**: No `fc:miniapp` meta tags in pages
 
 **Required**: Add to layout.tsx and shareable pages:
-```typescript
+\`\`\`typescript
 metadata: {
   other: {
     'fc:miniapp': JSON.stringify({
@@ -113,7 +113,7 @@ metadata: {
     })
   }
 }
-```
+\`\`\`
 
 #### 4. **Contract Pricing Formula Discrepancy**
 **Issue**: Smart contract pricing doesn't match PLAN.md specification
@@ -144,13 +144,13 @@ metadata: {
 **Missing**: `.env.example` file
 
 **Required Variables**:
-```env
+\`\`\`env
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 NEXT_PUBLIC_BASE_RPC_URL=
 NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=
 NEXT_PUBLIC_MATCH_FACTORY_ADDRESS=
 NEXT_PUBLIC_MATCH_REGISTRY_ADDRESS=
-```
+\`\`\`
 
 #### 7. **No Database/Backend Integration**
 **Current**: All data is mocked
@@ -175,16 +175,16 @@ NEXT_PUBLIC_MATCH_REGISTRY_ADDRESS=
 - If keeping, need to add to implementation phases
 
 #### 10. **Package Name Generic**
-```json
+\`\`\`json
 "name": "my-v0-project" // Should be "crypto-world-cup"
-```
+\`\`\`
 
 ### Minor Issues
 
 #### 11. **Generator Tag in Metadata**
-```typescript
+\`\`\`typescript
 generator: 'v0.app' // Should be removed in production
-```
+\`\`\`
 
 #### 12. **Console Logs in Production Code**
 Multiple `console.log` statements with `[v0]` prefix should be:
@@ -197,9 +197,9 @@ Multiple `console.log` statements with `[v0]` prefix should be:
 - Need environment variables for contract addresses
 
 #### 14. **TypeScript `any` Usage**
-```typescript
+\`\`\`typescript
 const [selectedMatch, setSelectedMatch] = useState<any>(null)
-```
+\`\`\`
 Should have proper type definitions.
 
 #### 15. **Accessibility**

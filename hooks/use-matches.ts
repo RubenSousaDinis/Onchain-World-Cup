@@ -46,4 +46,3 @@ export function useMatch(id: string) {
     staleTime: 60 * 60 * 1000,
   })
 }
-

@@ -52,12 +52,12 @@ Before you begin troubleshooting, ensure the developer understands:
 ### 1.1 Verify Manifest Accessibility
 
 **Command:**
-```bash
+\`\`\`bash
 curl -s https://{domain}/.well-known/farcaster.json
-```
+\`\`\`
 
 **Expected Output:**
-```json
+\`\`\`json
 {
   "accountAssociation": {
     "header": "...",
@@ -71,7 +71,7 @@ curl -s https://{domain}/.well-known/farcaster.json
     "homeUrl": "https://..."
   }
 }
-```
+\`\`\`
 
 **Success Criteria:**
 - HTTP 200 response
@@ -85,17 +85,17 @@ curl -s https://{domain}/.well-known/farcaster.json
 <summary>Manifest not found (404)</summary>
 
 **Decision Flow:**
-```
+\`\`\`
 Is hosting available?
 ├─ Yes: Use hosted manifest
 │   └─ Direct to: https://farcaster.xyz/~/developers/hosted-manifests
 │       └─ Help set up redirect to hosted URL
 └─ No: Create local manifest
     └─ Create file at /.well-known/farcaster.json
-```
+\`\`\`
 
 **For Vercel redirect:**
-```json
+\`\`\`json
 {
   "redirects": [
     {
@@ -105,7 +105,7 @@ Is hosting available?
     }
   ]
 }
-```
+\`\`\`
 </details>
 
 <details>
@@ -130,11 +130,11 @@ Is hosting available?
 3. Verify domain matches where manifest is hosted
 
 **Example:**
-```javascript
+\`\`\`javascript
 // If hosted at www.example.com
 const payload = JSON.parse(atob(accountAssociation.payload));
 // payload.domain should be "www.example.com" (including subdomain)
-```
+\`\`\`
 
 **Important:** The signed domain must match exactly, including subdomains.
 
@@ -149,20 +149,20 @@ const payload = JSON.parse(atob(accountAssociation.payload));
 - All shareable pages (products, profiles, content)
 
 **Command:**
-```bash
+\`\`\`bash
 curl -s https://{domain}/{path} | grep -E 'fc:miniapp|fc:frame'
-```
+\`\`\`
 
 **Expected Output:**
-```html
+\`\`\`html
 <meta name="fc:miniapp" content='{"version":"1","imageUrl":"...","button":{...}}' />
-```
+\`\`\`
 
 ### 2.2 Validate Embed Structure
 
 **For Next.js Applications:**
 
-```typescript
+\`\`\`typescript
 // app/layout.tsx or pages with generateMetadata
 import { Metadata } from 'next'
 
@@ -193,7 +193,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     }
   }
 }
-```
+\`\`\`
 
 **Success Criteria:**
 - Meta tag present in HTML head
@@ -208,16 +208,16 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 ### 3.1 Test in Preview Tool
 
 **URL Format:**
-```
+\`\`\`
 https://farcaster.xyz/~/developers/mini-apps/preview?url={encoded-mini-app-url}
-```
+\`\`\`
 
 **Example:**
-```bash
+\`\`\`bash
 # Encode your URL
 encoded_url=$(python3 -c "import urllib.parse; print(urllib.parse.quote('https://example.com/page'))")
 echo "https://farcaster.xyz/~/developers/mini-apps/preview?url=$encoded_url"
-```
+\`\`\`
 
 ### 3.2 Verify App Initialization
 
@@ -229,12 +229,12 @@ echo "https://farcaster.xyz/~/developers/mini-apps/preview?url=$encoded_url"
 **Cause:** App hasn't called [`sdk.actions.ready()`](/docs/sdk/actions/ready)
 
 **Solution:** Ensure the app calls ready() after initialization:
-```javascript
+\`\`\`javascript
 import { sdk } from '@farcaster/miniapp-sdk'
 
 // After app is ready to display
 await sdk.actions.ready()
-```
+\`\`\`
 </details>
 
 <details>
@@ -262,9 +262,9 @@ await sdk.actions.ready()
 After making any changes, you should:
 
 1. **Re-verify the manifest is deployed:**
-   ```bash
+   \`\`\`bash
    curl -s https://{domain}/.well-known/farcaster.json | jq .
-   ```
+   \`\`\`
 
 2. **Test a shareable link:**
    - Ask the user to share in Farcaster client

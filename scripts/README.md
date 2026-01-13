@@ -13,10 +13,10 @@ Before running any seed scripts, ensure you have:
 2. **Environment Variables**
 
    Create a `.env.local` file in the root directory with:
-   ```bash
+   \`\`\`bash
    NEXT_PUBLIC_SUPABASE_URL=your-project-url
    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   ```
+   \`\`\`
 
    ⚠️ **Important**: Use the **Service Role Key**, not the anon key. The service role key has full database access needed for seeding.
 
@@ -27,9 +27,9 @@ Before running any seed scripts, ensure you have:
 Populates the database with all 48 countries participating in the 2026 World Cup.
 
 **Run:**
-```bash
+\`\`\`bash
 npm run seed:countries
-```
+\`\`\`
 
 **What it does:**
 - Checks if countries already exist
@@ -50,7 +50,7 @@ npm run seed:countries
 - 5 remaining slots (subject to qualification)
 
 **Example output:**
-```
+\`\`\`
 🌍 Starting countries seed...
 
 📝 Inserting 48 countries...
@@ -72,7 +72,7 @@ npm run seed:countries
    Remaining slots: ~5
 
 🎉 Seed completed successfully!
-```
+\`\`\`
 
 ## Creating Additional Seed Scripts
 
@@ -80,18 +80,18 @@ To create a new seed script:
 
 1. Create a new TypeScript file in `/scripts/`
 2. Import the Supabase client:
-   ```typescript
+   \`\`\`typescript
    import { getSupabaseClient } from '../lib/server/supabase'
-   ```
+   \`\`\`
 3. Write your seed logic
 4. Add a script to `package.json`:
-   ```json
+   \`\`\`json
    "seed:your-script": "tsx scripts/your-script.ts"
-   ```
+   \`\`\`
 
 ### Example Seed Script Template
 
-```typescript
+\`\`\`typescript
 import { getSupabaseClient } from '../lib/server/supabase'
 
 async function seedData() {
@@ -116,7 +116,7 @@ async function seedData() {
 }
 
 seedData()
-```
+\`\`\`
 
 ## Troubleshooting
 

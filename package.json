@@ -2,19 +2,18 @@
   "name": "crypto-world-cup",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@10.9.2",
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
-    "lint": "eslint .",
-    "start": "next start",
-    "test": "hardhat test",
-    "test:gas": "REPORT_GAS=true hardhat test",
     "compile": "hardhat compile",
     "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
-    "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.js --network baseMainnet",
-    "seed:countries": "tsx scripts/seed-countries.ts"
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
+    "dev": "next dev",
+    "lint": "eslint .",
+    "seed:countries": "tsx scripts/seed-countries.ts",
+    "start": "next start",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test"
   },
   "dependencies": {
     "@farcaster/miniapp-sdk": "latest",
@@ -111,5 +110,6 @@
     "tw-animate-css": "1.3.3",
     "typechain": "^8.3.2",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "npm@10.9.2"
 }

@@ -32,15 +32,15 @@ Winner determined by most ETH voted. 90% of prize pool to winners, 10% platform 
 ### Pricing Model (FINALIZED)
 
 **Phase 1 (First 2 Hours): Linear**
-```
+\`\`\`
 price = 0.001 + (voteCount × 0.0001)
-```
+\`\`\`
 
 **Phase 2 (Hours 2-24): Exponential**
-```
+\`\`\`
 phase1EndPrice = 0.001 + (phase1VoteCount × 0.0001)
 price = phase1EndPrice × (1.1 ^ phase2VoteCount)
-```
+\`\`\`
 
 **Voting Period**: 24 hours per match
 
@@ -269,7 +269,7 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
   - Add to root layout and all shareable pages
   - Use `fc:miniapp` meta tag (NOT `fc:frame` - that's legacy)
   - Structure:
-    ```typescript
+    \`\`\`typescript
     {
       version: "1",
       imageUrl: "https://...", // 3:2 aspect ratio OG image
@@ -284,7 +284,7 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
         }
       }
     }
-    ```
+    \`\`\`
   - Implement in Next.js `generateMetadata()` function
 
 - Initialize Farcaster SDK:
@@ -314,14 +314,14 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
 - App Initialization (Critical for Farcaster):
   - Create root layout that detects context (desktop vs Farcaster)
   - Initialize Farcaster SDK if in Farcaster context:
-    ```typescript
+    \`\`\`typescript
     import { sdk } from '@farcaster/miniapp-sdk'
     
     // After app is ready to display
     if (isFarcasterContext) {
       await sdk.actions.ready()
     }
-    ```
+    \`\`\`
   - Handle infinite splash screen issue (must call `ready()` after initialization)
   - Show appropriate loading states for both contexts
 
@@ -454,7 +454,7 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
 ## Data Flow
 
 ### Match Creation Flow
-```
+\`\`\`
 User/Admin calls MatchFactory.createMatch(bytes2 teamACode, bytes2 teamBCode, ...) → 
 Factory deploys MatchContract (with country codes) → 
 Factory calls MatchRegistry.registerMatch() with country codes → 
@@ -463,10 +463,10 @@ Event Indexer listens to event →
 Indexer queries contract for match data → 
 Indexer creates match record in database (with country codes) → 
 Frontend displays match from database (looks up country names/flags from country codes)
-```
+\`\`\`
 
 ### Voting Flow
-```
+\`\`\`
 User connects wallet → 
 User clicks vote button (selects country) → 
 Frontend calls MatchContract.vote(teamIndex) → 
@@ -478,10 +478,10 @@ Backend queries MatchContract for vote details (gets country code from event) �
 Backend creates vote record in database (with country code) → 
 VoteCast event emitted with country code (indexed automatically) → 
 Frontend updates UI
-```
+\`\`\`
 
 ### Complete Match Lifecycle
-```
+\`\`\`
 Match created on-chain → Event indexed → Database updated → 
 Voting starts (Phase 1: Linear pricing) → 
 Users vote with ETH (tx hash indexed) → 
@@ -494,7 +494,7 @@ Each user's payout = (their vote count for winner / winner's total vote count) �
 Early voters benefit (more votes at lower prices = larger share) → 
 Users call claimPayout() to receive their share → 
 Platform receives 10% fee (can be claimed separately)
-```
+\`\`\`
 
 ## Smart Contract Details
 
@@ -541,25 +541,25 @@ Platform receives 10% fee (can be claimed separately)
 ### Pricing Formula (Contract Logic)
 
 **Phase 1 (first 2 hours):**
-```
+\`\`\`
 initialPrice = 0.001 ETH
 linearIncrement = 0.0001 ETH
 currentPrice = initialPrice + (voteCount × linearIncrement)
-```
+\`\`\`
 
 **Phase 2 (hours 2-24):**
-```
+\`\`\`
 phase1EndPrice = initialPrice + (phase1VoteCount × linearIncrement)
 phase2VoteCount = totalVoteCount - phase1VoteCount
 exponentialMultiplier = 1.1
 currentPrice = phase1EndPrice × (exponentialMultiplier ^ phase2VoteCount)
-```
+\`\`\`
 
 ### Payout Calculation
 
 **After voting deadline ends:**
 
-```
+\`\`\`
 totalPool = totalVotesTeamA + totalVotesTeamB (in ETH)
 platformFee = totalPool × 0.10
 winnerPool = totalPool × 0.90
@@ -568,7 +568,7 @@ winnerPool = totalPool × 0.90
 userVoteCount = number of votes user cast for winning team
 winningTeamVoteCount = total number of votes cast for winning team
 userShare = (userVoteCount / winningTeamVoteCount) × winnerPool
-```
+\`\`\`
 
 **Key Points:**
 - Users can vote multiple times (at increasing prices)
@@ -674,4 +674,3 @@ Before deployment, verify:
    - [ ] Farcaster: Embedded wallets work via SDK
    - [ ] Base network supported in all wallet types
    - [ ] Transactions execute successfully in both contexts
-
