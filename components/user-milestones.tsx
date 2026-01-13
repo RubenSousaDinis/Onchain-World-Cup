@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Trophy, Flame, Star, Zap, Crown, Target, Award, Rocket, Shield } from "lucide-react"
+import { Trophy, Flame, Zap, Crown, Target, Award, Rocket, Shield } from "lucide-react"
 import { ShareModal } from "./share-modal"
 import { NFTMintModal } from "./nft-mint-modal"
 import { MilestoneNFTCard } from "./milestone-nft-card"
@@ -19,13 +19,15 @@ interface Milestone {
   unlocked: boolean
   unlockedAt?: string
   rarity: "common" | "rare" | "epic" | "legendary"
+  disabled?: boolean
+  disabledReason?: string
 }
 
 const milestones: Milestone[] = [
   {
-    id: "first-vote",
-    title: "First Whistle",
-    description: "Place your first vote",
+    id: "first-vote-qual",
+    title: "First Vote",
+    description: "Cast your first qualification vote",
     icon: "⚽",
     iconComponent: <Zap className="w-6 h-6" />,
     progress: 1,
@@ -35,9 +37,9 @@ const milestones: Milestone[] = [
     rarity: "common",
   },
   {
-    id: "ten-votes",
-    title: "Super Fan",
-    description: "Place 10 votes across different matches",
+    id: "ten-votes-qual",
+    title: "Qualification Supporter",
+    description: "Vote for 10 different countries",
     icon: "🔥",
     iconComponent: <Flame className="w-6 h-6" />,
     progress: 10,
@@ -47,23 +49,11 @@ const milestones: Milestone[] = [
     rarity: "common",
   },
   {
-    id: "first-win",
-    title: "Winner!",
-    description: "Win your first bet",
-    icon: "🏆",
-    iconComponent: <Trophy className="w-6 h-6" />,
-    progress: 1,
-    total: 1,
-    unlocked: true,
-    unlockedAt: "Jan 6, 2026",
-    rarity: "rare",
-  },
-  {
-    id: "early-bird",
-    title: "Early Bird",
-    description: "Vote in Phase 1 on 5 different matches",
-    icon: "🐦",
-    iconComponent: <Rocket className="w-6 h-6" />,
+    id: "boost-voter",
+    title: "Boost Power",
+    description: "Use boost voting 5 times",
+    icon: "⚡",
+    iconComponent: <Zap className="w-6 h-6" />,
     progress: 5,
     total: 5,
     unlocked: true,
@@ -71,48 +61,74 @@ const milestones: Milestone[] = [
     rarity: "rare",
   },
   {
-    id: "eth-whale",
-    title: "ETH Whale",
-    description: "Bet more than 1 ETH in a single match",
+    id: "underdog-supporter",
+    title: "Underdog Hero",
+    description: "Support a country ranked below 50",
+    icon: "🦸",
+    iconComponent: <Shield className="w-6 h-6" />,
+    progress: 1,
+    total: 1,
+    unlocked: true,
+    unlockedAt: "Jan 6, 2026",
+    rarity: "rare",
+  },
+  {
+    id: "early-voter",
+    title: "Early Believer",
+    description: "Vote in the first week of qualification",
+    icon: "🐦",
+    iconComponent: <Rocket className="w-6 h-6" />,
+    progress: 1,
+    total: 1,
+    unlocked: true,
+    unlockedAt: "Jan 2, 2026",
+    rarity: "epic",
+  },
+  {
+    id: "heavy-voter",
+    title: "Vote Whale",
+    description: "Cast 100 total votes in qualification",
     icon: "🐋",
     iconComponent: <Crown className="w-6 h-6" />,
-    progress: 0.5,
-    total: 1,
+    progress: 47,
+    total: 100,
     unlocked: false,
     rarity: "epic",
   },
   {
-    id: "five-wins",
-    title: "Lucky Streak",
-    description: "Win 5 bets in a row",
-    icon: "⭐",
-    iconComponent: <Star className="w-6 h-6" />,
-    progress: 3,
-    total: 5,
-    unlocked: false,
-    rarity: "epic",
-  },
-  {
-    id: "diversified",
-    title: "Diversified",
-    description: "Vote for 10 different teams",
+    id: "diversified-qual",
+    title: "Global Voter",
+    description: "Vote for countries from all 6 confederations",
     icon: "🌍",
     iconComponent: <Target className="w-6 h-6" />,
-    progress: 6,
-    total: 10,
+    progress: 4,
+    total: 6,
     unlocked: false,
     rarity: "rare",
   },
   {
-    id: "champion",
-    title: "World Champion",
-    description: "Correctly predict the World Cup winner",
+    id: "kingmaker",
+    title: "Kingmaker",
+    description: "Help push a country from rank 49+ into top 48",
     icon: "👑",
     iconComponent: <Crown className="w-6 h-6" />,
     progress: 0,
     total: 1,
     unlocked: false,
     rarity: "legendary",
+  },
+  {
+    id: "first-win",
+    title: "Winner!",
+    description: "Win your first bet",
+    icon: "🏆",
+    iconComponent: <Trophy className="w-6 h-6" />,
+    progress: 0,
+    total: 1,
+    unlocked: false,
+    rarity: "rare",
+    disabled: true,
+    disabledReason: "Available in Tournament Phase",
   },
 ]
 
@@ -247,6 +263,12 @@ export function UserMilestones() {
                   >
                     Share
                   </button>
+                </div>
+              )}
+
+              {milestone.disabled && (
+                <div className="absolute bottom-2 right-2 flex gap-2">
+                  <span className="text-[10px] text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
                 </div>
               )}
             </div>

@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation"
 
 export const metadata = {
-  title: "Crypto World Cup 2026 | Vote on World Cup Matches with ETH",
+  title: "Crypto World Cup 2026 | Onchain Qualification Phase",
   description:
-    "Vote on World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",
+    "Vote for countries in the Onchain World Cup 2026 Qualification Phase. Community decides which 48 nations qualify for the tournament on Base network.",
   openGraph: {
-    title: "Crypto World Cup 2026 | Vote on World Cup Matches with ETH",
-    description: "Vote on World Cup 2026 matches with ETH on Base network.",
+    title: "Crypto World Cup 2026 | Onchain Qualification Phase",
+    description: "Vote for countries to qualify for World Cup 2026. Onchain users decide who advances.",
   },
 }
 
 export default function HomePage() {
-  redirect("/tournament")
+  redirect("/qualification")
 }

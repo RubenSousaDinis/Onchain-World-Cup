@@ -2,7 +2,8 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Medal, TrendingUp, Search } from "lucide-react"
+import { RetroNavTabs } from "@/components/retro-nav-tabs"
+import { Trophy, Medal, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -112,6 +113,7 @@ const mockLeaderboard = [
 
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [activeTab, setActiveTab] = useState("qualification")
 
   const [displayedCount, setDisplayedCount] = useState(10)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -158,16 +160,15 @@ export default function LeaderboardPage() {
         </div>
 
         <div className="mb-6 lg:mb-8">
-          <div className="cm-panel rounded-sm p-3 lg:p-4 flex items-center gap-3 max-w-md">
-            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search by wallet or Farcaster username..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
+          <RetroNavTabs
+            tabs={[
+              { label: "Qualification", href: "#" },
+              { label: "Tournament", href: "#", disabled: true, className: "opacity-40 cursor-not-allowed" },
+              { label: "Finals", href: "#", disabled: true, className: "opacity-40 cursor-not-allowed" },
+            ]}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">

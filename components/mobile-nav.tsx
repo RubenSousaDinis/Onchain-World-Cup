@@ -2,14 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, Wallet, Shield, HelpCircle } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet } from "lucide-react"
 
 const navItems = [
+  { icon: Trophy, label: "Qualify", href: "/qualification" },
   { icon: Calendar, label: "Cup", href: "/tournament" },
-  { icon: Shield, label: "Teams", href: "/teams" },
   { icon: Users, label: "Leaders", href: "/leaderboard" },
-  { icon: Wallet, label: "My Bets", href: "/my-bets" },
-  { icon: HelpCircle, label: "How", href: "/how-it-works" },
+  { icon: Wallet, label: "Votes", href: "/my-bets" },
 ]
 
 export function MobileNav() {

@@ -2,14 +2,12 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, TrendingUp, Clock, Share2, Eye, CheckCircle } from "lucide-react"
+import { Trophy, Clock, Eye } from "lucide-react"
 import { useAccount } from "wagmi"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
+import { useState } from "react"
 
 const mockUserBets = [
   {
@@ -140,24 +138,6 @@ export default function MyBetsPage() {
   const [selectedBet, setSelectedBet] = useState<(typeof mockUserBets)[0] | null>(null)
   const [showDemoData, setShowDemoData] = useState(true)
 
-  const [displayedBets, setDisplayedBets] = useState(5)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-
-  const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
-    hasMore: displayedBets < mockUserBets.length,
-    isLoading: isLoadingMore,
-  })
-
-  useEffect(() => {
-    if (shouldLoadMore) {
-      setIsLoadingMore(true)
-      setTimeout(() => {
-        setDisplayedBets((prev) => Math.min(prev + 5, mockUserBets.length))
-        setIsLoadingMore(false)
-      }, 300)
-    }
-  }, [shouldLoadMore])
-
   const totalVotes = mockUserBets.reduce((sum, bet) => sum + bet.votes, 0)
   const totalSpent = mockUserBets.reduce((sum, bet) => sum + Number.parseFloat(bet.costPaid), 0)
   const activeBets = mockUserBets.filter((b) => b.status === "active").length
@@ -268,152 +248,19 @@ export default function MyBetsPage() {
             </div>
 
             {/* Bets List */}
-            <div className="cm-panel rounded-sm overflow-hidden mb-4">
-              <div className="bg-secondary/40 px-4 py-3 border-b-2 border-border">
-                <h2 className="text-sm font-bold cm-highlight uppercase">Your Voting History</h2>
-              </div>
-            </div>
-
-            <div className="space-y-3 lg:space-y-4">
-              {mockUserBets.slice(0, displayedBets).map((bet, index) => (
-                <div key={`${bet.matchId}-${bet.votedTeam}-${index}`} className="cm-panel rounded-sm overflow-hidden">
-                  <div className="bg-secondary/40 px-3 lg:px-4 py-3 flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-0 border-b-2 border-border">
-                    <Link
-                      href={`/matches/${bet.matchId}`}
-                      className="flex items-center gap-2 lg:gap-4 flex-1 min-w-0 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="text-xs lg:text-sm flex items-center flex-wrap gap-1">
-                        <span className="text-2xl lg:text-4xl">{bet.team1Flag}</span>
-                        <span className="text-foreground font-bold">{bet.team1}</span>
-                        <span className="text-muted-foreground">vs</span>
-                        <span className="text-foreground font-bold">{bet.team2}</span>
-                        <span className="text-2xl lg:text-4xl">{bet.team2Flag}</span>
-                      </div>
-                    </Link>
-                    <div className="flex items-center gap-2 lg:gap-4">
-                      <div className="text-[10px] lg:text-xs text-foreground/70 font-mono">{bet.matchDate}</div>
-                      {bet.status === "active" && (
-                        <div className="flex items-center gap-1.5 bg-accent/20 px-2 py-1 rounded-sm border border-accent">
-                          <Clock className="w-3 h-3 text-accent" />
-                          <span className="text-[10px] lg:text-xs text-accent font-bold uppercase">Active</span>
-                        </div>
-                      )}
-                      {bet.status === "settled" && (
-                        <div
-                          className={`flex items-center gap-1.5 px-2 py-1 rounded-sm border ${
-                            didEarn(bet) ? "bg-green-500/20 border-green-500" : "bg-purple-500/20 border-purple-500"
-                          }`}
-                        >
-                          {didEarn(bet) ? (
-                            <>
-                              <Trophy className="w-3 h-3 text-green-400" />
-                              <span className="text-[10px] lg:text-xs text-green-400 font-bold uppercase">Earned</span>
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3 h-3 text-purple-400" />
-                              <span className="text-[10px] lg:text-xs text-purple-400 font-bold uppercase">
-                                Settled
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-3 lg:p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-secondary/10">
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
-                      <div className="bg-card/50 p-2 rounded-sm">
-                        <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
-                          You Voted For
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl lg:text-2xl">{bet.votedTeamFlag}</span>
-                          <span className="text-base lg:text-lg font-bold text-foreground">{bet.votedTeam}</span>
-                        </div>
-                      </div>
-                      <div className="bg-card/50 p-2 rounded-sm">
-                        <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
-                          Votes Placed
-                        </div>
-                        <div className="text-base lg:text-lg font-mono font-bold cm-highlight">{bet.votes} votes</div>
-                      </div>
-                      {bet.status === "settled" && bet.winningTeam && (
-                        <div className="bg-card/50 p-2 rounded-sm">
-                          <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
-                            Match Winner
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-accent" />
-                            <span className="text-xs lg:text-sm font-bold text-foreground">{bet.winningTeam}</span>
-                          </div>
-                        </div>
-                      )}
-                      {bet.status === "active" && (
-                        <div className="bg-card/50 p-2 rounded-sm">
-                          <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
-                            Status
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-accent animate-pulse" />
-                            <span className="text-xs lg:text-sm font-bold text-accent">Match in progress</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="text-left lg:text-right bg-card/50 p-3 rounded-sm">
-                      <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
-                        {bet.status === "active" ? "Potential Earnings" : didEarn(bet) ? "Earnings" : "Result"}
-                      </div>
-                      <div
-                        className={`text-xl lg:text-2xl font-mono font-bold ${
-                          bet.status === "active"
-                            ? "cm-highlight"
-                            : didEarn(bet)
-                              ? "text-green-400"
-                              : "text-muted-foreground"
-                        }`}
-                      >
-                        {bet.status === "active"
-                          ? `~${bet.potentialReturn} ETH`
-                          : didEarn(bet)
-                            ? `+${bet.potentialReturn} ETH`
-                            : "No earnings"}
-                      </div>
-                      {didEarn(bet) && (
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            className="flex-1 bg-primary text-primary-foreground px-3 lg:px-4 py-1.5 lg:py-2 rounded-sm text-xs lg:text-sm font-bold uppercase hover:scale-105 transition-transform border border-primary"
-                            disabled={!isConnected}
-                          >
-                            {isConnected ? "Claim" : "Demo"}
-                          </button>
-                          <button
-                            onClick={() => handleShareWin(bet)}
-                            className="cm-nav-tab px-3 py-1.5 lg:py-2 rounded-sm text-xs lg:text-sm font-bold uppercase hover:scale-105 transition-transform flex items-center gap-1"
-                          >
-                            <Share2 className="w-3 h-3" />
-                            Share
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {displayedBets < mockUserBets.length && (
-                <div ref={sentinelRef} className="cm-panel rounded-sm p-4 text-center">
-                  <div className="text-xs text-muted-foreground">Loading more bets...</div>
-                </div>
-              )}
+            <div className="cm-panel rounded-sm p-8 text-center border-2 border-accent/30">
+              <Clock className="w-12 h-12 text-accent mx-auto mb-4" />
+              <h3 className="text-lg font-bold cm-highlight mb-2">Match Voting History Coming Soon</h3>
+              <p className="text-sm text-muted-foreground">
+                Match voting history will be available during the Tournament Phase. Currently in Qualification Phase -
+                only country voting is active.
+              </p>
             </div>
           </>
         )}
       </main>
 
+      {/* Share Modal */}
       {selectedBet && (
         <ShareModal
           isOpen={shareModalOpen}
