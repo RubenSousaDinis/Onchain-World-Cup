@@ -1,7 +1,13 @@
 # Phase 8: Main Tournament Phase
 
 ## Overview
-Implement the main tournament phase starting June 11, 2026. Parse the match schedule from CSV, create matches on-chain, and build the knockout/bracket system for the World Cup finals.
+Implement the main tournament phase starting AFTER qualification ends. This includes:
+1. **Group Stage**: 48 qualified countries divided into groups, round-robin matches
+2. **Knockout Stage**: Top teams from groups advance to knockout bracket
+
+Parse the match schedule from CSV, create matches on-chain using TournamentMatchContract (with 2-phase dynamic pricing), and build the tournament bracket system.
+
+**Critical**: This phase only starts AFTER qualification snapshot determines the top 48 countries.
 
 ## Sub-tasks
 
@@ -22,9 +28,11 @@ File: `scripts/createMainTournamentMatches.ts`
 
 #### Match Generation Logic
 - [ ] Use parsed CSV schedule
-- [ ] Get list of 48 qualified teams from qualifiers
-- [ ] Implement tournament seeding logic
-- [ ] Generate Round of 48 matchups
+- [ ] Get list of 48 qualified teams from `qualified_countries` table
+- [ ] **Important**: These are the countries that passed qualification (top 48 by ETH)
+- [ ] Implement tournament seeding logic based on qualification final ranks
+- [ ] **Group Stage**: Divide 48 teams into groups (e.g., 8 groups of 6 teams)
+- [ ] Generate round-robin matches within each group
 - [ ] Generate knockout bracket structure:
   - Round of 48 → Round of 24
   - Round of 24 → Round of 12
@@ -259,10 +267,17 @@ Medium-High - Complex bracket logic and match progression
 - [ ] Optimize for large bracket visualization
 
 ## Notes
-- Tournament format depends on 48 qualified teams
+- **Starts AFTER qualification**: Must wait for qualification snapshot to determine top 48
+- Tournament format: 48 qualified teams (from qualification phase)
+- **Group Stage First**: Divide 48 into groups, round-robin matches
+- **Then Knockout**: Top teams from groups advance to bracket
+- All tournament matches use **TournamentMatchContract** with 2-phase dynamic pricing
+- **NOT the QualificationContract** - that's only for Phase 1
 - Bracket structure needs careful planning
 - Match progression must be accurate
 - Consider timezone handling for global audience
 - UI should be intuitive and engaging
 - Mobile experience is critical for Farcaster users
 - Country codes remain in ISO 3166-1 alpha-2 format (bytes2)
+- See `/docs/contracts/TOURNAMENT_CONTRACT_SPEC.md` for match contract details
+- See `/docs/ROADMAP.md` for overall two-phase architecture

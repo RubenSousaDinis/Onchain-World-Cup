@@ -1,17 +1,73 @@
 # Tournament Structure Documentation
 
-This document explains how the World Cup tournament structure is modeled in the database.
+This document explains how the Onchain World Cup tournament structure is modeled in the database.
 
 ## Overview
 
-The Crypto World Cup supports the full tournament lifecycle:
-1. **Qualification Phase** - Countries compete to qualify
-2. **Group Stage** - 48 teams divided into 12 groups of 4
-3. **Knockout Phase** - Round of 16, Quarter-finals, Semi-finals, Final
+The Onchain World Cup has a **two-phase structure**:
+
+### Phase 1: Qualification (~6-8 weeks)
+**Mechanism:** Ranking-based support voting (NO MATCHES)
+
+- Users support countries via fixed-price votes (0.001 ETH)
+- Countries ranked by total support (vote count + ETH)
+- **No matches during qualification**
+- Top 48 countries qualify for tournament
+
+### Phase 2: Tournament (~6-8 weeks)
+**Mechanism:** Match-based voting with dynamic pricing
+
+1. **Group Stage** - 48 teams divided into 12 groups of 4
+2. **Knockout Phase** - Round of 16, Quarter-finals, Semi-finals, Final
+
+**Important:** All matches (group stage and knockout) happen in Phase 2, AFTER qualification.
 
 ## Database Schema
 
-### Tables
+### Qualification Phase Tables (NEW)
+
+#### `qualification_votes`
+Votes cast during qualification phase.
+
+```sql
+- id: UUID (primary key)
+- user_address: VARCHAR(42) (wallet address)
+- country_code: CHAR(2) (ISO 3166-1 alpha-2)
+- amount_eth: DECIMAL (0.001 ETH per vote)
+- fee_percent: INTEGER (time-based fee at vote time)
+- tx_hash: VARCHAR(66) (transaction hash)
+- block_number: BIGINT
+- block_timestamp: TIMESTAMP
+- created_at: TIMESTAMP
+```
+
+#### `qualification_standings`
+Live standings during qualification phase.
+
+```sql
+- country_code: CHAR(2) (primary key, ISO 3166-1 alpha-2)
+- total_votes: INTEGER (vote count)
+- total_eth: DECIMAL (total ETH after fees)
+- rank: INTEGER (current ranking)
+- is_qualified: BOOLEAN (top 48 flag)
+- last_updated: TIMESTAMP
+```
+
+#### `qualified_countries`
+Final top 48 after qualification snapshot.
+
+```sql
+- country_code: CHAR(2) (primary key)
+- final_rank: INTEGER (1-48)
+- total_votes: INTEGER
+- total_eth: DECIMAL
+- qualification_time: TIMESTAMP (when snapshot occurred)
+- created_at: TIMESTAMP
+```
+
+### Tournament Phase Tables
+
+#### Tables
 
 #### `tournaments`
 Main tournament records (e.g., FIFA World Cup 2026).
@@ -97,56 +153,80 @@ Extended to track tournament participation.
 
 ## Tournament Flow
 
-### 1. Qualification Phase
+### 1. Qualification Phase (~6-8 weeks)
+
+**Mechanism:** Ranking-based support voting (NO MATCHES)
 
 \`\`\`
-qualification_matches
-├── Match 1: Country A vs Country B
-├── Match 2: Country C vs Country D
-└── ... (hundreds of qualification matches)
+All countries available for support
+├── User votes for Country A (0.001 ETH)
+├── User votes for Country B (0.001 ETH)
+├── User votes for Country A again (0.001 ETH)
+└── ... (all users vote for any countries)
 
-After qualification:
-└── 48 teams qualified → Assigned to groups
+Live Standings:
+├── Country A: 1,250 votes, 1.25 ETH
+├── Country B: 980 votes, 0.98 ETH
+├── Country C: 875 votes, 0.875 ETH
+└── ... (200+ countries ranked)
+
+After qualification deadline:
+├── Admin calls snapshotQualification() on smart contract
+├── Top 48 countries determined on-chain
+└── Qualified countries indexed to database
 \`\`\`
 
 **API Flow:**
-1. Create qualification phase
-2. Create qualification matches (`is_qualification: true`)
-3. Update countries with `qualification_status: 'qualified'`
+1. Users vote via `QualificationContract.vote(countryCode)`
+2. Backend indexes `VoteCast` events to `qualification_votes` table
+3. Backend updates `qualification_standings` table in real-time
+4. Admin calls `QualificationContract.snapshotQualification()` after deadline
+5. Backend indexes `QualificationSnapshot` event
+6. Top 48 countries stored in `qualified_countries` table
+7. Users can claim qualification rewards proportionally
 
-### 2. Group Stage
+### 2. Group Stage (Tournament Phase)
+
+**Prerequisites:** Top 48 countries must be qualified first
 
 \`\`\`
-World Cup 2026 (48 teams)
-├── Group A (4 teams)
-│   ├── Team 1 vs Team 2
-│   ├── Team 1 vs Team 3
-│   ├── Team 1 vs Team 4
-│   ├── Team 2 vs Team 3
-│   ├── Team 2 vs Team 4
-│   └── Team 3 vs Team 4
-├── Group B (4 teams)
-│   └── ... (6 matches)
-└── ... (Groups C-L)
+Onchain World Cup 2026 (48 qualified countries)
+├── Group A (4 countries from top 48)
+│   ├── Match 1: Country 1 vs Country 2 (24h voting, dynamic pricing)
+│   ├── Match 2: Country 1 vs Country 3 (24h voting, dynamic pricing)
+│   ├── Match 3: Country 1 vs Country 4 (24h voting, dynamic pricing)
+│   ├── Match 4: Country 2 vs Country 3 (24h voting, dynamic pricing)
+│   ├── Match 5: Country 2 vs Country 4 (24h voting, dynamic pricing)
+│   └── Match 6: Country 3 vs Country 4 (24h voting, dynamic pricing)
+├── Group B (4 countries)
+│   └── ... (6 matches per group)
+└── ... (Groups C-L, 12 groups total)
 
 After group stage:
 └── Top 2 from each group (24 teams) → Knockout phase
 \`\`\`
 
 **Group Stage Rules:**
-- Each group has 4 teams
+- Each group has 4 teams (from the qualified top 48)
 - Round-robin format (each team plays 3 matches)
-- 3 points for win, 1 for draw, 0 for loss
-- Top 2 teams from each group qualify
+- **Each match has its own contract with 24-hour voting period**
+- **Match winner = team with more ETH voted (NOT real-world results)**
+- **Voting uses dynamic 2-phase pricing (linear → exponential)**
+- 3 points for win, 1 for draw (tie in votes), 0 for loss
+- Top 2 teams from each group advance to knockout
 - Tiebreakers: Points → Vote Difference → Votes Received
 
 **API Flow:**
-1. Create groups (A-L)
-2. Assign teams to groups via `group_standings`
-3. Create group matches with `group_id`
-4. Update match results (`team1_score`, `team2_score`)
-5. Standings auto-calculate via trigger
-6. Top 2 teams marked as `qualified: true`
+1. After qualification ends, create groups (A-L)
+2. Assign qualified countries to groups via `group_standings`
+3. MatchFactory creates group matches (each has own contract address)
+4. Store matches in database with `group_id` and `contract_address`
+5. Users vote on matches via individual match contracts
+6. Backend indexes `VoteCast` events from each match contract
+7. After 24h voting period, match is finalized (team with more ETH wins)
+8. Update match results based on ETH totals (`team1_eth > team2_eth`)
+9. Group standings auto-calculate via trigger
+10. Top 2 teams per group marked as `qualified: true` for knockout
 
 ### 3. Knockout Phase
 

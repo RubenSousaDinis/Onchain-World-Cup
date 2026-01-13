@@ -1,78 +1,264 @@
-# Crypto World Cup Betting App - Implementation Plan
+# Onchain World Cup - Implementation Plan
 
 ## Overview
 
-Full-stack Next.js application for ETH-based voting/betting on World Cup matches on Base network. Compatible with **Base network** and **Farcaster** clients. Each match has its own smart contract with **2-phase time-based pricing**:
-- **Phase 1 (First 2 hours)**: Linear increase
-- **Phase 2 (Hours 2-24)**: Exponential increase
+Full-stack Next.js application for the **Onchain World Cup** - a crypto-native social coordination tournament on Base network. Compatible with **Base network** and **Farcaster** clients.
 
-Winner determined by most ETH voted. 90% of prize pool to winners, 10% platform fee.
+**This is NOT a prediction market** - it's a social coordination game measuring onchain popularity, independent of real-world football outcomes.
+
+## Two-Phase Architecture
+
+The system has **two distinct phases** with different mechanics:
+
+### Phase 1: Qualification (~6-8 weeks)
+
+**Objective:** Select top 48 countries for the tournament
+
+- **NO MATCHES** during qualification
+- Fixed-price voting: **0.001 ETH per vote**
+- Time-based fees only (no dynamic pricing curves)
+- Countries ranked by total support
+- Top 48 qualify
+- Prize pool distributed proportionally to supporters of qualified teams
+
+**Smart Contract:** Single global `QualificationContract`
+
+### Phase 2: Tournament (~6-8 weeks)
+
+**Objective:** Determine the Onchain World Cup Champion
+
+- **Match-based structure** (2 teams per match)
+- Dynamic 2-phase pricing per match:
+  - **Phase 1 (0-2 hours)**: Linear increase
+  - **Phase 2 (2-24 hours)**: Exponential increase
+- Winner determined by most ETH voted
+- 90% of prize pool to winners, 10% platform fee
+- Winners advance through bracket
+
+**Smart Contracts:** `MatchFactory` + individual `TournamentMatchContract` per match
 
 ## Architecture
 
 ### Key Components
 
-1. **Frontend**: Next.js 14+ with App Router, React components for voting interface
-2. **Backend**: Next.js API routes that receive transaction hashes and index on-chain data to database
-3. **Database**: Supabase (PostgreSQL) with Prisma ORM (indexed from blockchain)
+1. **Frontend**: Next.js 14+ with App Router
+   - Qualification voting interface
+   - Tournament match voting interface
+   - Live standings and bracket display
+
+2. **Backend**: Next.js API routes
+   - Receive transaction hashes
+   - Index on-chain data to database
+   - Serve qualification standings
+   - Serve tournament match data
+
+3. **Database**: Supabase (PostgreSQL) with Prisma ORM
+   - Indexed from blockchain events
+   - Separate tables for qualification and tournament
+
 4. **Blockchain**: Base network with smart contracts:
+   - **QualificationContract**: Qualification phase voting (fixed price)
    - **MatchRegistry**: Stores match data on-chain
-   - **MatchFactory**: Deploys match contracts and creates matches
-   - **MatchContract**: Per-match voting contract
-5. **Event Indexer**: Background service that listens to blockchain events and syncs to database
+   - **MatchFactory**: Deploys match contracts
+   - **TournamentMatchContract**: Per-match voting (dynamic pricing)
+
+5. **Event Indexer**: Background service
+   - Listens to blockchain events
+   - Syncs to database in real-time
+
 6. **Authentication**: Wallet-based auth supporting:
    - MetaMask/WalletConnect (standard web)
    - Farcaster wallets (via Privy or similar)
    - Embedded wallets for Farcaster users
-7. **Farcaster Integration**: 
+
+7. **Farcaster Integration**:
    - Farcaster Frame support for in-app voting
-   - Farcaster client compatibility (Warpcast, etc.)
+   - Farcaster client compatibility
    - Social sharing features
 
-### Pricing Model (FINALIZED)
+## Pricing Models
+
+### Qualification Phase Pricing (Fixed)
+
+**Base Price:** 0.001 ETH per vote (immutable)
+
+**Time-Based Fees:**
+| Week | Fee |
+|------|-----|
+| Week 0 | 0% |
+| Week 1 | 2% |
+| Week 2 | 4% |
+| Week 3 | 6% |
+| Final | 8% |
+
+- Fee applied at purchase time
+- Fee ETH excluded from prize pool
+- Fee schedule immutable once phase starts
+
+**Payout:** Proportional to votes on qualified teams
+```
+user_reward = (user_votes_on_qualified / total_votes_on_qualified) × prize_pool
+```
+
+### Tournament Phase Pricing (Dynamic)
 
 **Phase 1 (First 2 Hours): Linear**
-\`\`\`
+```
 price = 0.001 + (voteCount × 0.0001)
-\`\`\`
+```
 
 **Phase 2 (Hours 2-24): Exponential**
-\`\`\`
+```
 phase1EndPrice = 0.001 + (phase1VoteCount × 0.0001)
 price = phase1EndPrice × (1.1 ^ phase2VoteCount)
-\`\`\`
+```
 
-**Voting Period**: 24 hours per match
+**Voting Period:** 24 hours per match
 
-**Payout**: 90% to winners (proportional), 10% platform fee
+**Payout:** 90% to winners (proportional by vote COUNT), 10% platform fee
+```
+user_reward = (userVoteCount / winningTeamVoteCount) × winnerPool
+```
+
+**Critical:** Payouts based on vote COUNT, not ETH amount. Early voters get more votes at lower prices.
 
 ## Database Schema
 
+### Qualification Tables (NEW)
+
+```prisma
+model QualificationVote {
+  id              String   @id @default(uuid())
+  userAddress     String
+  countryCode     String   // ISO 3166-1 alpha-2
+  amountEth       Decimal
+  feePercent      Int
+  txHash          String   @unique
+  blockNumber     BigInt
+  blockTimestamp  DateTime
+  createdAt       DateTime @default(now())
+}
+
+model QualificationStanding {
+  countryCode    String   @id  // ISO 3166-1 alpha-2
+  totalVotes     Int      @default(0)
+  totalEth       Decimal  @default(0)
+  rank           Int?
+  isQualified    Boolean  @default(false)
+  lastUpdated    DateTime @default(now())
+}
+
+model QualifiedCountry {
+  countryCode         String   @id  // ISO 3166-1 alpha-2
+  finalRank           Int
+  totalVotes          Int
+  totalEth            Decimal
+  qualificationTime   DateTime
+  createdAt           DateTime @default(now())
+}
+```
+
 ### Core Tables
 
-- `users`: Wallet addresses, voting history, optional Farcaster FID (Farcaster ID)
-- `countries`: Country data (name, code (ISO 3166-1 alpha-2), flag, etc.) - reference data
-- `matches`: Match details (indexed from on-chain):
-  - `match_id` (on-chain ID)
-  - `team_a_code`, `team_b_code` (ISO 3166-1 alpha-2 country codes, e.g., "US", "BR", "FR")
-  - `match_date`, `phase` (qualifier/main)
-  - `contract_address`
-  - `voting_start`, `voting_deadline`
-  - `status`, `result`
-  - `creation_tx_hash` (transaction that created the match)
-- `votes`: User votes (indexed from on-chain events):
-  - `match_id`, `user_id` (wallet address)
-  - `amount_eth`, `voted_country_code` (ISO 3166-1 alpha-2 code)
-  - `vote_price_at_time`, `phase`
-  - `transaction_hash` (vote transaction)
-  - `block_number`, `block_timestamp`
-- `groups`: Qualification groups (name, countries) - can be on-chain or off-chain
-- `group_standings`: Points, wins, losses per country per group - calculated from on-chain match results
-- `indexed_transactions`: Track which transactions/events have been indexed (prevent duplicates)
+```prisma
+model User {
+  id          String   @id @default(uuid())
+  address     String   @unique
+  farcasterFid Int?    // Optional Farcaster ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Country {
+  code        String   @id  // ISO 3166-1 alpha-2 (e.g., "US", "BR", "FR")
+  name        String
+  flagEmoji   String
+  flagUrl     String?
+  region      String?
+  createdAt   DateTime @default(now())
+}
+
+model Tournament {
+  id              String   @id @default(uuid())
+  name            String
+  year            Int
+  hostCountries   String[] // Array of country codes
+  totalTeams      Int      // 48 for 2026
+  startDate       DateTime
+  endDate         DateTime
+  status          String   // 'qualification' | 'group_stage' | 'knockout' | 'completed'
+  currentPhase    String?
+  createdAt       DateTime @default(now())
+}
+
+model Match {
+  id                  String   @id @default(uuid())
+  tournamentId        String
+  matchNumber         Int
+  team1CountryCode    String   // References QualifiedCountry
+  team2CountryCode    String   // References QualifiedCountry
+  contractAddress     String   @unique
+  matchStartTime      DateTime
+  votingDeadline      DateTime
+  status              String   // 'upcoming' | 'active' | 'finalized'
+  winningTeam         Int?     // 0, 1, or NULL
+  team1Votes          Int      @default(0)
+  team2Votes          Int      @default(0)
+  team1Eth            Decimal  @default(0)
+  team2Eth            Decimal  @default(0)
+  createdAt           DateTime @default(now())
+}
+
+model TournamentVote {
+  id              String   @id @default(uuid())
+  matchId         String
+  userAddress     String
+  team            Int      // 0 or 1
+  countryCode     String
+  price           Decimal
+  phase           Int      // 1 or 2
+  txHash          String   @unique
+  blockNumber     BigInt
+  blockTimestamp  DateTime
+  createdAt       DateTime @default(now())
+}
+```
+
+### Groups (Optional - for Group Stage)
+
+```prisma
+model Group {
+  id              String   @id @default(uuid())
+  tournamentId    String
+  name            String   // 'A', 'B', etc.
+  displayName     String   // 'Group A', etc.
+  maxTeams        Int      @default(4)
+  createdAt       DateTime @default(now())
+}
+
+model GroupStanding {
+  id              String   @id @default(uuid())
+  groupId         String
+  countryCode     String
+  matchesPlayed   Int      @default(0)
+  wins            Int      @default(0)
+  draws           Int      @default(0)
+  losses          Int      @default(0)
+  votesFor        Int      @default(0)
+  votesAgainst    Int      @default(0)
+  voteDifference  Int      @default(0)
+  points          Int      @default(0)
+  position        Int?
+  qualified       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+```
 
 ## Implementation Phases
 
-### Phase 1: Project Setup & Database
+### Phase 1: Project Setup & Qualification MVP
+
+**Priority:** Qualification phase is the immediate focus (MVP)
 
 - Initialize Next.js project with TypeScript
 - Set up Supabase project (free tier: 500 MB storage)
@@ -81,596 +267,466 @@ price = phase1EndPrice × (1.1 ^ phase2VoteCount)
   - Supabase connection string
   - Base RPC URL
   - Contract addresses
-  - Farcaster manifest domain (for signing)
+  - Farcaster manifest domain
 - Create database migration scripts
-- Integrate Supabase client for real-time features (optional)
 - Install Farcaster Mini App SDK: `@farcaster/miniapp-sdk`
 
-### Phase 2: Smart Contract Development
+### Phase 2: Qualification Smart Contract Development
 
-- Write MatchRegistry Contract (Solidity):
-  - Store match data on-chain (teamA, teamB as bytes2 country codes, date, phase, etc.)
-  - Country codes: ISO 3166-1 alpha-2 format (e.g., "US", "BR", "FR") stored as bytes2
-  - Emit `MatchCreated` event with all match details including country codes
+**Focus:** Fixed-price voting with time-based fees
+
+- Write `QualificationContract` (Solidity):
+  - Fixed-price voting (0.001 ETH)
+  - Time-based fee schedule
+  - Vote tracking per country (ISO 3166-1 alpha-2 codes as bytes2)
+  - Prize pool accumulation
+  - Snapshot function to determine top 48
+  - Proportional reward distribution
+  - Emit `VoteCast` event with country code, amount, fee
+  - Emit `QualificationSnapshot` event with top 48 countries
+  - Emit `RewardClaimed` event
+
+- Deploy contract to Base network (testnet initially)
+- Write contract tests (Hardhat/Foundry)
+- Generate TypeScript types from contracts (TypeChain)
+
+**See:** [QUALIFICATION_CONTRACT_SPEC.md](../contracts/QUALIFICATION_CONTRACT_SPEC.md)
+
+### Phase 3: Qualification Frontend & Backend
+
+- Create Qualification voting UI:
+  - Display all countries with flags
+  - Vote button (0.001 ETH each)
+  - Show current fee percentage
+  - Display time remaining
+  - Real-time standings
+
+- Build qualification standings page:
+  - Leaderboard of all countries
+  - Top 48 highlighted
+  - User's supported countries
+  - Projected rewards
+
+- Create API endpoints:
+  - `GET /api/qualification/standings` - Live rankings
+  - `GET /api/qualification/countries` - All countries with stats
+  - `POST /api/qualification/vote` - Index vote transaction
+  - `GET /api/qualification/user/:address` - User's votes
+  - `GET /api/qualification/rewards/:address` - Claimable rewards
+  - `POST /api/qualification/snapshot` - Admin finalize top 48
+  - `GET /api/qualification/qualified` - Final top 48
+
+- Create Event Indexer for Qualification:
+  - Listen to `VoteCast` events
+  - Listen to `QualificationSnapshot` events
+  - Listen to `RewardClaimed` events
+  - Index to `qualification_votes` table
+  - Update `qualification_standings` table
+  - Create `qualified_countries` records after snapshot
+
+### Phase 4: Tournament Smart Contract Development
+
+**Focus:** Dynamic pricing for match voting
+
+- Write `MatchRegistry` Contract:
+  - Store match data on-chain
   - Map match IDs to contract addresses
-  - Optional: Store country metadata on-chain (name, flag URL, etc.)
+  - Emit `MatchCreated` event with team codes, times
 
-- Write MatchFactory Contract:
-  - Deploy match contracts on demand
-  - Create match entries in MatchRegistry
-  - Emit `MatchCreated` event with:
-    - Match ID
-    - Team A and Team B (bytes2 country codes, e.g., "US", "BR")
-    - Match date
-    - Phase (qualifier/main)
-    - Contract address
-    - Voting start and deadline timestamps
-  - Store deployed contract addresses
+- Write `MatchFactory` Contract:
+  - Deploy `TournamentMatchContract` instances
+  - Create match entries in `MatchRegistry`
+  - Emit `MatchCreated` event
 
-- Write Match Contract (Solidity):
-  - 2-phase pricing mechanism
-  - Phase 1: Linear (0.001 + voteCount × 0.0001)
-  - Phase 2: Exponential (phase1EndPrice × 1.1^phase2VoteCount)
-  - Track phase1VoteCount and phase1EndPrice
+- Write `TournamentMatchContract` (Solidity):
+  - 2-phase pricing mechanism (linear → exponential)
+  - Track vote COUNT separately from ETH
+  - Phase 1: `price = 0.001 + (voteCount × 0.0001)`
+  - Phase 2: `price = phase1EndPrice × (1.1 ^ phase2VoteCount)`
   - Vote function (accepts ETH, assigns to team A or B)
-  - Emit `VoteCast` event with:
-    - Voter address
-    - Team voted for (bytes2 country code)
-    - Amount paid
-    - Current price
-    - Phase
-    - Vote count
-  - Track total votes per team
-  - Calculate current vote price based on phase
-  - Track each user's vote count per team (mapping: address => team => vote count)
-  - Track each user's total ETH contribution per team (for display/statistics)
-  - Payout function (90% to winners, 10% fee to platform)
-    - Only callable after voting deadline has passed
-    - Calculates user's share based on their **number of votes** for winning team (not ETH amount)
-    - Proportionally distributes 90% of prize pool based on vote count
-    - Rewards early voters who can vote more times at lower prices
+  - Emit `VoteCast` event with country code, price, phase
+  - Track each user's vote count per team
+  - Payout function (90% to winners based on vote COUNT, 10% fee)
   - Emit `PayoutClaimed` event
   - 24-hour voting deadline enforcement
 
-- Deploy contracts to Base network (testnet initially)
+**Critical:** Payouts based on vote COUNT, not ETH amount
 
-- Write contract tests (Hardhat/Foundry)
+**See:** [TOURNAMENT_CONTRACT_SPEC.md](../contracts/TOURNAMENT_CONTRACT_SPEC.md)
 
-- Generate TypeScript types from contracts (TypeChain)
+### Phase 5: Tournament Frontend & Backend
 
-### Phase 3: Blockchain Integration & Event Indexing
+- Create match voting UI:
+  - Display two teams with flags
+  - Show current vote price (per team, shows phase)
+  - Show phase indicator (Phase 1 / Phase 2)
+  - Vote buttons
+  - Real-time vote counts and ETH totals
+  - Phase countdown timer
+  - Voting deadline countdown
+
+- Build tournament bracket page:
+  - Display match schedule
+  - Show match results
+  - Bracket progression
+
+- Create API endpoints:
+  - `GET /api/matches` - List all matches
+  - `GET /api/matches/:id` - Match details
+  - `POST /api/matches/:id/vote` - Index vote transaction
+  - `GET /api/matches/:id/user/:address` - User's votes for match
+  - `GET /api/matches/:id/rewards/:address` - Claimable winnings
+  - `POST /api/matches/:id/finalize` - Index match finalization
+
+- Create Event Indexer for Tournament:
+  - Listen to `MatchCreated` events from Factory
+  - Listen to `VoteCast` events from Match contracts
+  - Listen to `MatchFinalized` events
+  - Listen to `PayoutClaimed` events
+  - Index to `matches` and `tournament_votes` tables
+
+### Phase 6: Wallet Integration & Blockchain Setup
 
 - Set up Base network configuration (wagmi/viem)
 
 - Integrate wallet connection with context detection:
   - **Desktop context**: MetaMask/WalletConnect
   - **Farcaster context**: Farcaster embedded wallets via `@farcaster/miniapp-sdk`
-  - Detect context and use appropriate wallet connection method
-  - Support for Base network in all wallet types
-  - Handle wallet connection errors gracefully in both contexts
+  - Detect context and use appropriate wallet method
+  - Support Base network in all wallet types
 
 - Create contract interaction utilities:
-  - Read current vote price from match contract (handles phase logic)
-  - Submit vote transaction (ETH + team selection) - returns tx hash
-  - Create match transaction (via factory) - returns tx hash
-  - Check user's vote status per match (read from contract)
-  - Read match state (total votes per team, voting deadline, current phase)
-  - Claim payout function - returns tx hash
-
-- Create Event Indexer Service:
-  - Listen to `MatchCreated` events from MatchRegistry/Factory
-  - Listen to `VoteCast` events from Match contracts
-  - Listen to `PayoutClaimed` events
-  - Index events to database:
-    - Parse event data
-    - Create/update match records
-    - Create vote records
-    - Update match statistics
-  - Handle reorgs and missed blocks
-  - Track indexed transactions (prevent duplicates)
-  - Can run as background job or API route
-
-- Create API endpoints (receive tx hashes, query chain, update DB):
-  - `POST /api/matches/index` - Receive match creation tx hash, query chain, index to DB
-    - Body: `{ txHash: "0x...", matchId?: number }`
-    - Queries MatchRegistry/Factory for match data
-    - Creates match record in database
-  - `POST /api/votes/index` - Receive vote tx hash, query chain, index to DB
-    - Body: `{ txHash: "0x...", matchId?: number }`
-    - Queries Match contract for vote data
-    - Creates vote record in database
-  - `GET /api/matches` - List matches (from database)
-  - `GET /api/matches/:id` - Get match details (from database + on-chain state)
-  - `GET /api/matches/:id/votes` - Get voting statistics (from database)
-  - `GET /api/matches/:id/price` - Get current vote price (from contract)
-  - `POST /api/matches/:id/claim` - Initiate claim transaction, returns tx hash
-
-### Phase 4: Qualification Phase System
-
-- Create on-chain group stage generator:
-  - Smart contract or script that creates matches on-chain
-  - Divide all countries into groups (using country codes)
-  - Generate match schedule for qualifiers (ending June 7th)
-  - Call MatchFactory to create matches on-chain (passing country codes as bytes2)
-  - Emit events that get indexed
-
-- Build match scheduler for qualifiers (ending June 7th):
-  - Can be off-chain script that calls factory
-  - Or on-chain contract that generates matches
-
-- Implement group standings calculation:
-  - Read match results from on-chain contracts
-  - Calculate standings (can be on-chain or off-chain)
-  - Determine top 48 teams that advance
-
-- Build UI for viewing groups and qualifier matches:
-  - Display matches from database (indexed from chain)
-  - Show voting interface
-  - Display standings calculated from on-chain results
-
-### Phase 5: Main Tournament Phase
-
-- Parse `world_cup_2026_matches_per_day.csv` for match scheduling
-
-- Generate match schedule starting June 11th:
-  - Create matches on-chain via MatchFactory
-  - Each match creation emits event
-  - Events get indexed to database
-
-- Create bracket/knockout system for later rounds:
-  - Can be calculated from on-chain match results
-  - Or stored on-chain in registry
-
-- Build match display components with voting interface:
-  - Display matches from database
-  - Show on-chain voting state
-  - Allow users to vote (returns tx hash)
-
-### Phase 6: Voting Interface & Payout System
-
-- Create voting UI component:
-  - Display current vote price (from contract, shows phase)
-  - Show which phase is active (Phase 1 or Phase 2)
-  - Show total ETH voted per team
-  - Real-time price updates as votes come in
-  - Vote transaction flow (connect wallet → confirm → submit)
-  - Display time remaining in current phase
-
-- Implement payout claiming:
-  - Check if voting deadline has passed
-  - Detect match winner (team with more ETH)
-  - Calculate user's share (proportional to their **number of votes** for winning team)
-  - Display claimable amount (only if user voted for winner and deadline passed)
-  - Show user's vote count per team (not just ETH amount)
-  - Claim payout button (calls contract's claimPayout function)
-  - Display pending/claimed payouts
-  - Show user's vote count and ETH contribution to each team
-
-- Add vote history and active votes views
-
-- Create admin tools:
-  - Manually finalize match results (if needed)
-  - Emergency contract pause (if needed)
+  - **Qualification:**
+    - Vote on country (returns tx hash)
+    - Get current fee
+    - Get user's votes
+    - Calculate claimable reward
+    - Claim reward
+  - **Tournament:**
+    - Get current vote price per team
+    - Submit vote (returns tx hash)
+    - Get match state
+    - Calculate winnings
+    - Claim payout
 
 ### Phase 7: Farcaster Mini App Integration
 
 - Create Farcaster Manifest:
   - Create `/.well-known/farcaster.json` file
-  - Include `accountAssociation` object (signed via Farcaster tool)
-  - Include `frame` object with:
-    - `version: "1"` (not "next")
-    - `name`: App name
-    - `iconUrl`: App icon (200x200px)
-    - `homeUrl`: App home URL
-  - For Vercel: Set up redirect if using hosted manifest
-  - Verify manifest is accessible at `https://{domain}/.well-known/farcaster.json`
+  - Include `accountAssociation` object (signed)
+  - Include `frame` object with app details
+  - Version: `"1"` (not `"next"`)
+  - Verify manifest accessible
 
-- Add Embed Metadata (fc:miniapp meta tags):
-  - Add to root layout and all shareable pages
-  - Use `fc:miniapp` meta tag (NOT `fc:frame` - that's legacy)
-  - Structure:
-    \`\`\`typescript
-    {
-      version: "1",
-      imageUrl: "https://...", // 3:2 aspect ratio OG image
-      button: {
-        title: "Open App", // Max 32 characters
-        action: {
-          type: "launch_frame",
-          name: "Crypto World Cup",
-          url: "https://...", // Optional
-          splashImageUrl: "https://...", // 200x200px
-          splashBackgroundColor: "#f7f7f7"
-        }
-      }
-    }
-    \`\`\`
-  - Implement in Next.js `generateMetadata()` function
+- Add Embed Metadata (`fc:miniapp` meta tags):
+  - Add to root layout and shareable pages
+  - Use `fc:miniapp` meta tag (NOT `fc:frame`)
+  - Include OG image (3:2 aspect ratio)
+  - Button with launch action
 
 - Initialize Farcaster SDK:
-  - Install `@farcaster/miniapp-sdk` package
+  - Install `@farcaster/miniapp-sdk`
   - Detect if running in Farcaster context
   - Call `sdk.actions.ready()` after app initialization
-  - Handle SDK initialization errors gracefully
-  - Ensure app works in both desktop and Farcaster contexts
+  - Handle SDK errors gracefully
 
 - Dual Context Support:
-  - Detect environment (desktop browser vs Farcaster client)
+  - Detect environment (desktop vs Farcaster)
   - Conditional rendering based on context
-  - Responsive design for embedded contexts (Farcaster)
-  - Full-featured UI for desktop
-  - Handle wallet connections appropriately:
-    - Desktop: MetaMask, WalletConnect
-    - Farcaster: Farcaster embedded wallets via SDK
+  - Responsive design for embedded views
 
 - Social Features:
+  - Share qualification votes on Farcaster
   - Share match results on Farcaster
-  - Share voting activity
-  - Display Farcaster user info (if connected via SDK)
-  - Generate shareable links with proper embed metadata
+  - Generate shareable links with proper metadata
 
-### Phase 8: UI/UX & App Initialization
+### Phase 8: UI/UX & Real-Time Features
 
-- App Initialization (Critical for Farcaster):
-  - Create root layout that detects context (desktop vs Farcaster)
-  - Initialize Farcaster SDK if in Farcaster context:
-    \`\`\`typescript
-    import { sdk } from '@farcaster/miniapp-sdk'
-    
-    // After app is ready to display
-    if (isFarcasterContext) {
-      await sdk.actions.ready()
-    }
-    \`\`\`
-  - Handle infinite splash screen issue (must call `ready()` after initialization)
-  - Show appropriate loading states for both contexts
+- Design responsive voting interfaces:
+  - Works in web browsers (desktop)
+  - Works in Farcaster clients (embedded)
+  - Touch-friendly for mobile
 
-- Design responsive voting interface:
-  - Works seamlessly in web browsers (desktop)
-  - Works in Farcaster clients (embedded context)
-  - Responsive design that adapts to container size
-  - Touch-friendly for mobile Farcaster clients
+- Create unified dashboard:
+  - **Qualification tab:**
+    - Countries supported
+    - Vote counts per country
+    - ETH spent
+    - Claimable rewards
+    - Claim button (after finalization)
+  - **Tournament tab:**
+    - Active matches
+    - Vote history per match (showing vote count and ETH)
+    - Claimable winnings
+    - Claim buttons per match
 
-- Create match cards with:
-  - Team names and flags
-  - Current vote price (with phase indicator)
-  - Total ETH per team (real-time)
-  - Vote button (shows exact ETH cost)
-  - Voting deadline countdown
-  - Phase indicator (Phase 1: Linear / Phase 2: Exponential)
-  - Winner display (after voting closes)
-  - Responsive layout for both desktop and Farcaster contexts
-
-- Build dashboard for:
-  - User's active votes
-  - Vote history (with vote count and amounts per match)
-  - Vote count per match (for each team) - this determines payout share
-  - Total ETH contributed per match (for each team) - for reference
-  - Claimable payouts (only after match deadline, only if voted for winner)
-  - Payout calculation breakdown (vote count / total votes × winner pool)
-  - Total ETH won/lost
-  - Claim status per match
-
-- Add real-time updates for:
-  - Vote price changes
-  - Total ETH per team
+- Add real-time updates:
+  - Qualification standings refresh
+  - Tournament match vote updates
+  - Price changes
   - Phase transitions
-  - New votes (optional: live feed)
   - Works in both desktop and Farcaster contexts
 
-- Create leaderboards and statistics:
-  - Most successful voters
+- Create leaderboards:
+  - Most successful voters (qualification)
+  - Most successful bettors (tournament)
   - Largest single votes
-  - Total ETH in prize pools
 
 ### Phase 9: Testing & Deployment
 
-- Write unit tests for core logic
+- Write unit tests for:
+  - Qualification contract (vote, fees, snapshot, rewards)
+  - Tournament contract (pricing, phases, payouts)
+  - Vote count vs ETH tracking
 
-- Test betting flows end-to-end
+- Test flows end-to-end:
+  - Qualification voting → snapshot → claim rewards
+  - Tournament match voting → finalization → claim winnings
 
-- Test wallet integration (MetaMask, WalletConnect, Farcaster embedded wallets)
+- Test wallet integration (MetaMask, WalletConnect, Farcaster)
 
 - Test Farcaster Mini App:
   - Verify manifest at `/.well-known/farcaster.json`
-  - Test in Farcaster preview tool: `https://farcaster.xyz/~/developers/mini-apps/preview?url={url}`
-  - Verify `fc:miniapp` meta tags on all pages
+  - Test in preview tool
+  - Verify meta tags
   - Test SDK initialization and `ready()` call
-  - Test in Farcaster clients (Warpcast, etc.)
-  - Verify app works in both desktop and Farcaster contexts
 
-- Test phase transitions (Phase 1 → Phase 2)
-
-- Test pricing calculations (linear and exponential)
+- Test phase transitions:
+  - Qualification end → Tournament start
+  - Match Phase 1 → Phase 2
 
 - Set up deployment configuration
-
 - Add error handling and logging
+
+## Smart Contract Details
+
+### QualificationContract
+
+**See:** [QUALIFICATION_CONTRACT_SPEC.md](../contracts/QUALIFICATION_CONTRACT_SPEC.md)
+
+**Key Functions:**
+- `vote(bytes2 countryCode) payable` - Cast support vote
+- `getCurrentFee() view returns (uint256)` - Get current fee %
+- `snapshotQualification()` - Admin finalizes top 48
+- `getQualifiedCountries() view returns (bytes2[48])` - Get top 48
+- `calculateUserReward(address) view returns (uint256)` - Claimable amount
+- `claimReward()` - Claim proportional reward
+
+**Events:**
+- `VoteCast(address indexed voter, bytes2 indexed country, uint256 amount, uint256 fee, uint256 timestamp)`
+- `QualificationSnapshot(bytes2[48] qualifiedCountries, uint256 timestamp)`
+- `RewardClaimed(address indexed user, uint256 amount)`
+
+### TournamentMatchContract
+
+**See:** [TOURNAMENT_CONTRACT_SPEC.md](../contracts/TOURNAMENT_CONTRACT_SPEC.md)
+
+**Key State Variables:**
+- `teamAVoteCount`, `teamBVoteCount` - Vote counts (for payouts)
+- `teamAETH`, `teamBETH` - ETH totals (for prize pool)
+- `userVotesTeamA`, `userVotesTeamB` - User vote counts
+- `phase1VoteCount`, `phase1EndPrice` - Phase 1 end state
+
+**Key Functions:**
+- `vote(uint8 team) payable` - Vote for team (0=A, 1=B)
+- `calculateVotePrice(uint8 team) view returns (uint256)` - Current price
+- `getCurrentPhase() view returns (uint8)` - Returns 1 or 2
+- `finalizeMatch()` - Determine winner after deadline
+- `calculateWinnings(address) view returns (uint256)` - Claimable amount
+- `claimPayout()` - Claim winnings
+
+**Events:**
+- `VoteCast(address indexed voter, bytes2 indexed country, uint256 price, uint8 phase, uint256 totalVotes)`
+- `MatchFinalized(uint8 winningTeam, uint256 teamAETH, uint256 teamBETH, uint256 timestamp)`
+- `PayoutClaimed(address indexed claimer, uint256 amount)`
+
+### MatchFactory
+
+**Key Functions:**
+- `createMatch(uint256 matchId, bytes2 teamA, bytes2 teamB, uint256 startTime) returns (address)` - Deploy match contract
+
+**Events:**
+- `MatchCreated(uint256 indexed matchId, address matchContract, bytes2 teamA, bytes2 teamB, uint256 startTime)`
+
+## Data Flow
+
+### Qualification Voting Flow
+
+```
+User connects wallet →
+User selects country →
+Frontend calls QualificationContract.vote(countryCode) →
+Transaction submitted (0.001 ETH + fee) →
+Transaction hash returned →
+Frontend calls POST /api/qualification/vote with tx hash →
+Backend queries transaction receipt →
+Backend indexes VoteCast event to database →
+Frontend updates qualification standings
+```
+
+### Tournament Voting Flow
+
+```
+User connects wallet →
+User selects match and team →
+Frontend calls TournamentMatch.vote(team) →
+Transaction submitted (dynamic price) →
+Transaction hash returned →
+Frontend calls POST /api/matches/:id/vote with tx hash →
+Backend queries transaction receipt →
+Backend indexes VoteCast event to database →
+Frontend updates match state
+```
+
+### Phase Transition Flow
+
+```
+Qualification deadline passes →
+Admin calls QualificationContract.snapshotQualification() →
+Top 48 countries determined and stored on-chain →
+QualificationSnapshot event emitted →
+Backend indexes qualified countries →
+Users can claim qualification rewards →
+Admin creates tournament structure →
+MatchFactory creates match contracts →
+Tournament phase begins
+```
 
 ## Key Files to Create
 
 ### Smart Contracts
-- `contracts/MatchRegistry.sol`: On-chain match data storage and events
-- `contracts/MatchContract.sol`: Per-match voting contract with 2-phase pricing
-- `contracts/MatchFactory.sol`: Factory to deploy match contracts and create matches
-- `contracts/interfaces/IMatchContract.sol`: Interface definitions
-- `contracts/interfaces/IMatchRegistry.sol`: Registry interface
-- `scripts/deploy.ts`: Deployment scripts
-- `scripts/createMatches.ts`: Script to create matches on-chain
-- `test/MatchContract.test.ts`: Contract tests
-- `test/MatchFactory.test.ts`: Factory tests
+
+- `contracts/QualificationContract.sol` - Qualification voting (fixed price)
+- `contracts/TournamentMatchContract.sol` - Per-match voting (dynamic pricing)
+- `contracts/MatchFactory.sol` - Factory to deploy match contracts
+- `contracts/MatchRegistry.sol` - On-chain match data storage
+- `contracts/interfaces/IQualificationContract.sol`
+- `contracts/interfaces/ITournamentMatch.sol`
+- `contracts/interfaces/IMatchRegistry.sol`
+- `scripts/deploy-qualification.ts` - Deploy qualification contract
+- `scripts/deploy-tournament.ts` - Deploy tournament contracts
+- `scripts/create-matches.ts` - Script to create matches via factory
+- `test/QualificationContract.test.ts` - Qualification tests
+- `test/TournamentMatchContract.test.ts` - Tournament tests
+- `test/MatchFactory.test.ts` - Factory tests
 
 ### Backend/API
-- `prisma/schema.prisma`: Database schema definition
-- `lib/db.ts`: Database connection and Prisma client
-- `lib/blockchain.ts`: Base network configuration and utilities
-- `lib/contracts.ts`: Contract ABIs and interaction helpers
-- `lib/pricing.ts`: Pricing calculation utilities (matches contract logic)
-- `lib/indexer.ts`: Event indexer service (listens to blockchain events)
-- `lib/txProcessor.ts`: Process transaction hashes and index to DB
-- `app/api/matches/index/route.ts`: Index match creation from tx hash
-- `app/api/votes/index/route.ts`: Index vote from tx hash
-- `app/api/matches/route.ts`: List matches (from database)
-- `app/api/matches/[id]/route.ts`: Get match details (database + on-chain)
-- `app/api/matches/[id]/votes/route.ts`: Get voting statistics
-- `app/api/matches/[id]/price/route.ts`: Get current vote price (from contract)
-- `GET /api/matches/[id]/claimable/:address`: Get claimable amount for user (checks deadline, winner, user's vote count)
-  - Returns: vote count, total votes for winner, calculated share
-- `app/api/matches/[id]/claim/route.ts`: Initiate claim transaction (returns tx hash)
-  - Validates: deadline passed, user voted for winner, not already claimed
-- `app/api/indexer/route.ts`: Manual trigger for event indexer (optional)
-- `public/.well-known/farcaster.json`: Farcaster manifest file (or redirect config for Vercel)
-- `app/api/farcaster/manifest/route.ts`: Serve manifest if needed (alternative to static file)
+
+- `prisma/schema.prisma` - Database schema definition
+- `lib/db.ts` - Database connection and Prisma client
+- `lib/blockchain.ts` - Base network configuration
+- `lib/contracts.ts` - Contract ABIs and interaction helpers
+- `lib/indexer.ts` - Event indexer service
+- `lib/txProcessor.ts` - Process transaction hashes
+
+**Qualification API:**
+- `app/api/qualification/standings/route.ts` - Get live rankings
+- `app/api/qualification/countries/route.ts` - Get all countries
+- `app/api/qualification/vote/route.ts` - Index vote transaction
+- `app/api/qualification/user/[address]/route.ts` - User stats
+- `app/api/qualification/rewards/[address]/route.ts` - Claimable rewards
+- `app/api/qualification/snapshot/route.ts` - Admin finalize
+- `app/api/qualification/qualified/route.ts` - Get top 48
+
+**Tournament API:**
+- `app/api/matches/route.ts` - List matches
+- `app/api/matches/[id]/route.ts` - Match details
+- `app/api/matches/[id]/vote/route.ts` - Index vote
+- `app/api/matches/[id]/user/[address]/route.ts` - User's match votes
+- `app/api/matches/[id]/rewards/[address]/route.ts` - Claimable winnings
+- `app/api/matches/[id]/finalize/route.ts` - Index finalization
+
+**Farcaster:**
+- `public/.well-known/farcaster.json` - Farcaster manifest
 
 ### Frontend Components
-- `components/VotingInterface.tsx`: Main voting UI
-- `components/MatchCard.tsx`: Individual match display with voting
-- `components/WalletConnect.tsx`: Wallet connection component (supports MetaMask, WalletConnect, Farcaster)
-- `components/FarcasterProvider.tsx`: Farcaster SDK provider and context
-- `components/FarcasterDetector.tsx`: Detect if running in Farcaster context
-- `components/FarcasterShare.tsx`: Share to Farcaster component
-- `components/ContextAwareUI.tsx`: Conditional UI based on desktop/Farcaster context
-- `components/VoteButton.tsx`: Vote transaction component
-- `components/PayoutClaim.tsx`: Claim payout component
-  - Shows claimable amount (if user voted for winner and deadline passed)
-  - Displays user's vote count for winning team (this determines share)
-  - Displays total votes for winning team
-  - Shows calculated share: (user votes / total votes) × winner pool
-  - Shows user's ETH contribution (for reference, not used in calculation)
-  - Claim button (disabled if already claimed or can't claim)
-- `components/PriceDisplay.tsx`: Current vote price display with phase indicator
-- `components/PhaseIndicator.tsx`: Shows current phase (1 or 2)
+
+**Qualification:**
+- `components/qualification/VotingInterface.tsx` - Main voting UI
+- `components/qualification/CountryCard.tsx` - Country display with vote button
+- `components/qualification/StandingsTable.tsx` - Live rankings
+- `components/qualification/RewardCalculator.tsx` - Show projected rewards
+- `components/qualification/ClaimRewards.tsx` - Claim interface
+
+**Tournament:**
+- `components/tournament/MatchCard.tsx` - Match display with voting
+- `components/tournament/VoteButton.tsx` - Vote transaction component
+- `components/tournament/PayoutClaim.tsx` - Claim winnings component
+- `components/tournament/PriceDisplay.tsx` - Current price with phase indicator
+- `components/tournament/PhaseIndicator.tsx` - Shows Phase 1 or 2
+- `components/tournament/Bracket.tsx` - Tournament bracket display
+
+**Shared:**
+- `components/WalletConnect.tsx` - Wallet connection (MetaMask, WalletConnect, Farcaster)
+- `components/FarcasterProvider.tsx` - Farcaster SDK provider
+- `components/FarcasterDetector.tsx` - Detect Farcaster context
+- `components/FarcasterShare.tsx` - Share to Farcaster
 
 ### Utilities
-- `utils/matchScheduler.ts`: Match scheduling logic
-- `utils/qualifierLogic.ts`: Group stage and qualification calculations
-- `utils/contractHelpers.ts`: Contract interaction utilities
-- `utils/pricingCalculation.ts`: Pricing calculation (Phase 1 linear, Phase 2 exponential)
-- `utils/countryCodes.ts`: Country code utilities (convert between string and bytes2, validate ISO 3166-1 alpha-2 codes)
-- `utils/farcaster.ts`: Farcaster utilities (SDK initialization, context detection, user info)
-- `utils/miniappMetadata.ts`: Generate Farcaster Mini App embed metadata
-- `utils/manifest.ts`: Generate and validate Farcaster manifest
 
-## Data Flow
-
-### Match Creation Flow
-\`\`\`
-User/Admin calls MatchFactory.createMatch(bytes2 teamACode, bytes2 teamBCode, ...) → 
-Factory deploys MatchContract (with country codes) → 
-Factory calls MatchRegistry.registerMatch() with country codes → 
-MatchCreated event emitted (includes country codes) → 
-Event Indexer listens to event → 
-Indexer queries contract for match data → 
-Indexer creates match record in database (with country codes) → 
-Frontend displays match from database (looks up country names/flags from country codes)
-\`\`\`
-
-### Voting Flow
-\`\`\`
-User connects wallet → 
-User clicks vote button (selects country) → 
-Frontend calls MatchContract.vote(teamIndex) → 
-Transaction submitted → 
-Transaction hash returned to frontend → 
-Frontend calls POST /api/votes/index with tx hash → 
-Backend queries transaction receipt → 
-Backend queries MatchContract for vote details (gets country code from event) → 
-Backend creates vote record in database (with country code) → 
-VoteCast event emitted with country code (indexed automatically) → 
-Frontend updates UI
-\`\`\`
-
-### Complete Match Lifecycle
-\`\`\`
-Match created on-chain → Event indexed → Database updated → 
-Voting starts (Phase 1: Linear pricing) → 
-Users vote with ETH (tx hash indexed) → 
-2 hours pass → Phase 2 begins (Exponential pricing) → 
-Users continue voting (tx hash indexed) → 
-24 hours complete → Voting deadline → 
-Winner determined on-chain (team with more ETH) → 
-Users can now claim payouts (only if they voted for winner) → 
-Each user's payout = (their vote count for winner / winner's total vote count) × 90% of pool → 
-Early voters benefit (more votes at lower prices = larger share) → 
-Users call claimPayout() to receive their share → 
-Platform receives 10% fee (can be claimed separately)
-\`\`\`
-
-## Smart Contract Details
-
-### MatchRegistry Contract
-- `registerMatch(uint256 matchId, bytes2 teamACode, bytes2 teamBCode, uint256 matchDate, uint8 phase, address matchContract, uint256 votingStart, uint256 votingDeadline)`: Register a new match
-  - `teamACode` and `teamBCode`: ISO 3166-1 alpha-2 country codes (e.g., "US", "BR", "FR") stored as bytes2
-- `getMatch(uint256 matchId)`: Returns match data including country codes
-- `getMatchContract(uint256 matchId)`: Returns match contract address
-- **Event**: `MatchCreated(uint256 indexed matchId, bytes2 teamACode, bytes2 teamBCode, uint256 matchDate, uint8 phase, address matchContract, uint256 votingStart, uint256 votingDeadline)`
-
-### MatchFactory Contract
-- `createMatch(bytes2 teamACode, bytes2 teamBCode, uint256 matchDate, uint8 phase)`: Deploy contract and register match
-  - `teamACode` and `teamBCode`: ISO 3166-1 alpha-2 country codes (e.g., "US", "BR", "FR") as bytes2
-- Returns: match ID and contract address
-- Emits `MatchCreated` event with country codes
-
-### Match Contract Functions
-- `vote(uint8 team)`: Pay current price in ETH, vote for team (0 = teamA, 1 = teamB)
-  - Internally maps to country codes stored in contract (teamA = bytes2 country code, teamB = bytes2 country code)
-- **Event**: `VoteCast(address indexed voter, bytes2 countryCode, uint256 amount, uint256 price, uint8 phase, uint256 voteCount)`
-  - `countryCode`: The country code (bytes2) that was voted for
-- `getCurrentPrice()`: Returns current vote price (handles phase logic)
-- `getCurrentPhase()`: Returns 1 or 2
-- `getVoteCount()`: Returns total number of votes cast
-- `getPhase1VoteCount()`: Returns votes cast in Phase 1
-- `getTotalVotes(uint8 team)`: Returns total ETH voted for team (0 = teamA, 1 = teamB)
-- `getTeamACode()`: Returns bytes2 country code for team A
-- `getTeamBCode()`: Returns bytes2 country code for team B
-- `getUserVoteCount(address user, uint8 team)`: Returns number of votes user cast for team
-- `getUserVoteAmount(address user, uint8 team)`: Returns total ETH amount user voted for team (for display)
-- `getTotalVoteCount(uint8 team)`: Returns total number of votes cast for team
-- `claimPayout()`: Allows winning voters to claim their share
-  - Only callable after voting deadline has passed
-  - Calculates: (user's vote count for winning team / winning team's total vote count) × winnerPool
-  - Transfers user's share of 90% prize pool
-  - Prevents double-claiming (tracks claimed amounts)
-- **Event**: `PayoutClaimed(address indexed claimer, uint256 amount)`
-- `getWinner()`: Returns winning team (0 or 1) after voting closes
-- `getWinnerCode()`: Returns bytes2 country code of winning team
-- `canClaim(address user)`: Returns whether user can claim (voted for winner, deadline passed, not yet claimed)
-- `getClaimableAmount(address user)`: Returns claimable amount for user (0 if didn't vote for winner)
-  - Based on vote count, not ETH amount
-
-### Pricing Formula (Contract Logic)
-
-**Phase 1 (first 2 hours):**
-\`\`\`
-initialPrice = 0.001 ETH
-linearIncrement = 0.0001 ETH
-currentPrice = initialPrice + (voteCount × linearIncrement)
-\`\`\`
-
-**Phase 2 (hours 2-24):**
-\`\`\`
-phase1EndPrice = initialPrice + (phase1VoteCount × linearIncrement)
-phase2VoteCount = totalVoteCount - phase1VoteCount
-exponentialMultiplier = 1.1
-currentPrice = phase1EndPrice × (exponentialMultiplier ^ phase2VoteCount)
-\`\`\`
-
-### Payout Calculation
-
-**After voting deadline ends:**
-
-\`\`\`
-totalPool = totalVotesTeamA + totalVotesTeamB (in ETH)
-platformFee = totalPool × 0.10
-winnerPool = totalPool × 0.90
-
-// For each user who voted for the winning team:
-userVoteCount = number of votes user cast for winning team
-winningTeamVoteCount = total number of votes cast for winning team
-userShare = (userVoteCount / winningTeamVoteCount) × winnerPool
-\`\`\`
-
-**Key Points:**
-- Users can vote multiple times (at increasing prices)
-- Each user's payout is proportional to their **number of votes** for the winning team (not ETH amount)
-- **Early voters benefit**: They can vote more times at lower prices, so they get more votes and thus a larger share
-- Example: User A votes 10 times early (0.01 ETH total) vs User B votes 5 times late (0.05 ETH total)
-  - User A gets: (10 / totalVotes) × winnerPool
-  - User B gets: (5 / totalVotes) × winnerPool
-  - User A gets 2x the payout despite voting less ETH
-- Users can only claim after the voting deadline has passed
-- Users who voted for the losing team receive nothing
-- Platform receives 10% fee (can be claimed by platform wallet)
+- `utils/qualificationHelpers.ts` - Qualification logic
+- `utils/matchScheduler.ts` - Match scheduling logic
+- `utils/pricingCalculation.ts` - Tournament pricing formulas
+- `utils/countryCodes.ts` - Country code utilities
+- `utils/farcaster.ts` - Farcaster SDK utilities
+- `utils/miniappMetadata.ts` - Generate Farcaster metadata
 
 ## Important Dates
 
-- Qualification phase: Starts immediately, ends **June 7, 2026**
-- Main tournament: Starts **June 11, 2026** (matches per day from CSV)
-- Total matches in main phase: Sum of matches column in CSV
+- Qualification phase: Starts immediately, ends ~6-8 weeks later
+- Main tournament: Starts after qualification, runs ~6-8 weeks
 - Voting period per match: **24 hours**
 
 ## Considerations
 
-- **Timezone handling**: Match dates and voting deadlines need proper timezone management
-- **Gas costs**: Base network has lower fees than Ethereum mainnet, but still need to optimize contract gas usage
-- **Phase transition**: Contract must accurately track when Phase 1 ends and Phase 2 begins
-- **Price calculation**: Must match exactly between frontend display and contract logic
-- **Multiple votes per user**: Users can vote multiple times (at increasing prices)
-- **Vote changes**: Users cannot change votes once cast (ETH locked in contract)
-- **Contract deployment costs**: Factory pattern reduces costs, but still need to budget for ~100+ match contracts
-- **Payout claiming**: 
-  - Users can only claim after voting deadline has passed
-  - Payout is proportional to user's **number of votes** for winning team (not ETH amount)
-  - **Early voters benefit**: They can vote more times at lower prices, getting more votes and thus a larger share
-  - Example: User votes 10 times early (0.01 ETH) gets 2x payout of user who votes 5 times late (0.05 ETH)
-  - Users who voted multiple times: their vote count for winning team is summed
-  - Users who voted for losing team receive nothing
-  - Contract tracks claimed amounts to prevent double-claiming
-- **Platform fee collection**: 10% fee goes to platform wallet (needs secure management)
-- **Front-running protection**: Early voters get better prices (by design)
-- **Supabase**: Free tier (500 MB) should be sufficient initially; can upgrade to Pro ($25/month) for 8 GB if needed
-- **Supabase integration**: Can be managed through Vercel marketplace for unified billing
-- **Contract upgrades**: Match contracts are immutable once deployed. Factory can deploy new versions for future matches
-- **Event indexing**: Backend must reliably index all on-chain events. Consider using The Graph or similar indexing service for production
-- **Transaction confirmation**: API endpoints should wait for transaction confirmation before indexing (or use event listeners)
-- **Reorgs**: Handle blockchain reorganizations - may need to re-index events
-- **Missed events**: Event indexer should handle missed blocks and catch up
-- **Gas optimization**: Match creation and voting should be gas-efficient since they happen frequently
-- **Country codes**: Use ISO 3166-1 alpha-2 format (2-letter codes like "US", "BR", "FR") stored as bytes2 in contracts for gas efficiency
-- **Country code validation**: Consider adding validation in contracts to ensure valid country codes
-- **Country metadata**: Country names, flags, etc. can be stored off-chain or in a separate on-chain registry
-- **Farcaster Mini App Requirements**: 
-  - **Manifest**: Must be accessible at `/.well-known/farcaster.json`
-  - **Signed Domain**: Manifest must include signed `accountAssociation` (use Farcaster tool)
-  - **Embed Metadata**: Use `fc:miniapp` meta tag (NOT `fc:frame` - that's legacy)
-  - **SDK Initialization**: Must call `sdk.actions.ready()` after app loads
-  - **Version**: Use `"version": "1"` in manifest and metadata (NOT `"next"`)
-  - **Images**: OG images must be 3:2 aspect ratio, icons 200x200px
-  - **Button Title**: Max 32 characters
-  - **Dual Context**: App must work in both desktop browsers and Farcaster clients
-  - **Wallet Support**: Desktop uses MetaMask/WalletConnect, Farcaster uses embedded wallets via SDK
-  - **Testing**: Use preview tool at `https://farcaster.xyz/~/developers/mini-apps/preview`
-  - **Important**: Do NOT mix Frame and Mini App terminology - this is a Mini App, not a Frame
-- **Base network**: All contracts and transactions use Base network (L2 for lower gas costs)
-- **Multi-platform**: App should work seamlessly in both web browsers and Farcaster clients
+### Two-Phase System
 
-## Farcaster Mini App Verification Checklist
+- Completely separate contracts and mechanics
+- Qualification contract deployed once per season
+- Tournament contracts deployed individually per match
+- Different pricing models (fixed vs dynamic)
+- Different payout models (proportional to qualified support vs winner-take-most)
 
-Before deployment, verify:
+### Gas Costs
 
-1. **Manifest Configuration:**
-   - [ ] Manifest accessible at `https://{domain}/.well-known/farcaster.json`
-   - [ ] Returns HTTP 200 with valid JSON
-   - [ ] Contains `accountAssociation` object (signed)
-   - [ ] Contains `frame` object with `version: "1"` (not "next")
-   - [ ] Domain in signed payload matches hosting domain exactly
+- Base network has lower fees than Ethereum mainnet
+- Qualification contract must handle 200+ countries efficiently
+- Snapshot function must be gas-optimized
+- Tournament factory pattern reduces costs
 
-2. **Embed Metadata:**
-   - [ ] `fc:miniapp` meta tag present on root URL
-   - [ ] `fc:miniapp` meta tag present on all shareable pages
-   - [ ] Valid JSON in meta tag content
-   - [ ] Image URL returns 200 and is 3:2 aspect ratio
-   - [ ] Button title ≤ 32 characters
-   - [ ] Splash image is 200x200px
+### Pricing
 
-3. **App Initialization:**
-   - [ ] App calls `sdk.actions.ready()` after initialization
-   - [ ] No infinite splash screen
-   - [ ] Works in desktop browser
-   - [ ] Works in Farcaster preview tool
-   - [ ] Works in Farcaster clients (Warpcast, etc.)
+- Qualification: Fixed 0.001 ETH, simple to understand
+- Tournament Phase 1: Linear, accessible prices
+- Tournament Phase 2: Exponential, creates urgency
 
-4. **Testing:**
-   - [ ] Test in preview: `https://farcaster.xyz/~/developers/mini-apps/preview?url={url}`
-   - [ ] Share link in Farcaster client
-   - [ ] Verify embed preview appears
-   - [ ] Confirm app launches on click
-   - [ ] Check browser console for SDK errors
-   - [ ] Verify no CORS issues
-   - [ ] Ensure all assets load (splash image, icon)
+**Critical:** Tournament payouts based on vote COUNT, not ETH amount
 
-5. **Wallet Integration:**
-   - [ ] Desktop: MetaMask/WalletConnect works
-   - [ ] Farcaster: Embedded wallets work via SDK
-   - [ ] Base network supported in all wallet types
-   - [ ] Transactions execute successfully in both contexts
+### Database
+
+- Separate tables for qualification and tournament
+- Supabase free tier (500 MB) sufficient initially
+- Can upgrade to Pro ($25/month) for 8 GB if needed
+
+### Farcaster
+
+- Use Mini App SDK (NOT Frame SDK)
+- Call `sdk.actions.ready()` after initialization
+- Manifest must be accessible at `/.well-known/farcaster.json`
+- Use `fc:miniapp` meta tag (NOT `fc:frame`)
+
+### Security
+
+- Use `ReentrancyGuard` on claim functions
+- Qualification snapshot only callable by owner
+- Tournament match finalization is permissionless
+- Platform fee withdrawal restricted to platform wallet
+
+## Related Documents
+
+- [ROADMAP.md](../ROADMAP.md) - Official specification
+- [TWO_PHASE_SYSTEM.md](../architecture/TWO_PHASE_SYSTEM.md) - System architecture
+- [QUALIFICATION_CONTRACT_SPEC.md](../contracts/QUALIFICATION_CONTRACT_SPEC.md) - Qualification contract
+- [TOURNAMENT_CONTRACT_SPEC.md](../contracts/TOURNAMENT_CONTRACT_SPEC.md) - Tournament contract
+- [TOURNAMENT_STRUCTURE.md](../database/TOURNAMENT_STRUCTURE.md) - Database design
+- [pricing_analysis.md](./pricing_analysis.md) - Tournament pricing analysis

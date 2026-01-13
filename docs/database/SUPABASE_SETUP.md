@@ -1,6 +1,14 @@
 # Supabase Setup Guide
 
-This guide walks you through setting up Supabase for the Crypto World Cup project.
+This guide walks you through setting up Supabase for the Onchain World Cup project.
+
+## Overview
+
+The Onchain World Cup has a **two-phase database structure**:
+1. **Qualification Phase**: Rankings-based voting (no matches)
+2. **Tournament Phase**: Match-based voting
+
+Both phases require separate tables.
 
 ## Prerequisites
 
@@ -49,6 +57,25 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Step 4: Create Database Tables
 
+### Two-Phase Database Structure
+
+The database requires tables for both qualification and tournament phases:
+
+**Qualification Phase Tables:**
+- `qualification_votes` - Votes cast during qualification
+- `qualification_standings` - Live rankings
+- `qualified_countries` - Final top 48
+
+**Tournament Phase Tables:**
+- `countries` - Country reference data
+- `matches` - Tournament matches
+- `tournament_votes` - Votes on matches (formerly `votes`)
+- `groups` - Group stage groups
+- `group_standings` - Group standings
+- `user_stats` - User statistics
+
+### Create Tables
+
 1. In Supabase dashboard, go to **SQL Editor**
 
 2. Click **New Query**
@@ -59,9 +86,17 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 5. Click **Run** to execute
 
-6. Verify tables were created:
+6. Run the qualification tables migration:
+   - Click **New Query**
+   - Copy contents of `docs/database/migrations/001_qualification_tables.sql`
+   - Click **Run**
+
+7. Verify tables were created:
    - Go to **Table Editor**
-   - You should see: `countries`, `matches`, `votes`, `user_stats`
+   - You should see:
+     - **Qualification**: `qualification_votes`, `qualification_standings`, `qualified_countries`
+     - **Tournament**: `countries`, `matches`, `tournament_votes`, `groups`, `group_standings`
+     - **Shared**: `user_stats`
 
 ## Step 5: (Optional) Add Sample Data
 
@@ -81,25 +116,30 @@ If you want to test with sample data:
 npm run dev
 \`\`\`
 
-2. Test the API endpoints:
+2. Test the Qualification API endpoints:
 
 \`\`\`bash
+# Get qualification standings
+curl http://localhost:3000/api/qualification/standings
+
 # Get all countries
-curl http://localhost:3000/api/countries
+curl http://localhost:3000/api/qualification/countries
 
-# Create a country (you'll need to add this if you skipped sample data)
-curl -X POST http://localhost:3000/api/countries \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Brazil",
-    "code": "BRA",
-    "flag_emoji": "🇧🇷",
-    "fifa_rank": 1,
-    "qualified": true
-  }'
+# Get qualified countries (only after qualification ends)
+curl http://localhost:3000/api/qualification/qualified
+\`\`\`
 
+3. Test the Tournament API endpoints:
+
+\`\`\`bash
 # Get matches
 curl http://localhost:3000/api/matches
+
+# Get match by ID
+curl http://localhost:3000/api/matches/[match-id]
+
+# Get match votes
+curl http://localhost:3000/api/matches/[match-id]/votes
 \`\`\`
 
 ## Security Configuration (Optional but Recommended)
@@ -193,14 +233,87 @@ For INSERT/UPDATE/DELETE, only allow service role (which we use in API routes).
 - Update `.env.local` with new keys
 - Restart dev server
 
+## Database Migration Guide
+
+### Adding Qualification Tables to Existing Database
+
+If you already have tournament tables and need to add qualification tables:
+
+1. Create migration file: `docs/database/migrations/001_qualification_tables.sql`
+
+2. Add the following SQL:
+
+\`\`\`sql
+-- Qualification Votes Table
+CREATE TABLE IF NOT EXISTS qualification_votes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_address VARCHAR(42) NOT NULL,
+  country_code CHAR(2) NOT NULL,
+  amount_eth DECIMAL NOT NULL,
+  fee_percent INTEGER NOT NULL,
+  tx_hash VARCHAR(66) UNIQUE NOT NULL,
+  block_number BIGINT NOT NULL,
+  block_timestamp TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_qualification_votes_user ON qualification_votes(user_address);
+CREATE INDEX idx_qualification_votes_country ON qualification_votes(country_code);
+CREATE INDEX idx_qualification_votes_tx_hash ON qualification_votes(tx_hash);
+
+-- Qualification Standings Table
+CREATE TABLE IF NOT EXISTS qualification_standings (
+  country_code CHAR(2) PRIMARY KEY,
+  total_votes INTEGER DEFAULT 0 NOT NULL,
+  total_eth DECIMAL DEFAULT 0 NOT NULL,
+  rank INTEGER,
+  is_qualified BOOLEAN DEFAULT FALSE,
+  last_updated TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_qualification_standings_rank ON qualification_standings(rank);
+
+-- Qualified Countries Table
+CREATE TABLE IF NOT EXISTS qualified_countries (
+  country_code CHAR(2) PRIMARY KEY,
+  final_rank INTEGER NOT NULL,
+  total_votes INTEGER NOT NULL,
+  total_eth DECIMAL NOT NULL,
+  qualification_time TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_qualified_countries_rank ON qualified_countries(final_rank);
+\`\`\`
+
+3. Run the migration in Supabase SQL Editor
+
+### Updating Indexes
+
+For optimal performance, ensure these indexes exist:
+
+\`\`\`sql
+-- Qualification phase indexes
+CREATE INDEX IF NOT EXISTS idx_qualification_votes_user ON qualification_votes(user_address);
+CREATE INDEX IF NOT EXISTS idx_qualification_votes_country ON qualification_votes(country_code);
+CREATE INDEX IF NOT EXISTS idx_qualification_standings_rank ON qualification_standings(rank);
+
+-- Tournament phase indexes
+CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
+CREATE INDEX IF NOT EXISTS idx_tournament_votes_match ON tournament_votes(match_id);
+CREATE INDEX IF NOT EXISTS idx_tournament_votes_user ON tournament_votes(user_address);
+\`\`\`
+
 ## Next Steps
 
-1. ✅ Database schema created
-2. ✅ API routes working
-3. 🔲 Create event indexer to populate votes from blockchain
-4. 🔲 Update frontend to fetch from API instead of mock data
-5. 🔲 Add authentication for admin operations
-6. 🔲 Deploy to production
+1. ✅ Database schema created (both phases)
+2. ✅ API routes working (qualification + tournament)
+3. 🔲 Deploy QualificationContract to blockchain
+4. 🔲 Create event indexer for qualification votes
+5. 🔲 Create event indexer for tournament match votes
+6. 🔲 Update frontend for two-phase UI
+7. 🔲 Add authentication for admin operations (snapshot, match creation)
+8. 🔲 Deploy to production
 
 ## Resources
 
