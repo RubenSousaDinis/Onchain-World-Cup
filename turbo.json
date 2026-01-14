@@ -2,29 +2,26 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
+      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "cache": true
-    },
-    "compile": {
-      "outputs": ["artifacts/**", "cache/**", "typechain-types/**"],
-      "cache": true
-    },
-    "lint": {
-      "cache": true,
-      "outputs": []
-    },
-    "test": {
-      "dependsOn": ["compile"],
-      "outputs": [],
       "cache": true
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "start": {
-      "cache": false,
-      "persistent": true
+    "lint": {
+      "dependsOn": ["^lint"],
+      "cache": true,
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": true
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
