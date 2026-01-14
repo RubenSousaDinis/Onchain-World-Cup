@@ -2,17 +2,6 @@
 
 This directory contains the Prisma schema and configuration for database access using Prisma ORM.
 
-## Current Schema: Qualification Phase Only
-
-The database schema is currently simplified for the **qualification phase** where users vote on which countries will qualify for the World Cup 2026. The schema will be expanded in later phases to include matches, tournaments, and group stages.
-
-**Current tables:**
-- `qualification_votes` - User votes on countries
-- `user_stats` - Leaderboard and statistics
-
-**Static data:**
-- Countries are stored in `data/countries.json` (not in database)
-
 ## Overview
 
 Prisma provides a type-safe database client for working with the Supabase PostgreSQL database. While the app also uses the Supabase client directly for some operations, Prisma offers:
@@ -100,39 +89,78 @@ npm run prisma:migrate
 
 ## Usage Example
 
-### Qualification Phase Schema
-
-The current schema is simplified for the qualification phase only:
-- **QualificationVote** - User votes on which countries will qualify
-- **UserStat** - Leaderboard and user statistics
-
-### Query Qualification Votes
+### In an API Route
 
 ```typescript
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function GET() {
-  // Get all votes for a specific country
-  const brazilVotes = await prisma.qualificationVote.findMany({
+  // Type-safe query with autocomplete
+  const countries = await prisma.country.findMany({
     where: {
-      countryCode: 'BR'
+      qualified: true
     },
     orderBy: {
-      blockTimestamp: 'desc'
-    }
+      fifaRank: 'asc'
+    },
+    take: 10
   })
 
-  return Response.json({ votes: brazilVotes })
+  return Response.json({ countries })
 }
+```
+
+### Using Relations
+
+```typescript
+// Get tournament with all related data
+const tournament = await prisma.tournament.findUnique({
+  where: { id: tournamentId },
+  include: {
+    phases: true,
+    groups: {
+      include: {
+        standings: {
+          include: {
+            country: true
+          }
+        }
+      }
+    },
+    matches: {
+      include: {
+        team1: true,
+        team2: true,
+        votes: true
+      }
+    }
+  }
+})
+```
+
+### Query Votes
+
+```typescript
+// Get all votes for a specific match
+const matchVotes = await prisma.vote.findMany({
+  where: {
+    matchId: matchId
+  },
+  orderBy: {
+    createdAt: 'desc'
+  }
+})
 ```
 
 ### Get User Votes
 
 ```typescript
 // Get all votes by a specific user
-const userVotes = await prisma.qualificationVote.findMany({
+const userVotes = await prisma.vote.findMany({
   where: {
-    walletAddress: '0x123...'
+    voterAddress: '0x123...'
   },
   orderBy: {
     createdAt: 'desc'
@@ -149,26 +177,6 @@ const leaderboard = await prisma.userStat.findMany({
     totalSpentEth: 'desc'
   },
   take: 10
-})
-```
-
-### Aggregate Votes by Country
-
-```typescript
-// Get total votes and ETH per country
-const votesByCountry = await prisma.qualificationVote.groupBy({
-  by: ['countryCode'],
-  _count: {
-    id: true
-  },
-  _sum: {
-    amountEth: true
-  },
-  orderBy: {
-    _sum: {
-      amountEth: 'desc'
-    }
-  }
 })
 ```
 
@@ -212,7 +220,7 @@ await prisma.$transaction([
 
 ## Schema Management
 
-The schema is defined in `schema.prisma` and matches the existing Supabase database structure.
+The schema is defined in `schema.prisma` and matches the existing Supabase database structure. The schema includes models for the full tournament system: countries, tournaments, phases, groups, matches, votes, and user statistics.
 
 ### Making Schema Changes
 
