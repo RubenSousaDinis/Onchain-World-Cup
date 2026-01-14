@@ -15,12 +15,19 @@
     "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
     "deploy:mainnet": "hardhat run scripts/deploy.js --network baseMainnet",
-    "seed:countries": "tsx scripts/seed-countries.ts"
+    "seed:countries": "tsx scripts/seed-countries.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push",
+    "prisma:pull": "prisma db pull",
+    "prisma:migrate": "prisma migrate dev",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@farcaster/miniapp-sdk": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@openzeppelin/contracts": "^5.4.0",
+    "@prisma/client": "^6.19.2",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",
@@ -110,6 +117,7 @@
     "hardhat": "^2.28.3",
     "hardhat-gas-reporter": "^1.0.10",
     "postcss": "^8.5",
+    "prisma": "^6.19.2",
     "solidity-coverage": "^0.8.17",
     "tailwindcss": "^4.1.9",
     "ts-node": "^10.9.2",

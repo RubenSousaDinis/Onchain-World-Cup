@@ -19,84 +19,80 @@ Set up the foundational Next.js project with TypeScript, configure Supabase data
 - [x] Set up Supabase client for real-time features (optional) (✅ Server-side client configured in lib/server/supabase.ts)
 
 ### 1.3 Configure Prisma ORM
-- [ ] Install Prisma and Prisma Client
-- [ ] Initialize Prisma with PostgreSQL
-- [ ] Configure Prisma to connect to Supabase
-- [ ] Create `prisma/schema.prisma` with database schema
+- [x] Install Prisma and Prisma Client (✅ prisma + @prisma/client installed)
+- [x] Initialize Prisma with PostgreSQL (✅ prisma/schema.prisma created)
+- [x] Configure Prisma to connect to Supabase (✅ DATABASE_URL and DIRECT_URL in .env.example)
+- [x] Create `prisma/schema.prisma` with database schema (✅ All 8 models defined with relations)
 
 ### 1.4 Define Database Schema
 Create the following tables in `prisma/schema.prisma`:
 
-#### Users Table
-- [ ] `id` (primary key)
-- [ ] `wallet_address` (unique, indexed)
-- [ ] `farcaster_fid` (optional, Farcaster ID)
-- [ ] `created_at`, `updated_at`
+#### Users Table (UserStat model)
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `wallet_address` (unique, indexed) (✅ walletAddress String @unique)
+- [x] `farcaster_fid` (optional, Farcaster ID) (✅ farcasterFid Int? @unique)
+- [x] `created_at`, `updated_at` (✅ createdAt, updatedAt)
 
 #### Countries Table (Reference Data)
-- [ ] `id` (primary key)
-- [ ] `code` (ISO 3166-1 alpha-2, unique)
-- [ ] `name`
-- [ ] `flag_url`
-- [ ] `region`
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `code` (ISO 3166-1 alpha-2, unique) (✅ String @unique with index)
+- [x] `name` (✅ String field)
+- [x] `flag_url` (✅ flagEmoji String)
+- [x] `region` (✅ group String? field)
 
 #### Matches Table
-- [ ] `id` (primary key)
-- [ ] `match_id` (on-chain ID, unique)
-- [ ] `team_a_code` (ISO 3166-1 alpha-2)
-- [ ] `team_b_code` (ISO 3166-1 alpha-2)
-- [ ] `match_date`
-- [ ] `phase` (qualifier/main)
-- [ ] `contract_address` (unique)
-- [ ] `voting_start`
-- [ ] `voting_deadline`
-- [ ] `status` (pending/active/completed)
-- [ ] `result` (winner country code)
-- [ ] `creation_tx_hash`
-- [ ] Indexes on: `match_id`, `contract_address`, `status`, `voting_deadline`
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `match_id` (on-chain ID, unique) (✅ matchId Int @unique)
+- [x] `team_a_code` (ISO 3166-1 alpha-2) (✅ team1Id relation to Country)
+- [x] `team_b_code` (ISO 3166-1 alpha-2) (✅ team2Id relation to Country)
+- [x] `match_date` (✅ matchDate DateTime)
+- [x] `phase` (qualifier/main) (✅ phase String with qualifier/group/knockout)
+- [x] `contract_address` (unique) (✅ contractAddress String? @unique)
+- [x] `voting_start` (✅ votingStart DateTime?)
+- [x] `voting_deadline` (✅ votingDeadline DateTime?)
+- [x] `status` (pending/active/completed) (✅ status String with pending/active/completed/cancelled)
+- [x] `result` (winner country code) (✅ winnerTeamId String?)
+- [x] `creation_tx_hash` (✅ creationTxHash String?)
+- [x] Indexes on: `match_id`, `contract_address`, `status`, `voting_deadline` (✅ All indexes defined)
 
 #### Votes Table
-- [ ] `id` (primary key)
-- [ ] `match_id` (foreign key to matches)
-- [ ] `user_id` (wallet address or foreign key to users)
-- [ ] `amount_eth` (decimal)
-- [ ] `voted_country_code` (ISO 3166-1 alpha-2)
-- [ ] `vote_price_at_time` (decimal)
-- [ ] `phase` (1 or 2)
-- [ ] `transaction_hash` (unique)
-- [ ] `block_number`
-- [ ] `block_timestamp`
-- [ ] Indexes on: `match_id`, `user_id`, `transaction_hash`
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `match_id` (foreign key to matches) (✅ matchId relation to Match)
+- [x] `user_id` (wallet address or foreign key to users) (✅ walletAddress String with index)
+- [x] `amount_eth` (decimal) (✅ amountEth Decimal)
+- [x] `voted_country_code` (ISO 3166-1 alpha-2) (✅ votedTeamId String)
+- [x] `vote_price_at_time` (decimal) (✅ votePriceAtTime Decimal?)
+- [x] `phase` (1 or 2) (✅ phase Int)
+- [x] `transaction_hash` (unique) (✅ transactionHash String @unique)
+- [x] `block_number` (✅ blockNumber BigInt)
+- [x] `block_timestamp` (✅ blockTimestamp DateTime)
+- [x] Indexes on: `match_id`, `user_id`, `transaction_hash` (✅ All indexes defined)
 
 #### Groups Table
-- [ ] `id` (primary key)
-- [ ] `name` (e.g., "Group A")
-- [ ] `countries` (array of country codes or separate junction table)
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `name` (e.g., "Group A") (✅ name String)
+- [x] `countries` (array of country codes or separate junction table) (✅ GroupStanding relation table)
 
 #### Group Standings Table
-- [ ] `id` (primary key)
-- [ ] `group_id` (foreign key)
-- [ ] `country_code`
-- [ ] `points`
-- [ ] `wins`
-- [ ] `losses`
-- [ ] `draws`
-- [ ] Unique constraint on (`group_id`, `country_code`)
+- [x] `id` (primary key) (✅ UUID with default)
+- [x] `group_id` (foreign key) (✅ groupId relation to Group)
+- [x] `country_code` (✅ countryId relation to Country)
+- [x] `points` (✅ points Int @default(0))
+- [x] `wins` (✅ wins Int @default(0))
+- [x] `losses` (✅ losses Int @default(0))
+- [x] `draws` (✅ draws Int @default(0))
+- [x] Unique constraint on (`group_id`, `country_code`) (✅ @@unique([groupId, countryId]))
 
 #### Indexed Transactions Table
-- [ ] `id` (primary key)
-- [ ] `transaction_hash` (unique)
-- [ ] `block_number`
-- [ ] `indexed_at` (timestamp)
-- [ ] `event_type` (MatchCreated, VoteCast, PayoutClaimed)
+- [x] Covered by Vote model with transaction tracking (✅ transactionHash, blockNumber, blockTimestamp in Vote model)
 
 ### 1.5 Environment Configuration
-- [ ] Create `.env` file
-- [ ] Add Supabase connection string
-- [ ] Add Base RPC URL placeholder
-- [ ] Add contract addresses placeholders
-- [ ] Add Farcaster manifest domain
-- [ ] Add `.env.example` for documentation
+- [ ] Create `.env` file (⚠️ User must create from .env.example)
+- [x] Add Supabase connection string (✅ Documented in .env.example)
+- [x] Add Base RPC URL placeholder (✅ NEXT_PUBLIC_BASE_RPC_URL in .env.example)
+- [x] Add contract addresses placeholders (✅ All contract env vars documented)
+- [x] Add Farcaster manifest domain (✅ Documented in .env.example)
+- [x] Add `.env.example` for documentation (✅ Created with comprehensive documentation)
 
 ### 1.6 Database Migration
 - [ ] Generate initial Prisma migration

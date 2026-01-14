@@ -37,6 +37,24 @@ npm run test
 npm run clean
 ```
 
+### Database & ORM (in apps/app)
+```bash
+# Generate Prisma Client (auto-runs after npm install)
+npm run prisma:generate
+
+# Open Prisma Studio (visual database browser)
+npm run prisma:studio
+
+# Push schema changes to database
+npm run prisma:push
+
+# Pull schema from database
+npm run prisma:pull
+
+# Seed database with countries
+npm run seed:countries
+```
+
 ### Smart Contract Development (in apps/app)
 ```bash
 cd apps/app
@@ -92,10 +110,13 @@ npm run seed:countries
    - 90% to winners proportionally, 10% platform fee
 
 4. **Database Schema**
-   - Type-safe schema defined in `lib/server/supabase.ts`
+   - Prisma schema defined in `prisma/schema.prisma` with all relations
+   - Supabase types defined in `lib/server/supabase.ts`
    - Tables: countries, matches, votes, user_stats, tournaments, tournament_phases, groups, group_standings
    - Uses UUIDs for IDs, tracks blockchain transaction hashes
-   - Server-side only with service role key (never exposed to client)
+   - **Choose the right tool:**
+     - Use Prisma for complex queries with joins and strong typing
+     - Use Supabase client for real-time features or RLS policies
 
 5. **Web3 Configuration**
    - wagmi config in `lib/wagmi-config.ts`

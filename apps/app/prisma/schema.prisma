@@ -1,0 +1,197 @@
+// Prisma Schema for Onchain World Cup
+// This schema matches the existing Supabase database structure
+// Database: PostgreSQL (via Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Countries participating in the World Cup
+model Country {
+  id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                 String
+  code                 String   @unique
+  flagEmoji            String   @map("flag_emoji")
+  fifaRank             Int?     @map("fifa_rank")
+  group                String?
+  qualified            Boolean  @default(false)
+  tournamentId         String?  @map("tournament_id") @db.Uuid
+  qualificationStatus  String?  @map("qualification_status")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  tournament        Tournament?      @relation(fields: [tournamentId], references: [id])
+  matchesAsTeam1    Match[]          @relation("Team1Matches")
+  matchesAsTeam2    Match[]          @relation("Team2Matches")
+  groupStandings    GroupStanding[]
+
+  @@index([code])
+  @@index([qualified])
+  @@map("countries")
+}
+
+// Tournament information
+model Tournament {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name           String
+  year           Int
+  hostCountries  String[]  @map("host_countries")
+  totalTeams     Int       @map("total_teams")
+  startDate      DateTime  @map("start_date") @db.Timestamptz(6)
+  endDate        DateTime  @map("end_date") @db.Timestamptz(6)
+  status         String    @default("upcoming")
+  currentPhase   String?   @map("current_phase")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  countries Country[]
+  phases    TournamentPhase[]
+  groups    Group[]
+  matches   Match[]
+
+  @@map("tournaments")
+}
+
+// Tournament phases (qualification, group stage, knockout, etc.)
+model TournamentPhase {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tournamentId String    @map("tournament_id") @db.Uuid
+  name         String
+  displayName  String    @map("display_name")
+  phaseOrder   Int       @map("phase_order")
+  startDate    DateTime? @map("start_date") @db.Timestamptz(6)
+  endDate      DateTime? @map("end_date") @db.Timestamptz(6)
+  status       String    @default("upcoming")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches    Match[]
+
+  @@index([tournamentId])
+  @@map("tournament_phases")
+}
+
+// Groups for group stage
+model Group {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tournamentId String   @map("tournament_id") @db.Uuid
+  name         String
+  displayName  String   @map("display_name")
+  maxTeams     Int      @default(4) @map("max_teams")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  tournament Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  standings  GroupStanding[]
+  matches    Match[]
+
+  @@map("groups")
+}
+
+// Group standings for tracking team performance
+model GroupStanding {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId        String   @map("group_id") @db.Uuid
+  countryId      String   @map("country_id") @db.Uuid
+  matchesPlayed  Int      @default(0) @map("matches_played")
+  wins           Int      @default(0)
+  draws          Int      @default(0)
+  losses         Int      @default(0)
+  votesFor       Int      @default(0) @map("votes_for")
+  votesAgainst   Int      @default(0) @map("votes_against")
+  voteDifference Int?     @map("vote_difference")
+  points         Int      @default(0)
+  position       Int?
+  qualified      Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  group   Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, countryId])
+  @@index([groupId])
+  @@map("group_standings")
+}
+
+// Matches between teams
+model Match {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  team1Id         String    @map("team1_id") @db.Uuid
+  team2Id         String    @map("team2_id") @db.Uuid
+  contractAddress String    @map("contract_address")
+  matchStartTime  DateTime  @map("match_start_time") @db.Timestamptz(6)
+  votingEndTime   DateTime  @map("voting_end_time") @db.Timestamptz(6)
+  matchEndTime    DateTime  @map("match_end_time") @db.Timestamptz(6)
+  status          String    @default("upcoming")
+  winningTeam     Int?      @map("winning_team")
+  tournamentId    String?   @map("tournament_id") @db.Uuid
+  phaseId         String?   @map("phase_id") @db.Uuid
+  groupId         String?   @map("group_id") @db.Uuid
+  matchNumber     Int?      @map("match_number")
+  isQualification Boolean   @default(false) @map("is_qualification")
+  team1Score      Int?      @map("team1_score")
+  team2Score      Int?      @map("team2_score")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  team1      Country          @relation("Team1Matches", fields: [team1Id], references: [id])
+  team2      Country          @relation("Team2Matches", fields: [team2Id], references: [id])
+  tournament Tournament?      @relation(fields: [tournamentId], references: [id])
+  phase      TournamentPhase? @relation(fields: [phaseId], references: [id])
+  group      Group?           @relation(fields: [groupId], references: [id])
+  votes      Vote[]
+
+  @@index([status])
+  @@index([tournamentId])
+  @@map("matches")
+}
+
+// Votes placed by users on matches
+model Vote {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  matchId      String   @map("match_id") @db.Uuid
+  voterAddress String   @map("voter_address")
+  teamIndex    Int      @map("team_index")
+  voteCount    Int      @map("vote_count")
+  totalCostEth String   @map("total_cost_eth")
+  txHash       String   @unique @map("tx_hash")
+  blockNumber  BigInt   @map("block_number")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([voterAddress])
+  @@map("votes")
+}
+
+// User statistics and rankings
+model UserStat {
+  id                  String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress       String   @unique @map("wallet_address")
+  totalVotes          Int      @default(0) @map("total_votes")
+  totalSpentEth       String   @default("0") @map("total_spent_eth")
+  totalWonEth         String   @default("0") @map("total_won_eth")
+  matchesParticipated Int      @default(0) @map("matches_participated")
+  matchesWon          Int      @default(0) @map("matches_won")
+  rank                Int?
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([walletAddress])
+  @@map("user_stats")
+}
