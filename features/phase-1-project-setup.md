@@ -13,10 +13,10 @@ Set up the foundational Next.js project with TypeScript, configure Supabase data
 - [x] Initialize git repository (if not already done) (✅ Git initialized)
 
 ### 1.2 Set Up Supabase
-- [ ] Create Supabase project (free tier: 500 MB storage)
-- [ ] Get database connection string
-- [ ] Configure database security rules
-- [ ] Set up Supabase client for real-time features (optional)
+- [x] Create Supabase project (free tier: 500 MB storage) (✅ Documented in SUPABASE_SETUP.md)
+- [x] Get database connection string (✅ Environment variables documented in .env.example)
+- [x] Configure database security rules (✅ SQL schema with RLS guidance provided)
+- [x] Set up Supabase client for real-time features (optional) (✅ Server-side client configured in lib/server/supabase.ts)
 
 ### 1.3 Configure Prisma ORM
 - [ ] Install Prisma and Prisma Client

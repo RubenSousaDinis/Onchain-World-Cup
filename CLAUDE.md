@@ -144,7 +144,14 @@ npm run seed:countries
 
 ## Environment Variables
 
-Required environment variables (create `.env.local` in `apps/app`):
+All environment variables are documented in `apps/app/.env.example`. Copy this file to `.env.local` and fill in your values:
+
+```bash
+cd apps/app
+cp .env.example .env.local
+```
+
+### Required environment variables:
 
 ```bash
 # Web3
@@ -163,6 +170,22 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # Optional
 REPORT_GAS=true  # Enable gas reporting in tests
 ```
+
+## Setup Guides
+
+Before development, ensure you have configured:
+
+1. **Supabase** - Follow `apps/app/SUPABASE_SETUP.md` for:
+   - Creating a Supabase project
+   - Setting up environment variables
+   - Creating database tables with SQL
+   - Seeding initial data
+
+2. **Environment Variables** - Copy `apps/app/.env.example` to `.env.local` and fill in:
+   - Supabase credentials (URL and service role key)
+   - WalletConnect project ID
+   - Base network RPC URLs
+   - (Optional) Deployment keys for smart contracts
 
 ## Documentation
 
