@@ -28,7 +28,7 @@ export function VoteModal({
   teamFlag,
   opponent,
   opponentFlag,
-  currentPrice,
+  currentPrice: _currentPrice,
   pricePhase,
   matchId,
   contractAddress,
@@ -39,13 +39,13 @@ export function VoteModal({
   const [votePlaced, setVotePlaced] = useState(false)
   const [isDemoVote, setIsDemoVote] = useState(false)
 
-  const { address, isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
+  const { address: _address, isConnected } = useAccount()
+  const { connect: _connect, connectors: _connectors } = useConnect()
   const { data: hash, writeContract, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   })
-  const { isFrameContext, isAutoConnecting } = useFarcaster()
+  const { isFrameContext: _isFrameContext, isAutoConnecting } = useFarcaster()
 
   const basePrice = 0.001 // Starting price in ETH
   const pricePerVote =

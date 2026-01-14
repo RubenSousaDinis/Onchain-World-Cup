@@ -5,7 +5,7 @@ import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 
-const tabs = [
+const _tabs = [
   { label: "Summary", value: "summary" },
   { label: "Standings", value: "standings" },
   { label: "Schedule", value: "schedule" },
@@ -195,10 +195,27 @@ const topTeamsByVotes = [
   { pos: 5, team: "Spain", flag: "🇪🇸", totalVotes: 890, totalETH: 8.9, voters: 245 },
 ]
 
+type Match = {
+  id: string
+  date: string
+  team1: string
+  team2: string
+  team1Flag: string
+  team2Flag: string
+  score1?: number
+  score2?: number
+  votes1?: string
+  votes2?: string
+  winner?: number
+  stadium: string
+  matchDate: string
+  contractAddress: string
+}
+
 export default function TournamentPage() {
-  const [activeTab, setActiveTab] = useState("summary")
-  const [voteModalOpen, setVoteModalOpen] = useState(false)
-  const [selectedMatch, setSelectedMatch] = useState<any>(null)
+  const [_activeTab, _setActiveTab] = useState("summary")
+  const [_voteModalOpen, _setVoteModalOpen] = useState(false)
+  const [_selectedMatch, _setSelectedMatch] = useState<Match | null>(null)
 
   const [displayedStandings, setDisplayedStandings] = useState(6)
   const [displayedResults, setDisplayedResults] = useState(3)
@@ -207,25 +224,25 @@ export default function TournamentPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Infinite scroll for standings
-  const { sentinelRef: standingsSentinel, shouldLoadMore: shouldLoadStandings } = useInfiniteScroll({
+  const { sentinelRef: _standingsSentinel, shouldLoadMore: shouldLoadStandings } = useInfiniteScroll({
     hasMore: displayedStandings < mockStandings.length,
     isLoading: isLoadingMore,
   })
 
   // Infinite scroll for results
-  const { sentinelRef: resultsSentinel, shouldLoadMore: shouldLoadResults } = useInfiniteScroll({
+  const { sentinelRef: _resultsSentinel, shouldLoadMore: shouldLoadResults } = useInfiniteScroll({
     hasMore: displayedResults < results.length,
     isLoading: isLoadingMore,
   })
 
   // Infinite scroll for top teams
-  const { sentinelRef: topTeamsSentinel, shouldLoadMore: shouldLoadTopTeams } = useInfiniteScroll({
+  const { sentinelRef: _topTeamsSentinel, shouldLoadMore: shouldLoadTopTeams } = useInfiniteScroll({
     hasMore: displayedTopTeams < topTeamsByVotes.length,
     isLoading: isLoadingMore,
   })
 
   // Infinite scroll for schedule
-  const { sentinelRef: scheduleSentinel, shouldLoadMore: shouldLoadSchedule } = useInfiniteScroll({
+  const { sentinelRef: _scheduleSentinel, shouldLoadMore: shouldLoadSchedule } = useInfiniteScroll({
     hasMore: displayedSchedule < allSchedule.length,
     isLoading: isLoadingMore,
   })
@@ -270,16 +287,8 @@ export default function TournamentPage() {
     }
   }, [shouldLoadSchedule])
 
-  const handleVoteClick = (match: any, teamIndex: number) => {
-    setSelectedMatch({
-      ...match,
-      teamIndex,
-      team: teamIndex === 0 ? match.team1 : match.team2,
-      teamFlag: teamIndex === 0 ? match.team1Flag : match.team2Flag,
-      opponent: teamIndex === 0 ? match.team2 : match.team1,
-      opponentFlag: teamIndex === 0 ? match.team2Flag : match.team1Flag,
-    })
-    setVoteModalOpen(true)
+  const _handleVoteClick = (_match: Match, _teamIndex: number) => {
+    // Future implementation - tournament phase not active yet
   }
 
   return (
@@ -304,12 +313,12 @@ export default function TournamentPage() {
               countries will qualify for the Onchain World Cup 2026. Help your nation secure their spot!
             </p>
             <div className="text-center">
-              <a
+              <Link
                 href="/qualification"
                 className="inline-block cm-nav-tab px-8 py-4 text-base lg:text-lg font-bold uppercase"
               >
                 Go to Qualification →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

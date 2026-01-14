@@ -43,8 +43,8 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
         // Detect if running in Farcaster context
         const isInFarcaster =
           typeof window !== "undefined" &&
-          ((window as any).ethereum?.isFarcaster ||
-            (window as any).farcaster ||
+          ((window as unknown as { ethereum?: { isFarcaster?: boolean }; farcaster?: unknown }).ethereum?.isFarcaster ||
+            (window as unknown as { ethereum?: { isFarcaster?: boolean }; farcaster?: unknown }).farcaster ||
             navigator.userAgent.includes("Warpcast") ||
             navigator.userAgent.includes("Farcaster"))
 

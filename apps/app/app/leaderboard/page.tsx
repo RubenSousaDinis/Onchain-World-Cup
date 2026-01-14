@@ -112,7 +112,7 @@ const mockLeaderboard = [
 ]
 
 export default function LeaderboardPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, _setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("qualification")
 
   const [displayedCount, setDisplayedCount] = useState(10)

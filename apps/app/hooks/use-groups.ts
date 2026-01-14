@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
-import type { Group, GroupStanding, ApiResponse } from '@/lib/api-types'
+import type { Group, GroupStanding } from '@/lib/api-types'
 
 /**
  * Query keys for groups

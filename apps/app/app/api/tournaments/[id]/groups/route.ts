@@ -41,7 +41,7 @@ export async function GET(
         const groupsWithSortedStandings = groups?.map((group) => ({
           ...group,
           standings: group.standings?.sort(
-            (a: any, b: any) => (a.position || 999) - (b.position || 999)
+            (a, b) => ((a as { position?: number }).position || 999) - ((b as { position?: number }).position || 999)
           ),
         }))
 

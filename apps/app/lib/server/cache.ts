@@ -65,10 +65,10 @@ export const CACHE_TTL = {
 /**
  * Helper to generate cache keys
  */
-export function getCacheKey(prefix: string, params: Record<string, any>): string {
+export function getCacheKey(prefix: string, params: Record<string, unknown>): string {
   const sortedParams = Object.keys(params)
     .sort()
-    .map(key => `${key}:${params[key]}`)
+    .map(key => `${key}:${String(params[key])}`)
     .join('|')
 
   return `${prefix}:${sortedParams}`

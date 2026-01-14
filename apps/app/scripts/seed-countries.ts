@@ -154,7 +154,7 @@ async function seedCountries() {
 
     // Group by confederation (based on FIFA rank ranges - approximate)
     console.log('\n🌎 By Confederation:')
-    const qualified = data.filter(c => c.qualified)
+    const _qualified = data.filter(c => c.qualified)
     console.log(`   CONCACAF (Hosts): 3`)
     console.log(`   UEFA (Europe): ~16`)
     console.log(`   CONMEBOL (South America): ~6`)

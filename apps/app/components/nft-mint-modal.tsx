@@ -17,14 +17,14 @@ interface NFTMintModalProps {
     description: string
     imageUrl?: string
     imageComponent?: React.ReactNode
-    metadata: any
+    metadata: Record<string, unknown>
   }
 }
 
 export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps) {
   const [isMinting, setIsMinting] = useState(false)
-  const { writeContract, data: hash } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { writeContract: _writeContract, data: hash } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess: _isSuccess } = useWaitForTransactionReceipt({ hash })
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -41,7 +41,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
   const handleMint = async () => {
     setIsMinting(true)
     // TODO: Replace with actual NFT contract address
-    const nftContractAddress = "0x0000000000000000000000000000000000000000"
+    const _nftContractAddress = "0x0000000000000000000000000000000000000000"
 
     try {
       // In a real implementation, you would:

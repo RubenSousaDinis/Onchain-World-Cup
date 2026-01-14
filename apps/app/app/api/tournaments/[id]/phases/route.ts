@@ -106,7 +106,7 @@ export async function POST(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  _context: { params: { id: string } }
 ) {
   try {
     // TODO: Add authentication check
@@ -123,7 +123,7 @@ export async function PATCH(
     }
 
     const { status, start_date, end_date } = body
-    const updates: any = {}
+    const updates: Record<string, unknown> = {}
 
     if (status) updates.status = status
     if (start_date) updates.start_date = start_date

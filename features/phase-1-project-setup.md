@@ -6,11 +6,11 @@ Set up the foundational Next.js project with TypeScript, configure Supabase data
 ## Sub-tasks
 
 ### 1.1 Initialize Next.js Project
-- [ ] Create new Next.js 14+ project with App Router
-- [ ] Configure TypeScript
-- [ ] Set up project structure and folders
-- [ ] Configure ESLint and Prettier
-- [ ] Initialize git repository (if not already done)
+- [x] Create new Next.js 14+ project with App Router (✅ Next.js 16 with App Router)
+- [x] Configure TypeScript (✅ tsconfig.json with strict mode)
+- [x] Set up project structure and folders (✅ app/, components/, lib/, etc.)
+- [x] Configure ESLint and Prettier (✅ eslint.config.mjs + .prettierrc.json)
+- [x] Initialize git repository (if not already done) (✅ Git initialized)
 
 ### 1.2 Set Up Supabase
 - [ ] Create Supabase project (free tier: 500 MB storage)

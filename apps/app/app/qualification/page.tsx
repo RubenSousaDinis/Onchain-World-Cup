@@ -77,14 +77,23 @@ const allCountries = [
   { rank: 64, name: "Republic of Ireland", flag: "🇮🇪", votes: 360, momentum: "down", change: -15 },
 ]
 
+type Country = {
+  rank: number
+  name: string
+  flag: string
+  votes: number
+  momentum: string
+  change: number
+}
+
 export default function QualificationPage() {
   const [displayedCountries, setDisplayedCountries] = useState(20)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [voteModalOpen, setVoteModalOpen] = useState(false)
-  const [selectedCountry, setSelectedCountry] = useState<any>(null)
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [timeRemaining, setTimeRemaining] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-  const [totalPrizePool, setTotalPrizePool] = useState(125.8) // ETH prize pool from all votes
+  const [totalPrizePool, _setTotalPrizePool] = useState(125.8) // ETH prize pool from all votes
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
     hasMore: displayedCountries < allCountries.length,
@@ -124,15 +133,16 @@ export default function QualificationPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const handleVote = (country: any) => {
+  const handleVote = (country: Country) => {
     setSelectedCountry({
+      ...country,
       team: country.name,
       teamFlag: country.flag,
       opponent: "Qualification Pool",
       opponentFlag: "🌍",
       matchDate: "Qualification Phase",
       stadium: "Global Voting",
-    })
+    } as unknown as Country)
     setVoteModalOpen(true)
   }
 
@@ -252,7 +262,7 @@ export default function QualificationPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCountries.slice(0, displayedCountries).map((country, index) => {
+                {filteredCountries.slice(0, displayedCountries).map((country) => {
                   const isCutoff = country.rank === 48
                   const isAtRisk = country.rank >= 46 && country.rank <= 50
                   const isQualified = country.rank <= 48

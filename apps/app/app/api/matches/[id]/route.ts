@@ -71,8 +71,8 @@ export async function PATCH(
     const body = await request.json()
 
     // Only allow updating certain fields
-    const allowedFields = ['status', 'winning_team']
-    const updates: any = {}
+    const allowedFields = ['status', 'winning_team'] as const
+    const updates: Record<string, unknown> = {}
 
     for (const field of allowedFields) {
       if (field in body) {

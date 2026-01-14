@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 
 /**
  * Centralized API client using axios
@@ -66,23 +66,23 @@ apiClient.interceptors.response.use(
  */
 export const api = {
   // GET request
-  get: <T = any>(url: string, config?: any) =>
+  get: <T = unknown>(url: string, config?: AxiosRequestConfig) =>
     apiClient.get<T>(url, config).then((res) => res.data),
 
   // POST request
-  post: <T = any>(url: string, data?: any, config?: any) =>
+  post: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.post<T>(url, data, config).then((res) => res.data),
 
   // PUT request
-  put: <T = any>(url: string, data?: any, config?: any) =>
+  put: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.put<T>(url, data, config).then((res) => res.data),
 
   // PATCH request
-  patch: <T = any>(url: string, data?: any, config?: any) =>
+  patch: <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
     apiClient.patch<T>(url, data, config).then((res) => res.data),
 
   // DELETE request
-  delete: <T = any>(url: string, config?: any) =>
+  delete: <T = unknown>(url: string, config?: AxiosRequestConfig) =>
     apiClient.delete<T>(url, config).then((res) => res.data),
 }
 

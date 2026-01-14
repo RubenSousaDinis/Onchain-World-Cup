@@ -133,7 +133,7 @@ const mockUserBets = [
 ]
 
 export default function MyBetsPage() {
-  const { address, isConnected } = useAccount()
+  const { address: _address, isConnected } = useAccount()
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [selectedBet, setSelectedBet] = useState<(typeof mockUserBets)[0] | null>(null)
   const [showDemoData, setShowDemoData] = useState(true)
@@ -141,19 +141,19 @@ export default function MyBetsPage() {
   const totalVotes = mockUserBets.reduce((sum, bet) => sum + bet.votes, 0)
   const totalSpent = mockUserBets.reduce((sum, bet) => sum + Number.parseFloat(bet.costPaid), 0)
   const activeBets = mockUserBets.filter((b) => b.status === "active").length
-  const settledBets = mockUserBets.filter((b) => b.status === "settled").length
+  const _settledBets = mockUserBets.filter((b) => b.status === "settled").length
 
   const earningBets = mockUserBets.filter((b) => b.status === "settled" && b.winningTeam === b.votedTeam)
   const totalEarnings = earningBets.reduce((sum, bet) => sum + Number.parseFloat(bet.potentialReturn), 0)
 
-  const handleShareWin = (bet: (typeof mockUserBets)[0]) => {
+  const _handleShareWin = (bet: (typeof mockUserBets)[0]) => {
     setSelectedBet(bet)
     setShareModalOpen(true)
   }
 
   const shouldShowContent = isConnected || showDemoData
 
-  const didEarn = (bet: (typeof mockUserBets)[0]) => bet.status === "settled" && bet.winningTeam === bet.votedTeam
+  const _didEarn = (bet: (typeof mockUserBets)[0]) => bet.status === "settled" && bet.winningTeam === bet.votedTeam
 
   return (
     <div className="min-h-screen flex">

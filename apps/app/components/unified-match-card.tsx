@@ -49,7 +49,7 @@ export function UnifiedMatchCard({
   contractAddress,
   status,
   winner,
-  finalScore,
+  finalScore: _finalScore,
 }: UnifiedMatchCardProps) {
   const [voteModalOpen, setVoteModalOpen] = useState(false)
   const [shareModalOpen, setShareModalOpen] = useState(false)
