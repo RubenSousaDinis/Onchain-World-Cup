@@ -1,0 +1,21 @@
+# Build outputs
+.next/
+.turbo/
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# Smart contract artifacts
+artifacts/
+cache/
+typechain-types/
+coverage/
+
+# Misc
+.env
+.env.*
+!.env.example
+*.log
