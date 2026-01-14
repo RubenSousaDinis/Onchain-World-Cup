@@ -11,6 +11,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "seed:countries": "tsx scripts/seed-countries.ts",
+    "create:github-issues": "tsx scripts/create-github-issues.ts",
+    "close:github-issues": "tsx scripts/close-github-issues.ts",
     "start": "next start",
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true hardhat test"
