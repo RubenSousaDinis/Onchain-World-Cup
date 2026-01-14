@@ -1,11 +1,11 @@
 {
-  "name": "Crypto World Cup 2026",
-  "short_name": "CWC 2026",
-  "description": "Vote with ETH on World Cup 2026 matches on Base network",
+  "name": "Onchain World Cup",
+  "short_name": "Onchain WC",
+  "description": "The World Cup, decided onchain. Support your country and coordinate with fans worldwide.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e27",
-  "theme_color": "#1e3a8a",
+  "theme_color": "#fbbf24",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -22,5 +22,5 @@
     }
   ],
   "categories": ["sports", "finance", "entertainment"],
-  "keywords": ["crypto", "world cup", "ethereum", "betting", "base network", "web3"]
+  "keywords": ["onchain", "world cup", "ethereum", "crypto", "base network", "web3", "football"]
 }

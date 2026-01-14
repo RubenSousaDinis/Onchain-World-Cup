@@ -24,15 +24,15 @@ export function RetroSidebar() {
   return (
     <div className="cm-sidebar fixed left-0 top-0 h-screen w-24 border-r border-border lg:flex hidden flex-col items-center py-6 gap-6">
       {/* Logo/Brand */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center">
-          {/* Removed Trophy icon from matches */}
+      <Link href="/" className="flex flex-col items-center gap-2">
+        <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
+          <img src="/logo.png" alt="Onchain World Cup" className="w-full h-full object-contain p-1" />
         </div>
         <div className="text-[10px] text-center leading-tight">
-          <div className="cm-highlight">CRYPTO</div>
+          <div className="cm-highlight">ONCHAIN</div>
           <div className="text-sidebar-text text-[9px]">WORLD CUP</div>
         </div>
-      </div>
+      </Link>
 
       {/* Date/Time Display (retro style) */}
       <div className="text-[10px] text-center border border-border px-2 py-1.5 rounded-sm bg-card">
