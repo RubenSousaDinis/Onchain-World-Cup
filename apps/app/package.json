@@ -1,10 +1,10 @@
 {
-  "name": "@onchain-world-cup/web",
+  "name": "@onchain-world-cup/app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --port 3000",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "test": "hardhat test",
