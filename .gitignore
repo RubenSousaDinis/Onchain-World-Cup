@@ -145,3 +145,6 @@ typechain-types/
 
 # Turbo cache
 .turbo
+
+# pnpm (we use npm)
+pnpm-lock.yaml
