@@ -12,6 +12,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Empty turbopack config to acknowledge we're using Turbopack (Next.js 16 default)
+  // The webpack config below is only used in production builds
+  turbopack: {},
   webpack: (config, { webpack }) => {
     const emptyModulePath = path.resolve(__dirname, 'empty-module.js')
     
