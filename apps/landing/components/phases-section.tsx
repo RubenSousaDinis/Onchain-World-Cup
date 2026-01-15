@@ -7,7 +7,7 @@ export function PhasesSection() {
 
           <div className="grid gap-8 md:grid-cols-2">
             {/* Season 1 */}
-            <div className="cm-panel rounded-sm p-8">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-8">
               <h3 className="mb-6 text-2xl font-bold text-primary">Season 1 — Onchain World Cup</h3>
               <p className="mb-6 text-sm font-semibold uppercase tracking-wide text-accent">Current</p>
 
@@ -46,7 +46,7 @@ export function PhasesSection() {
             </div>
 
             {/* Season 2 */}
-            <div className="cm-panel rounded-sm p-8">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-8">
               <h3 className="mb-6 text-2xl font-bold text-primary">Season 2 — Real World Cup</h3>
               <p className="mb-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Coming Next</p>
 

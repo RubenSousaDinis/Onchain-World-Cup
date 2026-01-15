@@ -6,23 +6,23 @@ export function HowVotingWorksSection() {
           <h2 className="mb-12 text-center text-4xl font-bold text-primary">How Voting Works</h2>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">Votes are made using ETH</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">Votes are made using ETH</p>
             </div>
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">Multiple votes per wallet are allowed</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">Multiple votes per wallet are allowed</p>
             </div>
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">Voting fees increase over time</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">Voting fees increase over time</p>
             </div>
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">Early participation matters more</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">Early participation matters more</p>
             </div>
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">Anti-sybil protections are enforced</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">Anti-sybil protections are enforced</p>
             </div>
-            <div className="cm-panel rounded-sm p-6">
-              <p className="text-foreground/90">All logic lives in smart contracts</p>
+            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+              <p className="text-foreground font-medium">All logic lives in smart contracts</p>
             </div>
           </div>
 

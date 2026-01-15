@@ -1,6 +1,6 @@
 export function BuiltForCryptoSection() {
   return (
-    <section className="border-b border-border bg-card py-20">
+    <section className="border-b border-border py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-12 text-4xl font-bold text-primary">Built for Crypto-Native Socials</h2>

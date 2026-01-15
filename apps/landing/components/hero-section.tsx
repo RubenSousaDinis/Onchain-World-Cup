@@ -26,7 +26,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-secondary bg-transparent"
+              className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-primary hover:text-primary-foreground bg-transparent transition-all"
               asChild
             >
               <a href="#how-it-works">How it works</a>

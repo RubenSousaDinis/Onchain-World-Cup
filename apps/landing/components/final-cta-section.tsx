@@ -2,7 +2,7 @@ import { Button } from "./ui/button"
 
 export function FinalCTASection() {
   return (
-    <section className="border-b border-border py-24">
+    <section className="border-b border-border bg-card py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-6 text-4xl font-bold leading-tight text-foreground md:text-5xl">

@@ -12,7 +12,7 @@ export function Header() {
             <img src="/logo.png" alt="Onchain World Cup" className="h-8 w-8" />
             <span className="text-xl font-bold text-primary">Onchain World Cup</span>
           </Link>
-          <nav className="hidden gap-6 md:flex">
+          <nav className="hidden gap-6 md:flex items-center">
             <Link
               href="#how-it-works"
               className="text-base font-medium text-foreground/80 transition-colors hover:text-primary"
@@ -28,12 +28,12 @@ export function Header() {
             <Link href="#faq" className="text-base font-medium text-foreground/80 transition-colors hover:text-primary">
               FAQ
             </Link>
-            <Link
+            <a
               href="https://app.onchainworldcup.xyz"
-              className="text-base font-semibold text-primary transition-colors hover:text-accent"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-sm font-semibold text-base hover:bg-accent transition-colors"
             >
-              App
-            </Link>
+              Launch App
+            </a>
           </nav>
         </div>
         <div className="flex items-center gap-2">

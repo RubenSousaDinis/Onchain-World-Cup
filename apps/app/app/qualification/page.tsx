@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
+import { DemoBanner } from "@/components/demo-banner"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
 import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -106,11 +107,13 @@ export default function QualificationPage() {
   }, [searchQuery])
 
   return (
-    <div className="min-h-screen flex">
-      <RetroSidebar />
-      <MobileNav />
+    <div className="min-h-screen flex flex-col">
+      <DemoBanner />
+      <div className="flex flex-1">
+        <RetroSidebar />
+        <MobileNav />
 
-      <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+        <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-4 lg:p-6">
@@ -303,6 +306,7 @@ export default function QualificationPage() {
       </main>
 
       <QualificationVoteModal isOpen={voteModalOpen} onClose={() => setVoteModalOpen(false)} country={selectedCountry} />
+      </div>
     </div>
   )
 }
