@@ -1,0 +1,46 @@
+// Prisma Schema for Onchain World Cup - Qualification Phase
+// Simplified schema for qualification voting only
+// Database: PostgreSQL (via Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Qualification votes - users vote on which countries will qualify
+model QualificationVote {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress String   @map("wallet_address")
+  countryCode   String   @map("country_code") // ISO code: "BR", "AR", "FR", etc.
+  amountEth     Decimal  @map("amount_eth") @db.Decimal(18, 8)
+  txHash        String   @unique @map("tx_hash")
+  blockNumber   BigInt   @map("block_number")
+  blockTimestamp DateTime @map("block_timestamp") @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([walletAddress])
+  @@index([countryCode])
+  @@index([blockNumber])
+  @@map("qualification_votes")
+}
+
+// User statistics for leaderboard
+model UserStat {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress String   @unique @map("wallet_address")
+  totalVotes    Int      @default(0) @map("total_votes")
+  totalSpentEth Decimal  @default(0) @map("total_spent_eth") @db.Decimal(18, 8)
+  totalWonEth   Decimal  @default(0) @map("total_won_eth") @db.Decimal(18, 8)
+  rank          Int?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([walletAddress])
+  @@index([rank])
+  @@map("user_stats")
+}

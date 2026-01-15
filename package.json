@@ -13,7 +13,12 @@
     "dev:app": "turbo dev --filter @onchain-world-cup/app",
     "dev:landing": "turbo dev --filter @onchain-world-cup/landing",
     "lint": "turbo lint",
-    "test": "turbo test"
+    "test": "turbo test",
+    "app:prisma:generate": "npm run prisma:generate --workspace=@onchain-world-cup/app",
+    "app:prisma:studio": "npm run prisma:studio --workspace=@onchain-world-cup/app",
+    "app:prisma:push": "npm run prisma:push --workspace=@onchain-world-cup/app",
+    "app:prisma:pull": "npm run prisma:pull --workspace=@onchain-world-cup/app",
+    "app:prisma:migrate": "npm run prisma:migrate --workspace=@onchain-world-cup/app"
   },
   "devDependencies": {
     "turbo": "^2.7.4"
