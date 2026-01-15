@@ -95,10 +95,10 @@ Create the following tables in `prisma/schema.prisma`:
 - [x] Add `.env.example` for documentation (✅ Created with comprehensive documentation)
 
 ### 1.6 Database Migration
-- [ ] Generate initial Prisma migration
-- [ ] Run migration against Supabase database
-- [ ] Verify tables created successfully
-- [ ] Seed countries reference data (ISO country codes)
+- [x] Generate initial Prisma migration (✅ Migration 20260115092552_initial_schema created)
+- [x] Run migration against Supabase database (✅ Successfully applied to PostgreSQL)
+- [x] Verify tables created successfully (✅ All 8 tables with indexes and foreign keys)
+- [ ] Seed countries reference data (ISO country codes) (⚠️ Pending - next task)
 
 ### 1.7 Install Farcaster SDK
 - [x] Install `@farcaster/miniapp-sdk` (✅ Installed as dependency in package.json)
@@ -113,11 +113,11 @@ Create the following tables in `prisma/schema.prisma`:
 - [x] Next.js project is initialized with TypeScript (✅ Next.js 16 with strict TypeScript)
 - [x] Supabase project is configured and accessible (✅ Setup guide created, env vars documented)
 - [x] Prisma schema is complete with all tables (✅ All 8 models defined with relations)
-- [ ] Database migrations have been applied (⚠️ Pending - requires user to set up .env with database credentials)
-- [x] Environment variables are configured (✅ .env.example created with all variables)
-- [ ] Countries reference data is seeded (⚠️ Pending - Phase 1.6)
+- [x] Database migrations have been applied (✅ Initial migration applied successfully)
+- [x] Environment variables are configured (✅ .env created with database credentials)
+- [ ] Countries reference data is seeded (⚠️ Pending - Phase 1.6 final task)
 - [x] Farcaster SDK is installed (✅ @farcaster/miniapp-sdk in dependencies)
-- [ ] Database connection is tested and working (⚠️ Pending - requires user database setup)
+- [x] Database connection is tested and working (✅ Migration successfully connected and ran)
 
 ## Dependencies
 None (this is the foundation phase)
