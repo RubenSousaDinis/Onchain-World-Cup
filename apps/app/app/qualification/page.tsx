@@ -7,80 +7,24 @@ import { MobileNav } from "@/components/mobile-nav"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
 import { VoteModal } from "@/components/vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
+import { countries as countriesData } from "@/lib/countries"
 
-// Mock qualification data - 64 countries competing for 48 spots
-const allCountries = [
-  { rank: 1, name: "Brazil", flag: "🇧🇷", votes: 2450, momentum: "up", change: 125 },
-  { rank: 2, name: "France", flag: "🇫🇷", votes: 2380, momentum: "up", change: 98 },
-  { rank: 3, name: "Argentina", flag: "🇦🇷", votes: 2310, momentum: "stable", change: 12 },
-  { rank: 4, name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", votes: 2240, momentum: "up", change: 87 },
-  { rank: 5, name: "Spain", flag: "🇪🇸", votes: 2180, momentum: "down", change: -45 },
-  { rank: 6, name: "Germany", flag: "🇩🇪", votes: 2120, momentum: "up", change: 65 },
-  { rank: 7, name: "Portugal", flag: "🇵🇹", votes: 2090, momentum: "stable", change: 8 },
-  { rank: 8, name: "Netherlands", flag: "🇳🇱", votes: 2050, momentum: "up", change: 92 },
-  { rank: 9, name: "Belgium", flag: "🇧🇪", votes: 2010, momentum: "down", change: -28 },
-  { rank: 10, name: "Italy", flag: "🇮🇹", votes: 1980, momentum: "stable", change: 15 },
-  { rank: 11, name: "Uruguay", flag: "🇺🇾", votes: 1950, momentum: "up", change: 71 },
-  { rank: 12, name: "Croatia", flag: "🇭🇷", votes: 1920, momentum: "stable", change: 5 },
-  { rank: 13, name: "Colombia", flag: "🇨🇴", votes: 1890, momentum: "up", change: 54 },
-  { rank: 14, name: "Mexico", flag: "🇲🇽", votes: 1860, momentum: "down", change: -32 },
-  { rank: 15, name: "Denmark", flag: "🇩🇰", votes: 1830, momentum: "stable", change: 18 },
-  { rank: 16, name: "Switzerland", flag: "🇨🇭", votes: 1800, momentum: "up", change: 43 },
-  { rank: 17, name: "USA", flag: "🇺🇸", votes: 1770, momentum: "up", change: 89 },
-  { rank: 18, name: "Senegal", flag: "🇸🇳", votes: 1740, momentum: "stable", change: 22 },
-  { rank: 19, name: "Wales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", votes: 1710, momentum: "down", change: -19 },
-  { rank: 20, name: "Poland", flag: "🇵🇱", votes: 1680, momentum: "up", change: 61 },
-  { rank: 21, name: "Serbia", flag: "🇷🇸", votes: 1650, momentum: "stable", change: 11 },
-  { rank: 22, name: "Japan", flag: "🇯🇵", votes: 1620, momentum: "up", change: 78 },
-  { rank: 23, name: "South Korea", flag: "🇰🇷", votes: 1590, momentum: "stable", change: 14 },
-  { rank: 24, name: "Morocco", flag: "🇲🇦", votes: 1560, momentum: "up", change: 95 },
-  { rank: 25, name: "Australia", flag: "🇦🇺", votes: 1530, momentum: "down", change: -41 },
-  { rank: 26, name: "Canada", flag: "🇨🇦", votes: 1500, momentum: "up", change: 52 },
-  { rank: 27, name: "Ecuador", flag: "🇪🇨", votes: 1470, momentum: "stable", change: 7 },
-  { rank: 28, name: "Tunisia", flag: "🇹🇳", votes: 1440, momentum: "up", change: 68 },
-  { rank: 29, name: "Costa Rica", flag: "🇨🇷", votes: 1410, momentum: "down", change: -25 },
-  { rank: 30, name: "Peru", flag: "🇵🇪", votes: 1380, momentum: "stable", change: 19 },
-  { rank: 31, name: "Nigeria", flag: "🇳🇬", votes: 1350, momentum: "up", change: 84 },
-  { rank: 32, name: "Cameroon", flag: "🇨🇲", votes: 1320, momentum: "stable", change: 13 },
-  { rank: 33, name: "Ghana", flag: "🇬🇭", votes: 1290, momentum: "up", change: 47 },
-  { rank: 34, name: "Saudi Arabia", flag: "🇸🇦", votes: 1260, momentum: "down", change: -38 },
-  { rank: 35, name: "Iran", flag: "🇮🇷", votes: 1230, momentum: "stable", change: 16 },
-  { rank: 36, name: "Algeria", flag: "🇩🇿", votes: 1200, momentum: "up", change: 73 },
-  { rank: 37, name: "Egypt", flag: "🇪🇬", votes: 1170, momentum: "stable", change: 9 },
-  { rank: 38, name: "Ivory Coast", flag: "🇨🇮", votes: 1140, momentum: "up", change: 56 },
-  { rank: 39, name: "Mali", flag: "🇲🇱", votes: 1110, momentum: "down", change: -29 },
-  { rank: 40, name: "Burkina Faso", flag: "🇧🇫", votes: 1080, momentum: "stable", change: 21 },
-  { rank: 41, name: "Chile", flag: "🇨🇱", votes: 1050, momentum: "up", change: 64 },
-  { rank: 42, name: "Paraguay", flag: "🇵🇾", votes: 1020, momentum: "stable", change: 8 },
-  { rank: 43, name: "Qatar", flag: "🇶🇦", votes: 990, momentum: "down", change: -44 },
-  { rank: 44, name: "Iraq", flag: "🇮🇶", votes: 960, momentum: "up", change: 79 },
-  { rank: 45, name: "UAE", flag: "🇦🇪", votes: 930, momentum: "stable", change: 17 },
-  { rank: 46, name: "Venezuela", flag: "🇻🇪", votes: 900, momentum: "up", change: 51 },
-  { rank: 47, name: "Jamaica", flag: "🇯🇲", votes: 870, momentum: "critical-up", change: 103 },
-  { rank: 48, name: "Panama", flag: "🇵🇦", votes: 840, momentum: "critical-down", change: -67 },
-  // Below cutoff
-  { rank: 49, name: "Honduras", flag: "🇭🇳", votes: 810, momentum: "critical-up", change: 88 },
-  { rank: 50, name: "Turkey", flag: "🇹🇷", votes: 780, momentum: "critical-down", change: -52 },
-  { rank: 51, name: "Ukraine", flag: "🇺🇦", votes: 750, momentum: "stable", change: 12 },
-  { rank: 52, name: "Norway", flag: "🇳🇴", votes: 720, momentum: "down", change: -35 },
-  { rank: 53, name: "Austria", flag: "🇦🇹", votes: 690, momentum: "stable", change: 14 },
-  { rank: 54, name: "Czech Republic", flag: "🇨🇿", votes: 660, momentum: "down", change: -41 },
-  { rank: 55, name: "Romania", flag: "🇷🇴", votes: 630, momentum: "stable", change: 9 },
-  { rank: 56, name: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", votes: 600, momentum: "down", change: -28 },
-  { rank: 57, name: "Sweden", flag: "🇸🇪", votes: 570, momentum: "stable", change: 7 },
-  { rank: 58, name: "Hungary", flag: "🇭🇺", votes: 540, momentum: "down", change: -19 },
-  { rank: 59, name: "Slovakia", flag: "🇸🇰", votes: 510, momentum: "stable", change: 11 },
-  { rank: 60, name: "Finland", flag: "🇫🇮", votes: 480, momentum: "down", change: -33 },
-  { rank: 61, name: "Greece", flag: "🇬🇷", votes: 450, momentum: "stable", change: 6 },
-  { rank: 62, name: "Israel", flag: "🇮🇱", votes: 420, momentum: "down", change: -22 },
-  { rank: 63, name: "Northern Ireland", flag: "🇬🇧", votes: 390, momentum: "stable", change: 4 },
-  { rank: 64, name: "Republic of Ireland", flag: "🇮🇪", votes: 360, momentum: "down", change: -15 },
-]
+// Transform countries data with ranking and mock vote data (will be replaced with real data)
+const allCountries = countriesData.map((country, index) => ({
+  rank: index + 1,
+  name: country.name,
+  flag: country.flagEmoji,
+  code: country.code,
+  votes: Math.max(100, 2500 - index * 35), // Mock votes for now
+  momentum: index % 3 === 0 ? "up" : index % 3 === 1 ? "down" : "stable",
+  change: Math.floor(Math.random() * 200) - 100, // Mock change for now
+}))
 
 type Country = {
   rank: number
   name: string
   flag: string
+  code: string
   votes: number
   momentum: string
   change: number
