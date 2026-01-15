@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Twitter, MessageCircle, Zap } from "lucide-react"
+import Image from "next/image"
+import { Twitter, Mail } from "lucide-react"
 
 export function Footer() {
   return (
@@ -11,30 +12,40 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">The World Cup, decided onchain.</p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-6 items-center">
             <Link
               href="https://x.com/OnchainC29697"
-              className="flex h-10 w-10 items-center justify-center rounded-sm border border-border bg-card text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="text-foreground transition-opacity hover:opacity-70"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Follow us on X (Twitter)"
             >
-              <Twitter className="h-5 w-5" />
+              <Twitter className="h-6 w-6" />
             </Link>
             <Link
               href="https://farcaster.xyz/onchainworldcup"
-              className="flex h-10 w-10 items-center justify-center rounded-sm border border-border bg-card text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="transition-opacity hover:opacity-70"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Follow us on Farcaster"
             >
-              <MessageCircle className="h-5 w-5" />
+              <Image src="/farcaster.png" alt="Farcaster" width={24} height={24} className="h-6 w-6 object-contain" />
             </Link>
             <Link
               href="https://zora.co/@onchainworldcup"
-              className="flex h-10 w-10 items-center justify-center rounded-sm border border-border bg-card text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="transition-opacity hover:opacity-70"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Follow us on Zora"
             >
-              <Zap className="h-5 w-5" />
+              <Image src="/zora.png" alt="Zora" width={24} height={24} className="h-6 w-6 object-contain" />
+            </Link>
+            <Link
+              href="mailto:onchainworldcup@gmail.com"
+              className="text-foreground transition-opacity hover:opacity-70"
+              aria-label="Email us"
+            >
+              <Mail className="h-6 w-6" />
             </Link>
           </div>
         </div>

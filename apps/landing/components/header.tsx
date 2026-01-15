@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Twitter, MessageCircle, Zap } from "lucide-react"
+import Image from "next/image"
+import { Twitter, Mail } from "lucide-react"
 import { Button } from "./ui/button"
 
 export function Header() {
@@ -14,22 +15,22 @@ export function Header() {
           <nav className="hidden gap-6 md:flex">
             <Link
               href="#how-it-works"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+              className="text-base font-medium text-foreground/80 transition-colors hover:text-primary"
             >
               How It Works
             </Link>
             <Link
               href="#phases"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+              className="text-base font-medium text-foreground/80 transition-colors hover:text-primary"
             >
               Phases
             </Link>
-            <Link href="#faq" className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary">
+            <Link href="#faq" className="text-base font-medium text-foreground/80 transition-colors hover:text-primary">
               FAQ
             </Link>
             <Link
               href="https://app.onchainworldcup.xyz"
-              className="text-sm font-medium text-primary transition-colors hover:text-accent"
+              className="text-base font-semibold text-primary transition-colors hover:text-accent"
             >
               App
             </Link>
@@ -47,13 +48,19 @@ export function Header() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Farcaster"
+              className="flex items-center justify-center"
             >
-              <MessageCircle className="h-5 w-5" />
+              <Image src="/farcaster.png" alt="Farcaster" width={20} height={20} className="h-5 w-5 object-contain" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Zora">
-              <Zap className="h-5 w-5" />
+            <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Zora" className="flex items-center justify-center">
+              <Image src="/zora.png" alt="Zora" width={20} height={20} className="h-5 w-5 object-contain" />
+            </a>
+          </Button>
+          <Button variant="ghost" size="icon" asChild>
+            <a href="mailto:onchainworldcup@gmail.com" aria-label="Email">
+              <Mail className="h-5 w-5" />
             </a>
           </Button>
         </div>

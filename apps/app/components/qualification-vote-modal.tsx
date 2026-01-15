@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
 import { useAccount, useConnect } from "wagmi"
+import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -14,19 +15,39 @@ interface QualificationVoteModalProps {
     rank: number
     votes: number
   } | null
+  contractAddress?: `0x${string}`
 }
 
-export function QualificationVoteModal({ isOpen, onClose, country }: QualificationVoteModalProps) {
+export function QualificationVoteModal({ isOpen, onClose, country, contractAddress }: QualificationVoteModalProps) {
   const [voteCount, setVoteCount] = useState(1)
   const [isVoting, setIsVoting] = useState(false)
 
   const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
 
-  // Mock pricing - will be replaced with real contract data
-  const basePrice = 0.001 // Starting price in ETH
-  const currentPrice = basePrice * (1 + (country?.votes || 0) * 0.0001)
-  const totalCost = currentPrice * voteCount
+  // Real-time vote price from contract (if contract address is provided)
+  const {
+    currentVotes: contractVotes,
+    votePrice,
+    pricePerVote,
+    isLoading: isPriceLoading,
+  } = useQualificationVotePrice({
+    contractAddress: contractAddress || "0x0000000000000000000000000000000000000000",
+    countryCode: country?.code || "",
+    voteCount,
+    enabled: !!contractAddress && !!country?.code && isOpen,
+  })
+
+  // Use mock pricing if no contract address is provided
+  const useMockPricing = !contractAddress
+  const mockBasePrice = 0.001 // Starting price in ETH
+  const mockCurrentPrice = mockBasePrice * (1 + (country?.votes || 0) * 0.0001)
+  const mockTotalCost = mockCurrentPrice * voteCount
+
+  // Use real or mock data based on contract availability
+  const currentPrice = useMockPricing ? mockCurrentPrice : parseFloat(pricePerVote)
+  const totalCost = useMockPricing ? mockTotalCost : parseFloat(votePrice)
+  const displayVotes = useMockPricing ? country?.votes || 0 : contractVotes
 
   useEffect(() => {
     if (!isOpen) {
@@ -97,7 +118,8 @@ export function QualificationVoteModal({ isOpen, onClose, country }: Qualificati
                 Current Rank: <span className="cm-highlight font-bold">#{country.rank}</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Total Votes: <span className="text-foreground font-bold">{country.votes.toLocaleString()}</span>
+                Total Votes: <span className="text-foreground font-bold">{displayVotes.toLocaleString()}</span>
+                {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1">●</span>}
               </p>
             </div>
           </div>
@@ -144,12 +166,22 @@ export function QualificationVoteModal({ isOpen, onClose, country }: Qualificati
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Current Price per Vote:</span>
-              <span className="font-bold cm-highlight">{currentPrice.toFixed(6)} ETH</span>
+              <span className="font-bold cm-highlight">
+                {isPriceLoading && !useMockPricing ? "Loading..." : `${currentPrice.toFixed(6)} ETH`}
+                {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1 text-xs">LIVE</span>}
+              </span>
             </div>
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
-              <span className="text-accent">{totalCost.toFixed(6)} ETH</span>
+              <span className="text-accent">
+                {isPriceLoading && !useMockPricing ? "..." : `${totalCost.toFixed(6)} ETH`}
+              </span>
             </div>
+            {useMockPricing && (
+              <p className="text-xs text-muted-foreground italic">
+                * Estimated prices - Contract not deployed yet
+              </p>
+            )}
           </div>
 
           {/* Info Box */}

@@ -4,6 +4,15 @@ import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
 import { FarcasterProvider } from "@/lib/farcaster-provider"
 import { QueryProvider } from "@/providers/query-provider"
+import { Barlow_Condensed } from "next/font/google"
+
+// Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
+// Professional and readable, perfect for Championship Manager-style sports interfaces
+const barlowCondensed = Barlow_Condensed({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Live Matches | Crypto World Cup 2026",
@@ -34,10 +43,10 @@ export const metadata: Metadata = {
     description: "Vote on live World Cup 2026 matches with ETH.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/splash_social.png",
         width: 1200,
-        height: 800,
-        alt: "Crypto World Cup 2026",
+        height: 1200,
+        alt: "Onchain World Cup - The World Cup, decided onchain",
       },
     ],
   },
@@ -45,15 +54,15 @@ export const metadata: Metadata = {
     // Farcaster Mini App meta tag
     "fc:miniapp": JSON.stringify({
       version: "1",
-      imageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/og-image.png`,
+      imageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash_social.png`,
       button: {
         title: "Vote on Matches",
         action: {
           type: "launch_frame",
-          name: "Crypto World Cup 2026",
+          name: "Onchain World Cup",
           url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app",
-          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash.png`,
-          splashBackgroundColor: "#1e3a8a",
+          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash_social.png`,
+          splashBackgroundColor: "#0a1628",
         },
       },
     }),
@@ -68,7 +77,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-cm">
+      <body className={barlowCondensed.className}>
         <QueryProvider>
           <Web3Provider>
             <FarcasterProvider>{children}</FarcasterProvider>
