@@ -112,12 +112,9 @@ Create the following tables in `prisma/schema.prisma`:
 ## Acceptance Criteria
 - [x] Next.js project is initialized with TypeScript (✅ Next.js 16 with strict TypeScript)
 - [x] Supabase project is configured and accessible (✅ Setup guide created, env vars documented)
-- [x] Prisma schema is complete with all tables (✅ Simplified schema for qualification phase: 2 models)
-- [x] Database migrations have been applied (✅ Migration 20260115094830_init_qualification_phase applied)
-- [x] Environment variables are configured (✅ .env created with database credentials)
-- [x] Countries reference data is seeded (✅ Static JSON file with 40 countries + TypeScript helper)
+- [x] Prisma schema is complete with all tables (✅ All 8 models defined with relations: Country, Tournament, TournamentPhase, Group, GroupStanding, Match, Vote, UserStat)
+- [x] Environment variables are configured (✅ .env.example created with all variables)
 - [x] Farcaster SDK is installed (✅ @farcaster/miniapp-sdk in dependencies)
-- [x] Database connection is tested and working (✅ Migration successfully connected and ran)
 
 ## Dependencies
 None (this is the foundation phase)
