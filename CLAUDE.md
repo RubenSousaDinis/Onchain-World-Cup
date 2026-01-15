@@ -37,22 +37,23 @@ npm run test
 npm run clean
 ```
 
-### Database & ORM (in apps/app)
+### Database & ORM
 ```bash
-# Generate Prisma Client (auto-runs after npm install)
+# From root directory (recommended):
+npm run app:prisma:generate   # Generate Prisma Client
+npm run app:prisma:studio      # Open Prisma Studio (visual database browser)
+npm run app:prisma:push        # Push schema changes to database
+npm run app:prisma:pull        # Pull schema from database
+npm run app:prisma:migrate     # Create and apply migrations
+
+# Or from apps/app directory:
+cd apps/app
 npm run prisma:generate
-
-# Open Prisma Studio (visual database browser)
 npm run prisma:studio
-
-# Push schema changes to database
 npm run prisma:push
-
-# Pull schema from database
 npm run prisma:pull
-
-# Seed database with countries
-npm run seed:countries
+npm run prisma:migrate
+npm run seed:countries         # Seed database with countries
 ```
 
 ### Smart Contract Development (in apps/app)
