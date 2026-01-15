@@ -2,6 +2,17 @@
 
 This directory contains the Prisma schema and configuration for database access using Prisma ORM.
 
+## Current Schema: Qualification Phase Only
+
+The database schema is currently simplified for the **qualification phase** where users vote on which countries will qualify for the World Cup 2026. The schema will be expanded in later phases to include matches, tournaments, and group stages.
+
+**Current tables:**
+- `qualification_votes` - User votes on countries
+- `user_stats` - Leaderboard and statistics
+
+**Static data:**
+- Countries are stored in `data/countries.json` (not in database)
+
 ## Overview
 
 Prisma provides a type-safe database client for working with the Supabase PostgreSQL database. While the app also uses the Supabase client directly for some operations, Prisma offers:
@@ -89,52 +100,73 @@ npm run prisma:migrate
 
 ## Usage Example
 
-### In an API Route
+### Qualification Phase Schema
+
+The current schema is simplified for the qualification phase only:
+- **QualificationVote** - User votes on which countries will qualify
+- **UserStat** - Leaderboard and user statistics
+
+### Query Qualification Votes
 
 ```typescript
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  // Type-safe query with autocomplete
-  const countries = await prisma.country.findMany({
+  // Get all votes for a specific country
+  const brazilVotes = await prisma.qualificationVote.findMany({
     where: {
-      qualified: true
+      countryCode: 'BR'
     },
     orderBy: {
-      fifaRank: 'asc'
-    },
-    take: 10
+      blockTimestamp: 'desc'
+    }
   })
 
-  return Response.json({ countries })
+  return Response.json({ votes: brazilVotes })
 }
 ```
 
-### Using Relations
+### Get User Votes
 
 ```typescript
-// Get tournament with all related data
-const tournament = await prisma.tournament.findUnique({
-  where: { id: tournamentId },
-  include: {
-    phases: true,
-    groups: {
-      include: {
-        standings: {
-          include: {
-            country: true
-          }
-        }
-      }
-    },
-    matches: {
-      include: {
-        team1: true,
-        team2: true,
-        votes: true
-      }
+// Get all votes by a specific user
+const userVotes = await prisma.qualificationVote.findMany({
+  where: {
+    walletAddress: '0x123...'
+  },
+  orderBy: {
+    createdAt: 'desc'
+  }
+})
+```
+
+### Leaderboard Query
+
+```typescript
+// Get top 10 users by total ETH spent
+const leaderboard = await prisma.userStat.findMany({
+  orderBy: {
+    totalSpentEth: 'desc'
+  },
+  take: 10
+})
+```
+
+### Aggregate Votes by Country
+
+```typescript
+// Get total votes and ETH per country
+const votesByCountry = await prisma.qualificationVote.groupBy({
+  by: ['countryCode'],
+  _count: {
+    id: true
+  },
+  _sum: {
+    amountEth: true
+  },
+  orderBy: {
+    _sum: {
+      amountEth: 'desc'
     }
   }
 })
