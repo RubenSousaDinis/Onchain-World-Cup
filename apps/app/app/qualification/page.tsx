@@ -5,7 +5,7 @@ import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
-import { VoteModal } from "@/components/vote-modal"
+import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 
@@ -36,7 +36,7 @@ export default function QualificationPage() {
   const [voteModalOpen, setVoteModalOpen] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [timeRemaining, setTimeRemaining] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+  const [timeRemaining, setTimeRemaining] = useState({ days: 30, hours: 14, minutes: 23, seconds: 45 })
   const [totalPrizePool, _setTotalPrizePool] = useState(125.8) // ETH prize pool from all votes
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
@@ -78,15 +78,7 @@ export default function QualificationPage() {
   }, [])
 
   const handleVote = (country: Country) => {
-    setSelectedCountry({
-      ...country,
-      team: country.name,
-      teamFlag: country.flag,
-      opponent: "Qualification Pool",
-      opponentFlag: "🌍",
-      matchDate: "Qualification Phase",
-      stadium: "Global Voting",
-    } as unknown as Country)
+    setSelectedCountry(country)
     setVoteModalOpen(true)
   }
 
@@ -310,7 +302,7 @@ export default function QualificationPage() {
         </div>
       </main>
 
-      <VoteModal isOpen={voteModalOpen} onClose={() => setVoteModalOpen(false)} match={selectedCountry} teamIndex={0} />
+      <QualificationVoteModal isOpen={voteModalOpen} onClose={() => setVoteModalOpen(false)} country={selectedCountry} />
     </div>
   )
 }
