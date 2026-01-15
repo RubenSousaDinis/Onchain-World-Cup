@@ -48,11 +48,11 @@ npm run app:prisma:migrate     # Create and apply migrations
 
 # Or from apps/app directory:
 cd apps/app
-npm run prisma:generate
-npm run prisma:studio
-npm run prisma:push
-npm run prisma:pull
-npm run prisma:migrate
+npm run prisma:generate        # Generate Prisma Client (auto-runs after npm install)
+npm run prisma:studio          # Open Prisma Studio (visual database browser)
+npm run prisma:push            # Push schema changes to database
+npm run prisma:pull            # Pull schema from database
+npm run prisma:migrate         # Create and apply migrations
 npm run seed:countries         # Seed database with countries
 ```
 

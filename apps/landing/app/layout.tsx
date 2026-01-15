@@ -1,9 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
+import { Barlow_Condensed } from "next/font/google"
 
-const inter = Inter({ subsets: ["latin"] })
+// Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
+// Professional and readable, perfect for Championship Manager-style sports interfaces
+const barlowCondensed = Barlow_Condensed({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Onchain World Cup | The World Cup, decided onchain",
@@ -34,10 +40,10 @@ export const metadata: Metadata = {
     description: "Support your country. Coordinate with fans worldwide.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/splash_social.png",
         width: 1200,
-        height: 800,
-        alt: "Onchain World Cup",
+        height: 1200,
+        alt: "Onchain World Cup - The World Cup, decided onchain",
       },
     ],
   },
@@ -50,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={barlowCondensed.className}>{children}</body>
     </html>
   )
 }

@@ -172,6 +172,46 @@ const votesByCountry = await prisma.qualificationVote.groupBy({
 })
 ```
 
+### Query Votes
+
+```typescript
+// Get all votes for a specific match
+const matchVotes = await prisma.vote.findMany({
+  where: {
+    matchId: matchId
+  },
+  orderBy: {
+    createdAt: 'desc'
+  }
+})
+```
+
+### Get User Votes
+
+```typescript
+// Get all votes by a specific user
+const userVotes = await prisma.vote.findMany({
+  where: {
+    voterAddress: '0x123...'
+  },
+  orderBy: {
+    createdAt: 'desc'
+  }
+})
+```
+
+### Leaderboard Query
+
+```typescript
+// Get top 10 users by total ETH spent
+const leaderboard = await prisma.userStat.findMany({
+  orderBy: {
+    totalSpentEth: 'desc'
+  },
+  take: 10
+})
+```
+
 ### Best Practices
 
 1. **Singleton Pattern** - Create a single Prisma Client instance
@@ -212,7 +252,7 @@ await prisma.$transaction([
 
 ## Schema Management
 
-The schema is defined in `schema.prisma` and matches the existing Supabase database structure.
+The schema is defined in `schema.prisma` and matches the existing Supabase database structure. The schema includes models for the full tournament system: countries, tournaments, phases, groups, matches, votes, and user statistics.
 
 ### Making Schema Changes
 

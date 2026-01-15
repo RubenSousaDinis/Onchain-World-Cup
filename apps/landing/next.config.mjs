@@ -7,6 +7,8 @@ const nextConfig = {
     unoptimized: true,
   },
   output: 'standalone',
+  // Empty turbopack config to acknowledge we're using Turbopack (Next.js 16 default)
+  turbopack: {},
 }
 
 export default nextConfig

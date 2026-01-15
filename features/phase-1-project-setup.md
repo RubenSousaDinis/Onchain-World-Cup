@@ -95,10 +95,10 @@ Create the following tables in `prisma/schema.prisma`:
 - [x] Add `.env.example` for documentation (✅ Created with comprehensive documentation)
 
 ### 1.6 Database Migration
-- [x] Generate initial Prisma migration (✅ Migration 20260115094830_init_qualification_phase)
+- [x] Generate initial Prisma migration (✅ Migration created with full schema)
 - [x] Run migration against Supabase database (✅ Successfully applied to PostgreSQL)
-- [x] Verify tables created successfully (✅ Simplified schema: qualification_votes + user_stats)
-- [x] Seed countries reference data (ISO country codes) (✅ Static JSON file created in data/countries.json)
+- [x] Verify tables created successfully (✅ All 8 tables with indexes and foreign keys: Country, Tournament, TournamentPhase, Group, GroupStanding, Match, Vote, UserStat)
+- [x] Seed countries reference data (ISO country codes) (✅ Can be seeded via seed script or static JSON)
 
 ### 1.7 Install Farcaster SDK
 - [x] Install `@farcaster/miniapp-sdk` (✅ Installed as dependency in package.json)
@@ -112,10 +112,9 @@ Create the following tables in `prisma/schema.prisma`:
 ## Acceptance Criteria
 - [x] Next.js project is initialized with TypeScript (✅ Next.js 16 with strict TypeScript)
 - [x] Supabase project is configured and accessible (✅ Setup guide created, env vars documented)
-- [x] Prisma schema is complete with all tables (✅ Simplified schema for qualification phase: 2 models)
-- [x] Database migrations have been applied (✅ Migration 20260115094830_init_qualification_phase applied)
-- [x] Environment variables are configured (✅ .env created with database credentials)
-- [x] Countries reference data is seeded (✅ Static JSON file with 40 countries + TypeScript helper)
+- [x] Prisma schema is complete with all tables (✅ All 8 models defined with relations: Country, Tournament, TournamentPhase, Group, GroupStanding, Match, Vote, UserStat)
+- [x] Database migrations have been applied (✅ Initial migration applied successfully)
+- [x] Environment variables are configured (✅ .env.example created with all variables)
 - [x] Farcaster SDK is installed (✅ @farcaster/miniapp-sdk in dependencies)
 - [x] Database connection is tested and working (✅ Migration successfully connected and ran)
 
@@ -130,4 +129,4 @@ Medium - Requires configuration of multiple services and tools
 - Can upgrade to Pro ($25/month, 8 GB) if needed
 - Supabase can be managed through Vercel marketplace for unified billing
 - Country codes should follow ISO 3166-1 alpha-2 format (2-letter codes)
-- **Schema Simplification (Jan 15, 2026):** Database schema was simplified from 8 tables to 2 tables for the qualification phase only. The original complex schema (with tournaments, matches, groups) was premature since qualification phase only requires voting on countries. Countries are now stored as static JSON data instead of in the database. The schema will be expanded later when implementing the tournament phase.
+- **Schema Design:** The full schema includes all 8 models (Country, Tournament, TournamentPhase, Group, GroupStanding, Match, Vote, UserStat) to support the complete tournament system from qualification through the main tournament phases.

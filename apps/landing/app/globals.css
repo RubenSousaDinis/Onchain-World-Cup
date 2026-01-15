@@ -140,6 +140,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Championship Manager 01/02 authentic fonts */
+  .font-cm {
+    font-family: Arial, Verdana, 'Segoe UI', Tahoma, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 .cm-panel {

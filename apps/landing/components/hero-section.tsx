@@ -1,5 +1,4 @@
 import { Button } from "./ui/button"
-import { AlertTriangle } from "lucide-react"
 
 export function HeroSection() {
   return (
@@ -16,7 +15,7 @@ export function HeroSection() {
             Crown the onchain champion — before the real World Cup even starts.
           </p>
 
-          <div className="mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
               size="lg"
               className="bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground hover:bg-accent"
@@ -27,19 +26,11 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-secondary bg-transparent"
+              className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-primary hover:text-primary-foreground bg-transparent transition-all"
               asChild
             >
               <a href="#how-it-works">How it works</a>
             </Button>
-          </div>
-
-          <div className="mx-auto flex max-w-2xl items-start gap-3 rounded-sm border-2 border-primary/50 bg-card p-6">
-            <AlertTriangle className="mt-1 h-6 w-6 flex-shrink-0 text-primary" />
-            <div className="text-left">
-              <p className="font-semibold text-primary">This is NOT a prediction market.</p>
-              <p className="text-sm text-muted-foreground">You're not betting on real match results.</p>
-            </div>
           </div>
         </div>
       </div>

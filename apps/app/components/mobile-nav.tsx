@@ -34,8 +34,8 @@ export function MobileNav() {
                   isActive ? "bg-primary text-primary-foreground" : "text-sidebar-text"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[9px] font-medium">{item.label}</span>
+                <Icon className="w-6 h-6" />
+                <span className="text-[11px] font-medium">{item.label}</span>
               </Link>
             )
           })}

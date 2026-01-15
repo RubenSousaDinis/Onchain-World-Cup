@@ -28,16 +28,16 @@ export function RetroSidebar() {
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
           <img src="/logo.png" alt="Onchain World Cup" className="w-full h-full object-contain p-1" />
         </div>
-        <div className="text-[10px] text-center leading-tight">
+        <div className="text-xs text-center leading-tight">
           <div className="cm-highlight">ONCHAIN</div>
-          <div className="text-sidebar-text text-[9px]">WORLD CUP</div>
+          <div className="text-sidebar-text text-[11px]">WORLD CUP</div>
         </div>
       </Link>
 
       {/* Date/Time Display (retro style) */}
-      <div className="text-[10px] text-center border border-border px-2 py-1.5 rounded-sm bg-card">
+      <div className="text-xs text-center border border-border px-2 py-1.5 rounded-sm bg-card">
         <div className="text-accent font-bold">2026</div>
-        <div className="text-muted-foreground text-[9px]">WORLD CUP</div>
+        <div className="text-muted-foreground text-[11px]">WORLD CUP</div>
       </div>
 
       {/* Navigation Items */}
@@ -59,8 +59,8 @@ export function RetroSidebar() {
                   : "text-sidebar-text hover:bg-secondary hover:text-secondary-foreground"
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-medium text-center leading-tight">{item.label}</span>
+              <Icon className="w-6 h-6" />
+              <span className="text-[11px] font-medium text-center leading-tight">{item.label}</span>
             </Link>
           )
         })}
@@ -70,24 +70,24 @@ export function RetroSidebar() {
         {!isFrameContext && !isConnected ? (
           <button
             onClick={() => connect({ connector: connectors[0] })}
-            className="cm-nav-tab px-3 py-2 rounded-sm text-[10px] font-bold w-full"
+            className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
           >
-            <Wallet className="w-4 h-4 mx-auto mb-1" />
+            <Wallet className="w-5 h-5 mx-auto mb-1" />
             <div>CONNECT</div>
           </button>
         ) : isConnected ? (
           <button
             onClick={() => !isFrameContext && disconnect()}
             disabled={isFrameContext}
-            className="bg-accent text-accent-foreground px-2 py-2 rounded-sm text-[9px] font-bold w-full disabled:opacity-70"
+            className="bg-accent text-accent-foreground px-2 py-2 rounded-sm text-[11px] font-bold w-full disabled:opacity-70"
           >
             <div className="truncate">
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </div>
-            <div className="text-[8px] opacity-70">{chain?.name || "Connected"}</div>
+            <div className="text-[10px] opacity-70">{chain?.name || "Connected"}</div>
           </button>
         ) : isAutoConnecting ? (
-          <div className="text-center text-[9px] text-muted-foreground px-2 py-2">
+          <div className="text-center text-[11px] text-muted-foreground px-2 py-2">
             <div>Connecting...</div>
           </div>
         ) : null}
