@@ -6,6 +6,7 @@ import { FarcasterProvider } from "@/lib/farcaster-provider"
 import { QueryProvider } from "@/providers/query-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
+import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -84,7 +85,9 @@ export default function RootLayout({
         <QueryProvider>
           <Web3Provider>
             <FarcasterProvider>
-              <NotificationProvider>{children}</NotificationProvider>
+              <NotificationProvider>
+                <OnboardingProvider>{children}</OnboardingProvider>
+              </NotificationProvider>
             </FarcasterProvider>
           </Web3Provider>
         </QueryProvider>

@@ -2,9 +2,13 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, Flag, Target, Vote, Award, Info } from "lucide-react"
+import { Trophy, Clock, Flag, Target, Vote, Award, Info, HelpCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useOnboardingContext } from "@/providers/onboarding-provider"
 
 export default function HowItWorksPage() {
+  const { showOnboarding } = useOnboardingContext()
+
   return (
     <div className="min-h-screen flex">
       <RetroSidebar />
@@ -12,12 +16,20 @@ export default function HowItWorksPage() {
 
       <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
         <div className="mb-6 lg:mb-8">
-          <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-            <span className="cm-highlight">PROJECT PHASES</span>
-          </h1>
-          <p className="text-xs lg:text-sm text-muted-foreground">
-            How the Onchain World Cup evolves from qualification to champion
-          </p>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+                <span className="cm-highlight">PROJECT PHASES</span>
+              </h1>
+              <p className="text-xs lg:text-sm text-muted-foreground">
+                How the Onchain World Cup evolves from qualification to champion
+              </p>
+            </div>
+            <Button onClick={showOnboarding} variant="outline" size="sm" className="flex-shrink-0">
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Tour Guide
+            </Button>
+          </div>
         </div>
 
         {/* Key Message Banner */}
