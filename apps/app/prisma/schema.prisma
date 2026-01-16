@@ -189,6 +189,8 @@ model UserStat {
   matchesParticipated Int      @default(0) @map("matches_participated")
   matchesWon          Int      @default(0) @map("matches_won")
   rank                Int?
+  onboardingCompleted Boolean  @default(false) @map("onboarding_completed")
+  onboardingCompletedAt DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 

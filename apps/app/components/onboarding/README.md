@@ -56,6 +56,33 @@ function MyComponent() {
 }
 ```
 
+## Persistence Strategy
+
+The onboarding system uses a hybrid storage approach:
+
+### Database Storage (Primary)
+- **When**: User has connected wallet
+- **Where**: `user_stats.onboarding_completed` field in Supabase
+- **Benefits**:
+  - Persists across devices and browsers
+  - Tied to wallet address
+  - Enables analytics and tracking
+  - More reliable than localStorage
+
+### LocalStorage (Fallback)
+- **When**: User has NOT connected wallet
+- **Where**: Browser localStorage key `onboardingCompleted`
+- **Benefits**:
+  - Works for guest users browsing without wallet
+  - No API calls needed
+  - Instant response
+
+### How It Works
+1. User visits site without wallet → Check localStorage
+2. User connects wallet → Check database for their address
+3. User completes onboarding → Save to database (if connected) OR localStorage (if guest)
+4. User visits on different device with same wallet → Onboarding won't show again!
+
 ## Design Decisions
 
 1. **Multi-step format**: Better UX than single long page
