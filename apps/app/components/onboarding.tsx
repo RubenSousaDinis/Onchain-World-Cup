@@ -91,8 +91,8 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
       ),
     },
     {
-      title: "Qualification Phase",
-      description: "Countries compete for 48 tournament spots",
+      title: "The Competition Journey",
+      description: "From qualification to champion",
       icon: Flag,
       content: (
         <div className="space-y-4">
@@ -102,48 +102,57 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
             </div>
             <p className="text-xs text-foreground/80">
-              192 countries are competing for 48 tournament spots. Your votes decide who advances!
+              192 countries competing for 48 tournament spots. Your votes decide who advances!
             </p>
           </div>
 
-          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
-            <div className="grid grid-cols-3 gap-3 text-center mb-3">
-              <div>
-                <div className="text-2xl font-bold text-foreground">192</div>
-                <div className="text-xs text-muted-foreground">Countries</div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-foreground">The Full Journey:</p>
+            <div className="space-y-2">
+              <div className="flex gap-2 items-start">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
+                  1
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-green-400">Qualification (Now!)</div>
+                  <div className="text-xs text-foreground/70">Vote for countries → Top 48 advance</div>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">→</div>
-                <div className="text-xs text-muted-foreground">Compete</div>
+              <div className="flex gap-2 items-start">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs font-bold">
+                  2
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Tournament Phase (Coming Soon)</div>
+                  <div className="text-xs text-foreground/70">
+                    Qualified countries face off in matches. Vote on who wins each game!
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-green-400">48</div>
-                <div className="text-xs text-muted-foreground">Qualify</div>
+              <div className="flex gap-2 items-start">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs font-bold">
+                  3
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">Finals & Champion</div>
+                  <div className="text-xs text-foreground/70">Knockout rounds until one team wins it all!</div>
+                </div>
               </div>
-            </div>
-            <div className="text-xs text-center text-foreground/70">
-              Top countries advance to the main tournament
             </div>
           </div>
 
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Community votes determine which countries qualify</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Not based on real-world results - purely onchain</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Your votes directly impact who advances</span>
-            </li>
-          </ul>
+          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
+            <p className="text-xs text-foreground/80">
+              <strong className="text-primary">🌍 About the Real World Cup:</strong> This runs{" "}
+              <strong>parallel</strong> to the real 2026 World Cup but with completely independent results. The
+              community decides everything here!
+            </p>
+          </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
             <p className="text-xs text-green-300">
-              <strong>🎯 Start voting now</strong> to support your favorite countries!
+              <strong>🎯 Get started now</strong> in the qualification phase and follow your countries all the way to
+              the final!
             </p>
           </div>
         </div>

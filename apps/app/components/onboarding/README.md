@@ -7,7 +7,7 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 
 ### 5-Step Interactive Tour (Football-Fan Friendly)
 1. **Welcome to Onchain World Cup** - Introduction to the community-driven competition
-2. **Qualification Phase** - Current competition structure (192 → 48 countries)
+2. **The Competition Journey** - Full timeline from qualification → tournament → champion, and how it relates to the real World Cup
 3. **Vote Early, Pay Less** - Simple explanation of pricing (like early bird tickets)
 4. **How to Vote** - 3 easy steps to get started
 5. **Winning & Prizes** - How payouts work in simple terms
