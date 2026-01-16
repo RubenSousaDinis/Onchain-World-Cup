@@ -8,6 +8,7 @@ import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
 import { useState } from "react"
+import { NoVotesEmpty, EmptyState } from "@/components/states"
 
 const mockUserBets = [
   {
@@ -202,14 +203,7 @@ export default function MyBetsPage() {
         )}
 
         {!shouldShowContent ? (
-          <div className="cm-panel rounded-sm p-8 lg:p-12 text-center">
-            <Trophy className="w-12 lg:w-16 h-12 lg:h-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-lg lg:text-xl font-bold cm-highlight mb-2">Connect Your Wallet</h2>
-            <p className="text-xs lg:text-sm text-foreground/70 mb-6">
-              Connect your wallet to view your votes and earnings
-            </p>
-            <WalletConnectButton />
-          </div>
+          <NoVotesEmpty />
         ) : (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4 mb-6 lg:mb-8">
@@ -248,14 +242,15 @@ export default function MyBetsPage() {
             </div>
 
             {/* Bets List */}
-            <div className="cm-panel rounded-sm p-8 text-center border-2 border-accent/30">
-              <Clock className="w-12 h-12 text-accent mx-auto mb-4" />
-              <h3 className="text-lg font-bold cm-highlight mb-2">Match Voting History Coming Soon</h3>
-              <p className="text-sm text-muted-foreground">
-                Match voting history will be available during the Tournament Phase. Currently in Qualification Phase -
-                only country voting is active.
-              </p>
-            </div>
+            <EmptyState
+              icon={<Clock className="w-16 h-16" />}
+              title="Match Voting History Coming Soon"
+              description="Match voting history will be available during the Tournament Phase. Currently in Qualification Phase - only country voting is active."
+              action={{
+                label: "Go to Qualification",
+                href: "/qualification"
+              }}
+            />
           </>
         )}
       </main>
