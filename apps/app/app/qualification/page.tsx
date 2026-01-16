@@ -187,6 +187,22 @@ export default function QualificationPage() {
           </div>
         </div>
 
+        {/* Legend */}
+        <div className="mb-4 lg:mb-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div className="cm-panel rounded-sm p-3 bg-green-500/5 border border-green-500/20">
+            <div className="text-xs font-bold text-green-500 mb-1">✓ QUALIFIED</div>
+            <div className="text-[10px] text-muted-foreground">Ranks 1-48 advance to tournament</div>
+          </div>
+          <div className="cm-panel rounded-sm p-3 bg-yellow-500/5 border border-yellow-500/20">
+            <div className="text-xs font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
+            <div className="text-[10px] text-muted-foreground">Ranks 46-50 need support</div>
+          </div>
+          <div className="cm-panel rounded-sm p-3 bg-red-500/5 border border-red-500/20">
+            <div className="text-xs font-bold text-red-500 mb-1">✗ ELIMINATED</div>
+            <div className="text-[10px] text-muted-foreground">Below rank 48 - not qualified</div>
+          </div>
+        </div>
+
         {/* Qualification Table */}
         <div className="cm-panel rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
@@ -296,22 +312,6 @@ export default function QualificationPage() {
                 <InlineLoader text="Loading more countries..." />
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="mt-4 lg:mt-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div className="cm-panel rounded-sm p-3 bg-green-500/5 border border-green-500/20">
-            <div className="text-xs font-bold text-green-500 mb-1">✓ QUALIFIED</div>
-            <div className="text-[10px] text-muted-foreground">Ranks 1-48 advance to tournament</div>
-          </div>
-          <div className="cm-panel rounded-sm p-3 bg-yellow-500/5 border border-yellow-500/20">
-            <div className="text-xs font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
-            <div className="text-[10px] text-muted-foreground">Ranks 46-50 need support</div>
-          </div>
-          <div className="cm-panel rounded-sm p-3 bg-red-500/5 border border-red-500/20">
-            <div className="text-xs font-bold text-red-500 mb-1">✗ ELIMINATED</div>
-            <div className="text-[10px] text-muted-foreground">Below rank 48 - not qualified</div>
           </div>
         </div>
       </main>
