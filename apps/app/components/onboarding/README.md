@@ -5,13 +5,12 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 
 ## Features
 
-### 6-Step Interactive Tour
-1. **Welcome** - Introduction to the platform and how it works
-2. **Qualification Phase** - Explains the current competition phase (192 → 48 countries)
-3. **2-Phase Pricing** - Explains the linear and exponential pricing model
-4. **How to Vote** - Step-by-step guide for placing votes
-5. **Early Voter Advantage** - Benefits of voting early
-6. **Payout Mechanics** - How prize pools are distributed
+### 5-Step Interactive Tour (Football-Fan Friendly)
+1. **Welcome to Onchain World Cup** - Introduction to the community-driven competition
+2. **Qualification Phase** - Current competition structure (192 → 48 countries)
+3. **Vote Early, Pay Less** - Simple explanation of pricing (like early bird tickets)
+4. **How to Vote** - 3 easy steps to get started
+5. **Winning & Prizes** - How payouts work in simple terms
 
 ### Key Functionality
 - ✅ Automatic display for first-time users
@@ -26,7 +25,7 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 ## Files Created
 
 ### Components
-- `components/onboarding.tsx` - Main onboarding modal component with 6 steps
+- `components/onboarding.tsx` - Main onboarding modal component with 5 steps optimized for football fans
 
 ### Hooks
 - `hooks/useOnboarding.ts` - Hook to manage onboarding state and localStorage

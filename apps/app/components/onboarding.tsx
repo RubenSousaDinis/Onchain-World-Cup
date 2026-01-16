@@ -53,32 +53,40 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   const steps: OnboardingStep[] = [
     {
-      title: "Welcome to World Cup Voting!",
-      description: "Vote on match outcomes using ETH on Base network",
+      title: "Welcome to Onchain World Cup!",
+      description: "A global football competition decided by you",
       icon: Trophy,
       content: (
         <div className="space-y-4">
           <p className="text-sm text-foreground/80">
-            Welcome to the ultimate World Cup voting experience! Here's how it works:
+            This isn't your regular World Cup - it's a community-driven football competition where YOU decide the
+            winners!
           </p>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Vote on upcoming matches by purchasing votes with ETH</span>
+              <span>Support your favorite countries with real money</span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>All votes are recorded on-chain on the Base network</span>
+              <span>The community votes determine ALL match outcomes</span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Winners share the prize pool proportionally to their vote count</span>
+              <span>Win big if your team comes out on top</span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>The earlier you vote, the cheaper the votes!</span>
+              <span>Early supporters get better rewards</span>
             </li>
           </ul>
+
+          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
+            <p className="text-xs text-foreground/80">
+              <strong className="text-accent">Not based on real football:</strong> Results are 100% decided by the
+              community, not what happens on the pitch!
+            </p>
+          </div>
         </div>
       ),
     },
@@ -142,50 +150,52 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
       ),
     },
     {
-      title: "2-Phase Pricing System",
-      description: "Vote prices increase over time",
-      icon: TrendingUp,
+      title: "Vote Early, Pay Less",
+      description: "Prices increase as more people vote",
+      icon: Clock,
       content: (
         <div className="space-y-4">
           <p className="text-sm text-foreground/80">
-            Vote prices follow a unique 2-phase pricing model that rewards early voters:
+            Like early bird tickets to a match - the earlier you vote, the cheaper it is!
           </p>
 
-          <div className="space-y-3">
-            {/* Phase 1 */}
-            <div className="cm-panel bg-green-900/20 border-green-500/30 rounded-sm p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 text-green-400" />
-                <span className="text-sm font-bold text-green-400">Phase 1: Linear (First 2 Hours)</span>
+          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
+            <div className="text-center space-y-2">
+              <div className="text-2xl font-bold text-green-400">$1-5</div>
+              <div className="text-xs text-foreground/70">First few votes (Best value!)</div>
+              <div className="my-2">
+                <TrendingUp className="w-6 h-6 mx-auto text-muted-foreground" />
               </div>
-              <p className="text-xs text-foreground/70">
-                Prices increase slowly and predictably. Best time to vote! Each vote adds a small fixed amount to
-                the price.
-              </p>
-              <div className="mt-2 text-xs font-mono text-green-300">
-                price = 0.001 + (votes × 0.0001) ETH
-              </div>
-            </div>
-
-            {/* Phase 2 */}
-            <div className="cm-panel bg-orange-900/20 border-orange-500/30 rounded-sm p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-orange-400" />
-                <span className="text-sm font-bold text-orange-400">Phase 2: Exponential (Hours 2-24)</span>
-              </div>
-              <p className="text-xs text-foreground/70">
-                Prices rise exponentially! Each new vote makes the next one significantly more expensive.
-              </p>
-              <div className="mt-2 text-xs font-mono text-orange-300">
-                price = phase1EndPrice × (1.1 ^ phase2Votes)
-              </div>
+              <div className="text-2xl font-bold text-orange-400">$50+</div>
+              <div className="text-xs text-foreground/70">After many people vote</div>
             </div>
           </div>
 
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs text-foreground/80">
-              <strong className="text-primary">💡 Pro Tip:</strong> Vote during Phase 1 to get the best prices and
-              maximize your vote count!
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
+              <span>
+                <strong className="text-foreground">First 2 hours:</strong> Prices rise slowly and steadily
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 flex-shrink-0" />
+              <span>
+                <strong className="text-foreground">After 2 hours:</strong> Prices jump up quickly
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+              <span>
+                <strong className="text-foreground">Why?</strong> Early supporters get more votes for their money
+              </span>
+            </li>
+          </ul>
+
+          <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
+            <p className="text-xs text-green-300">
+              <strong>⏰ Smart tip:</strong> Vote in the first 2 hours to get the best value. Every vote after makes
+              it more expensive!
             </p>
           </div>
         </div>
@@ -193,11 +203,11 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "How to Vote",
-      description: "Casting your vote is simple",
+      description: "Support your team in 3 easy steps",
       icon: DollarSign,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">Follow these steps to place your vote:</p>
+          <p className="text-sm text-foreground/80">Getting started is simple:</p>
 
           <ol className="space-y-3 text-sm">
             <li className="flex gap-3">
@@ -205,9 +215,9 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 1
               </span>
               <div>
-                <div className="font-semibold mb-1">Connect Your Wallet</div>
+                <div className="font-semibold mb-1">Set Up Payment</div>
                 <div className="text-xs text-foreground/70">
-                  Click "Connect Wallet" and choose your preferred wallet (MetaMask, Coinbase, etc.)
+                  Connect your crypto wallet (like Coinbase or MetaMask). New to crypto? We'll guide you!
                 </div>
               </div>
             </li>
@@ -216,9 +226,9 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 2
               </span>
               <div>
-                <div className="font-semibold mb-1">Browse Matches</div>
+                <div className="font-semibold mb-1">Pick Your Country</div>
                 <div className="text-xs text-foreground/70">
-                  View upcoming matches on the home page. Check voting deadlines and current prices.
+                  Browse countries and see current support levels. Choose who you want to back!
                 </div>
               </div>
             </li>
@@ -227,20 +237,9 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 3
               </span>
               <div>
-                <div className="font-semibold mb-1">Select Your Team</div>
+                <div className="font-semibold mb-1">Buy Votes & Watch</div>
                 <div className="text-xs text-foreground/70">
-                  Click "Vote" on your preferred team and choose how many votes to purchase.
-                </div>
-              </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                4
-              </span>
-              <div>
-                <div className="font-semibold mb-1">Confirm Transaction</div>
-                <div className="text-xs text-foreground/70">
-                  Review the cost and confirm the transaction in your wallet. Wait for on-chain confirmation.
+                  Decide how much to spend, confirm your purchase, and watch the competition unfold!
                 </div>
               </div>
             </li>
@@ -248,130 +247,64 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
           <div className="bg-secondary/50 rounded-sm p-3 border border-border">
             <p className="text-xs text-foreground/80">
-              <strong className="text-primary">⚡ Demo Mode:</strong> You can explore without connecting! Demo votes
-              let you try the interface.
+              <strong className="text-primary">💡 First time?</strong> You can browse everything without payment to
+              see how it works!
             </p>
           </div>
         </div>
       ),
     },
     {
-      title: "Early Voter Advantage",
-      description: "More votes for less ETH",
-      icon: Clock,
+      title: "Winning & Prizes",
+      description: "How payouts work if your team wins",
+      icon: Trophy,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">
-            The early bird gets the worm - and more votes for their ETH!
-          </p>
+          <p className="text-sm text-foreground/80">If your country wins, you get a share of the prize pool!</p>
 
-          <div className="space-y-3">
-            <div className="bg-secondary/50 rounded-sm p-4 border border-border">
-              <div className="text-center space-y-2">
-                <div className="text-2xl font-bold text-green-400">0.001 ETH</div>
-                <div className="text-xs text-foreground/70">First vote price (Phase 1 start)</div>
-                <div className="text-lg font-semibold text-foreground">vs</div>
-                <div className="text-2xl font-bold text-orange-400">0.050+ ETH</div>
-                <div className="text-xs text-foreground/70">Potential late vote price (Phase 2)</div>
+          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
+            <div className="space-y-3">
+              <div>
+                <div className="text-xs text-foreground/70 mb-2">How the money is split:</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
+                    90% to Winners
+                  </div>
+                  <div className="w-20 h-10 bg-muted rounded-sm flex items-center justify-center text-sm font-bold text-foreground/70">
+                    10% Fee
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-foreground">Why vote early?</p>
-              <ul className="space-y-2 text-xs text-foreground/70">
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-foreground">Get more votes:</strong> Same ETH buys more votes when
-                    prices are low
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-foreground">Higher winnings:</strong> Payouts are proportional to vote
-                    count
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-foreground">Beat the rush:</strong> Avoid exponential pricing in Phase 2
-                  </span>
-                </li>
-              </ul>
-            </div>
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground">Your share depends on:</p>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                <span>
+                  <strong>How many votes you bought</strong> - More votes = bigger share
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                <span>
+                  <strong>Total votes on winning team</strong> - Your % of total winning votes
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                <span>
+                  <strong>Size of prize pool</strong> - All money bet on the match
+                </span>
+              </li>
+            </ul>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
             <p className="text-xs text-green-300">
-              <strong>⏰ Remember:</strong> Phase 1 only lasts 2 hours after voting opens. Don't miss out!
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Payout Mechanics",
-      description: "How winners get paid",
-      icon: Trophy,
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-foreground/80">Here's how the prize pool is distributed:</p>
-
-          <div className="space-y-3">
-            <div className="bg-secondary/50 rounded-sm p-4 border border-border">
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs text-foreground/70 mb-1">Prize Pool Distribution</div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-8 bg-green-500 rounded-sm flex items-center justify-center text-xs font-bold text-white">
-                      90% to Winners
-                    </div>
-                    <div className="w-16 h-8 bg-muted rounded-sm flex items-center justify-center text-xs font-bold text-foreground/70">
-                      10% Fee
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-foreground/70 mb-2">Your payout is calculated as:</p>
-                  <div className="font-mono text-xs bg-primary/10 p-2 rounded-sm text-primary">
-                    Your Payout = (Your Votes / Total Winning Votes) × 90% of Pool
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-foreground">Example:</p>
-              <ul className="space-y-2 text-xs text-foreground/70">
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <span>Total prize pool: 10 ETH</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <span>Winners pool: 9 ETH (90%)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                  <span>You have: 100 votes out of 1,000 total winning votes (10%)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-                  <span>
-                    <strong className="text-green-400">Your payout: 0.9 ETH</strong> (10% of 9 ETH)
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs text-foreground/80">
-              <strong className="text-primary">🎯 Key Insight:</strong> Payouts are based on{" "}
-              <strong>vote count</strong>, not ETH spent. Early voters get more votes per ETH!
+              <strong>💰 Example:</strong> If you have 10% of the winning votes, you get 10% of the winners' pot. Simple as that!
             </p>
           </div>
         </div>
