@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface OnboardingStep {
@@ -79,6 +79,86 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <span>The earlier you vote, the cheaper the votes!</span>
             </li>
           </ul>
+        </div>
+      ),
+    },
+    {
+      title: "Qualification Phase",
+      description: "64 countries compete for 48 tournament spots",
+      icon: Flag,
+      content: (
+        <div className="space-y-4">
+          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="w-5 h-5 text-accent" />
+              <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
+            </div>
+            <p className="text-xs text-foreground/80">
+              This is where it all begins! Countries are competing for their spot in the main tournament.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex gap-3 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
+                <Flag className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold mb-1">64 Countries Enter</div>
+                <div className="text-xs text-foreground/70">
+                  Countries from around the world are competing to prove they deserve a spot in the tournament.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
+                <Target className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold mb-1">Only 48 Qualify</div>
+                <div className="text-xs text-foreground/70">
+                  The top countries with the most community support will advance. Your votes determine who makes it!
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 items-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold mb-1">Community Decides</div>
+                <div className="text-xs text-foreground/70">
+                  This is NOT based on real-world results. The community votes decide EVERYTHING on-chain.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div className="text-xl font-bold text-foreground">64</div>
+                <div className="text-xs text-muted-foreground">Countries</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-primary">→</div>
+                <div className="text-xs text-muted-foreground">Compete</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-green-400">48</div>
+                <div className="text-xs text-muted-foreground">Qualify</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
+            <p className="text-xs text-green-300">
+              <strong>🎯 Your Impact:</strong> Vote for your favorite countries to help them qualify for the main
+              tournament. The more votes a country gets, the better their chances!
+            </p>
+          </div>
         </div>
       ),
     },

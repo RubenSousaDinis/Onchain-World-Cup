@@ -5,12 +5,13 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 
 ## Features
 
-### 5-Step Interactive Tour
+### 6-Step Interactive Tour
 1. **Welcome** - Introduction to the platform and how it works
-2. **2-Phase Pricing** - Explains the linear and exponential pricing model
-3. **How to Vote** - Step-by-step guide for placing votes
-4. **Early Voter Advantage** - Benefits of voting early
-5. **Payout Mechanics** - How prize pools are distributed
+2. **Qualification Phase** - Explains the current competition phase (64 → 48 countries)
+3. **2-Phase Pricing** - Explains the linear and exponential pricing model
+4. **How to Vote** - Step-by-step guide for placing votes
+5. **Early Voter Advantage** - Benefits of voting early
+6. **Payout Mechanics** - How prize pools are distributed
 
 ### Key Functionality
 - ✅ Automatic display for first-time users
