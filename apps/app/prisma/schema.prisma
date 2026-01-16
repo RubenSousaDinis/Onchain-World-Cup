@@ -181,16 +181,17 @@ model Vote {
 
 // User statistics and rankings
 model UserStat {
-  id                  String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  walletAddress       String   @unique @map("wallet_address")
-  totalVotes          Int      @default(0) @map("total_votes")
-  totalSpentEth       String   @default("0") @map("total_spent_eth")
-  totalWonEth         String   @default("0") @map("total_won_eth")
-  matchesParticipated Int      @default(0) @map("matches_participated")
-  matchesWon          Int      @default(0) @map("matches_won")
-  rank                Int?
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress         String    @unique @map("wallet_address")
+  totalVotes            Int       @default(0) @map("total_votes")
+  totalSpentEth         String    @default("0") @map("total_spent_eth")
+  totalWonEth           String    @default("0") @map("total_won_eth")
+  matchesParticipated   Int       @default(0) @map("matches_participated")
+  matchesWon            Int       @default(0) @map("matches_won")
+  rank                  Int?
+  onboardingCompletedAt DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([walletAddress])
   @@index([rank])

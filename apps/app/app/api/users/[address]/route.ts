@@ -79,3 +79,89 @@ export async function GET(
     )
   }
 }
+
+/**
+ * PATCH /api/users/[address]
+ * Update user information (e.g., onboarding completion)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { address: string } }
+) {
+  try {
+    const supabase = getSupabaseClient()
+    const { address } = params
+    const normalizedAddress = address.toLowerCase()
+    const body = await request.json()
+
+    // Validate that the address is provided
+    if (!address) {
+      return NextResponse.json(
+        { error: 'Address is required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if user exists
+    const { data: existingUser } = await supabase
+      .from('user_stats')
+      .select('id')
+      .eq('wallet_address', normalizedAddress)
+      .single()
+
+    let result
+
+    if (!existingUser) {
+      // Create new user record with onboarding data
+      const { data, error } = await supabase
+        .from('user_stats')
+        .insert({
+          wallet_address: normalizedAddress,
+          onboarding_completed_at: body.onboarding_completed ? new Date().toISOString() : null,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase error creating user:', error)
+        return NextResponse.json(
+          { error: 'Failed to create user record', details: error.message },
+          { status: 500 }
+        )
+      }
+      result = data
+    } else {
+      // Update existing user
+      const updateData: any = {}
+
+      if (body.onboarding_completed !== undefined) {
+        // If true, set timestamp; if false, set to null (reset)
+        updateData.onboarding_completed_at = body.onboarding_completed ? new Date().toISOString() : null
+      }
+
+      const { data, error } = await supabase
+        .from('user_stats')
+        .update(updateData)
+        .eq('wallet_address', normalizedAddress)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Supabase error updating user:', error)
+        return NextResponse.json(
+          { error: 'Failed to update user record', details: error.message },
+          { status: 500 }
+        )
+      }
+      result = data
+    }
+
+    return NextResponse.json({ data: result })
+  } catch (error) {
+    console.error('Unexpected error in PATCH /api/users/[address]:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
