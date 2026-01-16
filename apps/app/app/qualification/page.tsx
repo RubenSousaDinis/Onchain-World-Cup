@@ -9,6 +9,7 @@ import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
 import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
+import { InlineLoader, NoSearchResults } from "@/components/states"
 
 // Transform countries data with ranking and mock vote data (will be replaced with real data)
 const allCountries = countriesData.map((country, index) => ({
@@ -201,88 +202,98 @@ export default function QualificationPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCountries.slice(0, displayedCountries).map((country) => {
-                  const isCutoff = country.rank === 48
-                  const isAtRisk = country.rank >= 46 && country.rank <= 50
-                  const isQualified = country.rank <= 48
+                {filteredCountries.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-0">
+                      <div className="py-12">
+                        <NoSearchResults query={searchQuery} />
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCountries.slice(0, displayedCountries).map((country) => {
+                    const isCutoff = country.rank === 48
+                    const isAtRisk = country.rank >= 46 && country.rank <= 50
+                    const isQualified = country.rank <= 48
 
-                  return (
-                    <>
-                      {isCutoff && (
-                        <tr key={`cutoff-${country.rank}`}>
-                          <td colSpan={6} className="p-0">
-                            <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
-                              <div className="text-xs lg:text-sm font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
-                                <span className="hidden lg:inline">━━━━━</span>
-                                Qualification Cutoff (Top 48)
-                                <span className="hidden lg:inline">━━━━━</span>
+                    return (
+                      <>
+                        {isCutoff && (
+                          <tr key={`cutoff-${country.rank}`}>
+                            <td colSpan={6} className="p-0">
+                              <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
+                                <div className="text-xs lg:text-sm font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
+                                  <span className="hidden lg:inline">━━━━━</span>
+                                  Qualification Cutoff (Top 48)
+                                  <span className="hidden lg:inline">━━━━━</span>
+                                </div>
                               </div>
+                            </td>
+                          </tr>
+                        )}
+                        <tr
+                          key={country.rank}
+                          className={`border-b border-border hover:bg-accent/5 transition-colors ${
+                            isAtRisk ? "bg-yellow-500/10" : ""
+                          } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
+                            !isQualified && !isAtRisk ? "bg-red-500/5" : ""
+                          }`}
+                          onClick={() => handleVote(country)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td className="p-2 lg:p-3">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-bold ${isQualified ? "cm-highlight" : "text-muted-foreground"}`}>
+                                {country.rank}
+                              </span>
+                              {isAtRisk && <span className="text-yellow-500 text-[10px] font-bold">⚠</span>}
+                            </div>
+                          </td>
+                          <td className="p-2 lg:p-3">
+                            <Link
+                              href={`/qualification/${country.name.toLowerCase().replace(/\s+/g, "-")}`}
+                              className="flex items-center gap-2 hover:text-accent transition-colors"
+                            >
+                              <span className="text-xl lg:text-2xl">{country.flag}</span>
+                              <span className="font-bold">{country.name}</span>
+                            </Link>
+                          </td>
+                          <td className="text-center p-2 lg:p-3">
+                            <div className="font-bold cm-highlight">{country.votes.toLocaleString()}</div>
+                          </td>
+                          <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
+                            <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
+                          </td>
+                          <td className="text-center p-2 lg:p-3">
+                            <span
+                              className={`font-bold ${
+                                country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
+                              }`}
+                            >
+                              {country.change > 0 ? "+" : ""}
+                              {country.change}
+                            </span>
+                          </td>
+                          <td className="text-right p-2 lg:p-3">
+                            <div className="flex items-center justify-end gap-1 lg:gap-2">
+                              <button
+                                onClick={() => handleVote(country)}
+                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-xs font-bold"
+                              >
+                                VOTE
+                              </button>
                             </div>
                           </td>
                         </tr>
-                      )}
-                      <tr
-                        key={country.rank}
-                        className={`border-b border-border hover:bg-accent/5 transition-colors ${
-                          isAtRisk ? "bg-yellow-500/10" : ""
-                        } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
-                          !isQualified && !isAtRisk ? "bg-red-500/5" : ""
-                        }`}
-                        onClick={() => handleVote(country)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <td className="p-2 lg:p-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`font-bold ${isQualified ? "cm-highlight" : "text-muted-foreground"}`}>
-                              {country.rank}
-                            </span>
-                            {isAtRisk && <span className="text-yellow-500 text-[10px] font-bold">⚠</span>}
-                          </div>
-                        </td>
-                        <td className="p-2 lg:p-3">
-                          <Link
-                            href={`/qualification/${country.name.toLowerCase().replace(/\s+/g, "-")}`}
-                            className="flex items-center gap-2 hover:text-accent transition-colors"
-                          >
-                            <span className="text-xl lg:text-2xl">{country.flag}</span>
-                            <span className="font-bold">{country.name}</span>
-                          </Link>
-                        </td>
-                        <td className="text-center p-2 lg:p-3">
-                          <div className="font-bold cm-highlight">{country.votes.toLocaleString()}</div>
-                        </td>
-                        <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
-                          <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
-                        </td>
-                        <td className="text-center p-2 lg:p-3">
-                          <span
-                            className={`font-bold ${
-                              country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
-                            }`}
-                          >
-                            {country.change > 0 ? "+" : ""}
-                            {country.change}
-                          </span>
-                        </td>
-                        <td className="text-right p-2 lg:p-3">
-                          <div className="flex items-center justify-end gap-1 lg:gap-2">
-                            <button
-                              onClick={() => handleVote(country)}
-                              className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-xs font-bold"
-                            >
-                              VOTE
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </>
-                  )
-                })}
+                      </>
+                    )
+                  })
+                )}
               </tbody>
             </table>
             {displayedCountries < filteredCountries.length && (
               <div ref={sentinelRef} className="p-4 text-center">
-                <div className="text-xs text-muted-foreground">Loading more countries...</div>
+                <InlineLoader text="Loading more countries..." />
               </div>
             )}
           </div>

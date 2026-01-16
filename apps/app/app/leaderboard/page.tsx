@@ -7,6 +7,7 @@ import { Trophy, Medal, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
+import { InlineLoader, NoLeaderboardData, NoSearchResults } from "@/components/states"
 
 const mockLeaderboard = [
   {
@@ -284,78 +285,92 @@ export default function LeaderboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredLeaderboard.slice(0, displayedCount).map((entry, index) => (
-                  <tr
-                    key={entry.address}
-                    className={`border-b border-border hover:bg-secondary/20 transition-colors ${index % 2 === 0 ? "bg-card/30" : "bg-card/10"}`}
-                  >
-                    <td className="px-3 lg:px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {entry.rank === 1 && <Trophy className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-primary" />}
-                        {entry.rank === 2 && <Medal className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-muted-foreground" />}
-                        {entry.rank === 3 && <TrendingUp className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-accent" />}
-                        <span className="text-xs lg:text-sm font-mono font-bold cm-highlight">#{entry.rank}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 lg:px-4 py-3">
-                      <Link
-                        href={`/users/${entry.address}`}
-                        className="flex items-center gap-2 hover:text-primary transition-colors"
-                      >
-                        {entry.farcasterAvatar ? (
-                          <img
-                            src={entry.farcasterAvatar || "/placeholder.svg"}
-                            alt={entry.farcasterName || "User"}
-                            className="w-6 lg:w-8 h-6 lg:h-8 rounded-full border border-border object-cover flex-shrink-0"
-                          />
+                {filteredLeaderboard.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-0">
+                      <div className="py-8">
+                        {searchQuery ? (
+                          <NoSearchResults query={searchQuery} />
                         ) : (
-                          <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                            <span className="text-[10px] font-bold">?</span>
-                          </div>
+                          <NoLeaderboardData />
                         )}
-                        <div className="flex flex-col min-w-0">
-                          {entry.farcasterName ? (
-                            <>
-                              <span className="text-xs lg:text-sm font-bold truncate">{entry.farcasterName}</span>
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-xs lg:text-sm font-mono font-bold">
-                              {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                            </span>
-                          )}
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-3 lg:px-4 py-3 text-right">
-                      <span className="text-xs lg:text-sm font-mono font-bold cm-highlight whitespace-nowrap">
-                        {entry.totalVotes}
-                      </span>
-                    </td>
-                    <td className="px-3 lg:px-4 py-3 text-right">
-                      <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
-                        {entry.totalWinnings} ETH
-                      </span>
-                    </td>
-                    <td className="px-3 lg:px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
-                          <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
-                        </div>
-                        <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
-                          {entry.winRate}%
-                        </span>
                       </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredLeaderboard.slice(0, displayedCount).map((entry, index) => (
+                    <tr
+                      key={entry.address}
+                      className={`border-b border-border hover:bg-secondary/20 transition-colors ${index % 2 === 0 ? "bg-card/30" : "bg-card/10"}`}
+                    >
+                      <td className="px-3 lg:px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {entry.rank === 1 && <Trophy className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-primary" />}
+                          {entry.rank === 2 && <Medal className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-muted-foreground" />}
+                          {entry.rank === 3 && <TrendingUp className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-accent" />}
+                          <span className="text-xs lg:text-sm font-mono font-bold cm-highlight">#{entry.rank}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 lg:px-4 py-3">
+                        <Link
+                          href={`/users/${entry.address}`}
+                          className="flex items-center gap-2 hover:text-primary transition-colors"
+                        >
+                          {entry.farcasterAvatar ? (
+                            <img
+                              src={entry.farcasterAvatar || "/placeholder.svg"}
+                              alt={entry.farcasterName || "User"}
+                              className="w-6 lg:w-8 h-6 lg:h-8 rounded-full border border-border object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                              <span className="text-[10px] font-bold">?</span>
+                            </div>
+                          )}
+                          <div className="flex flex-col min-w-0">
+                            {entry.farcasterName ? (
+                              <>
+                                <span className="text-xs lg:text-sm font-bold truncate">{entry.farcasterName}</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">
+                                  {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-xs lg:text-sm font-mono font-bold">
+                                {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="px-3 lg:px-4 py-3 text-right">
+                        <span className="text-xs lg:text-sm font-mono font-bold cm-highlight whitespace-nowrap">
+                          {entry.totalVotes}
+                        </span>
+                      </td>
+                      <td className="px-3 lg:px-4 py-3 text-right">
+                        <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+                          {entry.totalWinnings} ETH
+                        </span>
+                      </td>
+                      <td className="px-3 lg:px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
+                            <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
+                          </div>
+                          <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+                            {entry.winRate}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
             {displayedCount < filteredLeaderboard.length && (
               <div ref={sentinelRef} className="p-4 text-center border-t border-border">
-                <div className="text-xs text-muted-foreground">Loading more users...</div>
+                <InlineLoader text="Loading more users..." />
               </div>
             )}
           </div>
