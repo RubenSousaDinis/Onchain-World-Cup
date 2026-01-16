@@ -94,69 +94,48 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
             </div>
             <p className="text-xs text-foreground/80">
-              This is where it all begins! Countries are competing for their spot in the main tournament.
+              192 countries are competing for 48 tournament spots. Your votes decide who advances!
             </p>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <Flag className="w-4 h-4 text-primary" />
-              </div>
+          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
+            <div className="grid grid-cols-3 gap-3 text-center mb-3">
               <div>
-                <div className="text-sm font-semibold mb-1">192 Countries Competing</div>
-                <div className="text-xs text-foreground/70">
-                  Countries from around the world are competing to prove they deserve a spot in the tournament.
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <Target className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold mb-1">Only 48 Qualify</div>
-                <div className="text-xs text-foreground/70">
-                  The top countries with the most community support will advance. Your votes determine who makes it!
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 items-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold mb-1">Community Decides</div>
-                <div className="text-xs text-foreground/70">
-                  This is NOT based on real-world results. The community votes decide EVERYTHING on-chain.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <div className="text-xl font-bold text-foreground">192</div>
+                <div className="text-2xl font-bold text-foreground">192</div>
                 <div className="text-xs text-muted-foreground">Countries</div>
               </div>
               <div>
-                <div className="text-xl font-bold text-primary">→</div>
+                <div className="text-2xl font-bold text-primary">→</div>
                 <div className="text-xs text-muted-foreground">Compete</div>
               </div>
               <div>
-                <div className="text-xl font-bold text-green-400">48</div>
+                <div className="text-2xl font-bold text-green-400">48</div>
                 <div className="text-xs text-muted-foreground">Qualify</div>
               </div>
             </div>
+            <div className="text-xs text-center text-foreground/70">
+              Top countries advance to the main tournament
+            </div>
           </div>
+
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+              <span>Community votes determine which countries qualify</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+              <span>Not based on real-world results - purely onchain</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+              <span>Your votes directly impact who advances</span>
+            </li>
+          </ul>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
             <p className="text-xs text-green-300">
-              <strong>🎯 Your Impact:</strong> Vote for your favorite countries to help them qualify for the main
-              tournament. The more votes a country gets, the better their chances!
+              <strong>🎯 Start voting now</strong> to support your favorite countries!
             </p>
           </div>
         </div>
