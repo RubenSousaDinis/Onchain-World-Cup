@@ -3,31 +3,59 @@
 import { Wallet } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useNotifications } from "@/components/notifications"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function WalletConnectButton() {
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors, error: connectError } = useConnect()
   const { disconnect } = useDisconnect()
   const { success, error, info } = useNotifications()
+  const [hasShownConnectedNotification, setHasShownConnectedNotification] = useState(false)
 
   // Show notification when wallet connects successfully
   useEffect(() => {
-    if (isConnected && address) {
+    if (isConnected && address && !hasShownConnectedNotification) {
       success("Wallet Connected", `Connected to ${chain?.name || "network"}`)
+      setHasShownConnectedNotification(true)
     }
-  }, [isConnected, address, chain, success])
+    if (!isConnected) {
+      setHasShownConnectedNotification(false)
+    }
+  }, [isConnected, address, chain, success, hasShownConnectedNotification])
 
   // Show notification when connection fails
   useEffect(() => {
     if (connectError) {
-      error("Connection Failed", connectError.message || "Unable to connect wallet")
+      const errorMessage = connectError.message || "Unable to connect wallet"
+
+      // Provide more helpful error messages
+      if (errorMessage.includes("Provider not found")) {
+        error(
+          "No Wallet Found",
+          "Please install MetaMask, Coinbase Wallet, or another Web3 wallet to continue"
+        )
+      } else if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
+        info("Connection Cancelled", "Wallet connection was cancelled")
+      } else {
+        error("Connection Failed", errorMessage)
+      }
     }
-  }, [connectError, error])
+  }, [connectError, error, info])
 
   const handleConnect = () => {
+    if (connectors.length === 0) {
+      error("No Wallet Available", "Please install a Web3 wallet like MetaMask or Coinbase Wallet")
+      return
+    }
+
+    // Try to find the best connector to use
+    // Priority: Coinbase Wallet > Injected (MetaMask, etc.) > WalletConnect
+    const coinbaseConnector = connectors.find((c) => c.name.toLowerCase().includes("coinbase"))
+    const injectedConnector = connectors.find((c) => c.type === "injected")
+    const preferredConnector = coinbaseConnector || injectedConnector || connectors[0]
+
     info("Connecting Wallet", "Please approve the connection request...")
-    connect({ connector: connectors[0] })
+    connect({ connector: preferredConnector })
   }
 
   const handleDisconnect = () => {
