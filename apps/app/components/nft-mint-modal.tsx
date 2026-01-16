@@ -4,6 +4,7 @@ import { X, Award, Download, ExternalLink } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import type React from "react"
+import { useNotifications } from "@/components/notifications"
 
 // Debug logging - only enable in development
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
@@ -24,7 +25,8 @@ interface NFTMintModalProps {
 export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps) {
   const [isMinting, setIsMinting] = useState(false)
   const { writeContract: _writeContract, data: hash } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess: _isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { success, error, info } = useNotifications()
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -36,10 +38,19 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
     return () => window.removeEventListener("keydown", handleEscape)
   }, [isOpen, onClose])
 
+  // Show notification when NFT minting succeeds
+  useEffect(() => {
+    if (isSuccess) {
+      success("NFT Minted!", "Your NFT has been minted successfully on Base")
+    }
+  }, [isSuccess, success])
+
   if (!isOpen) return null
 
   const handleMint = async () => {
     setIsMinting(true)
+    info("Preparing NFT", "Uploading metadata to IPFS...")
+
     // TODO: Replace with actual NFT contract address
     const _nftContractAddress = "0x0000000000000000000000000000000000000000"
 
@@ -51,15 +62,18 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
         console.log("Minting NFT with data:", data)
       }
 
+      info("Minting NFT", "Waiting for transaction confirmation...")
+
       // Simulate minting for demo
       setTimeout(() => {
         setIsMinting(false)
-        alert("NFT Minted Successfully! (Demo Mode)")
+        success("NFT Minted!", "Your achievement NFT has been minted successfully")
         onClose()
       }, 2000)
-    } catch (error) {
-      console.error("Error minting NFT:", error)
+    } catch (err) {
+      console.error("Error minting NFT:", err)
       setIsMinting(false)
+      error("Minting Failed", err instanceof Error ? err.message : "Unable to mint NFT. Please try again.")
     }
   }
 
@@ -68,7 +82,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
     if (DEBUG) {
       console.log("Downloading NFT image")
     }
-    alert("Download feature coming soon!")
+    info("Download Coming Soon", "This feature will be available after NFT contracts are deployed")
   }
 
   return (

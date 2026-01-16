@@ -6,6 +6,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect 
 import { parseEther } from "viem"
 import { useFarcaster } from "@/lib/farcaster-provider"
 import { ShareModal } from "./share-modal"
+import { useNotifications } from "@/components/notifications"
 
 interface VoteModalProps {
   isOpen: boolean
@@ -41,11 +42,12 @@ export function VoteModal({
 
   const { address: _address, isConnected } = useAccount()
   const { connect: _connect, connectors: _connectors } = useConnect()
-  const { data: hash, writeContract, isPending } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+  const { data: hash, writeContract, isPending, error: writeError } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess, isError: isConfirmError } = useWaitForTransactionReceipt({
     hash,
   })
   const { isFrameContext: _isFrameContext, isAutoConnecting } = useFarcaster()
+  const { success, error, info } = useNotifications()
 
   const basePrice = 0.001 // Starting price in ETH
   const pricePerVote =
@@ -74,11 +76,42 @@ export function VoteModal({
     }
   }, [isSuccess, isDemoVote, votePlaced])
 
+  // Notification for transaction submitted
+  useEffect(() => {
+    if (hash && isPending) {
+      info("Transaction Submitted", "Waiting for confirmation on Base network...")
+    }
+  }, [hash, isPending, info])
+
+  // Notification for successful vote
+  useEffect(() => {
+    if (isSuccess) {
+      success(
+        "Vote Confirmed!",
+        `Your ${voteCount} vote${voteCount !== 1 ? "s" : ""} for ${team} ${voteCount !== 1 ? "have" : "has"} been recorded on-chain`
+      )
+    }
+  }, [isSuccess, voteCount, team, success])
+
+  // Notification for transaction errors
+  useEffect(() => {
+    if (isConfirmError) {
+      error("Transaction Failed", "Your vote could not be confirmed. Please try again.")
+    }
+  }, [isConfirmError, error])
+
+  useEffect(() => {
+    if (writeError) {
+      error("Transaction Rejected", writeError.message || "Please try again.")
+    }
+  }, [writeError, error])
+
   const handleVote = async () => {
     if (voteCount < 1) return
 
     if (!isConnected) {
       setIsDemoVote(true)
+      info("Demo Vote Placed", "Connect your wallet to place real votes on-chain")
       return
     }
 
@@ -98,8 +131,9 @@ export function VoteModal({
         args: [teamIndex],
         value: parseEther(totalCost.toString()),
       })
-    } catch (error) {
-      console.error("Vote transaction failed:", error)
+    } catch (err) {
+      console.error("Vote transaction failed:", err)
+      error("Transaction Error", "Failed to submit transaction. Please try again.")
     }
   }
 

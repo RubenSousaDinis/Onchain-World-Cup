@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap } from "lucide-react"
+import { useNotifications } from "@/components/notifications"
 
 interface ShareModalProps {
   isOpen: boolean
@@ -27,6 +28,7 @@ interface ShareModalProps {
 
 export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
+  const { success, error } = useNotifications()
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -93,9 +95,11 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     try {
       await navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`)
       setCopied(true)
+      success("Copied to Clipboard!", "Share text has been copied. Paste it anywhere you like!")
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error("Failed to copy:", err)
+      error("Copy Failed", "Unable to copy to clipboard. Please try again.")
     }
   }
 
