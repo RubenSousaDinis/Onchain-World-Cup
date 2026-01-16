@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
+import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -56,7 +57,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={barlowCondensed.className}>{children}</body>
+      <body className={barlowCondensed.className}>
+        <SkipToContent />
+        {children}
+      </body>
     </html>
   )
 }

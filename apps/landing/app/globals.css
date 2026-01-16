@@ -158,3 +158,157 @@
   color: var(--highlight-yellow);
   font-weight: 600;
 }
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--highlight-yellow);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Better focus for interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--highlight-yellow);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 100, 0.2);
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Make sr-only visible on focus (for skip links) */
+.sr-only:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  z-index: 9999;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .cm-panel {
+    border-width: 2px;
+  }
+
+  button,
+  a {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================
+   MOBILE TOUCH OPTIMIZATIONS
+   ============================================ */
+
+/* Minimum touch target size (44x44px for WCAG AA) */
+@media (max-width: 1024px) {
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Exception for inline text links */
+  p a,
+  li a {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Add custom tap feedback */
+button:active,
+a:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 1024px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+}
+
+/* ============================================
+   RESPONSIVE TEXT SCALING
+   ============================================ */
+
+/* Respect user's font size preferences */
+@media (min-width: 1024px) {
+  html {
+    font-size: clamp(14px, 1vw, 16px);
+  }
+}
+
+@media (max-width: 1023px) {
+  html {
+    font-size: clamp(15px, 4vw, 17px);
+  }
+}
+
+/* ============================================
+   COLOR CONTRAST IMPROVEMENTS
+   ============================================ */
+
+/* Ensure text has sufficient contrast */
+.text-muted-foreground {
+  color: oklch(0.75 0 0);
+}
+
+/* Better link contrast */
+a:not([class*="bg-"]) {
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+a:not([class*="bg-"]):hover {
+  text-decoration-thickness: 2px;
+}

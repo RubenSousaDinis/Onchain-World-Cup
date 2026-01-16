@@ -8,11 +8,11 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Onchain World Cup" className="h-8 w-8" />
-            <span className="text-xl font-bold text-primary">Onchain World Cup</span>
+          <Link href="/" className="flex items-center gap-2" aria-label="Onchain World Cup home">
+            <img src="/logo.png" alt="Onchain World Cup logo" className="h-8 w-8" />
+            <span className="text-xl font-bold text-primary" aria-hidden="true">Onchain World Cup</span>
           </Link>
-          <nav className="hidden gap-6 md:flex items-center">
+          <nav className="hidden gap-6 md:flex items-center" aria-label="Main navigation">
             <Link
               href="#how-it-works"
               className="text-base font-medium text-foreground/80 transition-colors hover:text-primary"
@@ -36,10 +36,10 @@ export function Header() {
             </a>
           </nav>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="navigation" aria-label="Social media links">
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-              <Twitter className="h-5 w-5" />
+            <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
+              <Twitter className="h-5 w-5" aria-hidden="true" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
@@ -47,20 +47,20 @@ export function Header() {
               href="https://farcaster.xyz/onchainworldcup"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Farcaster"
+              aria-label="Follow us on Farcaster"
               className="flex items-center justify-center"
             >
-              <Image src="/farcaster.png" alt="Farcaster" width={20} height={20} className="h-5 w-5 object-contain" />
+              <Image src="/farcaster.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" aria-hidden="true" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Zora" className="flex items-center justify-center">
-              <Image src="/zora.png" alt="Zora" width={20} height={20} className="h-5 w-5 object-contain" />
+            <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Zora" className="flex items-center justify-center">
+              <Image src="/zora.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" aria-hidden="true" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
-            <a href="mailto:onchainworldcup@gmail.com" aria-label="Email">
-              <Mail className="h-5 w-5" />
+            <a href="mailto:onchainworldcup@gmail.com" aria-label="Email us">
+              <Mail className="h-5 w-5" aria-hidden="true" />
             </a>
           </Button>
         </div>

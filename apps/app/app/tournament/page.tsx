@@ -297,7 +297,7 @@ export default function TournamentPage() {
       <RetroSidebar />
       <MobileNav />
 
-      <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
         <div className="cm-panel rounded-sm overflow-hidden mb-6">
           <div className="soccer-field-bg p-8 lg:p-16 text-center">
             <h1 className="text-3xl lg:text-5xl font-bold mb-4">

@@ -22,26 +22,30 @@ export function RetroSidebar() {
   const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   return (
-    <div className="cm-sidebar fixed left-0 top-0 h-screen w-24 border-r border-border lg:flex hidden flex-col items-center py-6 gap-6">
+    <div
+      className="cm-sidebar fixed left-0 top-0 h-screen w-24 border-r border-border lg:flex hidden flex-col items-center py-6 gap-6"
+      role="navigation"
+      aria-label="Main sidebar navigation"
+    >
       {/* Logo/Brand */}
-      <Link href="/" className="flex flex-col items-center gap-2">
+      <Link href="/" className="flex flex-col items-center gap-2" aria-label="Go to home">
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
-          <img src="/logo.png" alt="Onchain World Cup" className="w-full h-full object-contain p-1" />
+          <img src="/logo.png" alt="Onchain World Cup logo" className="w-full h-full object-contain p-1" />
         </div>
-        <div className="text-sm text-center leading-tight">
+        <div className="text-sm text-center leading-tight" aria-hidden="true">
           <div className="cm-highlight">ONCHAIN</div>
           <div className="text-sidebar-text text-xs">WORLD CUP</div>
         </div>
       </Link>
 
       {/* Date/Time Display (retro style) */}
-      <div className="text-sm text-center border border-border px-2 py-1.5 rounded-sm bg-card">
+      <div className="text-sm text-center border border-border px-2 py-1.5 rounded-sm bg-card" aria-label="2026 World Cup">
         <div className="text-accent font-bold">2026</div>
         <div className="text-muted-foreground text-xs">WORLD CUP</div>
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 flex flex-col gap-3 w-full px-2">
+      <nav className="flex-1 flex flex-col gap-3 w-full px-2" aria-label="Primary navigation">
         {sidebarItems.map((item) => {
           const Icon = item.icon
           const isActive =
@@ -58,8 +62,10 @@ export function RetroSidebar() {
                   ? "bg-primary text-primary-foreground"
                   : "text-sidebar-text hover:bg-secondary hover:text-secondary-foreground"
               }`}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={`Navigate to ${item.label}`}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-6 h-6" aria-hidden="true" />
               <span className="text-xs font-medium text-center leading-tight">{item.label}</span>
             </Link>
           )
@@ -71,8 +77,9 @@ export function RetroSidebar() {
           <button
             onClick={() => connect({ connector: connectors[0] })}
             className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
+            aria-label="Connect wallet"
           >
-            <Wallet className="w-5 h-5 mx-auto mb-1" />
+            <Wallet className="w-5 h-5 mx-auto mb-1" aria-hidden="true" />
             <div className="text-xs">CONNECT</div>
           </button>
         ) : isConnected ? (
@@ -80,6 +87,7 @@ export function RetroSidebar() {
             onClick={() => !isFrameContext && disconnect()}
             disabled={isFrameContext}
             className="bg-accent text-accent-foreground px-2 py-2 rounded-sm text-xs font-bold w-full disabled:opacity-70"
+            aria-label={`Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`}
           >
             <div className="truncate">
               {address?.slice(0, 6)}...{address?.slice(-4)}
@@ -87,7 +95,7 @@ export function RetroSidebar() {
             <div className="text-[10px] opacity-70">{chain?.name || "Connected"}</div>
           </button>
         ) : isAutoConnecting ? (
-          <div className="text-center text-xs text-muted-foreground px-2 py-2">
+          <div className="text-center text-xs text-muted-foreground px-2 py-2" role="status" aria-live="polite">
             <div>Connecting...</div>
           </div>
         ) : null}
