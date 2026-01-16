@@ -12,7 +12,7 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">The World Cup, decided onchain.</p>
           </div>
 
-          <div className="flex gap-6 items-center">
+          <nav className="flex gap-6 items-center" aria-label="Social media links">
             <Link
               href="https://x.com/OnchainC29697"
               className="text-foreground transition-opacity hover:opacity-70"
@@ -20,7 +20,7 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="Follow us on X (Twitter)"
             >
-              <Twitter className="h-6 w-6" />
+              <Twitter className="h-6 w-6" aria-hidden="true" />
             </Link>
             <Link
               href="https://farcaster.xyz/onchainworldcup"
@@ -29,7 +29,7 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="Follow us on Farcaster"
             >
-              <Image src="/farcaster.png" alt="Farcaster" width={24} height={24} className="h-6 w-6 object-contain" />
+              <Image src="/farcaster.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" aria-hidden="true" />
             </Link>
             <Link
               href="https://zora.co/@onchainworldcup"
@@ -38,16 +38,16 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="Follow us on Zora"
             >
-              <Image src="/zora.png" alt="Zora" width={24} height={24} className="h-6 w-6 object-contain" />
+              <Image src="/zora.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" aria-hidden="true" />
             </Link>
             <Link
               href="mailto:onchainworldcup@gmail.com"
               className="text-foreground transition-opacity hover:opacity-70"
               aria-label="Email us"
             >
-              <Mail className="h-6 w-6" />
+              <Mail className="h-6 w-6" aria-hidden="true" />
             </Link>
-          </div>
+          </nav>
         </div>
 
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
