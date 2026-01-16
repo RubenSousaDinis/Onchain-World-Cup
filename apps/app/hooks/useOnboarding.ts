@@ -63,11 +63,29 @@ export function useOnboarding() {
 
       if (isConnected && address) {
         // User is connected - check database
-        const completed = await fetchOnboardingStatus(address)
-        setHasCompletedOnboarding(completed)
+        const dbCompleted = await fetchOnboardingStatus(address)
+
+        // Migration: If database says not completed, check localStorage
+        if (!dbCompleted && typeof window !== "undefined") {
+          const localCompleted = localStorage.getItem(ONBOARDING_KEY) === "true"
+
+          if (localCompleted) {
+            // Migrate localStorage state to database
+            console.log("Migrating onboarding status from localStorage to database for", address)
+            await updateOnboardingStatus(address, true)
+            setHasCompletedOnboarding(true)
+
+            // Clear localStorage after successful migration
+            localStorage.removeItem(ONBOARDING_KEY)
+            setIsLoading(false)
+            return
+          }
+        }
+
+        setHasCompletedOnboarding(dbCompleted)
 
         // Auto-show onboarding for first-time users
-        if (!completed) {
+        if (!dbCompleted) {
           const timer = setTimeout(() => {
             setIsOnboardingOpen(true)
           }, 500)

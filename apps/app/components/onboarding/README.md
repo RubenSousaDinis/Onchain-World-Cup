@@ -80,10 +80,19 @@ The onboarding system uses a hybrid storage approach:
   - Instant response
 
 ### How It Works
-1. User visits site without wallet → Check localStorage
-2. User connects wallet → Check database for their address
-3. User completes onboarding → Save to database (if connected) OR localStorage (if guest)
-4. User visits on different device with same wallet → Onboarding won't show again!
+1. **Guest user visits** → Check localStorage
+2. **Guest completes onboarding** → Save to localStorage
+3. **User connects wallet** → Check database
+4. **Migration logic** → If database says "not completed" BUT localStorage says "completed", migrate to database
+5. **Cross-device sync** → User on different device with same wallet won't see onboarding again!
+
+### Migration Flow (Guest → Connected)
+When a guest user who completed onboarding later connects their wallet:
+1. Check database: `onboarding_completed_at = null` (wallet not seen before)
+2. Check localStorage: `onboardingCompleted = "true"` (completed as guest)
+3. **Migrate**: Update database with completion timestamp
+4. Clear localStorage (no longer needed)
+5. **Result**: User doesn't see onboarding twice! ✅
 
 ## Design Decisions
 
