@@ -107,7 +107,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-foreground">The Full Journey:</p>
+            <p className="text-xs font-semibold text-foreground">Three Amazing Tournaments:</p>
             <div className="space-y-2">
               <div className="flex gap-2 items-start">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
@@ -115,7 +115,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-green-400">Qualification (Now!)</div>
-                  <div className="text-xs text-foreground/70">Vote for countries → Top 48 advance</div>
+                  <div className="text-xs text-foreground/70">192 countries compete → Top 48 advance</div>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
@@ -123,9 +123,9 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                   2
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-semibold">Tournament Phase (Coming Soon)</div>
+                  <div className="text-sm font-semibold">Onchain World Cup</div>
                   <div className="text-xs text-foreground/70">
-                    Qualified countries face off in matches. Vote on who wins each game!
+                    The 48 qualified countries compete in our own tournament!
                   </div>
                 </div>
               </div>
@@ -134,8 +134,10 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                   3
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-semibold">Finals & Champion</div>
-                  <div className="text-xs text-foreground/70">Knockout rounds until one team wins it all!</div>
+                  <div className="text-sm font-semibold">Real World Cup Format</div>
+                  <div className="text-xs text-foreground/70">
+                    Follows actual 2026 World Cup groups - but YOU vote on every match!
+                  </div>
                 </div>
               </div>
             </div>
@@ -143,9 +145,8 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
           <div className="bg-secondary/50 rounded-sm p-3 border border-border">
             <p className="text-xs text-foreground/80">
-              <strong className="text-primary">🌍 About the Real World Cup:</strong> This runs{" "}
-              <strong>parallel</strong> to the real 2026 World Cup but with completely independent results. The
-              community decides everything here!
+              <strong className="text-primary">⚽ Two parallel tournaments:</strong> After qualification, vote in BOTH
+              the Onchain World Cup AND a tournament that mirrors the real 2026 World Cup format!
             </p>
           </div>
 
