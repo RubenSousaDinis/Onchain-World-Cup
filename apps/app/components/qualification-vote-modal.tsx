@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
 import { useAccount, useConnect } from "wagmi"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
+import { useNotifications } from "@/components/notifications"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -24,6 +25,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
+  const { success, error, info } = useNotifications()
 
   // Real-time vote price from contract (if contract address is provided)
   const {
@@ -74,19 +76,28 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       const coinbaseConnector = connectors.find((c) => c.name === "Coinbase Wallet")
       if (coinbaseConnector) {
         try {
+          info("Connecting Wallet", "Please approve the connection request...")
           await connect({ connector: coinbaseConnector })
-        } catch (error) {
-          console.error("Failed to connect wallet:", error)
+          success("Wallet Connected", "You can now place your vote")
+        } catch (err) {
+          console.error("Failed to connect wallet:", err)
+          error("Connection Failed", "Unable to connect wallet. Please try again.")
         }
       }
       return
     }
 
     setIsVoting(true)
+    info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
+
     // TODO: Call smart contract to vote
     // For now, just simulate
     setTimeout(() => {
       setIsVoting(false)
+      success(
+        "Vote Confirmed!",
+        `Your ${voteCount} vote${voteCount !== 1 ? "s" : ""} for ${country?.name} ${voteCount !== 1 ? "have" : "has"} been recorded`
+      )
       onClose()
     }, 2000)
   }
