@@ -24,7 +24,8 @@ export function useOnboarding() {
         throw new Error("Failed to fetch user data")
       }
       const { data } = await response.json()
-      return data?.onboarding_completed || false
+      // If timestamp exists (not null), onboarding is completed
+      return data?.onboarding_completed_at != null
     } catch (error) {
       console.error("Error fetching onboarding status:", error)
       // Fall back to localStorage on error

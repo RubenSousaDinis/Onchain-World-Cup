@@ -62,12 +62,14 @@ The onboarding system uses a hybrid storage approach:
 
 ### Database Storage (Primary)
 - **When**: User has connected wallet
-- **Where**: `user_stats.onboarding_completed` field in Supabase
+- **Where**: `user_stats.onboarding_completed_at` timestamp in Supabase
+- **Logic**: NULL = not completed, NOT NULL = completed at that timestamp
 - **Benefits**:
   - Persists across devices and browsers
   - Tied to wallet address
-  - Enables analytics and tracking
+  - Enables analytics and tracking (includes completion timestamp)
   - More reliable than localStorage
+  - Single field serves dual purpose (status + timestamp)
 
 ### LocalStorage (Fallback)
 - **When**: User has NOT connected wallet

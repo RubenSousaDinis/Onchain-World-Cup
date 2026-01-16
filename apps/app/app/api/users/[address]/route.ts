@@ -117,7 +117,6 @@ export async function PATCH(
         .from('user_stats')
         .insert({
           wallet_address: normalizedAddress,
-          onboarding_completed: body.onboarding_completed || false,
           onboarding_completed_at: body.onboarding_completed ? new Date().toISOString() : null,
         })
         .select()
@@ -136,10 +135,8 @@ export async function PATCH(
       const updateData: any = {}
 
       if (body.onboarding_completed !== undefined) {
-        updateData.onboarding_completed = body.onboarding_completed
-        if (body.onboarding_completed) {
-          updateData.onboarding_completed_at = new Date().toISOString()
-        }
+        // If true, set timestamp; if false, set to null (reset)
+        updateData.onboarding_completed_at = body.onboarding_completed ? new Date().toISOString() : null
       }
 
       const { data, error } = await supabase
