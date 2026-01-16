@@ -84,7 +84,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "Qualification Phase",
-      description: "64 countries compete for 48 tournament spots",
+      description: "Countries compete for 48 tournament spots",
       icon: Flag,
       content: (
         <div className="space-y-4">
@@ -104,7 +104,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 <Flag className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <div className="text-sm font-semibold mb-1">64 Countries Enter</div>
+                <div className="text-sm font-semibold mb-1">192 Countries Competing</div>
                 <div className="text-xs text-foreground/70">
                   Countries from around the world are competing to prove they deserve a spot in the tournament.
                 </div>
@@ -139,7 +139,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           <div className="bg-secondary/50 rounded-sm p-3 border border-border">
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <div className="text-xl font-bold text-foreground">64</div>
+                <div className="text-xl font-bold text-foreground">192</div>
                 <div className="text-xs text-muted-foreground">Countries</div>
               </div>
               <div>
@@ -447,7 +447,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6">{currentStepData.content}</div>
+        <div className="p-6 min-h-[400px]">{currentStepData.content}</div>
 
         {/* Footer */}
         <div className="border-t border-border p-4 flex items-center justify-between bg-secondary/50 sticky bottom-0">

@@ -7,7 +7,7 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 
 ### 6-Step Interactive Tour
 1. **Welcome** - Introduction to the platform and how it works
-2. **Qualification Phase** - Explains the current competition phase (64 → 48 countries)
+2. **Qualification Phase** - Explains the current competition phase (192 → 48 countries)
 3. **2-Phase Pricing** - Explains the linear and exponential pricing model
 4. **How to Vote** - Step-by-step guide for placing votes
 5. **Early Voter Advantage** - Benefits of voting early
@@ -26,7 +26,7 @@ Interactive multi-step tour guide that introduces first-time users to the Onchai
 ## Files Created
 
 ### Components
-- `components/onboarding.tsx` - Main onboarding modal component with 5 steps
+- `components/onboarding.tsx` - Main onboarding modal component with 6 steps
 
 ### Hooks
 - `hooks/useOnboarding.ts` - Hook to manage onboarding state and localStorage
