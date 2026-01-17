@@ -1,6 +1,15 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
+import { getAppUrl } from "@/lib/utils"
 
 export function HeroSection() {
+  const [appUrl, setAppUrl] = useState("https://app.onchainworldcup.xyz")
+  
+  useEffect(() => {
+    setAppUrl(getAppUrl())
+  }, [])
   return (
     <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-background to-card py-20 md:py-32">
       <div className="container mx-auto px-4">
@@ -21,7 +30,7 @@ export function HeroSection() {
               className="bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground hover:bg-accent"
               asChild
             >
-              <a href="https://app.onchainworldcup.xyz">Join Qualification Phase</a>
+              <a href={appUrl}>Join Qualification Phase</a>
             </Button>
             <Button
               size="lg"

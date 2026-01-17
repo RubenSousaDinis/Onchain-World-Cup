@@ -2,7 +2,6 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { DemoBanner } from "@/components/demo-banner"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesData } from "@/lib/countries"
@@ -33,7 +32,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <DemoBanner />
       <div className="flex flex-1">
         <RetroSidebar />
         <MobileNav />
@@ -49,7 +47,7 @@ export default function HomePage() {
                 <p className="text-base lg:text-xl text-foreground/90 mb-2">
                   The World Cup, decided onchain.
                 </p>
-                <p className="text-xs lg:text-sm text-foreground/70">
+                <p className="text-sm lg:text-base text-foreground/70">
                   Vote with ETH on Base network • Community determines qualification • Winners share prize pool
                 </p>
               </div>
@@ -63,9 +61,9 @@ export default function HomePage() {
                 <div className="flex items-center gap-3">
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" aria-hidden="true" />
                   <div>
-                    <div className="text-xs text-accent font-bold uppercase mb-1">Current Phase</div>
+                    <div className="text-xs lg:text-sm text-accent font-bold uppercase mb-1">Current Phase</div>
                     <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Voting</h2>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                       Vote for countries • Top 48 qualify for tournament
                     </p>
                   </div>
@@ -141,7 +139,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-foreground mb-1">Vote with ETH</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       Buy votes for your favorite countries or teams using ETH on Base network
                     </p>
                   </div>
@@ -153,7 +151,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-foreground mb-1">Dynamic Pricing</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       Early voters get better prices - prices increase as more people vote
                     </p>
                   </div>
@@ -165,7 +163,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-foreground mb-1">Win Rewards</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs lg:text-sm text-muted-foreground">
                       Winners share 90% of prize pool proportionally based on votes
                     </p>
                   </div>
@@ -229,7 +227,7 @@ export default function HomePage() {
             action={
               <Link
                 href="/how-it-works"
-                className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent/80 transition-colors font-bold"
+                className="inline-flex items-center gap-1 text-xs lg:text-sm text-accent hover:text-accent/80 transition-colors font-bold"
               >
                 Learn about pricing
                 <ChevronRight className="w-3 h-3" aria-hidden="true" />

@@ -50,7 +50,7 @@ export function InfoBanner({
           <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${styles.icon}`} aria-hidden="true" />
           <div className="flex-1">
             <h3 className={`text-sm lg:text-base font-bold mb-2 ${styles.title}`}>{title}</h3>
-            <div className="text-xs lg:text-sm text-foreground/80 mb-3">{description}</div>
+            <div className="text-sm lg:text-base text-foreground/80 mb-3">{description}</div>
             {action && <div className="mt-3">{action}</div>}
           </div>
         </div>

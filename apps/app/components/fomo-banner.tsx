@@ -32,16 +32,16 @@ export function FomoBanner({ pricePhase, timeRemaining, currentPrice, recentVote
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-green-400 uppercase">Early Bird Phase</span>
-              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Best Prices</span>
+              <span className="text-xs lg:text-sm font-bold text-green-400 uppercase">Early Bird Phase</span>
+              <span className="text-xs lg:text-sm bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Best Prices</span>
             </div>
-            <p className="text-xs text-foreground/80">
+            <p className="text-xs lg:text-sm text-foreground/80">
               Vote now at <span className="font-mono font-bold text-green-400">{currentPrice} ETH</span> before prices
               increase!
             </p>
           </div>
           <div className="flex-shrink-0 text-right">
-            <div className="text-xs text-muted-foreground">Ends in</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">Ends in</div>
             <div className="text-sm font-bold font-mono text-green-400">{timeRemaining}</div>
           </div>
         </div>
@@ -63,23 +63,23 @@ export function FomoBanner({ pricePhase, timeRemaining, currentPrice, recentVote
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className={`text-xs font-bold uppercase ${showUrgent ? "text-red-400" : "text-orange-400"}`}>
+            <span className={`text-xs lg:text-sm font-bold uppercase ${showUrgent ? "text-red-400" : "text-orange-400"}`}>
               {showUrgent ? "Last Chance!" : "Exponential Pricing Active"}
             </span>
             {recentVotes > 5 && (
-              <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full animate-pulse">
+              <span className="text-xs lg:text-sm bg-accent/20 text-accent px-2 py-0.5 rounded-full animate-pulse">
                 {recentVotes} votes in last 5min
               </span>
             )}
           </div>
-          <p className="text-xs text-foreground/80">
+          <p className="text-xs lg:text-sm text-foreground/80">
             {showUrgent
               ? "Voting closes soon! Don't miss your chance to win!"
               : "Prices increase exponentially. Vote now or pay more later!"}
           </p>
         </div>
         <div className="flex-shrink-0 text-right">
-          <div className="text-xs text-muted-foreground">Current Price</div>
+          <div className="text-xs lg:text-sm text-muted-foreground">Current Price</div>
           <div className={`text-sm font-bold font-mono ${showUrgent ? "text-red-400" : "text-orange-400"}`}>
             {currentPrice} ETH
           </div>

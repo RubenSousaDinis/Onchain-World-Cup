@@ -7,6 +7,7 @@ import { QueryProvider } from "@/providers/query-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
+import { DemoBanner } from "@/components/demo-banner"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -18,6 +19,7 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
   title: "Live Matches | Crypto World Cup 2026",
   description:
     "Vote on live World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",
@@ -82,6 +84,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={barlowCondensed.className}>
         <SkipToContent />
+        <DemoBanner />
         <QueryProvider>
           <Web3Provider>
             <FarcasterProvider>

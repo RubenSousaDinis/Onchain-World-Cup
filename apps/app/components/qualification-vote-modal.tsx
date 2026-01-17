@@ -128,8 +128,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               <p className="text-sm text-muted-foreground">
                 Current Rank: <span className="cm-highlight font-bold">#{country.rank}</span>
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Total Votes: <span className="text-foreground font-bold">{displayVotes.toLocaleString()}</span>
+              <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+                Total Votes: <span className="text-foreground font-bold">{displayVotes.toLocaleString("en-US")}</span>
                 {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1">●</span>}
               </p>
             </div>
@@ -165,7 +165,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                 <button
                   key={amount}
                   onClick={() => setVoteCount(amount)}
-                  className="flex-1 cm-nav-tab py-1.5 text-xs font-bold"
+                  className="flex-1 cm-nav-tab py-1.5 text-xs lg:text-sm font-bold"
                 >
                   {amount}
                 </button>
@@ -179,7 +179,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               <span className="text-muted-foreground">Current Price per Vote:</span>
               <span className="font-bold cm-highlight">
                 {isPriceLoading && !useMockPricing ? "Loading..." : `${currentPrice.toFixed(6)} ETH`}
-                {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1 text-xs">LIVE</span>}
+                {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1 text-xs lg:text-sm">LIVE</span>}
               </span>
             </div>
             <div className="flex items-center justify-between text-lg font-bold">
@@ -189,7 +189,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               </span>
             </div>
             {useMockPricing && (
-              <p className="text-xs text-muted-foreground italic">
+              <p className="text-xs lg:text-sm text-muted-foreground italic">
                 * Estimated prices - Contract not deployed yet
               </p>
             )}
@@ -199,7 +199,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           <div className="bg-secondary/20 border border-accent/30 rounded-sm p-3 space-y-2">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-muted-foreground space-y-1">
+              <div className="text-xs lg:text-sm text-muted-foreground space-y-1">
                 <p><Zap className="w-3 h-3 inline text-accent" /> <strong>Early voters get better prices</strong> - Price increases with each vote</p>
                 <p><TrendingUp className="w-3 h-3 inline text-green-500" /> Help {country.name} qualify for the tournament!</p>
                 <p><AlertTriangle className="w-3 h-3 inline text-yellow-500" /> Top 48 countries qualify</p>
@@ -217,7 +217,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           )}
 
           {address && (
-            <div className="text-xs text-muted-foreground text-center">
+            <div className="text-xs lg:text-sm text-muted-foreground text-center">
               Voting from: {address.slice(0, 6)}...{address.slice(-4)}
             </div>
           )}

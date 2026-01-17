@@ -2,12 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet, BarChart3 } from "lucide-react"
 
 const navItems = [
   { icon: Trophy, label: "Qualify", href: "/qualification" },
   { icon: Calendar, label: "Cup", href: "/tournament" },
   { icon: Users, label: "Leaders", href: "/leaderboard" },
+  { icon: BarChart3, label: "Stats", href: "/stats" },
   { icon: Wallet, label: "Votes", href: "/my-bets" },
 ]
 

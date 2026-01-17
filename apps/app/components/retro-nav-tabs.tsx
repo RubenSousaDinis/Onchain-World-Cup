@@ -22,7 +22,7 @@ export function RetroNavTabs({ tabs, activeTab, onTabChange }: RetroNavTabsProps
           key={tab.value || tab.label}
           onClick={() => !tab.disabled && onTabChange(tab.value || tab.label)}
           disabled={tab.disabled}
-          className={`cm-nav-tab px-3 lg:px-6 py-2 lg:py-3 text-xs lg:text-sm font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+          className={`cm-nav-tab px-3 lg:px-6 py-2 lg:py-3 text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
             activeTab === (tab.value || tab.label) ? "active" : ""
           } ${tab.disabled ? "opacity-40 cursor-not-allowed hover:bg-transparent" : ""} ${tab.className || ""}`}
         >

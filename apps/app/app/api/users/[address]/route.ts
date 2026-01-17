@@ -7,11 +7,11 @@ import { getSupabaseClient } from '@/lib/server/supabase'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
     const supabase = getSupabaseClient()
-    const { address } = params
+    const { address } = await params
     const normalizedAddress = address.toLowerCase()
 
     // Fetch user stats
@@ -86,11 +86,11 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
     const supabase = getSupabaseClient()
-    const { address } = params
+    const { address } = await params
     const normalizedAddress = address.toLowerCase()
     const body = await request.json()
 

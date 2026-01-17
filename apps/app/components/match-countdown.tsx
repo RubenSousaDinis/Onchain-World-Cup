@@ -59,7 +59,7 @@ export function MatchCountdown({ endTime, phase }: MatchCountdownProps) {
     <div className="flex items-center justify-between gap-3 bg-card/90 px-3 py-2 rounded-sm border-2 border-accent/50">
       <div className="flex items-center gap-2">
         <Clock className={`w-4 h-4 ${getPhaseColor()}`} />
-        <span className="text-xs text-muted-foreground">Voting ends in</span>
+        <span className="text-xs lg:text-sm text-muted-foreground">Voting ends in</span>
       </div>
       <div className="flex items-center gap-2">
         <div className={`font-mono font-bold text-lg ${getPhaseColor()}`}>

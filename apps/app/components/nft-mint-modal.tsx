@@ -119,7 +119,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
               <p className="text-sm text-muted-foreground">{data.description}</p>
             </div>
 
-            <div className="bg-secondary/30 rounded-sm p-4 space-y-2 text-xs">
+            <div className="bg-secondary/30 rounded-sm p-4 space-y-2 text-xs lg:text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">NFT Type:</span>
                 <span className="text-foreground font-bold capitalize">{type}</span>
@@ -148,14 +148,14 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
             <div className="flex gap-3">
               <button
                 onClick={handleDownload}
-                className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-sm font-bold uppercase text-xs transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-sm font-bold uppercase text-xs lg:text-sm transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download
               </button>
               <button
                 onClick={() => window.open("https://opensea.io", "_blank")}
-                className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-sm font-bold uppercase text-xs transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-sm font-bold uppercase text-xs lg:text-sm transition-colors flex items-center justify-center gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
                 View Collection
@@ -163,7 +163,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
+          <p className="text-xs lg:text-sm text-muted-foreground text-center mt-4">
             Your NFT will be minted on Base network and visible in your wallet
           </p>
         </div>

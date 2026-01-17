@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Trophy, BarChart3 } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
@@ -10,6 +10,7 @@ const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
+  { icon: BarChart3, label: "Statistics", href: "/stats" },
   { icon: Wallet, label: "My Votes", href: "/my-bets" },
   { icon: HelpCircle, label: "How it Works", href: "/how-it-works" },
 ]
@@ -37,12 +38,6 @@ export function RetroSidebar() {
           <div className="text-sidebar-text text-xs">WORLD CUP</div>
         </div>
       </Link>
-
-      {/* Date/Time Display (retro style) */}
-      <div className="text-sm text-center border border-border px-2 py-1.5 rounded-sm bg-card" aria-label="2026 World Cup">
-        <div className="text-accent font-bold">2026</div>
-        <div className="text-muted-foreground text-xs">WORLD CUP</div>
-      </div>
 
       {/* Navigation Items */}
       <nav className="flex-1 flex flex-col gap-3 w-full px-2" aria-label="Primary navigation">

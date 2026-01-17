@@ -77,9 +77,9 @@ export function UnifiedMatchCard({
           <div className="bg-secondary/40 px-3 py-2 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-accent" />
-              <span className="text-xs font-bold cm-highlight uppercase">Upcoming Match</span>
+              <span className="text-xs lg:text-sm font-bold cm-highlight uppercase">Upcoming Match</span>
             </div>
-            <div className="text-xs text-orange-400 font-mono font-bold">Voting opens in {timeUntilStart}</div>
+            <div className="text-xs lg:text-sm text-orange-400 font-mono font-bold">Voting opens in {timeUntilStart}</div>
           </div>
         )}
 
@@ -99,9 +99,9 @@ export function UnifiedMatchCard({
           <div className="bg-green-900/30 px-3 py-2 border-b border-green-500/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-green-400" />
-              <span className="text-xs font-bold text-green-400 uppercase">Match Completed</span>
+              <span className="text-xs lg:text-sm font-bold text-green-400 uppercase">Match Completed</span>
             </div>
-            {winner && <div className="text-xs text-green-400 font-bold">{winner} Won</div>}
+            {winner && <div className="text-xs lg:text-sm text-green-400 font-bold">{winner} Won</div>}
           </div>
         )}
 
@@ -119,7 +119,7 @@ export function UnifiedMatchCard({
                 {status === "voting" && isHot && (
                   <div className="flex items-center gap-1 bg-orange-500/20 px-2 py-1.5 rounded-sm border border-orange-500/50">
                     <Flame className="w-3 h-3 text-orange-400 animate-pulse" />
-                    <span className="text-xs text-orange-400 font-bold">HOT</span>
+                    <span className="text-xs lg:text-sm text-orange-400 font-bold">HOT</span>
                   </div>
                 )}
                 {status === "voting" && pricePhase && (
@@ -152,7 +152,7 @@ export function UnifiedMatchCard({
               </div>
 
               {/* VS */}
-              <div className="text-muted-foreground font-bold text-xs text-center flex-shrink-0">
+              <div className="text-muted-foreground font-bold text-xs lg:text-sm text-center flex-shrink-0">
                 {status === "completed" ? "FT" : "VS"}
               </div>
 
@@ -216,7 +216,7 @@ export function UnifiedMatchCard({
         {/* Action Buttons */}
         <div className="p-3 lg:p-4 flex gap-2 lg:gap-3">
           {status === "upcoming" && (
-            <div className="flex-1 bg-secondary/30 py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm text-center text-muted-foreground">
+            <div className="flex-1 bg-secondary/30 py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base text-center text-muted-foreground">
               Voting Not Open
             </div>
           )}
@@ -228,7 +228,7 @@ export function UnifiedMatchCard({
                   e.preventDefault()
                   handleVoteClick(team1, team1Flag, 0)
                 }}
-                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform min-w-0 truncate"
+                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform min-w-0 truncate"
               >
                 Vote {team1}
               </button>
@@ -237,7 +237,7 @@ export function UnifiedMatchCard({
                   e.preventDefault()
                   handleVoteClick(team2, team2Flag, 1)
                 }}
-                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform min-w-0 truncate"
+                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform min-w-0 truncate"
               >
                 Vote {team2}
               </button>
@@ -251,7 +251,7 @@ export function UnifiedMatchCard({
                   e.preventDefault()
                   setShareModalOpen(true)
                 }}
-                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
               >
                 <Share2 className="w-4 h-4" />
                 Share
@@ -261,7 +261,7 @@ export function UnifiedMatchCard({
                   e.preventDefault()
                   setNftModalOpen(true)
                 }}
-                className="flex-1 bg-accent text-accent-foreground py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+                className="flex-1 bg-accent text-accent-foreground py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
               >
                 <Coins className="w-4 h-4" />
                 Mint NFT

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info } from "lucide-react"
@@ -51,8 +51,9 @@ const mockCountries = {
   },
 }
 
-export default function CountryDetailPage({ params }: { params: { countryId: string } }) {
-  const countryId = params.countryId
+export default function CountryDetailPage({ params }: { params: Promise<{ countryId: string }> }) {
+  // Unwrap params immediately to prevent React DevTools serialization issues
+  const { countryId } = use(params)
   const country = mockCountries[countryId as keyof typeof mockCountries]
 
   const [voteModalOpen, setVoteModalOpen] = useState(false)
@@ -148,7 +149,7 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
         {/* Back Button */}
         <Link
           href="/qualification"
-          className="inline-flex items-center gap-2 text-xs lg:text-sm text-accent hover:text-accent/80 mb-4 lg:mb-6"
+          className="inline-flex items-center gap-2 text-sm lg:text-base text-accent hover:text-accent/80 mb-4 lg:mb-6"
         >
           <ArrowLeft className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
           Back to Qualification
@@ -195,7 +196,7 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
                 <Clock className="w-6 h-6 text-accent" />
                 <div>
                   <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
-                  <p className="text-xs text-muted-foreground">Top 48 advance to tournament</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Top 48 advance to tournament</p>
                 </div>
               </div>
               <div className="flex gap-2 lg:gap-4">
@@ -232,7 +233,7 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
             <div className="p-6">
               <div className="text-center mb-6">
                 <div className="text-5xl lg:text-6xl font-bold cm-highlight font-mono mb-2">
-                  {country.totalVotes.toLocaleString()}
+                  {country.totalVotes.toLocaleString("en-US")}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Votes</div>
               </div>
@@ -254,10 +255,10 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
                   {status.label}
                 </div>
                 {status.label === "AT RISK" && (
-                  <div className="text-xs text-muted-foreground mt-2">Close to cutoff - needs more support!</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground mt-2">Close to cutoff - needs more support!</div>
                 )}
                 {status.label === "ELIMINATED" && (
-                  <div className="text-xs text-muted-foreground mt-2">
+                  <div className="text-xs lg:text-sm text-muted-foreground mt-2">
                     Below rank 48 - needs significant support to qualify
                   </div>
                 )}
@@ -320,7 +321,7 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
             <Users className="w-5 h-5" />
             <div className="text-left">
               <div className="text-sm font-bold uppercase">Vote</div>
-              <div className="text-xs text-muted-foreground">Support this country</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">Support this country</div>
             </div>
           </button>
 
@@ -331,7 +332,7 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
             <Share2 className="w-5 h-5" />
             <div className="text-left">
               <div className="text-sm font-bold uppercase">Share Support</div>
-              <div className="text-xs opacity-80">Tell your friends</div>
+              <div className="text-xs lg:text-sm opacity-80">Tell your friends</div>
             </div>
           </button>
         </div>

@@ -13,6 +13,7 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
   title: "Onchain World Cup | The World Cup, decided onchain",
   description:
     "Support your country. Coordinate with fans worldwide. Crown the onchain champion — before the real World Cup even starts.",

@@ -82,7 +82,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </ul>
 
           <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-xs text-foreground/80">
+            <p className="text-xs lg:text-sm text-foreground/80">
               <strong className="text-accent">Not based on real football:</strong> Results are 100% decided by the
               community, not what happens on the pitch!
             </p>
@@ -101,41 +101,41 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <Trophy className="w-5 h-5 text-accent" />
               <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
             </div>
-            <p className="text-xs text-foreground/80">
+            <p className="text-xs lg:text-sm text-foreground/80">
               192 countries competing for 48 tournament spots. Your votes decide who advances!
             </p>
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-foreground">Three Amazing Tournaments:</p>
+            <p className="text-xs lg:text-sm font-semibold text-foreground">Three Amazing Tournaments:</p>
             <div className="space-y-2">
               <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs lg:text-sm font-bold">
                   1
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-green-400">Qualification (Now!)</div>
-                  <div className="text-xs text-foreground/70">192 countries compete → Top 48 advance</div>
+                  <div className="text-xs lg:text-sm text-foreground/70">192 countries compete → Top 48 advance</div>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs font-bold">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
                   2
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold">Onchain World Cup</div>
-                  <div className="text-xs text-foreground/70">
+                  <div className="text-xs lg:text-sm text-foreground/70">
                     The 48 qualified countries compete in our own tournament!
                   </div>
                 </div>
               </div>
               <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs font-bold">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
                   3
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold">Real World Cup Format</div>
-                  <div className="text-xs text-foreground/70">
+                  <div className="text-xs lg:text-sm text-foreground/70">
                     Follows actual 2026 World Cup groups - but YOU vote on every match!
                   </div>
                 </div>
@@ -144,14 +144,14 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </div>
 
           <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs text-foreground/80">
+            <p className="text-xs lg:text-sm text-foreground/80">
               <strong className="text-primary">⚽ Two parallel tournaments:</strong> After qualification, vote in BOTH
               the Onchain World Cup AND a tournament that mirrors the real 2026 World Cup format!
             </p>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs text-green-300">
+            <p className="text-xs lg:text-sm text-green-300">
               <strong>🎯 Get started now</strong> in the qualification phase and follow your countries all the way to
               the final!
             </p>
@@ -172,12 +172,12 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           <div className="bg-secondary/50 rounded-sm p-4 border border-border">
             <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-green-400">$1-5</div>
-              <div className="text-xs text-foreground/70">First few votes (Best value!)</div>
+              <div className="text-xs lg:text-sm text-foreground/70">First few votes (Best value!)</div>
               <div className="my-2">
                 <TrendingUp className="w-6 h-6 mx-auto text-muted-foreground" />
               </div>
               <div className="text-2xl font-bold text-orange-400">$50+</div>
-              <div className="text-xs text-foreground/70">After many people vote</div>
+              <div className="text-xs lg:text-sm text-foreground/70">After many people vote</div>
             </div>
           </div>
 
@@ -203,7 +203,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </ul>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs text-green-300">
+            <p className="text-xs lg:text-sm text-green-300">
               <strong>⏰ Smart tip:</strong> Vote in the first 2 hours to get the best value. Every vote after makes
               it more expensive!
             </p>
@@ -221,34 +221,34 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
           <ol className="space-y-3 text-sm">
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
                 1
               </span>
               <div>
                 <div className="font-semibold mb-1">Set Up Payment</div>
-                <div className="text-xs text-foreground/70">
+                <div className="text-xs lg:text-sm text-foreground/70">
                   Connect your crypto wallet (like Coinbase or MetaMask). New to crypto? We'll guide you!
                 </div>
               </div>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
                 2
               </span>
               <div>
                 <div className="font-semibold mb-1">Pick Your Country</div>
-                <div className="text-xs text-foreground/70">
+                <div className="text-xs lg:text-sm text-foreground/70">
                   Browse countries and see current support levels. Choose who you want to back!
                 </div>
               </div>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
                 3
               </span>
               <div>
                 <div className="font-semibold mb-1">Buy Votes & Watch</div>
-                <div className="text-xs text-foreground/70">
+                <div className="text-xs lg:text-sm text-foreground/70">
                   Decide how much to spend, confirm your purchase, and watch the competition unfold!
                 </div>
               </div>
@@ -256,7 +256,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </ol>
 
           <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs text-foreground/80">
+            <p className="text-xs lg:text-sm text-foreground/80">
               <strong className="text-primary">💡 First time?</strong> You can browse everything without payment to
               see how it works!
             </p>
@@ -275,7 +275,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           <div className="bg-secondary/50 rounded-sm p-4 border border-border">
             <div className="space-y-3">
               <div>
-                <div className="text-xs text-foreground/70 mb-2">How the money is split:</div>
+                <div className="text-xs lg:text-sm text-foreground/70 mb-2">How the money is split:</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
                     90% to Winners
@@ -313,7 +313,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs text-green-300">
+            <p className="text-xs lg:text-sm text-green-300">
               <strong>💰 Example:</strong> If you have 10% of the winning votes, you get 10% of the winners' pot. Simple as that!
             </p>
           </div>
@@ -339,7 +339,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             </div>
             <div>
               <div className="text-lg font-bold text-foreground">{currentStepData.title}</div>
-              <div className="text-xs text-muted-foreground">{currentStepData.description}</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">{currentStepData.description}</div>
             </div>
           </div>
           <button
@@ -363,7 +363,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               />
             ))}
           </div>
-          <div className="text-xs text-muted-foreground mt-2 text-center">
+          <div className="text-xs lg:text-sm text-muted-foreground mt-2 text-center">
             Step {currentStep + 1} of {steps.length}
           </div>
         </div>

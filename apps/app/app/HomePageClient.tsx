@@ -81,7 +81,7 @@ export default function HomePageClient() {
               </div>
             </div>
           </div>
-          <p className="text-xs lg:text-sm text-muted-foreground mb-4">
+          <p className="text-sm lg:text-base text-muted-foreground mb-4">
             Vote with ETH on World Cup matches. Winners take 90% of the prize pool. Powered by Base Network.
           </p>
 

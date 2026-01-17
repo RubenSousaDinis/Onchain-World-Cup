@@ -1,9 +1,18 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Twitter, Mail } from "lucide-react"
 import { Button } from "./ui/button"
+import { getAppUrl } from "@/lib/utils"
 
 export function Header() {
+  const [appUrl, setAppUrl] = useState("https://app.onchainworldcup.xyz")
+  
+  useEffect(() => {
+    setAppUrl(getAppUrl())
+  }, [])
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -29,7 +38,7 @@ export function Header() {
               FAQ
             </Link>
             <a
-              href="https://app.onchainworldcup.xyz"
+              href={appUrl}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-sm font-semibold text-base hover:bg-accent transition-colors"
             >
               Launch App
