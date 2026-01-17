@@ -156,7 +156,7 @@ export default function LeaderboardPage() {
             <h1 className="text-2xl lg:text-4xl font-bold mb-2">
               <span className="cm-highlight">Leaderboard</span>
             </h1>
-            <p className="text-xs lg:text-sm text-foreground/80">Top voters ranked by total winnings • Base Network</p>
+            <p className="text-sm lg:text-base text-foreground/80">Top voters ranked by total winnings • Base Network</p>
           </div>
         </div>
 
@@ -186,10 +186,10 @@ export default function LeaderboardPage() {
                 <Trophy className="w-8 lg:w-10 h-8 lg:h-10 text-primary-foreground" />
               </div>
             )}
-            <div className="text-sm cm-highlight mb-1 font-bold uppercase">1st Place</div>
-            <div className="text-sm font-bold text-foreground mb-2">
+            <div className="text-sm lg:text-base cm-highlight mb-1 font-bold uppercase">1st Place</div>
+            <div className="text-sm lg:text-base font-bold text-foreground mb-2">
               {mockLeaderboard[0].farcasterName || (
-                <span className="font-mono text-xs">
+                <span className="font-mono text-xs lg:text-sm">
                   {mockLeaderboard[0].address.slice(0, 6)}...{mockLeaderboard[0].address.slice(-4)}
                 </span>
               )}
@@ -197,8 +197,8 @@ export default function LeaderboardPage() {
             <div className="text-2xl lg:text-3xl font-bold cm-highlight font-mono mb-1">
               {mockLeaderboard[0].totalWinnings} ETH
             </div>
-            <div className="text-xs text-accent font-bold mb-1">{mockLeaderboard[0].totalVotes} Total Votes</div>
-            <div className="text-[10px] text-muted-foreground">{mockLeaderboard[0].winRate}% Win Rate</div>
+            <div className="text-xs lg:text-sm text-accent font-bold mb-1">{mockLeaderboard[0].totalVotes} Total Votes</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">{mockLeaderboard[0].winRate}% Win Rate</div>
           </div>
 
           {/* 2nd Place */}
@@ -214,10 +214,10 @@ export default function LeaderboardPage() {
                 <Medal className="w-7 lg:w-8 h-7 lg:h-8 text-muted-foreground" />
               </div>
             )}
-            <div className="text-sm text-foreground/70 mb-1 uppercase font-bold">2nd Place</div>
-            <div className="text-sm font-bold text-foreground mb-2">
+            <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">2nd Place</div>
+            <div className="text-sm lg:text-base font-bold text-foreground mb-2">
               {mockLeaderboard[1].farcasterName || (
-                <span className="font-mono text-xs">
+                <span className="font-mono text-xs lg:text-sm">
                   {mockLeaderboard[1].address.slice(0, 6)}...{mockLeaderboard[1].address.slice(-4)}
                 </span>
               )}
@@ -225,8 +225,8 @@ export default function LeaderboardPage() {
             <div className="text-xl lg:text-2xl font-bold cm-highlight font-mono mb-1">
               {mockLeaderboard[1].totalWinnings} ETH
             </div>
-            <div className="text-xs text-accent font-bold mb-1">{mockLeaderboard[1].totalVotes} Total Votes</div>
-            <div className="text-[10px] text-muted-foreground">{mockLeaderboard[1].winRate}% Win Rate</div>
+            <div className="text-xs lg:text-sm text-accent font-bold mb-1">{mockLeaderboard[1].totalVotes} Total Votes</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">{mockLeaderboard[1].winRate}% Win Rate</div>
           </div>
 
           {/* 3rd Place */}
@@ -242,10 +242,10 @@ export default function LeaderboardPage() {
                 <TrendingUp className="w-7 lg:w-8 h-7 lg:h-8 text-muted-foreground" />
               </div>
             )}
-            <div className="text-sm text-foreground/70 mb-1 uppercase font-bold">3rd Place</div>
-            <div className="text-sm font-bold text-foreground mb-2">
+            <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">3rd Place</div>
+            <div className="text-sm lg:text-base font-bold text-foreground mb-2">
               {mockLeaderboard[2].farcasterName || (
-                <span className="font-mono text-xs">
+                <span className="font-mono text-xs lg:text-sm">
                   {mockLeaderboard[2].address.slice(0, 6)}...{mockLeaderboard[2].address.slice(-4)}
                 </span>
               )}
@@ -253,8 +253,8 @@ export default function LeaderboardPage() {
             <div className="text-xl lg:text-2xl font-bold cm-highlight font-mono mb-1">
               {mockLeaderboard[2].totalWinnings} ETH
             </div>
-            <div className="text-xs text-accent font-bold mb-1">{mockLeaderboard[2].totalVotes} Total Votes</div>
-            <div className="text-[10px] text-muted-foreground">{mockLeaderboard[2].winRate}% Win Rate</div>
+            <div className="text-xs lg:text-sm text-accent font-bold mb-1">{mockLeaderboard[2].totalVotes} Total Votes</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">{mockLeaderboard[2].winRate}% Win Rate</div>
           </div>
         </div>
 
@@ -267,19 +267,19 @@ export default function LeaderboardPage() {
             <table className="w-full min-w-[600px]">
               <thead className="bg-secondary/30 border-b-2 border-border">
                 <tr>
-                  <th className="px-3 lg:px-4 py-3 text-left text-[10px] lg:text-xs font-bold cm-highlight uppercase">
+                  <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase">
                     Rank
                   </th>
-                  <th className="px-3 lg:px-4 py-3 text-left text-[10px] lg:text-xs font-bold cm-highlight uppercase">
+                  <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase">
                     User
                   </th>
-                  <th className="px-3 lg:px-4 py-3 text-right text-[10px] lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+                  <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
                     Total Votes
                   </th>
-                  <th className="px-3 lg:px-4 py-3 text-right text-[10px] lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+                  <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
                     Winnings
                   </th>
-                  <th className="px-3 lg:px-4 py-3 text-right text-[10px] lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+                  <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
                     Win Rate
                   </th>
                 </tr>
@@ -324,14 +324,14 @@ export default function LeaderboardPage() {
                             />
                           ) : (
                             <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-bold">?</span>
+                              <span className="text-xs lg:text-sm font-bold">?</span>
                             </div>
                           )}
                           <div className="flex flex-col min-w-0">
                             {entry.farcasterName ? (
                               <>
                                 <span className="text-xs lg:text-sm font-bold truncate">{entry.farcasterName}</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">
+                                <span className="text-xs lg:text-sm text-muted-foreground font-mono">
                                   {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
                                 </span>
                               </>

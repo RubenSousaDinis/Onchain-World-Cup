@@ -61,7 +61,7 @@ export function MilestoneNFTCard({ title, description, icon, rarity, unlockedAt,
         {/* Footer */}
         <div className="space-y-2">
           <div className="text-xs text-white/70 text-center">Unlocked {unlockedAt}</div>
-          <div className="text-[10px] font-mono text-white/50 text-center truncate">{address}</div>
+          <div className="text-xs font-mono text-white/50 text-center truncate">{address}</div>
           <div className="flex items-center justify-center gap-2 pt-2">
             <div className="text-xs text-white/90 font-bold">CRYPTO WORLD CUP 2026</div>
           </div>

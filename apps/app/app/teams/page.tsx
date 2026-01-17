@@ -148,7 +148,7 @@ export default function TeamsPage() {
                     <span className="text-3xl lg:text-4xl">{team.flag}</span>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base lg:text-lg font-bold cm-highlight">{team.name}</h3>
-                      <p className="text-[10px] lg:text-xs text-foreground/70">{team.group}</p>
+                      <p className="text-xs lg:text-xs text-foreground/70">{team.group}</p>
                     </div>
                   </Link>
                   <div className="text-right hidden lg:block bg-card/50 px-4 py-2 rounded-sm">
@@ -189,7 +189,7 @@ export default function TeamsPage() {
                               {team.form.map((result, idx) => (
                                 <span
                                   key={idx}
-                                  className={`w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-sm ${
+                                  className={`w-5 h-5 flex items-center justify-center text-xs font-bold rounded-sm ${
                                     result === "W"
                                       ? "bg-green-600 text-white"
                                       : result === "D"
@@ -224,11 +224,11 @@ export default function TeamsPage() {
                               <span className="text-lg lg:text-xl flex-shrink-0">{match.flag}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="font-bold text-sm text-foreground truncate">{match.opponent}</div>
-                                <div className="text-[10px] text-muted-foreground truncate">{match.stadium}</div>
+                                <div className="text-xs text-muted-foreground truncate">{match.stadium}</div>
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0">
-                              <div className="text-[10px] cm-highlight font-mono font-bold">{match.date}</div>
+                              <div className="text-xs cm-highlight font-mono font-bold">{match.date}</div>
                             </div>
                           </Link>
                         ))}
@@ -251,7 +251,7 @@ export default function TeamsPage() {
                               <span className="text-lg lg:text-xl flex-shrink-0">{match.flag}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="font-bold text-sm text-foreground truncate">{match.opponent}</div>
-                                <div className="text-[10px] text-muted-foreground">{match.date}</div>
+                                <div className="text-xs text-muted-foreground">{match.date}</div>
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0">

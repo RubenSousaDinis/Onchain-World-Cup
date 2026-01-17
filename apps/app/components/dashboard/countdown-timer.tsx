@@ -68,7 +68,7 @@ export function CountdownTimer({
           {index > 0 && <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>}
           <div className="text-center">
             <div className="text-2xl lg:text-3xl font-bold cm-highlight">{unit.value}</div>
-            <div className="text-[10px] lg:text-xs text-muted-foreground">{unit.label}</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">{unit.label}</div>
           </div>
         </div>
       ))}

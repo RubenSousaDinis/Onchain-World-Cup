@@ -122,10 +122,10 @@ export default function QualificationPage() {
               <span className="cm-highlight">Onchain World Cup</span>
             </h1>
             <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
-            <p className="text-xs lg:text-sm text-foreground/80 mb-2">
+            <p className="text-sm lg:text-base text-foreground/80 mb-2">
               Onchain users decide who qualifies - No matches yet, pure community voting
             </p>
-            <p className="text-xs lg:text-sm text-foreground/70">
+            <p className="text-sm lg:text-base text-foreground/70">
               Top 48 countries qualify for the tournament. Vote now to support your nation!
             </p>
           </div>
@@ -139,35 +139,35 @@ export default function QualificationPage() {
                 <Clock className="w-6 h-6 text-accent" />
                 <div>
                   <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
-                  <p className="text-xs text-muted-foreground">Vote early for better prices</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Vote early for better prices</p>
                 </div>
               </div>
               <div className="flex gap-2 lg:gap-4">
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">DAYS</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">HRS</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">MIN</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">SEC</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-xs">
+            <div className="mt-4 flex items-center gap-2 text-xs lg:text-sm">
               <Trophy className="w-4 h-4 text-accent" />
               <span className="text-foreground/70">
-                Current Prize Pool: <span className="cm-highlight font-bold text-base">{totalPrizePool} ETH</span> from
+                Current Prize Pool: <span className="cm-highlight font-bold text-base lg:text-lg">{totalPrizePool} ETH</span> from
                 community votes
               </span>
             </div>
@@ -190,16 +190,16 @@ export default function QualificationPage() {
         {/* Legend */}
         <div className="mb-4 lg:mb-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="cm-panel rounded-sm p-3 bg-green-500/5 border border-green-500/20">
-            <div className="text-xs font-bold text-green-500 mb-1">✓ QUALIFIED</div>
-            <div className="text-[10px] text-muted-foreground">Ranks 1-48 advance to tournament</div>
+            <div className="text-xs lg:text-sm font-bold text-green-500 mb-1">✓ QUALIFIED</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">Ranks 1-48 advance to tournament</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-yellow-500/5 border border-yellow-500/20">
-            <div className="text-xs font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
-            <div className="text-[10px] text-muted-foreground">Ranks 46-50 need support</div>
+            <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">Ranks 46-50 need support</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-red-500/5 border border-red-500/20">
-            <div className="text-xs font-bold text-red-500 mb-1">✗ ELIMINATED</div>
-            <div className="text-[10px] text-muted-foreground">Below rank 48 - not qualified</div>
+            <div className="text-xs lg:text-sm font-bold text-red-500 mb-1">✗ ELIMINATED</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">Below rank 48 - not qualified</div>
           </div>
         </div>
 
@@ -262,7 +262,7 @@ export default function QualificationPage() {
                               <span className={`font-bold ${isQualified ? "cm-highlight" : "text-muted-foreground"}`}>
                                 {country.rank}
                               </span>
-                              {isAtRisk && <span className="text-yellow-500 text-[10px] font-bold">⚠</span>}
+                              {isAtRisk && <span className="text-yellow-500 text-sm font-bold">⚠</span>}
                             </div>
                           </td>
                           <td className="p-2 lg:p-3">
@@ -294,7 +294,7 @@ export default function QualificationPage() {
                             <div className="flex items-center justify-end gap-1 lg:gap-2">
                               <button
                                 onClick={() => handleVote(country)}
-                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-xs font-bold"
+                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-bold"
                               >
                                 VOTE
                               </button>

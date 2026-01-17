@@ -137,11 +137,11 @@ export default function SchedulePage() {
                       <div className="flex items-center gap-2 lg:gap-3">
                         <Clock className="w-3 lg:w-3.5 h-3 lg:h-3.5 cm-highlight" />
                         <span className="text-xs font-mono cm-highlight font-bold">{match.time} ET</span>
-                        <span className="bg-card px-2 py-0.5 rounded-sm text-[10px] lg:text-xs font-bold cm-highlight border border-accent/30">
+                        <span className="bg-card px-2 py-0.5 rounded-sm text-xs lg:text-xs font-bold cm-highlight border border-accent/30">
                           Group {match.group}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] lg:text-xs text-foreground/70">
+                      <div className="flex items-center gap-2 text-xs lg:text-xs text-foreground/70">
                         <MapPin className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-accent" />
                         <span className="truncate font-mono">{match.stadium}</span>
                       </div>

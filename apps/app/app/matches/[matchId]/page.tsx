@@ -130,15 +130,15 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
               {/* Match Info */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-card/90 px-3 py-2 rounded-sm">
-                  <div className="text-[10px] text-muted-foreground mb-1">Total Votes</div>
+                  <div className="text-xs text-muted-foreground mb-1">Total Votes</div>
                   <div className="text-lg font-bold cm-highlight">{totalVotes}</div>
                 </div>
                 <div className="bg-card/90 px-3 py-2 rounded-sm">
-                  <div className="text-[10px] text-muted-foreground mb-1">Prize Pool</div>
+                  <div className="text-xs text-muted-foreground mb-1">Prize Pool</div>
                   <div className="text-lg font-bold cm-highlight">{totalPool.toFixed(2)} ETH</div>
                 </div>
                 <div className="bg-card/90 px-3 py-2 rounded-sm col-span-2">
-                  <div className="text-[10px] text-muted-foreground mb-1">Stadium</div>
+                  <div className="text-xs text-muted-foreground mb-1">Stadium</div>
                   <div className="text-sm font-bold text-foreground truncate">{mockMatchData.stadium}</div>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
                     <Link href={`/users/${bet.user}`} className="text-accent hover:text-primary font-mono text-xs">
                       {bet.user}
                     </Link>
-                    <span className="text-[10px] text-muted-foreground">{bet.timestamp}</span>
+                    <span className="text-xs text-muted-foreground">{bet.timestamp}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
@@ -278,12 +278,12 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
                 <div>
                   <span className="text-muted-foreground">Winner Takes:</span>
                   <div className="text-accent font-bold text-lg mt-1">{(totalPool * 0.9).toFixed(2)} ETH</div>
-                  <div className="text-muted-foreground text-[10px]">90% of pool</div>
+                  <div className="text-muted-foreground text-xs">90% of pool</div>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Platform Fee:</span>
                   <div className="text-foreground font-bold text-lg mt-1">{(totalPool * 0.1).toFixed(2)} ETH</div>
-                  <div className="text-muted-foreground text-[10px]">10% of pool</div>
+                  <div className="text-muted-foreground text-xs">10% of pool</div>
                 </div>
               </div>
             </div>

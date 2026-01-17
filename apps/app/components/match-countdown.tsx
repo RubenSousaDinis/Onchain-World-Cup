@@ -66,7 +66,7 @@ export function MatchCountdown({ endTime, phase }: MatchCountdownProps) {
           {String(timeLeft.hours).padStart(2, "0")}:{String(timeLeft.minutes).padStart(2, "0")}:
           {String(timeLeft.seconds).padStart(2, "0")}
         </div>
-        <span className={`text-[10px] font-bold uppercase ${getPhaseColor()}`}>{getUrgencyMessage()}</span>
+        <span className={`text-xs font-bold uppercase ${getPhaseColor()}`}>{getUrgencyMessage()}</span>
       </div>
     </div>
   )

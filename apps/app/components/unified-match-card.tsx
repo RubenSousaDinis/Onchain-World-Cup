@@ -111,7 +111,7 @@ export function UnifiedMatchCard({
             <div className="flex items-center justify-between mb-2 lg:mb-3">
               <div className="flex items-center gap-2 bg-card/90 px-2 lg:px-3 py-1.5 rounded-sm">
                 <Clock className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-accent" />
-                <span className="text-[10px] lg:text-xs text-foreground font-mono">
+                <span className="text-xs lg:text-xs text-foreground font-mono">
                   {status === "upcoming" ? timeUntilStart : status === "voting" ? timeRemaining : "Final"}
                 </span>
               </div>
@@ -119,13 +119,13 @@ export function UnifiedMatchCard({
                 {status === "voting" && isHot && (
                   <div className="flex items-center gap-1 bg-orange-500/20 px-2 py-1.5 rounded-sm border border-orange-500/50">
                     <Flame className="w-3 h-3 text-orange-400 animate-pulse" />
-                    <span className="text-[10px] text-orange-400 font-bold">HOT</span>
+                    <span className="text-xs text-orange-400 font-bold">HOT</span>
                   </div>
                 )}
                 {status === "voting" && pricePhase && (
                   <div className="flex items-center gap-2 bg-card/90 px-2 lg:px-3 py-1.5 rounded-sm">
                     <TrendingUp className="w-3 lg:w-3.5 h-3 lg:h-3.5 text-accent" />
-                    <span className="text-[10px] lg:text-xs cm-highlight uppercase font-bold">
+                    <span className="text-xs lg:text-xs cm-highlight uppercase font-bold">
                       {pricePhase === "linear" ? "Phase 1" : "Phase 2"}
                     </span>
                   </div>
@@ -146,7 +146,7 @@ export function UnifiedMatchCard({
                   <div className="text-sm lg:text-lg font-bold text-foreground truncate hover:text-accent transition-colors">
                     {team1}
                   </div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground mt-0.5">HOME</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground mt-0.5">HOME</div>
                 </div>
                 <div className="text-xl lg:text-4xl font-bold cm-highlight flex-shrink-0">{team1VoteCount}</div>
               </div>
@@ -167,7 +167,7 @@ export function UnifiedMatchCard({
                   <div className="text-sm lg:text-lg font-bold text-foreground truncate hover:text-accent transition-colors">
                     {team2}
                   </div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground mt-0.5">AWAY</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground mt-0.5">AWAY</div>
                 </div>
                 <div className="text-xl lg:text-4xl flex-shrink-0">{team2Flag}</div>
               </div>
@@ -176,7 +176,7 @@ export function UnifiedMatchCard({
 
           {/* Match Info Footer */}
           <div className="bg-secondary/30 px-3 lg:px-4 py-2 lg:py-3 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2 lg:gap-0 border-t border-border">
-            <div className="flex flex-col gap-1 w-full lg:w-auto text-[10px] lg:text-xs">
+            <div className="flex flex-col gap-1 w-full lg:w-auto text-xs lg:text-xs">
               <div className="truncate">
                 <span className="text-muted-foreground">Stadium:</span>
                 <span className="ml-2 cm-highlight">{stadium}</span>
@@ -186,7 +186,7 @@ export function UnifiedMatchCard({
                 <span className="ml-2 text-foreground">{matchDate}</span>
               </div>
             </div>
-            <div className="flex gap-3 text-[10px] lg:text-xs">
+            <div className="flex gap-3 text-xs lg:text-xs">
               {status !== "upcoming" && (
                 <>
                   <div>

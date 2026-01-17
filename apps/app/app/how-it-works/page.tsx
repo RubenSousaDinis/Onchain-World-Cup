@@ -64,16 +64,16 @@ export default function HowItWorksPage() {
                   <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Phase</h2>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs lg:text-sm text-muted-foreground">
                 The journey begins as nations compete for their spot in the tournament
               </p>
             </div>
             <div className="p-4 space-y-3">
               <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
                 <Vote className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
+                <div className="text-sm lg:text-base">
                   <div className="font-bold mb-1">Vote for Countries</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs lg:text-sm text-muted-foreground">
                     64 countries compete for qualification. Users vote for their favorites with ETH. No matches yet -
                     just straight voting competition between nations.
                   </div>
@@ -81,9 +81,9 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
                 <Target className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
+                <div className="text-sm lg:text-base">
                   <div className="font-bold mb-1">Top 48 Qualify</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs lg:text-sm text-muted-foreground">
                     Countries with the most votes advance to the tournament phase. Only the top 48 make it through - the
                     rest are eliminated.
                   </div>
@@ -91,9 +91,9 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
                 <Clock className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
+                <div className="text-sm lg:text-base">
                   <div className="font-bold mb-1">Early Bird Advantage</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs lg:text-sm text-muted-foreground">
                     Voting costs increase weekly through boost fees. Early participation is cheaper - vote now to secure
                     the best rates before fees rise!
                   </div>

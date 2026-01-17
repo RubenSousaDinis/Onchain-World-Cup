@@ -113,7 +113,7 @@ export function PrizePoolDisplay({
           <strong className="text-foreground">Winner Distribution:</strong> The team with the most votes wins. All
           voters who picked the winning team share 90% of the total prize pool proportionally based on their vote
           amount.
-          <div className="mt-2 font-mono text-[11px] bg-secondary/30 rounded px-2 py-1.5">
+          <div className="mt-2 font-mono text-xs bg-secondary/30 rounded px-2 py-1.5">
             Your Share = (Your Votes / Total Winning Votes) × 90% Pool
           </div>
         </div>
