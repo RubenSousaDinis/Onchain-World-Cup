@@ -2,9 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, BarChart3 } from "lucide-react"
+import { Home, Trophy, Calendar, Users, Wallet, BarChart3 } from "lucide-react"
+import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useFarcaster } from "@/lib/farcaster-provider"
 
 const navItems = [
+  { icon: Home, label: "Home", href: "/" },
   { icon: Trophy, label: "Qualify", href: "/qualification" },
   { icon: Calendar, label: "Cup", href: "/tournament" },
   { icon: Users, label: "Leaders", href: "/leaderboard" },
@@ -14,6 +17,10 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname()
+  const { address, isConnected, chain } = useAccount()
+  const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   return (
     <>
@@ -46,6 +53,35 @@ export function MobileNav() {
               </Link>
             )
           })}
+          
+          {/* Wallet Connection Button */}
+          {!isFrameContext && !isConnected && !isAutoConnecting ? (
+            <button
+              onClick={() => connect({ connector: connectors[0] })}
+              className="flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
+              aria-label="Connect wallet"
+            >
+              <Wallet className="w-6 h-6" aria-hidden="true" />
+              <span className="text-xs font-medium">Connect</span>
+            </button>
+          ) : isConnected ? (
+            <button
+              onClick={() => !isFrameContext && disconnect()}
+              disabled={isFrameContext}
+              className="flex flex-col items-center gap-1 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
+              aria-label={`Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`}
+            >
+              <Wallet className="w-6 h-6" aria-hidden="true" />
+              <span className="text-xs font-medium truncate max-w-[60px]">
+                {address?.slice(0, 4)}...{address?.slice(-2)}
+              </span>
+            </button>
+          ) : isAutoConnecting ? (
+            <div className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground" role="status" aria-live="polite">
+              <Wallet className="w-6 h-6" aria-hidden="true" />
+              <span className="text-xs font-medium">Connecting...</span>
+            </div>
+          ) : null}
         </div>
       </nav>
     </>
