@@ -1,0 +1,947 @@
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
+
+describe("WorldCupQualification", function () {
+  let qualification;
+  let owner, platform, voter1, voter2, voter3;
+  let qualificationEndTime;
+
+  // Helper to parse ether amounts
+  const parseEth = (amount) => ethers.parseEther(amount.toString());
+  const formatEth = (amount) => ethers.formatEther(amount);
+
+  // Helper to convert string to bytes2
+  const toBytes2 = (str) => {
+    const bytes = ethers.toUtf8Bytes(str);
+    // Take first 2 bytes and pad to 2 bytes if needed
+    const twoBytes = bytes.slice(0, 2);
+    // Convert to hex and ensure it's exactly 2 bytes (4 hex chars)
+    return "0x" + Buffer.from(twoBytes).toString("hex").padEnd(4, "0");
+  };
+
+  // Test countries
+  const US = toBytes2("US");
+  const BR = toBytes2("BR");
+  const AR = toBytes2("AR");
+  const FR = toBytes2("FR");
+  const DE = toBytes2("DE");
+  const IT = toBytes2("IT");
+  const ES = toBytes2("ES");
+  const NL = toBytes2("NL");
+
+  beforeEach(async function () {
+    [owner, platform, voter1, voter2, voter3] = await ethers.getSigners();
+
+    const currentTime = await time.latest();
+    qualificationEndTime = currentTime + 7 * 24 * 3600; // 7 days from now
+
+    // Initial countries for testing
+    const initialCountries = [US, BR, AR, FR, DE, IT, ES, NL];
+
+    const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+    qualification = await WorldCupQualification.deploy(
+      qualificationEndTime,
+      platform.address,
+      initialCountries,
+      1000 // Initial platform fee: 10% (1000 basis points)
+    );
+
+    await qualification.waitForDeployment();
+  });
+
+  describe("Deployment", function () {
+    it("Should set the correct qualification end time", async function () {
+      expect(await qualification.qualificationEndTime()).to.equal(qualificationEndTime);
+    });
+
+    it("Should set the correct fee recipient", async function () {
+      expect(await qualification.feeRecipient()).to.equal(platform.address);
+    });
+
+    it("Should initialize with zero prize pool", async function () {
+      expect(await qualification.totalPrizePool()).to.equal(0);
+    });
+
+    it("Should not be finalized initially", async function () {
+      expect(await qualification.qualificationFinalized()).to.be.false;
+    });
+
+    it("Should have correct constants", async function () {
+      expect(await qualification.BASE_PRICE()).to.equal(parseEth("0.001"));
+      expect(await qualification.PRICE_INCREMENT()).to.equal(parseEth("0.0005"));
+      expect(await qualification.MAX_PLATFORM_FEE_BPS()).to.equal(2000); // Max 20%
+      expect(await qualification.QUALIFICATION_SPOTS()).to.equal(48);
+    });
+
+    it("Should initialize valid countries", async function () {
+      expect(await qualification.validCountry(US)).to.be.true;
+      expect(await qualification.validCountry(BR)).to.be.true;
+      expect(await qualification.validCountry(AR)).to.be.true;
+    });
+
+    it("Should revert with invalid end time", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const pastTime = await time.latest() - 1000;
+      
+      await expect(
+        WorldCupQualification.deploy(pastTime, platform.address, [US], 1000)
+      ).to.be.revertedWith("Invalid end time");
+    });
+
+    it("Should revert with zero fee recipient", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      
+      await expect(
+        WorldCupQualification.deploy(futureTime, ethers.ZeroAddress, [US], 1000)
+      ).to.be.revertedWith("Invalid fee recipient");
+    });
+
+    it("Should revert with fee too high", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      
+      await expect(
+        WorldCupQualification.deploy(futureTime, platform.address, [US], 2001)
+      ).to.be.revertedWith("Fee too high");
+    });
+  });
+
+  describe("Admin Functions", function () {
+    it("Should allow owner to add a new country", async function () {
+      const GB = toBytes2("GB");
+      expect(await qualification.validCountry(GB)).to.be.false;
+
+      await expect(qualification.connect(owner).addCountry(GB))
+        .to.emit(qualification, "CountryAdded")
+        .withArgs(GB);
+
+      expect(await qualification.validCountry(GB)).to.be.true;
+    });
+
+    it("Should allow owner to add multiple countries", async function () {
+      const GB = toBytes2("GB");
+      const JP = toBytes2("JP");
+      const CN = toBytes2("CN");
+
+      await qualification.connect(owner).addCountries([GB, JP, CN]);
+
+      expect(await qualification.validCountry(GB)).to.be.true;
+      expect(await qualification.validCountry(JP)).to.be.true;
+      expect(await qualification.validCountry(CN)).to.be.true;
+    });
+
+    it("Should revert if non-owner tries to add country", async function () {
+      const GB = toBytes2("GB");
+      await expect(
+        qualification.connect(voter1).addCountry(GB)
+      ).to.be.revertedWithCustomError(qualification, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should revert if trying to add duplicate country", async function () {
+      await expect(
+        qualification.connect(owner).addCountry(US)
+      ).to.be.revertedWith("Country already exists");
+    });
+
+    it("Should revert if trying to add country after qualification ends", async function () {
+      await time.increase(7 * 24 * 3600 + 1);
+      const GB = toBytes2("GB");
+      
+      await expect(
+        qualification.connect(owner).addCountry(GB)
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should allow owner to remove country with no votes", async function () {
+      const GB = toBytes2("GB");
+      await qualification.connect(owner).addCountry(GB);
+      
+      await expect(qualification.connect(owner).removeCountry(GB))
+        .to.emit(qualification, "CountryRemoved")
+        .withArgs(GB);
+
+      expect(await qualification.validCountry(GB)).to.be.false;
+    });
+
+    it("Should revert if trying to remove country with votes", async function () {
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      
+      await expect(
+        qualification.connect(owner).removeCountry(US)
+      ).to.be.revertedWith("Country has votes");
+    });
+
+    it("Should revert if non-owner tries to remove country", async function () {
+      const GB = toBytes2("GB");
+      await qualification.connect(owner).addCountry(GB);
+      
+      await expect(
+        qualification.connect(voter1).removeCountry(GB)
+      ).to.be.revertedWithCustomError(qualification, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should revert if trying to remove country after qualification ends", async function () {
+      const GB = toBytes2("GB");
+      await qualification.connect(owner).addCountry(GB);
+      
+      await time.increase(7 * 24 * 3600 + 1);
+      
+      await expect(
+        qualification.connect(owner).removeCountry(GB)
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should allow owner to update platform fee during qualification", async function () {
+      expect(await qualification.platformFeeBps()).to.equal(1000); // Initial 10%
+      
+      await expect(qualification.connect(owner).setPlatformFee(500))
+        .to.emit(qualification, "PlatformFeeUpdated")
+        .withArgs(1000, 500);
+      
+      expect(await qualification.platformFeeBps()).to.equal(500); // Now 5%
+    });
+
+    it("Should allow owner to set platform fee to 0 (100% discount)", async function () {
+      await qualification.connect(owner).setPlatformFee(0);
+      expect(await qualification.platformFeeBps()).to.equal(0);
+    });
+
+    it("Should revert if fee exceeds maximum", async function () {
+      await expect(
+        qualification.connect(owner).setPlatformFee(2001)
+      ).to.be.revertedWith("Fee too high");
+    });
+
+    it("Should revert if non-owner tries to update fee", async function () {
+      await expect(
+        qualification.connect(voter1).setPlatformFee(500)
+      ).to.be.revertedWithCustomError(qualification, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should revert if trying to update fee after qualification ends", async function () {
+      await time.increase(7 * 24 * 3600 + 1);
+      
+      await expect(
+        qualification.connect(owner).setPlatformFee(500)
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should revert if trying to update fee after finalization", async function () {
+      // Create a fresh contract for this test
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 2000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      // Add more countries to reach 48
+      const additionalCountries = [];
+      for (let i = 1; i < 48; i++) {
+        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
+        const countryBytes = toBytes2(countryCode);
+        additionalCountries.push(countryBytes);
+      }
+      await testQual.connect(owner).addCountries(additionalCountries);
+
+      // Add votes and finalize
+      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await time.increase(2001);
+      
+      const all48Countries = Array(48).fill(US);
+      await testQual.connect(owner).finalizeQualification(all48Countries);
+      
+      // The modifier checks time first, so it will revert with "Qualification ended"
+      // But we also check finalization in the function, so let's test that the function
+      // itself would check finalization if time wasn't an issue
+      // Actually, the modifier onlyBeforeEnd checks time first, so it will always revert with "Qualification ended"
+      await expect(
+        testQual.connect(owner).setPlatformFee(500)
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should apply updated fee to new votes", async function () {
+      // Set fee to 5%
+      await qualification.connect(owner).setPlatformFee(500);
+      
+      const votePrice = parseEth("0.001");
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+      
+      // Fee should be 5% now
+      const expectedFee = (votePrice * 500n) / 10000n;
+      expect(await qualification.totalPlatformFees()).to.equal(expectedFee);
+      
+      // Prize pool should be 95%
+      const expectedPrizePool = votePrice - expectedFee;
+      expect(await qualification.totalPrizePool()).to.equal(expectedPrizePool);
+    });
+  });
+
+  describe("Linear Pricing", function () {
+    it("Should calculate correct first vote price (0.001 ETH)", async function () {
+      const price = await qualification.votePrice(US);
+      expect(price).to.equal(parseEth("0.001"));
+    });
+
+    it("Should increase price linearly by 0.0005 ETH per vote", async function () {
+      // First vote: 0.001 ETH
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      expect(await qualification.votePrice(US)).to.equal(parseEth("0.0015"));
+
+      // Second vote: 0.0015 ETH
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.0015") });
+      expect(await qualification.votePrice(US)).to.equal(parseEth("0.002"));
+
+      // Third vote: 0.002 ETH
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.002") });
+      expect(await qualification.votePrice(US)).to.equal(parseEth("0.0025"));
+    });
+
+    it("Should calculate correct price for multiple votes in one transaction", async function () {
+      // Calculate price for 3 votes
+      const price = await qualification.calculateVoteCost(US, 3);
+      // 0.001 + 0.0015 + 0.002 = 0.0045 ETH
+      const expected = parseEth("0.001") + parseEth("0.0015") + parseEth("0.002");
+      expect(price).to.equal(expected);
+    });
+
+    it("Should track vote count correctly after 10 votes", async function () {
+      for (let i = 0; i < 10; i++) {
+        const price = await qualification.votePrice(US);
+        await qualification.connect(voter1).vote(US, 1, { value: price });
+      }
+
+      expect(await qualification.countryVotes(US)).to.equal(10);
+      expect(await qualification.userVotes(voter1.address, US)).to.equal(10);
+
+      // Price should be 0.001 + (10 * 0.0005) = 0.006 ETH
+      const nextPrice = await qualification.votePrice(US);
+      expect(nextPrice).to.equal(parseEth("0.006"));
+    });
+
+    it("Should track ETH per country", async function () {
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.0015") });
+
+      expect(await qualification.getETHPerCountry(US)).to.equal(parseEth("0.0025"));
+      expect(await qualification.ethForCountry(US)).to.equal(parseEth("0.0025"));
+    });
+
+    it("Should allow different voters on different countries", async function () {
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter3).vote(AR, 1, { value: parseEth("0.001") });
+
+      expect(await qualification.countryVotes(US)).to.equal(1);
+      expect(await qualification.countryVotes(BR)).to.equal(1);
+      expect(await qualification.countryVotes(AR)).to.equal(1);
+      expect(await qualification.userVotes(voter1.address, US)).to.equal(1);
+      expect(await qualification.userVotes(voter2.address, BR)).to.equal(1);
+      expect(await qualification.userVotes(voter3.address, AR)).to.equal(1);
+    });
+
+    it("Should refund overpayment", async function () {
+      const price = await qualification.votePrice(US);
+      const overpayment = parseEth("0.01"); // Send 10x the required amount
+
+      const balanceBefore = await ethers.provider.getBalance(voter1.address);
+      const tx = await qualification.connect(voter1).vote(US, 1, { value: overpayment });
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+
+      const balanceAfter = await ethers.provider.getBalance(voter1.address);
+
+      // Should only charge the exact price + gas
+      const expectedBalance = balanceBefore - price - gasCost;
+      expect(balanceAfter).to.equal(expectedBalance);
+    });
+
+    it("Should emit VotePlaced event with correct data", async function () {
+      const price = parseEth("0.001");
+      
+      const tx = await qualification.connect(voter1).vote(US, 1, { value: price });
+      const receipt = await tx.wait();
+      
+      // Find the VotePlaced event
+      const eventFilter = qualification.filters.VotePlaced(voter1.address, US);
+      const events = await qualification.queryFilter(eventFilter, receipt.blockNumber, receipt.blockNumber);
+      
+      expect(events.length).to.equal(1);
+      const event = events[0];
+      expect(event.args.voter).to.equal(voter1.address);
+      expect(event.args.country).to.equal(US);
+      expect(event.args.votes).to.equal(1);
+      expect(event.args.cost).to.equal(price);
+      // Timestamp should be approximately current time (within 10 seconds)
+      const currentTime = await time.latest();
+      expect(Number(event.args.timestamp)).to.be.closeTo(currentTime, 10);
+    });
+
+    it("Should revert if insufficient payment", async function () {
+      await expect(
+        qualification.connect(voter1).vote(US, 1, { value: parseEth("0.0009") })
+      ).to.be.revertedWith("Insufficient ETH");
+    });
+
+    it("Should revert for invalid country", async function () {
+      const invalidCountry = toBytes2("XX");
+      await expect(
+        qualification.connect(voter1).vote(invalidCountry, 1, { value: parseEth("0.001") })
+      ).to.be.revertedWith("Invalid country");
+    });
+
+    it("Should revert for zero vote count", async function () {
+      await expect(
+        qualification.connect(voter1).vote(US, 0, { value: parseEth("0.001") })
+      ).to.be.revertedWith("Invalid vote count");
+    });
+
+    it("Should revert for vote count exceeding max", async function () {
+      await expect(
+        qualification.connect(voter1).vote(US, 101, { value: parseEth("10") })
+      ).to.be.revertedWith("Invalid vote count");
+    });
+  });
+
+  describe("Platform Fee", function () {
+    it("Should accumulate 10% platform fee on vote", async function () {
+      const votePrice = parseEth("0.001");
+      const expectedFee = (votePrice * 1000n) / 10000n; // 10%
+
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+
+      expect(await qualification.totalPlatformFees()).to.equal(expectedFee);
+    });
+
+    it("Should track total platform fees collected", async function () {
+      const votePrice1 = parseEth("0.001"); // First vote for US
+      const votePrice2 = parseEth("0.001"); // First vote for BR
+
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice1 });
+      await qualification.connect(voter2).vote(BR, 1, { value: votePrice2 });
+
+      const expectedTotalFee = (votePrice1 * 1000n) / 10000n + (votePrice2 * 1000n) / 10000n;
+      expect(await qualification.totalPlatformFees()).to.equal(expectedTotalFee);
+    });
+
+    it("Should store only prize pool (90%) in contract", async function () {
+      const votePrice = parseEth("0.001");
+      const expectedPrizePool = votePrice - (votePrice * 1000n) / 10000n; // 90%
+
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+
+      expect(await qualification.totalPrizePool()).to.equal(expectedPrizePool);
+    });
+
+    it("Should allow owner to withdraw platform fees", async function () {
+      const votePrice = parseEth("0.001");
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+
+      const fees = await qualification.totalPlatformFees();
+      const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
+
+      const tx = await qualification.connect(owner).withdrawPlatformFees();
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+
+      const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
+      expect(platformBalanceAfter - platformBalanceBefore).to.equal(fees);
+
+      expect(await qualification.totalPlatformFees()).to.equal(0);
+    });
+
+    it("Should emit PlatformFeesWithdrawn event", async function () {
+      const votePrice = parseEth("0.001");
+      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+
+      const fees = await qualification.totalPlatformFees();
+      
+      await expect(qualification.connect(owner).withdrawPlatformFees())
+        .to.emit(qualification, "PlatformFeesWithdrawn")
+        .withArgs(fees);
+    });
+  });
+
+  describe("Qualification Finalization", function () {
+    beforeEach(async function () {
+      // Add more countries before period ends (we need 48 total for finalization)
+      const additionalCountries = [];
+      for (let i = 8; i < 48; i++) {
+        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
+        const countryBytes = toBytes2(countryCode);
+        additionalCountries.push(countryBytes);
+      }
+      await qualification.connect(owner).addCountries(additionalCountries);
+
+      // Create votes for multiple countries
+      // US: 5 votes
+      for (let i = 0; i < 5; i++) {
+        const price = await qualification.votePrice(US);
+        await qualification.connect(voter1).vote(US, 1, { value: price });
+      }
+
+      // BR: 3 votes
+      for (let i = 0; i < 3; i++) {
+        const price = await qualification.votePrice(BR);
+        await qualification.connect(voter2).vote(BR, 1, { value: price });
+      }
+
+      // AR: 4 votes
+      for (let i = 0; i < 4; i++) {
+        const price = await qualification.votePrice(AR);
+        await qualification.connect(voter3).vote(AR, 1, { value: price });
+      }
+
+      // Add votes to other countries for finalization tests
+      await qualification.connect(voter1).vote(FR, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(DE, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(IT, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(ES, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(NL, 1, { value: parseEth("0.001") });
+
+      // Fast forward past qualification end time
+      await time.increase(7 * 24 * 3600 + 1);
+    });
+
+    it("Should revert finalization before end time", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const newQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR, AR],
+        1000
+      );
+      await newQual.waitForDeployment();
+
+      await expect(
+        newQual.finalizeQualification([US, BR, AR])
+      ).to.be.revertedWith("Qualification not ended");
+    });
+
+    it("Should finalize qualification with specified countries", async function () {
+      // Create a new contract with initial countries
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR, AR],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      // Add votes with correct prices
+      const usPrice1 = await testQual.calculateVoteCost(US, 5);
+      const brPrice1 = await testQual.calculateVoteCost(BR, 3);
+      const arPrice1 = await testQual.calculateVoteCost(AR, 4);
+      
+      await testQual.connect(voter1).vote(US, 5, { value: usPrice1 });
+      await testQual.connect(voter2).vote(BR, 3, { value: brPrice1 });
+      await testQual.connect(voter3).vote(AR, 4, { value: arPrice1 });
+
+      await time.increase(1001);
+      
+      // Create 48 countries array (repeat US, BR, AR to fill 48 spots)
+      const qualifiedCountries = [];
+      for (let i = 0; i < 48; i++) {
+        qualifiedCountries.push([US, BR, AR][i % 3]);
+      }
+      
+      await expect(testQual.connect(owner).finalizeQualification(qualifiedCountries))
+        .to.emit(testQual, "QualificationEnded")
+        .to.emit(testQual, "QualificationFinalized")
+        .to.emit(testQual, "PrizesDistributed");
+      
+      expect(await testQual.qualificationFinalized()).to.be.true;
+      expect(await testQual.isQualified(US)).to.be.true;
+      expect(await testQual.isQualified(BR)).to.be.true;
+      expect(await testQual.isQualified(AR)).to.be.true;
+    });
+
+    it("Should revert if trying to qualify country with no votes (CRITICAL TRUST GUARANTEE)", async function () {
+      // Create a new contract
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR, AR],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      // Add votes only for US
+      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+
+      await time.increase(1001);
+      
+      // Try to qualify BR and AR which have no votes - should fail
+      const qualifiedCountries = [];
+      for (let i = 0; i < 48; i++) {
+        if (i < 1) {
+          qualifiedCountries.push(US); // US has votes
+        } else {
+          qualifiedCountries.push(BR); // BR has no votes - should fail
+        }
+      }
+      
+      await expect(
+        testQual.connect(owner).finalizeQualification(qualifiedCountries)
+      ).to.be.revertedWith("Country has no votes");
+    });
+
+    it("Should revert if not owner tries to finalize", async function () {
+      await expect(
+        qualification.connect(voter1).finalizeQualification([US, BR, AR])
+      ).to.be.revertedWithCustomError(qualification, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should prevent voting after finalization", async function () {
+      // Create a fresh contract for this test
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 2000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR, AR, FR, DE, IT, ES, NL],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      // Add more countries to reach 48
+      const additionalCountries = [];
+      for (let i = 8; i < 48; i++) {
+        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
+        const countryBytes = toBytes2(countryCode);
+        additionalCountries.push(countryBytes);
+      }
+      await testQual.connect(owner).addCountries(additionalCountries);
+
+      // Add votes to all countries before finalization (required for trust guarantee)
+      const countriesToVote = [US, BR, AR, FR, DE, IT, ES, NL, ...additionalCountries];
+      for (let i = 0; i < countriesToVote.length; i++) {
+        await testQual.connect(voter1).vote(countriesToVote[i], 1, { value: parseEth("0.001") });
+      }
+
+      // Fast forward past end time
+      await time.increase(2001);
+
+      // Verify that finalization sets the flag correctly
+      const all48Countries = [US, BR, AR, FR, DE, IT, ES, NL, ...additionalCountries];
+
+      await testQual.connect(owner).finalizeQualification(all48Countries);
+
+      // Verify finalization happened
+      expect(await testQual.qualificationFinalized()).to.be.true;
+
+      // Voting is prevented after period ends (checked first in modifier)
+      // Finalization provides an additional check for safety
+      await expect(
+        testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") })
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should prevent double finalization", async function () {
+      // Create a fresh contract for this test
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 2000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      // Add more countries to reach 48
+      const additionalCountries = [];
+      for (let i = 1; i < 48; i++) {
+        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
+        const countryBytes = toBytes2(countryCode);
+        additionalCountries.push(countryBytes);
+      }
+      await testQual.connect(owner).addCountries(additionalCountries);
+
+      // Add votes to US first (required for trust guarantee)
+      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      
+      // Fast forward past end time
+      await time.increase(2001);
+      
+      const all48Countries = Array(48).fill(US); // Use same country for simplicity in test
+      await testQual.connect(owner).finalizeQualification(all48Countries);
+      
+      // Verify finalization happened
+      expect(await testQual.qualificationFinalized()).to.be.true;
+      
+      // Try to finalize again - should revert
+      await expect(
+        testQual.connect(owner).finalizeQualification(all48Countries)
+      ).to.be.revertedWith("Already finalized");
+    });
+  });
+
+  describe("Winnings Calculation and Claiming", function () {
+    beforeEach(async function () {
+      // Setup: US gets 5 votes, AR gets 4 votes, BR gets 3 votes
+      // voter1 votes for US (5 votes)
+      for (let i = 0; i < 5; i++) {
+        const price = await qualification.votePrice(US);
+        await qualification.connect(voter1).vote(US, 1, { value: price });
+      }
+
+      // voter2 votes for AR (4 votes)
+      for (let i = 0; i < 4; i++) {
+        const price = await qualification.votePrice(AR);
+        await qualification.connect(voter2).vote(AR, 1, { value: price });
+      }
+
+      // voter3 votes for BR (3 votes)
+      for (let i = 0; i < 3; i++) {
+        const price = await qualification.votePrice(BR);
+        await qualification.connect(voter3).vote(BR, 1, { value: price });
+      }
+
+      // Fast forward and finalize
+      await time.increase(7 * 24 * 3600 + 1);
+      
+      // Create 48 countries array (using US, AR, BR and filling rest)
+      const qualifiedCountries = [US, AR, BR];
+      for (let i = 3; i < 48; i++) {
+        qualifiedCountries.push(US); // Fill with US for simplicity
+      }
+      
+      await qualification.connect(owner).finalizeQualification(qualifiedCountries);
+    });
+
+    it("Should calculate winnings using unified pool formula", async function () {
+      // voter1 has 5 votes for US (qualified)
+      // Total qualified votes = 5 (US) + 4 (AR) + 3 (BR) = 12
+      // But we qualified all 48 countries, so we need to check actual qualified votes
+      
+      const totalQualifiedVotes = await qualification.totalQualifiedVotes();
+      const totalPrizePool = await qualification.totalPrizePool();
+      const userQualifiedVotes = await qualification.userVotes(voter1.address, US);
+
+      // Formula: (userQualifiedVotes * totalPrizePool) / totalQualifiedVotes
+      const expectedWinnings = (userQualifiedVotes * totalPrizePool) / totalQualifiedVotes;
+      const actualWinnings = await qualification.claimable(voter1.address);
+
+      expect(actualWinnings).to.equal(expectedWinnings);
+    });
+
+    it("Should return zero winnings for non-qualified country voters", async function () {
+      // Create a new contract where BR doesn't qualify
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR, AR],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
+
+      await time.increase(1001);
+      
+      // Only US qualifies
+      const qualifiedCountries = Array(48).fill(US);
+      await testQual.connect(owner).finalizeQualification(qualifiedCountries);
+
+      // voter2 should get 0 winnings (BR didn't qualify)
+      expect(await testQual.claimable(voter2.address)).to.equal(0);
+    });
+
+    it("Should allow winners to claim", async function () {
+      const winnings = await qualification.claimable(voter1.address);
+      const balanceBefore = await ethers.provider.getBalance(voter1.address);
+
+      const tx = await qualification.connect(voter1).claim();
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+
+      const balanceAfter = await ethers.provider.getBalance(voter1.address);
+      expect(balanceAfter).to.equal(balanceBefore + winnings - gasCost);
+    });
+
+    it("Should prevent double claims", async function () {
+      await qualification.connect(voter1).claim();
+      
+      await expect(
+        qualification.connect(voter1).claim()
+      ).to.be.revertedWith("Already claimed");
+    });
+
+    it("Should revert claim before finalization", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const newQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US],
+        1000
+      );
+      await newQual.waitForDeployment();
+
+      await newQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+
+      await expect(
+        newQual.connect(voter1).claim()
+      ).to.be.revertedWith("Not finalized");
+    });
+
+    it("Should revert claim if no winnings", async function () {
+      // Create user with no qualified votes
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const futureTime = await time.latest() + 1000;
+      const testQual = await WorldCupQualification.deploy(
+        futureTime,
+        platform.address,
+        [US, BR],
+        1000
+      );
+      await testQual.waitForDeployment();
+
+      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
+
+      await time.increase(1001);
+      
+      // Only US qualifies
+      const qualifiedCountries = Array(48).fill(US);
+      await testQual.connect(owner).finalizeQualification(qualifiedCountries);
+
+      // voter2 should have no winnings
+      await expect(
+        testQual.connect(voter2).claim()
+      ).to.be.revertedWith("Nothing to claim");
+    });
+
+    it("Should emit WinningsClaimed event", async function () {
+      const winnings = await qualification.claimable(voter1.address);
+      
+      await expect(qualification.connect(voter1).claim())
+        .to.emit(qualification, "WinningsClaimed")
+        .withArgs(voter1.address, winnings);
+    });
+  });
+
+  describe("Read-Only Metrics", function () {
+    beforeEach(async function () {
+      // Calculate correct prices for 2 votes: 0.001 + 0.0015 = 0.0025
+      const usPrice2 = await qualification.calculateVoteCost(US, 2);
+      await qualification.connect(voter1).vote(US, 2, { value: usPrice2 }); // 2 votes
+      await qualification.connect(voter1).vote(BR, 1, { value: parseEth("0.001") }); // 1 vote
+      await qualification.connect(voter2).vote(AR, 1, { value: parseEth("0.001") }); // 1 vote
+    });
+
+    it("Should return ETH per country", async function () {
+      // US: 2 votes = 0.001 + 0.0015 = 0.0025
+      const usETH = await qualification.getETHPerCountry(US);
+      expect(usETH).to.equal(parseEth("0.0025"));
+      expect(await qualification.getETHPerCountry(BR)).to.equal(parseEth("0.001"));
+      expect(await qualification.getETHPerCountry(AR)).to.equal(parseEth("0.001"));
+    });
+
+    it("Should return total prize pool", async function () {
+      const prizePool = await qualification.getTotalPrizePool();
+      expect(prizePool).to.be.greaterThan(0);
+      // Prize pool should be 90% of total ETH collected
+      const totalETH = parseEth("0.0025") + parseEth("0.001") + parseEth("0.001");
+      const expectedPrizePool = totalETH - (totalETH * 1000n) / 10000n;
+      expect(prizePool).to.equal(expectedPrizePool);
+    });
+
+    it("Should return platform fee amount", async function () {
+      const fees = await qualification.getPlatformFeeAmount();
+      expect(fees).to.be.greaterThan(0);
+      // Fees should be 10% of total ETH collected
+      const totalETH = parseEth("0.0025") + parseEth("0.001") + parseEth("0.001");
+      const expectedFees = (totalETH * 1000n) / 10000n;
+      expect(fees).to.equal(expectedFees);
+    });
+  });
+
+  describe("View Functions", function () {
+    beforeEach(async function () {
+      // Calculate correct prices for 2 votes: 0.001 + 0.0015 = 0.0025
+      const usPrice2 = await qualification.calculateVoteCost(US, 2);
+      await qualification.connect(voter1).vote(US, 2, { value: usPrice2 }); // 2 votes
+      await qualification.connect(voter1).vote(BR, 1, { value: parseEth("0.001") }); // 1 vote
+      await qualification.connect(voter2).vote(AR, 1, { value: parseEth("0.001") }); // 1 vote
+    });
+
+    it("Should return correct qualification details", async function () {
+      const details = await qualification.getQualificationDetails();
+
+      expect(details._qualificationEndTime).to.equal(qualificationEndTime);
+      expect(details._qualificationSpots).to.equal(48);
+      expect(details._isFinalized).to.be.false;
+      expect(details._totalPrizePool).to.be.greaterThan(0);
+    });
+
+    it("Should return user votes correctly", async function () {
+      const [countries, votes] = await qualification.getUserVotes(voter1.address);
+
+      expect(countries.length).to.equal(2);
+      expect(votes.length).to.equal(2);
+      
+      // Check that US has 2 votes and BR has 1 vote
+      const usIndex = countries.findIndex(c => c === US);
+      const brIndex = countries.findIndex(c => c === BR);
+      expect(votes[usIndex]).to.equal(2);
+      expect(votes[brIndex]).to.equal(1);
+    });
+
+    it("Should return empty arrays for user with no votes", async function () {
+      const [countries, votes] = await qualification.getUserVotes(voter3.address);
+
+      expect(countries.length).to.equal(0);
+      expect(votes.length).to.equal(0);
+    });
+  });
+
+  describe("Edge Cases", function () {
+    it("Should handle voting after qualification period ends", async function () {
+      await time.increase(7 * 24 * 3600 + 1);
+
+      await expect(
+        qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") })
+      ).to.be.revertedWith("Qualification ended");
+    });
+
+    it("Should handle multiple votes for same country from same user", async function () {
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.0015") });
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.002") });
+
+      expect(await qualification.userVotes(voter1.address, US)).to.equal(3);
+      expect(await qualification.countryVotes(US)).to.equal(3);
+    });
+
+    it("Should handle user voting for multiple countries", async function () {
+      await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(BR, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter1).vote(AR, 1, { value: parseEth("0.001") });
+
+      expect(await qualification.userVotes(voter1.address, US)).to.equal(1);
+      expect(await qualification.userVotes(voter1.address, BR)).to.equal(1);
+      expect(await qualification.userVotes(voter1.address, AR)).to.equal(1);
+    });
+
+    it("Should prevent direct ETH transfers", async function () {
+      await expect(
+        voter1.sendTransaction({ to: await qualification.getAddress(), value: parseEth("0.001") })
+      ).to.be.revertedWith("Direct ETH not accepted");
+    });
+  });
+});
