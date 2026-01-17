@@ -102,7 +102,10 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
             </div>
             <p className="text-xs lg:text-sm text-foreground/80">
-              192 countries competing for 48 tournament spots. Your votes decide who advances!
+              Countries compete for 48 tournament spots. Vote for your favorites - the top 48 by vote count qualify!
+            </p>
+            <p className="text-xs lg:text-sm text-foreground/70 mt-2">
+              <strong>How it works:</strong> Each country has its own vote count. The 48 countries with the most votes advance to the main tournament.
             </p>
           </div>
 
@@ -161,23 +164,23 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "Vote Early, Pay Less",
-      description: "Prices increase as more people vote",
+      description: "Prices increase linearly as more people vote",
       icon: Clock,
       content: (
         <div className="space-y-4">
           <p className="text-sm text-foreground/80">
-            Like early bird tickets to a match - the earlier you vote, the cheaper it is!
+            Like early bird tickets to a match - the earlier you vote, the cheaper it is! Each vote increases the price for the next one.
           </p>
 
           <div className="bg-secondary/50 rounded-sm p-4 border border-border">
             <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-green-400">$1-5</div>
-              <div className="text-xs lg:text-sm text-foreground/70">First few votes (Best value!)</div>
+              <div className="text-2xl font-bold text-green-400">0.001 ETH</div>
+              <div className="text-xs lg:text-sm text-foreground/70">First vote (Best value!)</div>
               <div className="my-2">
                 <TrendingUp className="w-6 h-6 mx-auto text-muted-foreground" />
               </div>
-              <div className="text-2xl font-bold text-orange-400">$50+</div>
-              <div className="text-xs lg:text-sm text-foreground/70">After many people vote</div>
+              <div className="text-2xl font-bold text-orange-400">0.0015+ ETH</div>
+              <div className="text-xs lg:text-sm text-foreground/70">Each additional vote costs +0.0005 ETH</div>
             </div>
           </div>
 
@@ -185,13 +188,13 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
               <span>
-                <strong className="text-foreground">First 2 hours:</strong> Prices rise slowly and steadily
+                <strong className="text-foreground">Linear pricing:</strong> Price = 0.001 ETH + (vote count × 0.0005 ETH)
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 flex-shrink-0" />
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
               <span>
-                <strong className="text-foreground">After 2 hours:</strong> Prices jump up quickly
+                <strong className="text-foreground">Per country:</strong> Each country has its own vote count and pricing
               </span>
             </li>
             <li className="flex items-start gap-2">
@@ -204,8 +207,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
             <p className="text-xs lg:text-sm text-green-300">
-              <strong>⏰ Smart tip:</strong> Vote in the first 2 hours to get the best value. Every vote after makes
-              it more expensive!
+              <strong>⏰ Smart tip:</strong> Vote early for your country to get the best prices. The more popular a country becomes, the more expensive votes get!
             </p>
           </div>
         </div>
@@ -266,11 +268,11 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "Winning & Prizes",
-      description: "How payouts work if your team wins",
+      description: "How payouts work in the qualification phase",
       icon: Trophy,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">If your country wins, you get a share of the prize pool!</p>
+          <p className="text-sm text-foreground/80">If your country qualifies (top 48), you share the unified prize pool!</p>
 
           <div className="bg-secondary/50 rounded-sm p-4 border border-border">
             <div className="space-y-3">
@@ -278,12 +280,17 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
                 <div className="text-xs lg:text-sm text-foreground/70 mb-2">How the money is split:</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
-                    90% to Winners
+                    90% Prize Pool
                   </div>
                   <div className="w-20 h-10 bg-muted rounded-sm flex items-center justify-center text-sm font-bold text-foreground/70">
                     10% Fee
                   </div>
                 </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs text-foreground/70">
+                  <strong>Unified Pool:</strong> All 48 qualified countries share one prize pool. Your share depends on your total votes across all qualified countries.
+                </p>
               </div>
             </div>
           </div>
@@ -294,19 +301,19 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                 <span>
-                  <strong>How many votes you bought</strong> - More votes = bigger share
+                  <strong>Your votes for qualified countries</strong> - Sum of all your votes for any of the top 48
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                 <span>
-                  <strong>Total votes on winning team</strong> - Your % of total winning votes
+                  <strong>Total qualified votes</strong> - All votes across all 48 qualified countries
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
                 <span>
-                  <strong>Size of prize pool</strong> - All money bet on the match
+                  <strong>Size of prize pool</strong> - 90% of all ETH collected (after platform fee)
                 </span>
               </li>
             </ul>
@@ -314,7 +321,13 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
             <p className="text-xs lg:text-sm text-green-300">
-              <strong>💰 Example:</strong> If you have 10% of the winning votes, you get 10% of the winners' pot. Simple as that!
+              <strong>💰 Formula:</strong> Your payout = (Your qualified votes / Total qualified votes) × Prize pool
+            </p>
+          </div>
+
+          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
+            <p className="text-xs lg:text-sm text-foreground/80">
+              <strong className="text-accent">💡 Tip:</strong> You can vote for multiple countries! If any of them qualify, you'll get a share of the prize pool.
             </p>
           </div>
         </div>

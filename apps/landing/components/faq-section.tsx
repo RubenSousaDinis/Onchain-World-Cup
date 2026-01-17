@@ -13,7 +13,19 @@ export function FAQSection() {
     },
     {
       question: "Are there real matches during the qualification phase?",
-      answer: "No. Qualification is purely about fan support.",
+      answer: "No. Qualification is purely about fan support. Countries compete for votes, and the top 48 by vote count advance to the tournament.",
+    },
+    {
+      question: "How does pricing work in qualification?",
+      answer: "Linear pricing: First vote costs 0.001 ETH, each additional vote costs +0.0005 ETH. Each country has its own vote count, so prices are independent per country.",
+    },
+    {
+      question: "How are prizes distributed in qualification?",
+      answer: "All 48 qualified countries share one unified prize pool. Your payout = (Your votes for qualified countries / Total qualified votes) × Prize pool. You can vote for multiple countries!",
+    },
+    {
+      question: "Can the platform fee change?",
+      answer: "Yes, the platform fee can be updated during qualification (max 20%) to offer discounts or promotions. This is transparent and only affects new votes.",
     },
     {
       question: "Why end Season 1 before the real World Cup?",

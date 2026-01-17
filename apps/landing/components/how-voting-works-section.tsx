@@ -13,10 +13,10 @@ export function HowVotingWorksSection() {
               <p className="text-foreground font-medium">Multiple votes per wallet are allowed</p>
             </div>
             <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
-              <p className="text-foreground font-medium">Voting fees increase over time</p>
+              <p className="text-foreground font-medium">Linear pricing: prices increase with each vote</p>
             </div>
             <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
-              <p className="text-foreground font-medium">Early participation matters more</p>
+              <p className="text-foreground font-medium">Early participation gets better prices</p>
             </div>
             <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Anti-sybil protections are enforced</p>
@@ -36,7 +36,7 @@ export function HowVotingWorksSection() {
                 <div className="mb-3 text-4xl font-bold text-primary">1</div>
                 <h4 className="mb-2 text-lg font-semibold cm-highlight">Vote Early</h4>
                 <p className="text-sm text-muted-foreground">
-                  Every vote adds ETH to the prize pool. Vote prices increase as more people participate, so early voters get better prices.
+                  Every vote adds ETH to the prize pool. Prices increase linearly (0.0005 ETH per vote), so early voters get better prices. First vote costs 0.001 ETH.
                 </p>
               </div>
 
@@ -62,17 +62,18 @@ export function HowVotingWorksSection() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-accent">•</span>
-                  <span><strong className="text-foreground">90%</strong> goes to winning voters (split proportionally by vote amount)</span>
+                  <span><strong className="text-foreground">90%</strong> goes to voters who supported qualified countries (unified pool, split by vote count)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-accent">•</span>
-                  <span><strong className="text-foreground">5%</strong> platform fee for development and operations</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-accent">•</span>
-                  <span><strong className="text-foreground">5%</strong> reserved for future tournaments and community rewards</span>
+                  <span><strong className="text-foreground">10%</strong> platform fee (updatable during qualification for discounts)</span>
                 </li>
               </ul>
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  <strong className="text-foreground">Qualification Phase:</strong> All 48 qualified countries share one prize pool. Your payout = (Your qualified votes / Total qualified votes) × Prize pool
+                </p>
+              </div>
             </div>
           </div>
 

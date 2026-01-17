@@ -16,9 +16,11 @@ export function PhasesSection() {
                   <h4 className="mb-2 font-semibold text-primary">Phase 1: Qualification Phase</h4>
                   <ul className="space-y-1 text-sm text-foreground/80">
                     <li>• Launch: mid-February</li>
-                    <li>• Fans vote for national teams</li>
-                    <li>• No matches yet</li>
-                    <li>• The top 48 teams qualify</li>
+                    <li>• Fans vote for national teams with ETH</li>
+                    <li>• Linear pricing: 0.001 ETH + (vote count × 0.0005 ETH)</li>
+                    <li>• No matches yet - pure fan support</li>
+                    <li>• The top 48 teams by vote count qualify</li>
+                    <li>• Unified prize pool shared by all qualified country voters</li>
                   </ul>
                 </div>
 
