@@ -299,7 +299,7 @@ export default function TournamentPage() {
 
       <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
         <div className="cm-panel rounded-sm overflow-hidden mb-6">
-          <div className="soccer-field-bg p-8 lg:p-16 text-center">
+          <div className="soccer-field-bg p-8 lg:p-16">
             <h1 className="text-3xl lg:text-5xl font-bold mb-4">
               <span className="cm-highlight">Tournament Coming Soon</span>
             </h1>
@@ -309,11 +309,11 @@ export default function TournamentPage() {
           </div>
 
           <div className="bg-secondary/30 p-6 lg:p-8">
-            <p className="text-sm lg:text-base text-gray-300 mb-6 max-w-3xl mx-auto">
+            <p className="text-sm lg:text-base text-gray-300 mb-6 max-w-3xl">
               The tournament brackets haven't been set yet. Right now, the global community is voting to decide which 48
               countries will qualify for the Onchain World Cup 2026. Help your nation secure their spot!
             </p>
-            <div className="text-center">
+            <div>
               <Link
                 href="/qualification"
                 className="inline-block cm-nav-tab px-8 py-4 text-base lg:text-lg font-bold uppercase"

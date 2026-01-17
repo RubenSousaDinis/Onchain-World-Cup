@@ -2,7 +2,6 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { DemoBanner } from "@/components/demo-banner"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesData } from "@/lib/countries"
@@ -33,7 +32,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <DemoBanner />
       <div className="flex flex-1">
         <RetroSidebar />
         <MobileNav />

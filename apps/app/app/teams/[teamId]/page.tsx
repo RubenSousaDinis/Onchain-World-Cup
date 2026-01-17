@@ -206,6 +206,7 @@ const mockTeams = {
 }
 
 export default function TeamDetailPage({ params }: { params: Promise<{ teamId: string }> }) {
+  // Unwrap params immediately to prevent React DevTools serialization issues
   const { teamId } = use(params)
   const team = mockTeams[teamId as keyof typeof mockTeams]
 

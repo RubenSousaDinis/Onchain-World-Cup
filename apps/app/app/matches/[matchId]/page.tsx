@@ -45,9 +45,12 @@ const mockBets = [
 ]
 
 export default function MatchDetailPage({ params }: MatchDetailPageProps) {
+  // Unwrap params immediately to prevent React DevTools serialization issues
+  const unwrappedParams = use(params)
+  const { matchId } = unwrappedParams
+  
   const [activeTab, setActiveTab] = useState("bets")
   const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
-  const { matchId } = use(params)
 
   const totalPool = mockMatchData.team1.eth + mockMatchData.team2.eth
   const totalVotes = mockMatchData.team1.votes + mockMatchData.team2.votes

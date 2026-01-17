@@ -7,6 +7,7 @@ import { QueryProvider } from "@/providers/query-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
+import { DemoBanner } from "@/components/demo-banner"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -83,6 +84,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={barlowCondensed.className}>
         <SkipToContent />
+        <DemoBanner />
         <QueryProvider>
           <Web3Provider>
             <FarcasterProvider>

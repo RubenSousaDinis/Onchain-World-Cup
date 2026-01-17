@@ -52,6 +52,7 @@ const mockCountries = {
 }
 
 export default function CountryDetailPage({ params }: { params: Promise<{ countryId: string }> }) {
+  // Unwrap params immediately to prevent React DevTools serialization issues
   const { countryId } = use(params)
   const country = mockCountries[countryId as keyof typeof mockCountries]
 

@@ -79,6 +79,7 @@ const mockUserData = {
 }
 
 export default function UserProfilePage({ params }: { params: Promise<{ address: string }> }) {
+  // Unwrap params immediately to prevent React DevTools serialization issues
   const { address } = use(params)
 
   return (

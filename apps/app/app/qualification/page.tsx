@@ -4,7 +4,6 @@ import { useState, useEffect, Fragment } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { DemoBanner } from "@/components/demo-banner"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
 import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -109,7 +108,6 @@ export default function QualificationPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <DemoBanner />
       <div className="flex flex-1">
         <RetroSidebar />
         <MobileNav />

@@ -1,6 +1,15 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
+import { getAppUrl } from "@/lib/utils"
 
 export function FinalCTASection() {
+  const [appUrl, setAppUrl] = useState("https://app.onchainworldcup.xyz")
+  
+  useEffect(() => {
+    setAppUrl(getAppUrl())
+  }, [])
   return (
     <section className="border-b border-border bg-card py-24">
       <div className="container mx-auto px-4">
@@ -18,7 +27,7 @@ export function FinalCTASection() {
             className="mt-8 bg-primary px-12 py-6 text-xl font-bold text-primary-foreground hover:bg-accent"
             asChild
           >
-            <a href="https://app.onchainworldcup.xyz">Enter the Onchain World Cup</a>
+            <a href={appUrl}>Enter the Onchain World Cup</a>
           </Button>
         </div>
       </div>
