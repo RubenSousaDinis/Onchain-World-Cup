@@ -187,26 +187,39 @@ function AreaChart({ data, height, color }: { data: ChartDataPoint[]; height: nu
   const colorClass = color === "accent" ? "bg-accent" : "bg-green-500"
 
   return (
-    <div className="relative" style={{ height: `${height}px` }}>
-      <div className="absolute inset-0 flex items-end justify-between gap-1">
+    <div>
+      <div className="relative" style={{ height: `${height}px` }}>
+        <div className="absolute inset-0 flex items-end justify-between gap-1">
+          {data.map((point, index) => (
+            <div key={index} className="flex-1 flex flex-col items-center group">
+              <div className="relative w-full">
+                <div
+                  className={`w-full ${colorClass} opacity-20 rounded-t-sm transition-all duration-300`}
+                  style={{ height: `${(point.value / maxValue) * height}px` }}
+                />
+                <div
+                  className={`absolute bottom-0 left-0 right-0 ${colorClass} rounded-t-sm transition-all duration-300 group-hover:opacity-100 opacity-70`}
+                  style={{ height: `${(point.value / maxValue) * height * 0.7}px` }}
+                />
+              </div>
+              <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-card border border-border rounded px-2 py-1 text-xs font-bold whitespace-nowrap pointer-events-none z-10">
+                {point.displayValue || point.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* X-axis labels */}
+      <div className="flex justify-between mt-2 px-1">
         {data.map((point, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center group">
-            <div className="relative w-full">
-              <div
-                className={`w-full ${colorClass} opacity-20 rounded-t-sm transition-all duration-300`}
-                style={{ height: `${(point.value / maxValue) * height}px` }}
-              />
-              <div
-                className={`absolute bottom-0 left-0 right-0 ${colorClass} rounded-t-sm transition-all duration-300 group-hover:opacity-100 opacity-70`}
-                style={{ height: `${(point.value / maxValue) * height * 0.7}px` }}
-              />
-            </div>
-            <div className="text-xs text-muted-foreground mt-2 hidden lg:block">{point.label}</div>
-            <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-card border border-border rounded px-2 py-1 text-xs font-bold whitespace-nowrap pointer-events-none">
-              {point.displayValue || point.value}
-            </div>
+          <div key={index} className="flex-1 text-center">
+            <div className="text-xs text-muted-foreground">{point.label}</div>
           </div>
         ))}
+      </div>
+      {/* Y-axis label */}
+      <div className="text-xs text-muted-foreground text-center mt-2">
+        Cumulative ETH wagered
       </div>
     </div>
   )
@@ -218,20 +231,33 @@ function BarChartComponent({ data, height, color }: { data: ChartDataPoint[]; he
   const colorClass = color === "green" ? "bg-green-500" : "bg-accent"
 
   return (
-    <div className="relative" style={{ height: `${height}px` }}>
-      <div className="absolute inset-0 flex items-end justify-between gap-2">
-        {data.map((point, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center group">
-            <div
-              className={`w-full ${colorClass} rounded-t-sm transition-all duration-300 group-hover:opacity-100 opacity-80`}
-              style={{ height: `${(point.value / maxValue) * height}px` }}
-            />
-            <div className="text-xs text-muted-foreground mt-2 hidden lg:block">{point.label}</div>
-            <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-card border border-border rounded px-2 py-1 text-xs font-bold whitespace-nowrap pointer-events-none">
-              {point.value.toLocaleString()}
+    <div>
+      <div className="relative" style={{ height: `${height}px` }}>
+        <div className="absolute inset-0 flex items-end justify-between gap-2">
+          {data.map((point, index) => (
+            <div key={index} className="flex-1 flex flex-col items-center group">
+              <div
+                className={`w-full ${colorClass} rounded-t-sm transition-all duration-300 group-hover:opacity-100 opacity-80`}
+                style={{ height: `${(point.value / maxValue) * height}px` }}
+              />
+              <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-card border border-border rounded px-2 py-1 text-xs font-bold whitespace-nowrap pointer-events-none z-10">
+                {point.value.toLocaleString()} votes
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+      {/* X-axis labels */}
+      <div className="flex justify-between mt-2 px-1">
+        {data.map((point, index) => (
+          <div key={index} className="flex-1 text-center">
+            <div className="text-xs text-muted-foreground">{point.label}</div>
           </div>
         ))}
+      </div>
+      {/* Y-axis label */}
+      <div className="text-xs text-muted-foreground text-center mt-2">
+        Number of votes cast per day
       </div>
     </div>
   )
@@ -242,21 +268,26 @@ function HorizontalBarChart({ data, height }: { data: ChartDataPoint[]; height: 
   const maxValue = Math.max(...data.map((d) => d.value))
 
   return (
-    <div className="space-y-3" style={{ minHeight: `${height}px` }}>
-      {data.map((point, index) => (
-        <div key={index}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs lg:text-sm font-bold text-foreground">{point.label}</span>
-            <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{point.value.toLocaleString()}</span>
+    <div>
+      <div className="space-y-3" style={{ minHeight: `${height}px` }}>
+        {data.map((point, index) => (
+          <div key={index}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs lg:text-sm font-bold text-foreground">{point.label}</span>
+              <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{point.value.toLocaleString()} votes</span>
+            </div>
+            <div className="w-full h-6 bg-secondary/20 rounded-sm overflow-hidden border border-border">
+              <div
+                className="h-full bg-gradient-to-r from-accent/80 to-accent transition-all duration-500"
+                style={{ width: `${(point.value / maxValue) * 100}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full h-6 bg-secondary/20 rounded-sm overflow-hidden border border-border">
-            <div
-              className="h-full bg-gradient-to-r from-accent/80 to-accent transition-all duration-500"
-              style={{ width: `${(point.value / maxValue) * 100}%` }}
-            />
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
+      <div className="text-xs text-muted-foreground text-center mt-4">
+        Total votes received during qualification phase
+      </div>
     </div>
   )
 }
@@ -272,28 +303,35 @@ function LineChart({ data, height }: { data: ChartDataPoint[]; height: number })
   const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
 
   return (
-    <div className="relative" style={{ height: `${height}px` }}>
-      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path
-          d={`${pathD} L 100 100 L 0 100 Z`}
-          fill="url(#gradient)"
-          opacity="0.3"
-          className="transition-all duration-300"
-        />
-        <path d={pathD} fill="none" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
-        <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" className="text-accent" stopColor="currentColor" stopOpacity="0.8" />
-            <stop offset="100%" className="text-accent" stopColor="currentColor" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 text-xs text-muted-foreground">
-        {data.filter((_, i) => i % 4 === 0).map((point, index) => (
-          <span key={index} className="hidden lg:block">
+    <div>
+      <div className="relative" style={{ height: `${height}px` }}>
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path
+            d={`${pathD} L 100 100 L 0 100 Z`}
+            fill="url(#gradient)"
+            opacity="0.3"
+            className="transition-all duration-300"
+          />
+          <path d={pathD} fill="none" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" className="text-accent" stopColor="currentColor" stopOpacity="0.8" />
+              <stop offset="100%" className="text-accent" stopColor="currentColor" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      {/* X-axis labels */}
+      <div className="flex justify-between mt-2 px-2">
+        {data.filter((_, i) => i % 6 === 0 || i === data.length - 1).map((point, index) => (
+          <span key={index} className="text-xs text-muted-foreground">
             {point.label}
           </span>
         ))}
+      </div>
+      {/* Y-axis label */}
+      <div className="text-xs text-muted-foreground text-center mt-2">
+        Votes per hour (UTC) - 24 hour pattern
       </div>
     </div>
   )

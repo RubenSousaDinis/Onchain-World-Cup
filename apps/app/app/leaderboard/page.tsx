@@ -90,6 +90,7 @@ export default function LeaderboardPage() {
                   ? "bg-accent text-accent-foreground cm-highlight"
                   : "bg-secondary/20 hover:bg-secondary/40"
               }`}
+              aria-label="View most successful voters by total winnings"
             >
               <Trophy className="w-4 h-4" />
               Most Successful
@@ -128,6 +129,13 @@ export default function LeaderboardPage() {
               Early Birds
             </button>
           </div>
+        </div>
+
+        {/* Category Description */}
+        <div className="mb-4">
+          <p className="text-xs lg:text-sm text-muted-foreground">
+            {getCategoryDescription(activeCategory)}
+          </p>
         </div>
 
         {/* Search */}
@@ -277,6 +285,22 @@ export default function LeaderboardPage() {
       </main>
     </div>
   )
+}
+
+// Helper function to get category description
+function getCategoryDescription(category: LeaderboardCategory): string {
+  switch (category) {
+    case "successful":
+      return "Top voters ranked by total ETH winnings. Higher win rates and total winnings indicate successful voting strategies."
+    case "largest":
+      return "Users with the biggest single vote transactions. Shows the largest individual bets placed on matches."
+    case "active":
+      return "Most engaged voters ranked by total number of votes cast. Consistent participation across multiple matches."
+    case "early":
+      return "Early adopters who voted during Phase 1 (linear pricing). Rewarding those who participated when prices were lowest."
+    default:
+      return ""
+  }
 }
 
 // Helper function to render category-specific stats for podium

@@ -29,26 +29,42 @@ export const platformStats: PlatformStats = {
   phase2VotesPercent: 32,
 }
 
+// Helper to get dates for last N days
+const getDatesForLastNDays = (n: number): string[] => {
+  const dates: string[] = []
+  const today = new Date()
+  for (let i = n - 1; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(today.getDate() - i)
+    // Format as "Jan 11"
+    const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    dates.push(formatted)
+  }
+  return dates
+}
+
+const last7Days = getDatesForLastNDays(7)
+
 // ETH over time (last 7 days)
 export const ethOverTime: ChartDataPoint[] = [
-  { label: "Day 1", value: 45.2, displayValue: "45.2 ETH" },
-  { label: "Day 2", value: 67.8, displayValue: "67.8 ETH" },
-  { label: "Day 3", value: 89.3, displayValue: "89.3 ETH" },
-  { label: "Day 4", value: 124.5, displayValue: "124.5 ETH" },
-  { label: "Day 5", value: 198.7, displayValue: "198.7 ETH" },
-  { label: "Day 6", value: 267.3, displayValue: "267.3 ETH" },
-  { label: "Day 7", value: 342.5, displayValue: "342.5 ETH" },
+  { label: last7Days[0], value: 45.2, displayValue: "45.2 ETH" },
+  { label: last7Days[1], value: 67.8, displayValue: "67.8 ETH" },
+  { label: last7Days[2], value: 89.3, displayValue: "89.3 ETH" },
+  { label: last7Days[3], value: 124.5, displayValue: "124.5 ETH" },
+  { label: last7Days[4], value: 198.7, displayValue: "198.7 ETH" },
+  { label: last7Days[5], value: 267.3, displayValue: "267.3 ETH" },
+  { label: last7Days[6], value: 342.5, displayValue: "342.5 ETH" },
 ]
 
 // Votes per day (last 7 days)
 export const votesPerDay: ChartDataPoint[] = [
-  { label: "Day 1", value: 4250 },
-  { label: "Day 2", value: 5870 },
-  { label: "Day 3", value: 7340 },
-  { label: "Day 4", value: 9120 },
-  { label: "Day 5", value: 11450 },
-  { label: "Day 6", value: 14890 },
-  { label: "Day 7", value: 18920 },
+  { label: last7Days[0], value: 4250 },
+  { label: last7Days[1], value: 5870 },
+  { label: last7Days[2], value: 7340 },
+  { label: last7Days[3], value: 9120 },
+  { label: last7Days[4], value: 11450 },
+  { label: last7Days[5], value: 14890 },
+  { label: last7Days[6], value: 18920 },
 ]
 
 // Top countries by votes
