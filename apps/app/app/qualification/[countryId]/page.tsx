@@ -201,22 +201,22 @@ export default function CountryDetailPage({ params }: { params: { countryId: str
               <div className="flex gap-2 lg:gap-4">
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">DAYS</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">HRS</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">MIN</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
                 </div>
                 <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
                 <div className="text-center">
                   <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
-                  <div className="text-[10px] lg:text-xs text-muted-foreground">SEC</div>
+                  <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
                 </div>
               </div>
             </div>

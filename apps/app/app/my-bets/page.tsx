@@ -208,31 +208,31 @@ export default function MyBetsPage() {
           <>
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4 mb-6 lg:mb-8">
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-primary">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Votes</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Votes</div>
                 <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">{totalVotes}</div>
-                <div className="text-[10px] text-muted-foreground">votes placed</div>
+                <div className="text-xs text-muted-foreground">votes placed</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
                 <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{totalSpent.toFixed(3)}</div>
-                <div className="text-[10px] text-muted-foreground">ETH total</div>
+                <div className="text-xs text-muted-foreground">ETH total</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-accent">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Active</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Active</div>
                 <div className="text-lg lg:text-2xl font-bold text-accent font-mono">{activeBets}</div>
-                <div className="text-[10px] text-muted-foreground">matches</div>
+                <div className="text-xs text-muted-foreground">matches</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-green-500">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Earned</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Earned</div>
                 <div className="text-lg lg:text-2xl font-bold text-green-400 font-mono">{earningBets.length}</div>
-                <div className="text-[10px] text-muted-foreground">winning votes</div>
+                <div className="text-xs text-muted-foreground">winning votes</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-primary col-span-2 lg:col-span-1">
-                <div className="text-[10px] lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Earnings</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Earnings</div>
                 <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">
                   {totalEarnings.toFixed(3)} ETH
                 </div>
-                <div className="text-[10px] text-muted-foreground">ETH earned</div>
+                <div className="text-xs text-muted-foreground">ETH earned</div>
               </div>
             </div>
 

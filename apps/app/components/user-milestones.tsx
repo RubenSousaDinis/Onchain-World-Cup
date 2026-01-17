@@ -180,7 +180,7 @@ export function UserMilestones() {
               <div className="text-2xl font-bold cm-highlight">
                 {unlockedCount}/{totalCount}
               </div>
-              <div className="text-[10px] text-muted-foreground uppercase">Unlocked</div>
+              <div className="text-xs text-muted-foreground uppercase">Unlocked</div>
             </div>
           </div>
 
@@ -208,7 +208,7 @@ export function UserMilestones() {
             >
               {/* Rarity badge */}
               <div
-                className={`absolute top-2 right-2 text-[10px] font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
+                className={`absolute top-2 right-2 text-xs font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
               >
                 {milestone.rarity}
               </div>
@@ -222,11 +222,11 @@ export function UserMilestones() {
                   {milestone.unlocked ? (
                     <div className="flex items-center gap-2">
                       <Shield className="w-3 h-3 text-green-400" />
-                      <span className="text-[10px] text-green-400">Unlocked {milestone.unlockedAt}</span>
+                      <span className="text-xs text-green-400">Unlocked {milestone.unlockedAt}</span>
                     </div>
                   ) : (
                     <div>
-                      <div className="flex items-center justify-between text-[10px] mb-1">
+                      <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-muted-foreground">Progress</span>
                         <span className="text-foreground font-mono">
                           {milestone.progress}/{milestone.total}
@@ -250,7 +250,7 @@ export function UserMilestones() {
                       e.stopPropagation()
                       handleMintNFT(milestone)
                     }}
-                    className="text-[10px] text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
+                    className="text-xs text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
                   >
                     Mint NFT
                   </button>
@@ -259,7 +259,7 @@ export function UserMilestones() {
                       e.stopPropagation()
                       handleShare(milestone)
                     }}
-                    className="text-[10px] text-accent hover:text-primary transition-colors"
+                    className="text-xs text-accent hover:text-primary transition-colors"
                   >
                     Share
                   </button>
@@ -268,7 +268,7 @@ export function UserMilestones() {
 
               {milestone.disabled && (
                 <div className="absolute bottom-2 right-2 flex gap-2">
-                  <span className="text-[10px] text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
+                  <span className="text-xs text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
                 </div>
               )}
             </div>

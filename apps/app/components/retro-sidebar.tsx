@@ -92,7 +92,7 @@ export function RetroSidebar() {
             <div className="truncate">
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </div>
-            <div className="text-[10px] opacity-70">{chain?.name || "Connected"}</div>
+            <div className="text-xs opacity-70">{chain?.name || "Connected"}</div>
           </button>
         ) : isAutoConnecting ? (
           <div className="text-center text-xs text-muted-foreground px-2 py-2" role="status" aria-live="polite">

@@ -174,7 +174,7 @@ export function VoteModal({
                 <Zap className="w-4 h-4 text-purple-400" />
                 <span className="text-xs font-bold text-purple-400 uppercase">Demo Mode</span>
               </div>
-              <p className="text-[10px] text-foreground/70 mt-1">
+              <p className="text-xs text-foreground/70 mt-1">
                 Try voting without connecting! Share feature will still work.
               </p>
             </div>
@@ -197,7 +197,7 @@ export function VoteModal({
                 </>
               )}
             </div>
-            <p className="text-[10px] text-foreground/70">
+            <p className="text-xs text-foreground/70">
               {pricePhase === "linear"
                 ? "First 2 hours! Prices increase gradually with each vote."
                 : "Hours 2-24. Prices rise exponentially - earlier is better!"}
@@ -301,7 +301,7 @@ export function VoteModal({
               </div>
 
               <div className="mt-3 pt-3 border-t border-border/50">
-                <div className="flex items-center gap-2 text-[10px] text-orange-400">
+                <div className="flex items-center gap-2 text-xs text-orange-400">
                   <TrendingUp className="w-3 h-3" />
                   <span>
                     {pricePhase === "linear"

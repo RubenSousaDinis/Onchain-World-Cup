@@ -72,11 +72,11 @@ export default function HomePageClient() {
             </h1>
             <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
               <div className="cm-panel px-3 lg:px-4 py-2 rounded-sm flex-shrink-0">
-                <div className="text-[10px] lg:text-xs text-muted-foreground">Total Prize Pool</div>
+                <div className="text-xs lg:text-xs text-muted-foreground">Total Prize Pool</div>
                 <div className="text-lg lg:text-xl font-bold cm-highlight font-mono">245.8 ETH</div>
               </div>
               <div className="cm-panel px-3 lg:px-4 py-2 rounded-sm flex-shrink-0">
-                <div className="text-[10px] lg:text-xs text-muted-foreground">Active Bets</div>
+                <div className="text-xs lg:text-xs text-muted-foreground">Active Bets</div>
                 <div className="text-lg lg:text-xl font-bold text-accent font-mono">1,247</div>
               </div>
             </div>

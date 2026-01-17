@@ -47,9 +47,9 @@ export function QuickActionCard({
     <>
       <div className="flex items-center gap-3 mb-2">
         <Icon className={`w-5 h-5 ${styles.icon}`} aria-hidden="true" />
-        <h4 className={`text-sm font-bold ${styles.title}`}>{title}</h4>
+        <h4 className={`text-sm lg:text-base font-bold ${styles.title}`}>{title}</h4>
       </div>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <p className="text-xs lg:text-sm text-muted-foreground">{description}</p>
     </>
   )
 

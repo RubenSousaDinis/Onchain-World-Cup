@@ -49,8 +49,8 @@ export function InfoBanner({
         <div className="flex items-start gap-3">
           <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${styles.icon}`} aria-hidden="true" />
           <div className="flex-1">
-            <h3 className={`text-sm font-bold mb-2 ${styles.title}`}>{title}</h3>
-            <div className="text-xs text-foreground/80 mb-3">{description}</div>
+            <h3 className={`text-sm lg:text-base font-bold mb-2 ${styles.title}`}>{title}</h3>
+            <div className="text-xs lg:text-sm text-foreground/80 mb-3">{description}</div>
             {action && <div className="mt-3">{action}</div>}
           </div>
         </div>

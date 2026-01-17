@@ -38,7 +38,7 @@ export function StatCard({
     <div className={`cm-panel rounded-sm p-4 ${className}`}>
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`w-4 h-4 ${iconColors[valueColor]}`} aria-hidden="true" />
-        <div className="text-[10px] text-muted-foreground uppercase font-bold">{label}</div>
+        <div className="text-xs lg:text-sm text-muted-foreground uppercase font-bold">{label}</div>
       </div>
       <div className={`text-xl lg:text-2xl font-bold font-mono ${valueColors[valueColor]}`}>
         {formattedValue}

@@ -163,7 +163,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
             </div>
           </div>
 
-          <p className="text-[10px] text-muted-foreground text-center mt-4">
+          <p className="text-xs text-muted-foreground text-center mt-4">
             Your NFT will be minted on Base network and visible in your wallet
           </p>
         </div>
