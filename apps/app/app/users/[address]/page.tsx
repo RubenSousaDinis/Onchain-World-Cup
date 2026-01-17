@@ -3,6 +3,7 @@ import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { ArrowLeft, Trophy, TrendingUp, DollarSign } from "lucide-react"
 import Link from "next/link"
+import { use } from "react"
 
 const mockUserData = {
   address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
@@ -77,8 +78,8 @@ const mockUserData = {
   ],
 }
 
-export default function UserProfilePage({ params }: { params: { address: string } }) {
-  const address = params.address
+export default function UserProfilePage({ params }: { params: Promise<{ address: string }> }) {
+  const { address } = use(params)
 
   return (
     <div className="min-h-screen flex">
@@ -89,7 +90,7 @@ export default function UserProfilePage({ params }: { params: { address: string 
         {/* Back Button */}
         <Link
           href="/leaderboard"
-          className="inline-flex items-center gap-2 text-xs lg:text-sm text-accent hover:text-accent/80 mb-4 lg:mb-6"
+          className="inline-flex items-center gap-2 text-sm lg:text-base text-accent hover:text-accent/80 mb-4 lg:mb-6"
         >
           <ArrowLeft className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
           Back to Leaderboard
@@ -113,15 +114,15 @@ export default function UserProfilePage({ params }: { params: { address: string 
               <div className="text-center lg:text-left flex-1">
                 {mockUserData.hasFarcaster ? (
                   <>
-                    <div className="text-xs text-muted-foreground mb-1">Farcaster User</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground mb-1">Farcaster User</div>
                     <h1 className="text-lg lg:text-2xl font-bold cm-highlight mb-2">
                       @{mockUserData.farcasterUsername}
                     </h1>
-                    <div className="text-xs text-muted-foreground font-mono break-all">{address}</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground font-mono break-all">{address}</div>
                   </>
                 ) : (
                   <>
-                    <div className="text-xs text-muted-foreground mb-1">Wallet Address</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground mb-1">Wallet Address</div>
                     <h1 className="text-lg lg:text-2xl font-bold cm-highlight font-mono mb-2 break-all">{address}</h1>
                   </>
                 )}
@@ -147,7 +148,7 @@ export default function UserProfilePage({ params }: { params: { address: string 
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
               <DollarSign className="w-5 h-5 text-primary" />
-              <div className="text-xs text-muted-foreground uppercase">Total Winnings</div>
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Total Winnings</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold cm-highlight font-mono">{mockUserData.totalWinnings}</div>
           </div>
@@ -155,7 +156,7 @@ export default function UserProfilePage({ params }: { params: { address: string 
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
               <Trophy className="w-5 h-5 text-accent" />
-              <div className="text-xs text-muted-foreground uppercase">Total Bets</div>
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Total Bets</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-foreground font-mono">{mockUserData.totalBets}</div>
           </div>
@@ -163,7 +164,7 @@ export default function UserProfilePage({ params }: { params: { address: string 
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp className="w-5 h-5 text-green-400" />
-              <div className="text-xs text-muted-foreground uppercase">Win Rate</div>
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Win Rate</div>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1 h-3 bg-card rounded-full overflow-hidden">
@@ -190,8 +191,8 @@ export default function UserProfilePage({ params }: { params: { address: string 
                   <span className="text-3xl">{team.flag}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-bold truncate">{team.name}</div>
-                    <div className="text-xs text-muted-foreground">{team.betsCount} bets</div>
-                    <div className="text-xs text-accent font-mono mt-1">{team.totalBets}</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground">{team.betsCount} bets</div>
+                    <div className="text-xs lg:text-sm text-accent font-mono mt-1">{team.totalBets}</div>
                   </div>
                 </Link>
               ))}
@@ -216,14 +217,14 @@ export default function UserProfilePage({ params }: { params: { address: string 
                         <span className="text-2xl">{bet.flag}</span>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold truncate">{bet.team}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs lg:text-sm text-muted-foreground">
                             vs {bet.opponentFlag} {bet.opponent}
                           </div>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="text-sm font-bold cm-highlight font-mono">{bet.amount}</div>
-                        <div className="text-xs text-accent">{bet.matchDate}</div>
+                        <div className="text-xs lg:text-sm text-accent">{bet.matchDate}</div>
                       </div>
                     </div>
                   </div>
@@ -247,14 +248,14 @@ export default function UserProfilePage({ params }: { params: { address: string 
                       <span className="text-2xl">{bet.flag}</span>
                       <div className="flex-1 min-w-0">
                         <div className="font-bold truncate">{bet.team}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs lg:text-sm text-muted-foreground">
                           vs {bet.opponentFlag} {bet.opponent}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">{bet.matchDate}</div>
+                        <div className="text-xs lg:text-sm text-muted-foreground mt-1">{bet.matchDate}</div>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className="text-xs text-muted-foreground mb-1">Bet: {bet.amount}</div>
+                      <div className="text-xs lg:text-sm text-muted-foreground mb-1">Bet: {bet.amount}</div>
                       <div
                         className={`text-sm font-bold font-mono ${bet.result === "won" ? "text-green-400" : "text-red-400"}`}
                       >

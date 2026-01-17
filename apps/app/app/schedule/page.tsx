@@ -115,7 +115,7 @@ export default function SchedulePage() {
             <h1 className="text-2xl lg:text-4xl font-bold mb-2">
               <span className="cm-highlight">Match Schedule</span>
             </h1>
-            <p className="text-xs lg:text-sm text-foreground/80">World Cup 2026 fixtures, venues, and match times</p>
+            <p className="text-sm lg:text-base text-foreground/80">World Cup 2026 fixtures, venues, and match times</p>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ export default function SchedulePage() {
                 <div className="bg-secondary/40 px-4 py-3 border-b-2 border-accent/30 flex items-center gap-3">
                   <Calendar className="w-4 lg:w-5 h-4 lg:h-5 text-accent" />
                   <h2 className="text-lg lg:text-xl font-bold cm-highlight">{day.date}</h2>
-                  <span className="text-xs text-muted-foreground ml-auto">{day.matches.length} Matches</span>
+                  <span className="text-xs lg:text-sm text-muted-foreground ml-auto">{day.matches.length} Matches</span>
                 </div>
               </div>
 
@@ -136,7 +136,7 @@ export default function SchedulePage() {
                     <div className="bg-secondary/30 px-3 lg:px-4 py-2 border-b border-border flex flex-col lg:flex-row lg:items-center justify-between gap-2 lg:gap-0">
                       <div className="flex items-center gap-2 lg:gap-3">
                         <Clock className="w-3 lg:w-3.5 h-3 lg:h-3.5 cm-highlight" />
-                        <span className="text-xs font-mono cm-highlight font-bold">{match.time} ET</span>
+                        <span className="text-xs lg:text-sm font-mono cm-highlight font-bold">{match.time} ET</span>
                         <span className="bg-card px-2 py-0.5 rounded-sm text-xs lg:text-xs font-bold cm-highlight border border-accent/30">
                           Group {match.group}
                         </span>
@@ -158,7 +158,7 @@ export default function SchedulePage() {
 
                           {/* VS */}
                           <div className="bg-secondary px-4 py-2 rounded-sm text-center self-center">
-                            <span className="text-xs lg:text-sm font-bold cm-highlight">VS</span>
+                            <span className="text-sm lg:text-base font-bold cm-highlight">VS</span>
                           </div>
 
                           {/* Team 2 */}
@@ -168,7 +168,7 @@ export default function SchedulePage() {
                           </div>
                         </div>
 
-                        <button className="w-full lg:w-auto lg:ml-6 bg-secondary hover:bg-secondary/80 text-foreground px-4 lg:px-6 py-2 lg:py-3 rounded-sm text-xs lg:text-sm font-bold uppercase hover:scale-105 transition-transform border border-accent/30">
+                        <button className="w-full lg:w-auto lg:ml-6 bg-secondary hover:bg-secondary/80 text-foreground px-4 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase hover:scale-105 transition-transform border border-accent/30">
                           Vote Now
                         </button>
                       </div>

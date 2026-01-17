@@ -82,13 +82,11 @@ export default function LeaderboardPage() {
 
         {/* Category Tabs */}
         <div className="mb-6 lg:mb-8">
-          <div className="cm-panel rounded-sm p-2 flex flex-wrap gap-2">
+          <div className="flex gap-1 flex-wrap overflow-x-auto pb-2 scrollbar-hide max-w-full">
             <button
               onClick={() => setActiveCategory("successful")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-xs lg:text-sm transition-colors ${
-                activeCategory === "successful"
-                  ? "bg-accent text-accent-foreground cm-highlight"
-                  : "bg-secondary/20 hover:bg-secondary/40"
+              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+                activeCategory === "successful" ? "active" : ""
               }`}
               aria-label="View most successful voters by total winnings"
             >
@@ -97,10 +95,8 @@ export default function LeaderboardPage() {
             </button>
             <button
               onClick={() => setActiveCategory("largest")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-xs lg:text-sm transition-colors ${
-                activeCategory === "largest"
-                  ? "bg-accent text-accent-foreground cm-highlight"
-                  : "bg-secondary/20 hover:bg-secondary/40"
+              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+                activeCategory === "largest" ? "active" : ""
               }`}
             >
               <Target className="w-4 h-4" />
@@ -108,10 +104,8 @@ export default function LeaderboardPage() {
             </button>
             <button
               onClick={() => setActiveCategory("active")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-xs lg:text-sm transition-colors ${
-                activeCategory === "active"
-                  ? "bg-accent text-accent-foreground cm-highlight"
-                  : "bg-secondary/20 hover:bg-secondary/40"
+              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+                activeCategory === "active" ? "active" : ""
               }`}
             >
               <Zap className="w-4 h-4" />
@@ -119,10 +113,8 @@ export default function LeaderboardPage() {
             </button>
             <button
               onClick={() => setActiveCategory("early")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-xs lg:text-sm transition-colors ${
-                activeCategory === "early"
-                  ? "bg-accent text-accent-foreground cm-highlight"
-                  : "bg-secondary/20 hover:bg-secondary/40"
+              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+                activeCategory === "early" ? "active" : ""
               }`}
             >
               <Clock className="w-4 h-4" />
@@ -133,7 +125,7 @@ export default function LeaderboardPage() {
 
         {/* Category Description */}
         <div className="mb-4">
-          <p className="text-xs lg:text-sm text-muted-foreground">
+          <p className="text-sm lg:text-base text-muted-foreground">
             {getCategoryDescription(activeCategory)}
           </p>
         </div>
@@ -183,7 +175,7 @@ export default function LeaderboardPage() {
               <div className="text-sm lg:text-base cm-highlight mb-1 font-bold uppercase">1st Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
                 {filteredLeaderboard[0].farcasterName || (
-                  <span className="font-mono text-xs lg:text-sm">
+                  <span className="font-mono text-sm lg:text-base">
                     {filteredLeaderboard[0].address.slice(0, 6)}...{filteredLeaderboard[0].address.slice(-4)}
                   </span>
                 )}
@@ -207,7 +199,7 @@ export default function LeaderboardPage() {
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">2nd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
                 {filteredLeaderboard[1].farcasterName || (
-                  <span className="font-mono text-xs lg:text-sm">
+                  <span className="font-mono text-sm lg:text-base">
                     {filteredLeaderboard[1].address.slice(0, 6)}...{filteredLeaderboard[1].address.slice(-4)}
                   </span>
                 )}
@@ -231,7 +223,7 @@ export default function LeaderboardPage() {
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">3rd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
                 {filteredLeaderboard[2].farcasterName || (
-                  <span className="font-mono text-xs lg:text-sm">
+                  <span className="font-mono text-sm lg:text-base">
                     {filteredLeaderboard[2].address.slice(0, 6)}...{filteredLeaderboard[2].address.slice(-4)}
                   </span>
                 )}
@@ -314,32 +306,32 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalWinnings} ETH</div>
-          <div className="text-xs lg:text-sm text-accent font-bold mb-1">{entry.totalVotes} Total Votes</div>
-          <div className="text-xs lg:text-sm text-muted-foreground">{entry.winRate}% Win Rate</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalVotes} Total Votes</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{entry.winRate}% Win Rate</div>
         </>
       )
     case "largest":
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.largestVote} ETH</div>
-          <div className="text-xs lg:text-sm text-accent font-bold mb-1 text-center">{entry.matchName}</div>
-          <div className="text-xs lg:text-sm text-muted-foreground">Voted: {entry.team}</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1 text-center">{entry.matchName}</div>
+          <div className="text-sm lg:text-base text-muted-foreground">Voted: {entry.team}</div>
         </>
       )
     case "active":
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalVotes}</div>
-          <div className="text-xs lg:text-sm text-accent font-bold mb-1">{entry.totalBets} Matches</div>
-          <div className="text-xs lg:text-sm text-muted-foreground">{entry.winRate}% Win Rate</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalBets} Matches</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{entry.winRate}% Win Rate</div>
         </>
       )
     case "early":
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.phase1Votes}</div>
-          <div className="text-xs lg:text-sm text-accent font-bold mb-1">Phase 1 Votes</div>
-          <div className="text-xs lg:text-sm text-muted-foreground">{entry.totalVotes} Total Votes</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">Phase 1 Votes</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{entry.totalVotes} Total Votes</div>
         </>
       )
   }
@@ -349,8 +341,8 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
 function renderTableHeaders(category: LeaderboardCategory) {
   const baseHeaders = (
     <>
-      <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase">Rank</th>
-      <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase">User</th>
+      <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase">Rank</th>
+      <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase">User</th>
     </>
   )
 
@@ -359,13 +351,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
       return (
         <>
           {baseHeaders}
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Total Votes
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Winnings
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Win Rate
           </th>
         </>
@@ -374,13 +366,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
       return (
         <>
           {baseHeaders}
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Largest Vote
           </th>
-          <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Match
           </th>
-          <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Team
           </th>
         </>
@@ -389,13 +381,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
       return (
         <>
           {baseHeaders}
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Total Votes
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Matches
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Win Rate
           </th>
         </>
@@ -404,13 +396,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
       return (
         <>
           {baseHeaders}
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Phase 1 Votes
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Total Votes
           </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-xs font-bold cm-highlight uppercase whitespace-nowrap">
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Winnings
           </th>
         </>
@@ -427,7 +419,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           {entry.rank === 1 && <Trophy className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-primary" />}
           {entry.rank === 2 && <Medal className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-muted-foreground" />}
           {entry.rank === 3 && <TrendingUp className="w-3.5 lg:w-4 h-3.5 lg:h-4 text-accent" />}
-          <span className="text-xs lg:text-sm font-mono font-bold cm-highlight">#{entry.rank}</span>
+          <span className="text-sm lg:text-base font-mono font-bold cm-highlight">#{entry.rank}</span>
         </div>
       </td>
       <td className="px-3 lg:px-4 py-3">
@@ -440,19 +432,19 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
             />
           ) : (
             <div className="w-6 lg:w-8 h-6 lg:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-              <span className="text-xs lg:text-sm font-bold">?</span>
+              <span className="text-sm lg:text-base font-bold">?</span>
             </div>
           )}
           <div className="flex flex-col min-w-0">
             {entry.farcasterName ? (
               <>
-                <span className="text-xs lg:text-sm font-bold truncate">{entry.farcasterName}</span>
-                <span className="text-xs lg:text-sm text-muted-foreground font-mono">
+                <span className="text-sm lg:text-base font-bold truncate">{entry.farcasterName}</span>
+                <span className="text-sm lg:text-base text-muted-foreground font-mono">
                   {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
                 </span>
               </>
             ) : (
-              <span className="text-xs lg:text-sm font-mono font-bold">
+              <span className="text-sm lg:text-base font-mono font-bold">
                 {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
               </span>
             )}
@@ -468,12 +460,12 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
         <>
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono font-bold cm-highlight whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono font-bold cm-highlight whitespace-nowrap">
               {entry.totalVotes}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
               {entry.totalWinnings} ETH
             </span>
           </td>
@@ -482,7 +474,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
               <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
                 <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
               </div>
-              <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+              <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
                 {entry.winRate}%
               </span>
             </div>
@@ -494,15 +486,15 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
         <>
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
               {entry.largestVote} ETH
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3">
-            <span className="text-xs lg:text-sm font-bold">{entry.matchName}</span>
+            <span className="text-sm lg:text-base font-bold">{entry.matchName}</span>
           </td>
           <td className="px-3 lg:px-4 py-3">
-            <span className="text-xs lg:text-sm font-bold cm-highlight">{entry.team}</span>
+            <span className="text-sm lg:text-base font-bold cm-highlight">{entry.team}</span>
           </td>
         </>
       )
@@ -511,12 +503,12 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
         <>
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono font-bold cm-highlight whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono font-bold cm-highlight whitespace-nowrap">
               {entry.totalVotes}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
               {entry.totalBets}
             </span>
           </td>
@@ -525,7 +517,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
               <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
                 <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
               </div>
-              <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+              <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
                 {entry.winRate}%
               </span>
             </div>
@@ -537,17 +529,17 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
         <>
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono font-bold cm-highlight whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono font-bold cm-highlight whitespace-nowrap">
               {entry.phase1Votes}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono text-muted-foreground font-bold whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
               {entry.totalVotes}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-xs lg:text-sm font-mono text-accent font-bold whitespace-nowrap">
+            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
               {entry.totalWinnings} ETH
             </span>
           </td>

@@ -10,10 +10,10 @@ import { getSupabaseClient } from '@/lib/server/supabase'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: groupId } = params
+    const { id: groupId } = await params
 
     // Create cached function for fetching group standings
     const getGroupStandings = unstable_cache(
@@ -62,12 +62,12 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // TODO: Add authentication check
     const supabase = getSupabaseClient()
-    const { id: groupId } = params
+    const { id: groupId } = await params
     const body = await request.json()
 
     const { country_id } = body
@@ -159,12 +159,12 @@ export async function POST(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // TODO: Add authentication check
     const supabase = getSupabaseClient()
-    const { id: groupId } = params
+    const { id: groupId } = await params
 
     // Call the stored procedure to recalculate standings
     const { error } = await supabase.rpc('calculate_group_standings', {

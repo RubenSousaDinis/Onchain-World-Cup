@@ -5,13 +5,13 @@ import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { Clock, TrendingUp, Trophy } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, use } from "react"
 import { NFTMintModal } from "@/components/nft-mint-modal"
 
 interface MatchDetailPageProps {
-  params: {
+  params: Promise<{
     matchId: string
-  }
+  }>
 }
 
 const tabs = [
@@ -47,7 +47,7 @@ const mockBets = [
 export default function MatchDetailPage({ params }: MatchDetailPageProps) {
   const [activeTab, setActiveTab] = useState("bets")
   const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
-  const { matchId } = params
+  const { matchId } = use(params)
 
   const totalPool = mockMatchData.team1.eth + mockMatchData.team2.eth
   const totalVotes = mockMatchData.team1.votes + mockMatchData.team2.votes

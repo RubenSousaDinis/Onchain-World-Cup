@@ -11,7 +11,7 @@ export function WhyExistsSection() {
               Crypto is coordination.
             </p>
             <p className="text-2xl font-semibold text-primary">Onchain World Cup combines both.</p>
-            <div className="cm-panel mx-auto mt-8 max-w-2xl rounded-sm p-8 text-left">
+            <div className="mx-auto mt-8 max-w-2xl rounded-sm p-8 text-left border-2 border-primary/30 bg-secondary/30">
               <p className="mb-4 font-semibold text-primary">It's about:</p>
               <ul className="space-y-3 text-lg">
                 <li className="flex items-center gap-3">

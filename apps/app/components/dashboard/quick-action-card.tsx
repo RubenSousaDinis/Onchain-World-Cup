@@ -49,7 +49,7 @@ export function QuickActionCard({
         <Icon className={`w-5 h-5 ${styles.icon}`} aria-hidden="true" />
         <h4 className={`text-sm lg:text-base font-bold ${styles.title}`}>{title}</h4>
       </div>
-      <p className="text-xs lg:text-sm text-muted-foreground">{description}</p>
+      <p className="text-sm lg:text-base text-muted-foreground">{description}</p>
     </>
   )
 

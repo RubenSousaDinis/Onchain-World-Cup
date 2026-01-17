@@ -18,6 +18,7 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
   title: "Live Matches | Crypto World Cup 2026",
   description:
     "Vote on live World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",

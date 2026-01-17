@@ -88,7 +88,7 @@ export default function StatsPage() {
               {phaseDistribution.map((phase) => (
                 <div key={phase.label}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs lg:text-sm font-bold text-foreground">{phase.label}</span>
+                    <span className="text-sm lg:text-base font-bold text-foreground">{phase.label}</span>
                     <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{phase.value}%</span>
                   </div>
                   <div className="w-full h-8 bg-secondary/20 rounded-sm overflow-hidden border border-border">
@@ -241,7 +241,7 @@ function BarChartComponent({ data, height, color }: { data: ChartDataPoint[]; he
                 style={{ height: `${(point.value / maxValue) * height}px` }}
               />
               <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-card border border-border rounded px-2 py-1 text-xs font-bold whitespace-nowrap pointer-events-none z-10">
-                {point.value.toLocaleString()} votes
+                {point.value.toLocaleString("en-US")} votes
               </div>
             </div>
           ))}
@@ -273,8 +273,8 @@ function HorizontalBarChart({ data, height }: { data: ChartDataPoint[]; height: 
         {data.map((point, index) => (
           <div key={index}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs lg:text-sm font-bold text-foreground">{point.label}</span>
-              <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{point.value.toLocaleString()} votes</span>
+              <span className="text-sm lg:text-base font-bold text-foreground">{point.label}</span>
+              <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{point.value.toLocaleString("en-US")} votes</span>
             </div>
             <div className="w-full h-6 bg-secondary/20 rounded-sm overflow-hidden border border-border">
               <div
@@ -349,7 +349,7 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs lg:text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm lg:text-base text-muted-foreground">{label}</span>
       <span className={`text-sm lg:text-base font-mono font-bold ${valueClass}`}>{value}</span>
     </div>
   )

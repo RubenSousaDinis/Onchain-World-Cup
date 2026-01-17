@@ -35,14 +35,14 @@ export function TopListItem({
         {icon && <div className="text-2xl flex-shrink-0">{icon}</div>}
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold truncate">{title}</div>
-          {subtitle && <div className="text-xs text-muted-foreground truncate">{subtitle}</div>}
+          {subtitle && <div className="text-xs lg:text-sm text-muted-foreground truncate">{subtitle}</div>}
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0 ml-3">
         <span className="text-sm font-mono font-bold cm-highlight whitespace-nowrap">
-          {typeof value === "number" ? value.toLocaleString() : value}
+          {typeof value === "number" ? value.toLocaleString("en-US") : value}
         </span>
-        {valueLabel && <span className="text-xs text-muted-foreground whitespace-nowrap">{valueLabel}</span>}
+        {valueLabel && <span className="text-xs lg:text-sm text-muted-foreground whitespace-nowrap">{valueLabel}</span>}
       </div>
     </div>
   )

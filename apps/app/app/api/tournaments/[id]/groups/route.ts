@@ -10,10 +10,10 @@ import { getSupabaseClient } from '@/lib/server/supabase'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: tournamentId } = params
+    const { id: tournamentId } = await params
 
     // Create cached function for fetching tournament groups
     const getTournamentGroups = unstable_cache(
@@ -74,12 +74,12 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // TODO: Add authentication check
     const supabase = getSupabaseClient()
-    const { id: tournamentId } = params
+    const { id: tournamentId } = await params
     const body = await request.json()
 
     const { name, max_teams } = body

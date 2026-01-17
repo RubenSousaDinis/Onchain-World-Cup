@@ -83,7 +83,7 @@ export function MatchCard({
                 {isHot && (
                   <div className="flex items-center gap-1 bg-orange-500/20 px-2 py-1.5 rounded-sm border border-orange-500/50">
                     <Flame className="w-3 h-3 text-orange-400 animate-pulse" />
-                    <span className="text-xs text-orange-400 font-bold">HOT</span>
+                    <span className="text-xs lg:text-sm text-orange-400 font-bold">HOT</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 bg-card/90 px-2 lg:px-3 py-1.5 rounded-sm">
@@ -112,7 +112,7 @@ export function MatchCard({
               </div>
 
               {/* VS */}
-              <div className="text-muted-foreground font-bold text-xs text-center flex-shrink-0">VS</div>
+              <div className="text-muted-foreground font-bold text-xs lg:text-sm text-center flex-shrink-0">VS</div>
 
               {/* Team 2 */}
               <div
@@ -166,7 +166,7 @@ export function MatchCard({
                   e.preventDefault()
                   handleVoteClick(team1, team1Flag, 0)
                 }}
-                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform min-w-0 truncate"
+                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform min-w-0 truncate"
               >
                 Vote {team1}
               </button>
@@ -175,7 +175,7 @@ export function MatchCard({
                   e.preventDefault()
                   handleVoteClick(team2, team2Flag, 1)
                 }}
-                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform min-w-0 truncate"
+                className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform min-w-0 truncate"
               >
                 Vote {team2}
               </button>
@@ -186,7 +186,7 @@ export function MatchCard({
                 e.preventDefault()
                 setShareModalOpen(true)
               }}
-              className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-xs lg:text-sm hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+              className="flex-1 cm-nav-tab py-2 lg:py-3 rounded-sm font-bold uppercase text-sm lg:text-base hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
             >
               <Share2 className="w-4 h-4" />
               Share Result

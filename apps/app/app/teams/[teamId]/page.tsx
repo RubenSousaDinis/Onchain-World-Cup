@@ -3,6 +3,7 @@ import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { use } from "react"
 
 const mockTeams = {
   brazil: {
@@ -204,8 +205,8 @@ const mockTeams = {
   },
 }
 
-export default function TeamDetailPage({ params }: { params: { teamId: string } }) {
-  const teamId = params.teamId
+export default function TeamDetailPage({ params }: { params: Promise<{ teamId: string }> }) {
+  const { teamId } = use(params)
   const team = mockTeams[teamId as keyof typeof mockTeams]
 
   if (!team) {
@@ -234,7 +235,7 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
         {/* Back Button */}
         <Link
           href="/teams"
-          className="inline-flex items-center gap-2 text-xs lg:text-sm text-accent hover:text-accent/80 mb-4 lg:mb-6"
+          className="inline-flex items-center gap-2 text-sm lg:text-base text-accent hover:text-accent/80 mb-4 lg:mb-6"
         >
           <ArrowLeft className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
           Back to Teams
@@ -249,7 +250,7 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
               <p className="text-sm lg:text-base text-muted-foreground">{team.group}</p>
             </div>
             <div className="text-center bg-card/90 p-4 lg:p-6 rounded-sm">
-              <div className="text-xs text-muted-foreground mb-1">Total Votes</div>
+              <div className="text-xs lg:text-sm text-muted-foreground mb-1">Total Votes</div>
               <div className="text-2xl lg:text-4xl font-bold cm-highlight font-mono">{team.totalVotes}</div>
             </div>
           </div>
@@ -296,7 +297,7 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
               </table>
 
               <div className="mt-4 pt-4 border-t border-border">
-                <div className="text-xs text-muted-foreground mb-2">Recent Form</div>
+                <div className="text-xs lg:text-sm text-muted-foreground mb-2">Recent Form</div>
                 <div className="flex gap-2">
                   {team.form.map((result, idx) => (
                     <div
@@ -376,12 +377,12 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                     <span className="text-3xl flex-shrink-0">{match.flag}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-base truncate">{match.opponent}</div>
-                      <div className="text-xs text-muted-foreground truncate">{match.stadium}</div>
+                      <div className="text-xs lg:text-sm text-muted-foreground truncate">{match.stadium}</div>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <div className="text-xs text-accent font-mono">{match.date}</div>
-                    <div className="text-xs text-muted-foreground">{match.time}</div>
+                    <div className="text-xs lg:text-sm text-accent font-mono">{match.date}</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground">{match.time}</div>
                   </div>
                 </Link>
               ))}
@@ -406,8 +407,8 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                     <span className="text-3xl flex-shrink-0">{match.flag}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-base truncate">{match.opponent}</div>
-                      <div className="text-xs text-muted-foreground">{match.date}</div>
-                      <div className="text-xs text-accent font-mono mt-1">Total Pool: {match.totalVotes}</div>
+                      <div className="text-xs lg:text-sm text-muted-foreground">{match.date}</div>
+                      <div className="text-xs lg:text-sm text-accent font-mono mt-1">Total Pool: {match.totalVotes}</div>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
@@ -422,7 +423,7 @@ export default function TeamDetailPage({ params }: { params: { teamId: string } 
                     >
                       {match.result.startsWith("W") ? "WON" : match.result.startsWith("D") ? "DRAW" : "LOST"}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">Click for details</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground mt-1">Click for details</div>
                   </div>
                 </Link>
               ))}

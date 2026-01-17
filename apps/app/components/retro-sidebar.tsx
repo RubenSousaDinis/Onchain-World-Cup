@@ -39,12 +39,6 @@ export function RetroSidebar() {
         </div>
       </Link>
 
-      {/* Date/Time Display (retro style) */}
-      <div className="text-sm text-center border border-border px-2 py-1.5 rounded-sm bg-card" aria-label="2026 World Cup">
-        <div className="text-accent font-bold">2026</div>
-        <div className="text-muted-foreground text-xs">WORLD CUP</div>
-      </div>
-
       {/* Navigation Items */}
       <nav className="flex-1 flex flex-col gap-3 w-full px-2" aria-label="Primary navigation">
         {sidebarItems.map((item) => {

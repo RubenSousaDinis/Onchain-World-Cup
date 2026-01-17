@@ -160,7 +160,7 @@ export function VoteModal({
               <span className="text-3xl">{teamFlag}</span>
               <div>
                 <div className="text-lg font-bold text-foreground">Vote for {team}</div>
-                <div className="text-xs text-muted-foreground">Buy votes to back your team</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">Buy votes to back your team</div>
               </div>
             </div>
             <button onClick={onClose} className="text-foreground hover:text-accent transition-colors">
@@ -172,9 +172,9 @@ export function VoteModal({
             <div className="p-3 bg-purple-900/30 border-b border-purple-500/30">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-purple-400" />
-                <span className="text-xs font-bold text-purple-400 uppercase">Demo Mode</span>
+                <span className="text-xs lg:text-sm font-bold text-purple-400 uppercase">Demo Mode</span>
               </div>
-              <p className="text-xs text-foreground/70 mt-1">
+              <p className="text-xs lg:text-sm text-foreground/70 mt-1">
                 Try voting without connecting! Share feature will still work.
               </p>
             </div>
@@ -188,16 +188,16 @@ export function VoteModal({
               {pricePhase === "linear" ? (
                 <>
                   <Zap className="w-4 h-4 text-green-400" />
-                  <span className="text-xs font-bold text-green-400 uppercase">Early Bird Window - Vote Now!</span>
+                  <span className="text-xs lg:text-sm font-bold text-green-400 uppercase">Early Bird Window - Vote Now!</span>
                 </>
               ) : (
                 <>
                   <AlertTriangle className="w-4 h-4 text-orange-400" />
-                  <span className="text-xs font-bold text-orange-400 uppercase">Prices Rising Fast!</span>
+                  <span className="text-xs lg:text-sm font-bold text-orange-400 uppercase">Prices Rising Fast!</span>
                 </>
               )}
             </div>
-            <p className="text-xs text-foreground/70">
+            <p className="text-xs lg:text-sm text-foreground/70">
               {pricePhase === "linear"
                 ? "First 2 hours! Prices increase gradually with each vote."
                 : "Hours 2-24. Prices rise exponentially - earlier is better!"}
@@ -218,16 +218,16 @@ export function VoteModal({
             <div className="cm-panel p-3 rounded-sm mb-3">
               <div className="flex items-start gap-2 mb-2">
                 <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                <div className="text-xs font-bold text-accent">Current Pricing Phase</div>
+                <div className="text-xs lg:text-sm font-bold text-accent">Current Pricing Phase</div>
               </div>
               {pricePhase === "linear" ? (
-                <div className="text-xs text-foreground bg-secondary/30 p-2 rounded">
+                <div className="text-xs lg:text-sm text-foreground bg-secondary/30 p-2 rounded">
                   <strong className="text-green-400">Phase 1: Early Bird (0-2 hours)</strong>
                   <br />
                   <span className="text-muted-foreground">Price increases gradually with each vote. Best rates!</span>
                 </div>
               ) : (
-                <div className="text-xs text-foreground bg-secondary/30 p-2 rounded">
+                <div className="text-xs lg:text-sm text-foreground bg-secondary/30 p-2 rounded">
                   <strong className="text-orange-400">Phase 2: Standard (2-24 hours)</strong>
                   <br />
                   <span className="text-muted-foreground">Price rises exponentially. Still 22 hours to vote!</span>
@@ -235,7 +235,7 @@ export function VoteModal({
               )}
             </div>
 
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs lg:text-sm text-muted-foreground">
               Voting is open for 24 hours total. The earlier you vote, the better your price!
             </div>
           </div>
@@ -257,7 +257,7 @@ export function VoteModal({
 
               <div className="cm-panel px-8 py-4 rounded-sm text-center min-w-[120px]">
                 <div className="text-4xl font-bold cm-highlight font-mono">{voteCount}</div>
-                <div className="text-xs text-muted-foreground mt-1">vote{voteCount !== 1 ? "s" : ""}</div>
+                <div className="text-xs lg:text-sm text-muted-foreground mt-1">vote{voteCount !== 1 ? "s" : ""}</div>
               </div>
 
               <button
@@ -275,7 +275,7 @@ export function VoteModal({
                 <button
                   key={count}
                   onClick={() => setVoteCount(count)}
-                  className={`cm-nav-tab py-2 rounded-sm text-xs font-bold transition-all ${
+                  className={`cm-nav-tab py-2 rounded-sm text-xs lg:text-sm font-bold transition-all ${
                     voteCount === count ? "bg-primary text-primary-foreground" : ""
                   }`}
                 >
@@ -301,7 +301,7 @@ export function VoteModal({
               </div>
 
               <div className="mt-3 pt-3 border-t border-border/50">
-                <div className="flex items-center gap-2 text-xs text-orange-400">
+                <div className="flex items-center gap-2 text-xs lg:text-sm text-orange-400">
                   <TrendingUp className="w-3 h-3" />
                   <span>
                     {pricePhase === "linear"
@@ -323,14 +323,14 @@ export function VoteModal({
                 <p className="text-sm text-green-400 font-bold">
                   {isDemoVote ? "Demo vote placed!" : "Vote placed successfully!"}
                 </p>
-                <p className="text-xs text-green-400/70 mt-1">Share your vote to earn bragging rights!</p>
+                <p className="text-xs lg:text-sm text-green-400/70 mt-1">Share your vote to earn bragging rights!</p>
               </div>
             )}
 
             {/* Winner Info */}
             <div className="mt-4 flex items-start gap-2 bg-accent/10 border border-accent/30 rounded-sm p-3">
               <Users className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-foreground">
+              <p className="text-xs lg:text-sm text-foreground">
                 <strong>All winning voters share 90% of prize pool proportionally.</strong> Your share = (Your Votes /
                 Total Winning Votes) × 90% Pool. You have 24 hours to vote!
               </p>

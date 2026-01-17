@@ -22,7 +22,7 @@ export function SectionCard({ title, children, headerAction, footer, className =
         {headerAction && (
           <Link
             href={headerAction.href}
-            className="flex items-center gap-1 text-xs lg:text-sm text-accent hover:text-accent/80 transition-colors font-bold"
+            className="flex items-center gap-1 text-sm lg:text-base text-accent hover:text-accent/80 transition-colors font-bold"
           >
             {headerAction.label}
             <ChevronRight className="w-3 h-3" aria-hidden="true" />

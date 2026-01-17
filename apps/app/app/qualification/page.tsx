@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
@@ -19,7 +19,7 @@ const allCountries = countriesData.map((country, index) => ({
   code: country.code,
   votes: Math.max(100, 2500 - index * 35), // Mock votes for now
   momentum: index % 3 === 0 ? "up" : index % 3 === 1 ? "down" : "stable",
-  change: Math.floor(Math.random() * 200) - 100, // Mock change for now
+  change: ((index * 37) % 200) - 100, // Deterministic mock change based on index (37 is a prime number for better distribution)
 }))
 
 type Country = {
@@ -139,7 +139,7 @@ export default function QualificationPage() {
                 <Clock className="w-6 h-6 text-accent" />
                 <div>
                   <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
-                  <p className="text-xs lg:text-sm text-muted-foreground">Vote early for better prices</p>
+                  <p className="text-sm lg:text-base text-muted-foreground">Vote early for better prices</p>
                 </div>
               </div>
               <div className="flex gap-2 lg:gap-4">
@@ -164,7 +164,7 @@ export default function QualificationPage() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-xs lg:text-sm">
+            <div className="mt-4 flex items-center gap-2 text-sm lg:text-base">
               <Trophy className="w-4 h-4 text-accent" />
               <span className="text-foreground/70">
                 Current Prize Pool: <span className="cm-highlight font-bold text-base lg:text-lg">{totalPrizePool} ETH</span> from
@@ -190,23 +190,23 @@ export default function QualificationPage() {
         {/* Legend */}
         <div className="mb-4 lg:mb-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="cm-panel rounded-sm p-3 bg-green-500/5 border border-green-500/20">
-            <div className="text-xs lg:text-sm font-bold text-green-500 mb-1">✓ QUALIFIED</div>
-            <div className="text-xs lg:text-sm text-muted-foreground">Ranks 1-48 advance to tournament</div>
+            <div className="text-sm lg:text-base font-bold text-green-500 mb-1">✓ QUALIFIED</div>
+            <div className="text-sm lg:text-base text-muted-foreground">Ranks 1-48 advance to tournament</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-yellow-500/5 border border-yellow-500/20">
-            <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
-            <div className="text-xs lg:text-sm text-muted-foreground">Ranks 46-50 need support</div>
+            <div className="text-sm lg:text-base font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
+            <div className="text-sm lg:text-base text-muted-foreground">Ranks 46-50 need support</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-red-500/5 border border-red-500/20">
-            <div className="text-xs lg:text-sm font-bold text-red-500 mb-1">✗ ELIMINATED</div>
-            <div className="text-xs lg:text-sm text-muted-foreground">Below rank 48 - not qualified</div>
+            <div className="text-sm lg:text-base font-bold text-red-500 mb-1">✗ ELIMINATED</div>
+            <div className="text-sm lg:text-base text-muted-foreground">Below rank 48 - not qualified</div>
           </div>
         </div>
 
         {/* Qualification Table */}
         <div className="cm-panel rounded-sm border border-border overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs lg:text-sm">
+            <table className="w-full text-sm lg:text-base">
               <thead>
                 <tr className="bg-secondary/40 border-b-2 border-accent/30">
                   <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Rank</th>
@@ -233,12 +233,12 @@ export default function QualificationPage() {
                     const isQualified = country.rank <= 48
 
                     return (
-                      <>
+                      <Fragment key={country.rank}>
                         {isCutoff && (
-                          <tr key={`cutoff-${country.rank}`}>
+                          <tr>
                             <td colSpan={6} className="p-0">
                               <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
-                                <div className="text-xs lg:text-sm font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
+                                <div className="text-sm lg:text-base font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
                                   <span className="hidden lg:inline">━━━━━</span>
                                   Qualification Cutoff (Top 48)
                                   <span className="hidden lg:inline">━━━━━</span>
@@ -248,7 +248,6 @@ export default function QualificationPage() {
                           </tr>
                         )}
                         <tr
-                          key={country.rank}
                           className={`border-b border-border hover:bg-accent/5 transition-colors ${
                             isAtRisk ? "bg-yellow-500/10" : ""
                           } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
@@ -275,7 +274,7 @@ export default function QualificationPage() {
                             </Link>
                           </td>
                           <td className="text-center p-2 lg:p-3">
-                            <div className="font-bold cm-highlight">{country.votes.toLocaleString()}</div>
+                            <div className="font-bold cm-highlight">{country.votes.toLocaleString("en-US")}</div>
                           </td>
                           <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
                             <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
@@ -294,14 +293,14 @@ export default function QualificationPage() {
                             <div className="flex items-center justify-end gap-1 lg:gap-2">
                               <button
                                 onClick={() => handleVote(country)}
-                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-bold"
+                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold"
                               >
                                 VOTE
                               </button>
                             </div>
                           </td>
                         </tr>
-                      </>
+                      </Fragment>
                     )
                   })
                 )}

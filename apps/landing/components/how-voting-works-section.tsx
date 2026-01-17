@@ -6,22 +6,22 @@ export function HowVotingWorksSection() {
           <h2 className="mb-12 text-center text-4xl font-bold text-primary">How Voting Works</h2>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Votes are made using ETH</p>
             </div>
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Multiple votes per wallet are allowed</p>
             </div>
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Voting fees increase over time</p>
             </div>
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Early participation matters more</p>
             </div>
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">Anti-sybil protections are enforced</p>
             </div>
-            <div className="rounded-sm border-2 border-accent/20 bg-background p-6 text-center">
+            <div className="rounded-sm border-2 border-primary/30 bg-background p-6 text-center">
               <p className="text-foreground font-medium">All logic lives in smart contracts</p>
             </div>
           </div>
@@ -57,7 +57,7 @@ export function HowVotingWorksSection() {
               </div>
             </div>
 
-            <div className="mx-auto max-w-2xl rounded-sm border-2 border-accent/50 bg-card p-6">
+            <div className="mx-auto max-w-2xl rounded-sm border-2 border-primary/30 bg-card p-6">
               <h4 className="mb-3 text-center text-xl font-bold text-accent">Prize Pool Distribution</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">

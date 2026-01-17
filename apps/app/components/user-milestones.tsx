@@ -174,13 +174,13 @@ export function UserMilestones() {
                 <Award className="w-5 h-5" />
                 Achievements
               </h3>
-              <p className="text-xs text-foreground/70 mt-1">Complete milestones to earn bragging rights</p>
+              <p className="text-xs lg:text-sm text-foreground/70 mt-1">Complete milestones to earn bragging rights</p>
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold cm-highlight">
                 {unlockedCount}/{totalCount}
               </div>
-              <div className="text-xs text-muted-foreground uppercase">Unlocked</div>
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Unlocked</div>
             </div>
           </div>
 
@@ -208,7 +208,7 @@ export function UserMilestones() {
             >
               {/* Rarity badge */}
               <div
-                className={`absolute top-2 right-2 text-xs font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
+                className={`absolute top-2 right-2 text-xs lg:text-sm font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
               >
                 {milestone.rarity}
               </div>
@@ -217,16 +217,16 @@ export function UserMilestones() {
                 <div className={`text-3xl ${milestone.unlocked ? "" : "grayscale opacity-50"}`}>{milestone.icon}</div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-sm mb-1">{milestone.title}</div>
-                  <div className="text-xs text-muted-foreground mb-2">{milestone.description}</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground mb-2">{milestone.description}</div>
 
                   {milestone.unlocked ? (
                     <div className="flex items-center gap-2">
                       <Shield className="w-3 h-3 text-green-400" />
-                      <span className="text-xs text-green-400">Unlocked {milestone.unlockedAt}</span>
+                      <span className="text-xs lg:text-sm text-green-400">Unlocked {milestone.unlockedAt}</span>
                     </div>
                   ) : (
                     <div>
-                      <div className="flex items-center justify-between text-xs mb-1">
+                      <div className="flex items-center justify-between text-xs lg:text-sm mb-1">
                         <span className="text-muted-foreground">Progress</span>
                         <span className="text-foreground font-mono">
                           {milestone.progress}/{milestone.total}
@@ -250,7 +250,7 @@ export function UserMilestones() {
                       e.stopPropagation()
                       handleMintNFT(milestone)
                     }}
-                    className="text-xs text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
+                    className="text-xs lg:text-sm text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
                   >
                     Mint NFT
                   </button>
@@ -259,7 +259,7 @@ export function UserMilestones() {
                       e.stopPropagation()
                       handleShare(milestone)
                     }}
-                    className="text-xs text-accent hover:text-primary transition-colors"
+                    className="text-xs lg:text-sm text-accent hover:text-primary transition-colors"
                   >
                     Share
                   </button>
@@ -268,7 +268,7 @@ export function UserMilestones() {
 
               {milestone.disabled && (
                 <div className="absolute bottom-2 right-2 flex gap-2">
-                  <span className="text-xs text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
+                  <span className="text-xs lg:text-sm text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
                 </div>
               )}
             </div>
