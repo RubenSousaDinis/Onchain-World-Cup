@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@typechain/hardhat");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -32,6 +33,12 @@ module.exports = {
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts",
+  },
+  typechain: {
+    outDir: "./lib/contracts/types",
+    target: "ethers-v6",
+    alwaysGenerateOverloads: false,
+    dontOverrideCompile: false,
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS === "true",
