@@ -1,163 +1,187 @@
-# Database Seed Scripts
+# Deployment Scripts
 
-Scripts for populating the Crypto World Cup database with initial data.
+Scripts for deploying and managing Onchain World Cup smart contracts.
 
-## Prerequisites
+## Qualification Contract Scripts
 
-Before running any seed scripts, ensure you have:
+### Deploy Qualification Contract
 
-1. **Supabase Project Set Up**
-   - Create a Supabase project at https://supabase.com
-   - Run the database migrations in `docs/database/`
+Deploy the `WorldCupQualification` contract to Base network.
 
-2. **Environment Variables**
+```bash
+# Deploy to Base Sepolia testnet
+npm run deploy:qualification:sepolia
 
-   Create a `.env.local` file in the root directory with:
-   \`\`\`bash
-   NEXT_PUBLIC_SUPABASE_URL=your-project-url
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   \`\`\`
+# Deploy to Base Mainnet
+npm run deploy:qualification:mainnet
 
-   ⚠️ **Important**: Use the **Service Role Key**, not the anon key. The service role key has full database access needed for seeding.
+# Deploy to local Hardhat network
+npx hardhat run scripts/deploy-qualification.js --network hardhat
+```
 
-## Available Scripts
+#### Environment Variables (Optional)
 
-### Seed Countries
+You can customize deployment parameters via environment variables:
 
-Populates the database with all 48 countries participating in the 2026 World Cup.
+```bash
+QUALIFICATION_END_TIME=1735689600 \
+FEE_RECIPIENT=0x... \
+INITIAL_PLATFORM_FEE_BPS=1000 \
+INITIAL_COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT" \
+npx hardhat run scripts/deploy-qualification.js --network baseSepolia
+```
 
-**Run:**
-\`\`\`bash
-npm run seed:countries
-\`\`\`
+**Parameters:**
+- `QUALIFICATION_END_TIME`: Unix timestamp when qualification ends (default: 7 days from now)
+- `FEE_RECIPIENT`: Address that receives platform fees (default: deployer address)
+- `INITIAL_PLATFORM_FEE_BPS`: Initial platform fee in basis points (default: 1000 = 10%)
+- `INITIAL_COUNTRIES`: Comma-separated list of 2-letter country codes (default: top 10 countries)
 
-**What it does:**
-- Checks if countries already exist
-- Prompts for confirmation before clearing existing data
-- Inserts all 48 countries with:
-  - Name and country code (ISO 3166-1 alpha-3)
-  - Flag emoji
-  - FIFA ranking
-  - Qualification status
+### Manage Qualification Contract
 
-**Data included:**
-- 3 CONCACAF host nations (USA, Canada, Mexico)
-- 16 UEFA teams (Europe)
-- 6 CONMEBOL teams (South America)
-- 9 CAF teams (Africa)
-- 8 AFC teams (Asia)
-- 1 OFC team (Oceania)
-- 5 remaining slots (subject to qualification)
+Manage an already-deployed qualification contract.
 
-**Example output:**
-\`\`\`
-🌍 Starting countries seed...
+```bash
+# Set contract address
+export QUALIFICATION_CONTRACT_ADDRESS=0x...
 
-📝 Inserting 48 countries...
+# Check contract status
+npx hardhat run scripts/manage-qualification.js --network baseSepolia --action status
 
-✅ Countries inserted successfully!
+# Add a single country
+QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=addCountry COUNTRY="JP" \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
 
-📊 Summary:
-   Total countries: 48
-   Qualified: 45
-   Not yet qualified: 3
+# Add multiple countries
+QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=addCountries COUNTRIES="JP,CN,KR,IN" \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
 
-🌎 By Confederation:
-   CONCACAF (Hosts): 3
-   UEFA (Europe): ~16
-   CONMEBOL (South America): ~6
-   CAF (Africa): ~9
-   AFC (Asia): ~8
-   OFC (Oceania): ~1
-   Remaining slots: ~5
+# Update platform fee (for discounts/promotions)
+QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=setFee FEE=500 \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
 
-🎉 Seed completed successfully!
-\`\`\`
+# Finalize qualification (after end time)
+QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=finalize \
+COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT,..." \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
+```
 
-## Creating Additional Seed Scripts
+**Actions:**
+- `status`: Display contract status and details (default)
+- `addCountry`: Add a single country to the whitelist
+- `addCountries`: Add multiple countries at once
+- `setFee`: Update platform fee (0-2000 basis points, max 20%)
+- `finalize`: Finalize qualification with top 48 countries
 
-To create a new seed script:
+**Requirements:**
+- `QUALIFICATION_CONTRACT_ADDRESS`: Contract address (required for all actions)
+- `ACTION`: Action to perform (default: `status`)
+- `COUNTRY`: Single 2-letter country code (for `addCountry`)
+- `COUNTRIES`: Comma-separated country codes (for `addCountries` and `finalize`)
+- `FEE`: Platform fee in basis points (for `setFee`)
 
-1. Create a new TypeScript file in `/scripts/`
-2. Import the Supabase client:
-   \`\`\`typescript
-   import { getSupabaseClient } from '../lib/server/supabase'
-   \`\`\`
-3. Write your seed logic
-4. Add a script to `package.json`:
-   \`\`\`json
-   "seed:your-script": "tsx scripts/your-script.ts"
-   \`\`\`
+## TypeScript Types Generation
 
-### Example Seed Script Template
+TypeChain automatically generates TypeScript types from contract ABIs during compilation.
 
-\`\`\`typescript
-import { getSupabaseClient } from '../lib/server/supabase'
+```bash
+# Compile contracts and generate types
+npm run generate:types
 
-async function seedData() {
-  console.log('🌱 Starting seed...')
+# Or separately:
+npm run compile
+npm run typechain
+```
 
-  const supabase = getSupabaseClient()
+**Generated Types Location:**
+- Types: `lib/contracts/types/contracts/`
+- Factories: `lib/contracts/types/factories/contracts/`
 
-  try {
-    const { data, error } = await supabase
-      .from('your_table')
-      .insert([
-        { /* your data */ }
-      ])
+**Usage in Frontend:**
+```typescript
+import { WorldCupQualification__factory } from "@/lib/contracts/types/factories/contracts/WorldCupQualification__factory";
+import type { WorldCupQualification } from "@/lib/contracts/types/contracts/WorldCupQualification";
 
-    if (error) throw error
+const contract = WorldCupQualification__factory.connect(address, provider);
+```
 
-    console.log('✅ Seed completed!')
-  } catch (error) {
-    console.error('❌ Error:', error)
-    process.exit(1)
-  }
-}
+## Configuration
 
-seedData()
-\`\`\`
+### Hardhat Network Configuration
+
+Networks are configured in `hardhat.config.js`:
+
+- **Hardhat**: Local testing (chainId: 31337)
+- **Base Sepolia**: Testnet (chainId: 84532)
+- **Base Mainnet**: Production (chainId: 8453)
+
+### Environment Variables
+
+Required for deployment:
+
+```env
+# Private key for deployment (without 0x prefix)
+PRIVATE_KEY=your_private_key_here
+
+# RPC URLs (optional, has defaults)
+NEXT_PUBLIC_BASE_RPC_URL=https://sepolia.base.org
+BASE_MAINNET_RPC_URL=https://mainnet.base.org
+
+# Block explorer API key for verification
+BASESCAN_API_KEY=your_basescan_api_key
+```
+
+## Verification
+
+Contracts are automatically verified on Basescan after deployment (Base Sepolia and Mainnet only).
+
+Manual verification:
+```bash
+npx hardhat verify --network baseSepolia <CONTRACT_ADDRESS> <CONSTRUCTOR_ARGS...>
+```
+
+## Examples
+
+### Example 1: Deploy Qualification Contract with Custom Parameters
+
+```bash
+QUALIFICATION_END_TIME=1735689600 \
+FEE_RECIPIENT=0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb \
+INITIAL_PLATFORM_FEE_BPS=500 \
+INITIAL_COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT,JP,CN" \
+npx hardhat run scripts/deploy-qualification.js --network baseSepolia
+```
+
+### Example 2: Add Countries After Deployment
+
+```bash
+QUALIFICATION_CONTRACT_ADDRESS=0x... \
+ACTION=addCountries \
+COUNTRIES="JP,CN,KR,IN,AU,CA,MX,ZA,EG,NG" \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
+```
+
+### Example 3: Offer Discount During Qualification
+
+```bash
+QUALIFICATION_CONTRACT_ADDRESS=0x... \
+ACTION=setFee \
+FEE=0 \
+npx hardhat run scripts/manage-qualification.js --network baseSepolia
+```
+
+This sets platform fee to 0% (100% discount) for a promotion.
 
 ## Troubleshooting
 
-### Error: Missing environment variables
+### "Insufficient funds"
+Make sure your deployer account has enough ETH for gas fees.
 
-Ensure `.env.local` exists with both:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
+### "Contract verification failed"
+The script will show manual verification command. Make sure your BASESCAN_API_KEY is set.
 
-### Error: Permission denied
+### "Qualification ended"
+Time-based restrictions prevent certain actions after qualification period ends. Check `qualificationEndTime` in contract.
 
-Make sure you're using the **Service Role Key**, not the anon key. The service role key can be found in:
-- Supabase Dashboard → Settings → API → Service Role Key
-
-### Error: Table does not exist
-
-Run the database migrations first:
-1. Go to Supabase SQL Editor
-2. Run the SQL from `docs/database/schema.sql`
-3. Run any additional migrations in `docs/database/migrations/`
-
-### Script hangs on confirmation
-
-If running in a non-interactive environment (CI/CD), you may need to:
-- Delete existing data manually first
-- Or modify the script to skip confirmation
-
-## Next Steps
-
-After seeding countries, you may want to:
-
-1. **Seed Tournaments**
-   - Create tournament for 2026 World Cup
-   - Set up tournament phases
-
-2. **Seed Groups**
-   - Create 12 groups (A-L) for the group stage
-   - Assign countries to groups
-
-3. **Seed Matches**
-   - Create all group stage matches
-   - Create knockout stage brackets
-
-These scripts can be created following the same pattern as `seed-countries.ts`.
+### "Country has no votes"
+When finalizing qualification, all countries must have at least 1 vote (trust guarantee).
