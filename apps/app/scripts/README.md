@@ -16,7 +16,7 @@ npm run deploy:qualification:sepolia
 npm run deploy:qualification:mainnet
 
 # Deploy to local Hardhat network
-npx hardhat run scripts/deploy-qualification.js --network hardhat
+npx hardhat run scripts/deploy-qualification.ts --network hardhat
 ```
 
 #### Environment Variables (Optional)
@@ -28,7 +28,7 @@ QUALIFICATION_END_TIME=1735689600 \
 FEE_RECIPIENT=0x... \
 INITIAL_PLATFORM_FEE_BPS=1000 \
 INITIAL_COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT" \
-npx hardhat run scripts/deploy-qualification.js --network baseSepolia
+npx hardhat run scripts/deploy-qualification.ts --network baseSepolia
 ```
 
 **Parameters:**
@@ -46,24 +46,25 @@ Manage an already-deployed qualification contract.
 export QUALIFICATION_CONTRACT_ADDRESS=0x...
 
 # Check contract status
-npx hardhat run scripts/manage-qualification.js --network baseSepolia --action status
+QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=status \
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 
 # Add a single country
 QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=addCountry COUNTRY="JP" \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 
 # Add multiple countries
 QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=addCountries COUNTRIES="JP,CN,KR,IN" \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 
 # Update platform fee (for discounts/promotions)
 QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=setFee FEE=500 \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 
 # Finalize qualification (after end time)
 QUALIFICATION_CONTRACT_ADDRESS=0x... ACTION=finalize \
 COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT,..." \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 ```
 
 **Actions:**
@@ -149,7 +150,7 @@ QUALIFICATION_END_TIME=1735689600 \
 FEE_RECIPIENT=0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb \
 INITIAL_PLATFORM_FEE_BPS=500 \
 INITIAL_COUNTRIES="US,BR,AR,FR,DE,IT,ES,NL,GB,PT,JP,CN" \
-npx hardhat run scripts/deploy-qualification.js --network baseSepolia
+npx hardhat run scripts/deploy-qualification.ts --network baseSepolia
 ```
 
 ### Example 2: Add Countries After Deployment
@@ -158,7 +159,7 @@ npx hardhat run scripts/deploy-qualification.js --network baseSepolia
 QUALIFICATION_CONTRACT_ADDRESS=0x... \
 ACTION=addCountries \
 COUNTRIES="JP,CN,KR,IN,AU,CA,MX,ZA,EG,NG" \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 ```
 
 ### Example 3: Offer Discount During Qualification
@@ -167,7 +168,7 @@ npx hardhat run scripts/manage-qualification.js --network baseSepolia
 QUALIFICATION_CONTRACT_ADDRESS=0x... \
 ACTION=setFee \
 FEE=0 \
-npx hardhat run scripts/manage-qualification.js --network baseSepolia
+npx hardhat run scripts/manage-qualification.ts --network baseSepolia
 ```
 
 This sets platform fee to 0% (100% discount) for a promotion.

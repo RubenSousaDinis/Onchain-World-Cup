@@ -1,12 +1,12 @@
-const hre = require("hardhat");
+import hre from "hardhat";
 
 /**
  * Deploy WorldCupQualification contract
  * 
  * Usage:
- *   npx hardhat run scripts/deploy-qualification.js --network baseSepolia
- *   npx hardhat run scripts/deploy-qualification.js --network baseMainnet
- *   npx hardhat run scripts/deploy-qualification.js --network hardhat
+ *   npx hardhat run scripts/deploy-qualification.ts --network baseSepolia
+ *   npx hardhat run scripts/deploy-qualification.ts --network baseMainnet
+ *   npx hardhat run scripts/deploy-qualification.ts --network hardhat
  */
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -32,7 +32,7 @@ async function main() {
     : ["US", "BR", "AR", "FR", "DE", "IT", "ES", "NL", "GB", "PT"]; // Default top 10
 
   // Helper to convert string to bytes2 (matching test helper)
-  const toBytes2 = (str) => {
+  const toBytes2 = (str: string): string => {
     if (str.length !== 2) {
       throw new Error(`Invalid country code: ${str}. Must be 2 characters (ISO 3166-1 alpha-2)`);
     }
@@ -101,6 +101,7 @@ async function main() {
   console.log("QUALIFICATION_SPOTS:", qualificationSpots.toString());
 
   // Save deployment info
+  const chainId = hre.network.config.chainId;
   const deploymentInfo = {
     network: hre.network.name,
     contract: {
@@ -113,9 +114,9 @@ async function main() {
     },
     deployer: deployer.address,
     deployedAt: new Date().toISOString(),
-    explorerUrl: hre.network.config.chainId === 84532
+    explorerUrl: chainId === 84532n
       ? `https://sepolia.basescan.org/address/${qualificationAddress}`
-      : hre.network.config.chainId === 8453
+      : chainId === 8453n
       ? `https://basescan.org/address/${qualificationAddress}`
       : null,
   };
@@ -126,7 +127,10 @@ async function main() {
   // Verify contract on explorer (if not local network)
   if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
     console.log("\n⏳ Waiting for block confirmations...");
-    await qualification.deploymentTransaction().wait(6);
+    const deploymentTx = qualification.deploymentTransaction();
+    if (deploymentTx) {
+      await deploymentTx.wait(6);
+    }
 
     console.log("🔍 Verifying contract on block explorer...");
 
@@ -141,8 +145,9 @@ async function main() {
         ],
       });
       console.log("✅ Contract verified!");
-    } catch (error) {
-      console.log("❌ Verification failed:", error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.log("❌ Verification failed:", errorMessage);
       console.log("You can verify manually using:");
       console.log(`npx hardhat verify --network ${hre.network.name} ${qualificationAddress} ${qualificationEndTime} ${feeRecipient} "${JSON.stringify(initialCountriesBytes2)}" ${initialPlatformFeeBps}`);
     }
@@ -169,7 +174,7 @@ main()
     console.log("\n✅ Deployment script completed!");
     process.exit(0);
   })
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error("\n❌ Deployment failed:");
     console.error(error);
     process.exit(1);

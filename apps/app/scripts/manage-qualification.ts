@@ -1,38 +1,34 @@
-const hre = require("hardhat");
+import hre from "hardhat";
 
 /**
  * Manage WorldCupQualification contract after deployment
  * 
  * Usage examples:
  *   # Add a single country
- *   npx hardhat run scripts/manage-qualification.js --network baseSepolia --action addCountry --country "JP"
+ *   npx hardhat run scripts/manage-qualification.ts --network baseSepolia
+ *   ACTION=addCountry COUNTRY="JP" QUALIFICATION_CONTRACT_ADDRESS=0x... npx hardhat run scripts/manage-qualification.ts --network baseSepolia
  * 
  *   # Add multiple countries
- *   npx hardhat run scripts/manage-qualification.js --network baseSepolia --action addCountries --countries "JP,CN,KR,IN"
+ *   ACTION=addCountries COUNTRIES="JP,CN,KR,IN" QUALIFICATION_CONTRACT_ADDRESS=0x... npx hardhat run scripts/manage-qualification.ts --network baseSepolia
  * 
  *   # Update platform fee (discount/promotion)
- *   npx hardhat run scripts/manage-qualification.js --network baseSepolia --action setFee --fee 500
+ *   ACTION=setFee FEE=500 QUALIFICATION_CONTRACT_ADDRESS=0x... npx hardhat run scripts/manage-qualification.ts --network baseSepolia
  * 
  *   # Get contract status
- *   npx hardhat run scripts/manage-qualification.js --network baseSepolia --action status
+ *   ACTION=status QUALIFICATION_CONTRACT_ADDRESS=0x... npx hardhat run scripts/manage-qualification.ts --network baseSepolia
  * 
  *   # Finalize qualification (after end time)
- *   npx hardhat run scripts/manage-qualification.js --network baseSepolia --action finalize --countries "US,BR,AR,..."
+ *   ACTION=finalize COUNTRIES="US,BR,AR,..." QUALIFICATION_CONTRACT_ADDRESS=0x... npx hardhat run scripts/manage-qualification.ts --network baseSepolia
  */
 
 // Helper to convert string to bytes2
-const toBytes2 = (str) => {
+const toBytes2 = (str: string): string => {
   if (str.length !== 2) {
     throw new Error(`Invalid country code: ${str}. Must be 2 characters (ISO 3166-1 alpha-2)`);
   }
   const bytes = hre.ethers.toUtf8Bytes(str);
   const twoBytes = bytes.slice(0, 2);
   return "0x" + Buffer.from(twoBytes).toString("hex").padEnd(4, "0");
-};
-
-// Helper to convert bytes2 to string
-const fromBytes2 = (bytes2) => {
-  return hre.ethers.toUtf8String(bytes2 + "000000000000000000000000000000000000000000000000000000000000");
 };
 
 async function main() {
@@ -61,7 +57,7 @@ async function main() {
   // Verify contract is deployed
   try {
     await qualification.qualificationEndTime();
-  } catch (error) {
+  } catch (error: unknown) {
     throw new Error(`Contract not found at ${contractAddress}. Make sure it's deployed and the address is correct.`);
   }
 
@@ -87,7 +83,7 @@ async function main() {
         throw new Error("COUNTRIES environment variable is required for addCountries action (comma-separated)");
       }
       const countries = countriesStr.split(",").map(c => c.trim());
-      const countriesBytes2 = countries.map(toBytes2);
+      const countriesBytes2 = countries.map(c => toBytes2(c));
       
       console.log(`\n========== Adding Countries: ${countries.join(", ")} ==========`);
       const tx = await qualification.connect(deployer).addCountries(countriesBytes2);
@@ -122,7 +118,7 @@ async function main() {
         throw new Error(`Expected exactly 48 countries, got ${countries.length}`);
       }
 
-      const countriesBytes2 = countries.map(toBytes2);
+      const countriesBytes2 = countries.map(c => toBytes2(c));
       
       console.log(`\n========== Finalizing Qualification with ${countries.length} Countries ==========`);
       console.log("Countries:", countries.join(", "));
@@ -153,8 +149,11 @@ async function main() {
       console.log("Total Platform Fees:", hre.ethers.formatEther(totalPlatformFees), "ETH");
       
       // Get current time
-      const currentTime = await hre.ethers.provider.getBlock("latest");
-      const now = currentTime.timestamp;
+      const currentBlock = await hre.ethers.provider.getBlock("latest");
+      if (!currentBlock) {
+        throw new Error("Could not get latest block");
+      }
+      const now = currentBlock.timestamp;
       const endTime = Number(details._qualificationEndTime);
       
       if (now < endTime) {
@@ -174,11 +173,12 @@ async function main() {
   console.log("\n✨ Operation completed!");
 }
 
+// Execute script
 main()
   .then(() => {
     process.exit(0);
   })
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error("\n❌ Operation failed:");
     console.error(error);
     process.exit(1);
