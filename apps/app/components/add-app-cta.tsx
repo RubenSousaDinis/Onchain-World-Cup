@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Wallet, Bell } from "lucide-react"
 import { useFarcaster } from "@/lib/farcaster-provider"
 import { SupporterBadge } from "./supporter-badge"
+import { ShareButton } from "./share-button"
 
 export function AddAppCTA() {
   const [isInstalled, setIsInstalled] = useState(false)
@@ -86,9 +87,10 @@ export function AddAppCTA() {
     return (
       <div className="cm-panel p-6 text-center border-2 border-accent">
         <SupporterBadge type="founding" />
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="text-sm text-muted-foreground mt-4 mb-4">
           You'll be notified when qualification opens
         </p>
+        <ShareButton messageKey="appAdded" />
       </div>
     )
   }

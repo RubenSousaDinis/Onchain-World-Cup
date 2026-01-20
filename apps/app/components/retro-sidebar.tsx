@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, HelpCircle, Wallet, Trophy, BarChart3 } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Trophy, BarChart3, Flag } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const sidebarItems = [
+  { icon: Flag, label: "Countries", href: "/countries" },
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
