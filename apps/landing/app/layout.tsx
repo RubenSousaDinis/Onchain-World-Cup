@@ -14,9 +14,9 @@ const barlowCondensed = Barlow_Condensed({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
-  title: "Onchain World Cup | The World Cup, decided onchain",
+  title: "Onchain World Cup | Qualification Opens Soon",
   description:
-    "Support your country. Coordinate with fans worldwide. Crown the onchain champion — before the real World Cup even starts.",
+    "Back your country with ETH. Only top 48 qualify. Prize pool shared among winners. Early supporters shape the tournament.",
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Onchain World Cup | The World Cup, decided onchain",
-    description: "Support your country. Coordinate with fans worldwide.",
+    title: "Onchain World Cup | Qualification Opens Soon",
+    description: "Back your country with ETH. Only top 48 qualify. Early supporters shape the tournament.",
     images: [
       {
         url: "/splash_social.png",

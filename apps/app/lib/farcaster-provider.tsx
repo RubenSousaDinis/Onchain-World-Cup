@@ -53,12 +53,12 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
         }
 
         if (isInFarcaster) {
-          // Initialize Farcaster Mini App SDK
+          // Initialize Farcaster Frame SDK
           try {
-            const { sdk } = await import("@farcaster/miniapp-sdk")
+            const sdk = await import("@farcaster/frame-sdk")
 
-            // Notify SDK that app is ready (prevents infinite splash screen)
-            await sdk.actions.ready()
+            // Note: ready() is already called in FarcasterReady component
+            // This is just for additional context data if needed
 
             if (DEBUG) {
               console.log("[Farcaster] SDK initialized and ready() called")

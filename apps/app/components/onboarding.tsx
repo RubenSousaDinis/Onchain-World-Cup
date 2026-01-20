@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AddAppCTA } from "@/components/add-app-cta"
 
 interface OnboardingStep {
   title: string
@@ -329,6 +330,12 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             <p className="text-xs lg:text-sm text-foreground/80">
               <strong className="text-accent">💡 Tip:</strong> You can vote for multiple countries! If any of them qualify, you'll get a share of the prize pool.
             </p>
+          </div>
+
+          {/* Add App CTA */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <h3 className="text-sm font-bold mb-3 text-foreground">Stay Updated</h3>
+            <AddAppCTA />
           </div>
         </div>
       ),
