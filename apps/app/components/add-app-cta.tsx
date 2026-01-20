@@ -26,10 +26,10 @@ export function AddAppCTA() {
 
     setIsLoading(true)
     try {
-      const sdk = await import("@farcaster/frame-sdk")
+      const { sdk } = await import("@farcaster/miniapp-sdk")
 
-      // Add the frame/mini app to Farcaster
-      await sdk.default.actions.addFrame()
+      // Add the mini app to Farcaster
+      await sdk.actions.addMiniApp()
 
       localStorage.setItem('miniapp-installed', 'true')
       setIsInstalled(true)

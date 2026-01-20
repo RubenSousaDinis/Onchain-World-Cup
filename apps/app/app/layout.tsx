@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
 import { FarcasterProvider } from "@/lib/farcaster-provider"
+import { FarcasterReady } from "@/components/farcaster-ready"
 import { QueryProvider } from "@/providers/query-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
@@ -83,6 +84,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={barlowCondensed.className}>
+        <FarcasterReady />
         <SkipToContent />
         <DemoBanner />
         <QueryProvider>
