@@ -15,13 +15,13 @@ export function HeroSection() {
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-7xl">Onchain World Cup</h1>
-          <p className="mb-4 text-2xl font-semibold text-primary md:text-3xl">The World Cup, decided onchain.</p>
+          <p className="mb-4 text-2xl font-semibold text-primary md:text-3xl">Qualification Phase Opens Soon</p>
           <p className="mb-12 text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Support your country.
+            Early supporters shape the tournament.
             <br />
-            Coordinate with fans worldwide.
+            Back your country with ETH. Top 48 qualify.
             <br />
-            Crown the onchain champion — before the real World Cup even starts.
+            Join the waitlist and be first to vote when qualification opens.
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -30,7 +30,7 @@ export function HeroSection() {
               className="bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground hover:bg-accent"
               asChild
             >
-              <a href={appUrl}>Join Qualification Phase</a>
+              <a href={appUrl}>Add App & Get Notified</a>
             </Button>
             <Button
               size="lg"
@@ -38,7 +38,7 @@ export function HeroSection() {
               className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-primary hover:text-primary-foreground bg-transparent transition-all"
               asChild
             >
-              <a href="#how-it-works">How it works</a>
+              <a href="#timeline">View Timeline</a>
             </Button>
           </div>
         </div>

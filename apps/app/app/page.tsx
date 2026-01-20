@@ -2,6 +2,7 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
+import { AddAppCTA } from "@/components/add-app-cta"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesData } from "@/lib/countries"
@@ -54,6 +55,11 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Add App CTA - Waitlist Phase */}
+          <div className="mb-4 lg:mb-6">
+            <AddAppCTA />
+          </div>
+
           {/* Current Phase Banner */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
             <div className="bg-secondary/40 p-4 lg:p-6">
@@ -62,9 +68,9 @@ export default function HomePage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" aria-hidden="true" />
                   <div>
                     <div className="text-xs lg:text-sm text-accent font-bold uppercase mb-1">Current Phase</div>
-                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Voting</h2>
+                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Opens Soon</h2>
                     <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-                      Vote for countries • Top 48 qualify for tournament
+                      Add the app to be notified when voting begins
                     </p>
                   </div>
                 </div>

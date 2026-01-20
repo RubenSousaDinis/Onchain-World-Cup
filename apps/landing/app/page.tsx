@@ -1,5 +1,6 @@
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
+import { TimelineSection } from "@/components/timeline-section"
 import { WhatIsSection } from "@/components/what-is-section"
 import { WhyExistsSection } from "@/components/why-exists-section"
 import { PhasesSection } from "@/components/phases-section"
@@ -15,6 +16,7 @@ export default function LandingPage() {
       <Header />
       <main id="main-content">
         <HeroSection />
+        <TimelineSection />
         <WhatIsSection />
         <WhyExistsSection />
         <PhasesSection />

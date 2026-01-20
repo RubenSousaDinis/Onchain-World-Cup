@@ -21,6 +21,7 @@
     "app:prisma:migrate": "npm run prisma:migrate --workspace=@onchain-world-cup/app"
   },
   "devDependencies": {
+    "@octokit/rest": "^22.0.1",
     "turbo": "^2.7.4"
   },
   "packageManager": "npm@10.9.2"
