@@ -10,6 +10,7 @@ export function AddAppCTA() {
   const [isInstalled, setIsInstalled] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [inFarcaster, setInFarcaster] = useState(false)
   const { isFrameContext, sdkReady } = useFarcaster()
 
   useEffect(() => {
@@ -19,11 +20,23 @@ export function AddAppCTA() {
 
     setIsInstalled(!!installed)
     setNotificationsEnabled(!!notifs)
+
+    // Additional client-side Farcaster detection
+    const checkFarcasterContext = () => {
+      if (typeof window === "undefined") return false
+
+      return !!(
+        (window as any).ethereum?.isFarcaster ||
+        (window as any).farcaster ||
+        navigator.userAgent.includes("Warpcast") ||
+        navigator.userAgent.includes("Farcaster")
+      )
+    }
+
+    setInFarcaster(checkFarcasterContext())
   }, [])
 
   const handleAddApp = async () => {
-    if (!sdkReady) return
-
     setIsLoading(true)
     try {
       const { sdk } = await import("@farcaster/miniapp-sdk")
@@ -46,8 +59,6 @@ export function AddAppCTA() {
   }
 
   const handleEnableNotifications = async () => {
-    if (!sdkReady) return
-
     setIsLoading(true)
     try {
       // For now, just mark as enabled in localStorage
@@ -61,8 +72,8 @@ export function AddAppCTA() {
     }
   }
 
-  // Not in Farcaster context - prompt to open in Warpcast
-  if (!isFrameContext) {
+  // Not in Farcaster context - prompt to open in Farcaster
+  if (!isFrameContext && !inFarcaster) {
     return (
       <div className="cm-panel p-6 text-center">
         <Wallet className="w-12 h-12 mx-auto mb-4 text-accent" />
@@ -76,7 +87,7 @@ export function AddAppCTA() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Open in Warpcast
+          Open in Farcaster Client
         </a>
       </div>
     )
@@ -113,10 +124,10 @@ export function AddAppCTA() {
       {!isInstalled ? (
         <button
           onClick={handleAddApp}
-          disabled={isLoading || !sdkReady}
+          disabled={isLoading}
           className="cm-nav-tab px-6 py-3 w-full md:w-auto disabled:opacity-50"
         >
-          {isLoading ? "Adding..." : "Add to Farcaster"}
+          {isLoading ? "Adding..." : "Save App"}
         </button>
       ) : (
         <button

@@ -20,7 +20,7 @@ Your app must be deployed to your production domain first:
 
 ### Step 2: Get Your Farcaster ID (FID)
 
-1. Go to [Warpcast](https://warpcast.com)
+1. Go to [Farcaster client (e.g., Warpcast)](https://warpcast.com)
 2. Click on your profile
 3. Your FID is shown in the URL or profile details
 
@@ -73,7 +73,7 @@ Then redeploy to Vercel/your hosting platform.
 
 For local development and testing, you can use Farcaster Developer Mode:
 
-1. Open your app in Warpcast
+1. Open your app in a Farcaster client (Warpcast, etc.)
 2. Long press on the URL
 3. Select "Developer Mode"
 4. This bypasses signature verification for testing
@@ -92,11 +92,11 @@ Should return your manifest JSON with:
 - Valid `accountAssociation` (once signed)
 - Correct `frame` configuration with your domain
 
-### Test in Warpcast
+### Test in Farcaster Client
 
-1. Share your app URL in a Warpcast cast
+1. Share your app URL in a cast
 2. Click on the preview
-3. Click "Add to Warpcast" or "Open"
+3. Click "Add App" or "Open"
 4. App should load without errors
 
 ---
@@ -112,10 +112,10 @@ Should return your manifest JSON with:
 - ✅ **Already fixed** with FarcasterReady component
 - Ensure `sdk.actions.ready()` is called on app mount
 
-### App not showing in Warpcast
+### App not showing in Farcaster
 - Check manifest is accessible at `/.well-known/farcaster.json`
 - Verify all URLs in manifest are valid and accessible
-- Clear Warpcast cache (reinstall app)
+- Clear Farcaster client cache (reinstall app)
 
 ### "Domain mismatch" error
 - Signature must be generated for the exact domain
