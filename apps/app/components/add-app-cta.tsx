@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { Wallet, Bell } from "lucide-react"
-import { useFarcaster } from "@/lib/farcaster-provider"
 import { SupporterBadge } from "./supporter-badge"
 import { ShareButton } from "./share-button"
 
@@ -10,8 +9,7 @@ export function AddAppCTA() {
   const [isInstalled, setIsInstalled] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [inFarcaster, setInFarcaster] = useState(false)
-  const { isFrameContext, sdkReady } = useFarcaster()
+  const [inFarcaster, setInFarcaster] = useState<boolean | null>(null)
 
   useEffect(() => {
     // Check installation status from localStorage
@@ -21,19 +19,25 @@ export function AddAppCTA() {
     setIsInstalled(!!installed)
     setNotificationsEnabled(!!notifs)
 
-    // Additional client-side Farcaster detection
-    const checkFarcasterContext = () => {
-      if (typeof window === "undefined") return false
+    // Detect Farcaster context using SDK
+    const detectFarcasterContext = async () => {
+      try {
+        const { sdk } = await import("@farcaster/miniapp-sdk")
 
-      return !!(
-        (window as any).ethereum?.isFarcaster ||
-        (window as any).farcaster ||
-        navigator.userAgent.includes("Warpcast") ||
-        navigator.userAgent.includes("Farcaster")
-      )
+        // Try to get context - if this succeeds, we're in Farcaster
+        const context = await sdk.context
+        const isInFrame = !!context
+
+        console.log("[AddAppCTA] Farcaster context detected:", isInFrame, context)
+        setInFarcaster(isInFrame)
+      } catch (error) {
+        // Not in Farcaster context
+        console.log("[AddAppCTA] Not in Farcaster context:", error)
+        setInFarcaster(false)
+      }
     }
 
-    setInFarcaster(checkFarcasterContext())
+    detectFarcasterContext()
   }, [])
 
   const handleAddApp = async () => {
@@ -72,8 +76,18 @@ export function AddAppCTA() {
     }
   }
 
+  // Loading state while detecting Farcaster context
+  if (inFarcaster === null) {
+    return (
+      <div className="cm-panel p-6 text-center">
+        <div className="w-12 h-12 mx-auto mb-4 animate-pulse bg-primary/20 rounded-full" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
   // Not in Farcaster context - prompt to open in Farcaster
-  if (!isFrameContext && !inFarcaster) {
+  if (!inFarcaster) {
     return (
       <div className="cm-panel p-6 text-center">
         <Wallet className="w-12 h-12 mx-auto mb-4 text-accent" />
@@ -87,7 +101,7 @@ export function AddAppCTA() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Open in Farcaster Client
+          Open in Farcaster
         </a>
       </div>
     )
