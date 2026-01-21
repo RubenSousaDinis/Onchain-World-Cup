@@ -4,12 +4,14 @@ import { Wallet } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useNotifications } from "@/components/notifications"
 import { useEffect, useState } from "react"
+import { useFarcaster } from "@/lib/farcaster-provider"
 
 export function WalletConnectButton() {
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors, error: connectError } = useConnect()
   const { disconnect } = useDisconnect()
   const { success, error, info } = useNotifications()
+  const { isFrameContext } = useFarcaster()
   const [hasShownConnectedNotification, setHasShownConnectedNotification] = useState(false)
 
   // Show notification when wallet connects successfully
@@ -63,7 +65,12 @@ export function WalletConnectButton() {
     info("Wallet Disconnected", "You can reconnect anytime to place votes")
   }
 
+  // Don't show connect button in Farcaster - wallet should be auto-connected
   if (!isConnected) {
+    if (isFrameContext) {
+      return null
+    }
+
     return (
       <button
         onClick={handleConnect}
@@ -77,8 +84,9 @@ export function WalletConnectButton() {
 
   return (
     <button
-      onClick={handleDisconnect}
-      className="bg-accent text-accent-foreground px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2"
+      onClick={() => !isFrameContext && handleDisconnect()}
+      disabled={isFrameContext}
+      className="bg-accent text-accent-foreground px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2 disabled:opacity-70"
     >
       <Wallet className="w-4 h-4" />
       <div className="flex flex-col items-start">
