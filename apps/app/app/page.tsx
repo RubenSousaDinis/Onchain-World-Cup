@@ -3,7 +3,7 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { AddAppCTA } from "@/components/add-app-cta"
-import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award } from "lucide-react"
+import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesData } from "@/lib/countries"
 import {
@@ -80,7 +80,7 @@ export default function HomePage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
             <StatCard icon={Users} label="Active Voters" value={stats.activePlayers} formatValue />
             <StatCard icon={TrendingUp} label="Total Votes" value={stats.totalVotes} formatValue valueColor="green" />
             <StatCard
@@ -91,6 +91,17 @@ export default function HomePage() {
               className="col-span-2 lg:col-span-1"
             />
             <StatCard icon={Clock} label="Time Left" value="30d" className="col-span-2 lg:col-span-1" />
+          </div>
+
+          {/* View Full Statistics Button */}
+          <div className="mb-6 lg:mb-8">
+            <Link
+              href="/stats"
+              className="cm-nav-tab inline-flex items-center gap-2 px-4 py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform"
+            >
+              <BarChart3 className="w-5 h-5" aria-hidden="true" />
+              View Full Statistics
+            </Link>
           </div>
 
           {/* Main Content Grid */}

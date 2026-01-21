@@ -2,17 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Trophy, Calendar, Users, Wallet, BarChart3, Flag } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet, Flag } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const navItems = [
-  { icon: Home, label: "Home", href: "/" },
+  { icon: null, label: "Home", href: "/", isLogo: true },
   { icon: Flag, label: "Countries", href: "/countries" },
-  { icon: Trophy, label: "Qualify", href: "/qualification" },
-  { icon: Users, label: "Leaders", href: "/leaderboard" },
-  { icon: BarChart3, label: "Stats", href: "/stats" },
-  { icon: Wallet, label: "Votes", href: "/my-bets" },
+  { icon: Trophy, label: "Qualification", href: "/qualification" },
+  { icon: Users, label: "Leaderboard", href: "/leaderboard" },
+  { icon: Wallet, label: "My Votes", href: "/my-bets" },
 ]
 
 export function MobileNav() {
@@ -26,11 +25,11 @@ export function MobileNav() {
     <>
       {/* Mobile Bottom Navigation */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 cm-sidebar border-t border-border mobile-nav-safe"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 cm-sidebar border-t border-border mobile-nav-safe overflow-visible"
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="flex items-center justify-around px-2 py-2">
+        <div className="flex items-center justify-around px-2 py-2 relative">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive =
@@ -42,14 +41,24 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] ${
-                  isActive ? "bg-primary text-primary-foreground" : "text-sidebar-text"
+                className={`group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-sidebar-text hover:bg-secondary hover:text-secondary-foreground"
                 }`}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={`Navigate to ${item.label}`}
               >
-                <Icon className="w-6 h-6" aria-hidden="true" />
-                <span className="text-xs font-medium">{item.label}</span>
+                {item.isLogo ? (
+                  <div className="w-6 h-6 rounded-sm bg-primary flex items-center justify-center overflow-hidden pointer-events-none">
+                    <img src="/logo.png" alt="Onchain World Cup logo" className="w-full h-full object-contain p-0.5" />
+                  </div>
+                ) : (
+                  Icon && <Icon className="w-6 h-6" aria-hidden="true" />
+                )}
+                <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
+                  {item.label}
+                </span>
               </Link>
             )
           })}
@@ -58,28 +67,30 @@ export function MobileNav() {
           {!isFrameContext && !isConnected && !isAutoConnecting ? (
             <button
               onClick={() => connect({ connector: connectors[0] })}
-              className="flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
+              className="group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
               aria-label="Connect wallet"
             >
               <Wallet className="w-6 h-6" aria-hidden="true" />
-              <span className="text-xs font-medium">Connect</span>
+              <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
+                CONNECT
+              </span>
             </button>
           ) : isConnected ? (
             <button
               onClick={() => !isFrameContext && disconnect()}
               disabled={isFrameContext}
-              className="flex flex-col items-center gap-1 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
+              className="group relative flex flex-col items-center gap-1 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
               aria-label={`Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`}
             >
               <Wallet className="w-6 h-6" aria-hidden="true" />
-              <span className="text-xs font-medium truncate max-w-[60px]">
-                {address?.slice(0, 4)}...{address?.slice(-2)}
+              <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
+                {address?.slice(0, 6)}...{address?.slice(-4)}
               </span>
             </button>
           ) : isAutoConnecting ? (
             <div className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground" role="status" aria-live="polite">
               <Wallet className="w-6 h-6" aria-hidden="true" />
-              <span className="text-xs font-medium">Connecting...</span>
+              <span className="text-xs font-medium text-center leading-tight opacity-0">Connecting...</span>
             </div>
           ) : null}
         </div>
