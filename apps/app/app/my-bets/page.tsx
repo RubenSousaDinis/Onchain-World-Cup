@@ -2,11 +2,12 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, Eye } from "lucide-react"
+import { Clock, Eye } from "lucide-react"
 import { useAccount } from "wagmi"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
+import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { useState } from "react"
 import { NoVotesEmpty, EmptyState } from "@/components/states"
 
@@ -172,6 +173,9 @@ export default function MyBetsPage() {
             </p>
           </div>
         </div>
+
+        {/* Farcaster User Info */}
+        <FarcasterUserInfo className="mb-6 lg:mb-8" />
 
         {!isConnected && (
           <div className="cm-panel rounded-sm p-4 mb-6 border-2 border-accent bg-accent/10">

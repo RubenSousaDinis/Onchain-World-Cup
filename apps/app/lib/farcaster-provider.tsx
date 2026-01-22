@@ -11,8 +11,12 @@ interface FarcasterContextType {
   isFarcasterMiniApp: boolean
   fid?: number
   username?: string
+  displayName?: string
+  pfpUrl?: string
   isAutoConnecting: boolean
   sdkReady: boolean
+  error?: string
+  isLoading: boolean
 }
 
 const FarcasterContext = createContext<FarcasterContextType>({
@@ -20,6 +24,7 @@ const FarcasterContext = createContext<FarcasterContextType>({
   isFarcasterMiniApp: false,
   isAutoConnecting: false,
   sdkReady: false,
+  isLoading: true,
 })
 
 export function useFarcaster() {
@@ -32,6 +37,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     isFarcasterMiniApp: false,
     isAutoConnecting: false,
     sdkReady: false,
+    isLoading: true,
   })
   const { connect, connectors } = useConnect()
   const { isConnected } = useAccount()
@@ -58,17 +64,34 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
             const sdk = await import("@farcaster/frame-sdk")
 
             // Note: ready() is already called in FarcasterReady component
-            // This is just for additional context data if needed
+            // Fetch user context data from SDK
+            const sdkContext = await sdk.context
 
             if (DEBUG) {
-              console.log("[Farcaster] SDK initialized and ready() called")
+              console.log("[Farcaster] SDK initialized with context:", sdkContext)
+            }
+
+            // Extract user info from SDK context
+            const userInfo = sdkContext?.user
+            const fid = userInfo?.fid
+            const username = userInfo?.username
+            const displayName = userInfo?.displayName
+            const pfpUrl = userInfo?.pfpUrl
+
+            if (DEBUG) {
+              console.log("[Farcaster] User info:", { fid, username, displayName, pfpUrl })
             }
 
             setContext({
               isFrameContext: true,
               isFarcasterMiniApp: true,
+              fid,
+              username,
+              displayName,
+              pfpUrl,
               isAutoConnecting: true,
               sdkReady: true,
+              isLoading: false,
             })
 
             // Auto-connect wallet if in Farcaster and not already connected
@@ -101,6 +124,8 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
               isFarcasterMiniApp: false,
               isAutoConnecting: false,
               sdkReady: false,
+              error: sdkError instanceof Error ? sdkError.message : "SDK initialization failed",
+              isLoading: false,
             })
           }
         } else {
@@ -113,6 +138,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
             isFarcasterMiniApp: false,
             isAutoConnecting: false,
             sdkReady: false,
+            isLoading: false,
           })
         }
       } catch (error) {
@@ -122,6 +148,8 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
           isFarcasterMiniApp: false,
           isAutoConnecting: false,
           sdkReady: false,
+          error: error instanceof Error ? error.message : "Context check failed",
+          isLoading: false,
         })
       }
     }

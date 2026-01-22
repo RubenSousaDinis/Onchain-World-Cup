@@ -3,6 +3,7 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { AddAppCTA } from "@/components/add-app-cta"
+import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesData } from "@/lib/countries"
@@ -59,6 +60,9 @@ export default function HomePage() {
           <div className="mb-4 lg:mb-6">
             <AddAppCTA />
           </div>
+
+          {/* Farcaster User Info */}
+          <FarcasterUserInfo variant="compact" className="mb-4 lg:mb-6" />
 
           {/* Current Phase Banner */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
