@@ -9,7 +9,6 @@
     "name": "Onchain World Cup",
     "iconUrl": "https://app.onchainworldcup.xyz/logo.png",
     "homeUrl": "https://app.onchainworldcup.xyz",
-    "imageUrl": "https://app.onchainworldcup.xyz/splash_social.png",
     "splashImageUrl": "https://app.onchainworldcup.xyz/splash_social.png",
     "splashBackgroundColor": "#0a1628",
     "webhookUrl": "https://app.onchainworldcup.xyz/api/farcaster/webhook"

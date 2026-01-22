@@ -96,25 +96,46 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
 
             // Auto-connect wallet if in Farcaster and not already connected
             if (!isConnected) {
-              // Prefer Coinbase Wallet for Farcaster
+              // In Farcaster, the embedded wallet appears as an injected provider
+              // Priority: injected (Farcaster embedded wallet) > Coinbase Wallet
+              const injectedConnector = connectors.find((c) => c.type === "injected")
               const coinbaseConnector = connectors.find((c) => c.name === "Coinbase Wallet")
-              if (coinbaseConnector) {
+              const connectorToUse = injectedConnector || coinbaseConnector
+
+              if (connectorToUse) {
                 try {
-                  await connect({ connector: coinbaseConnector })
+                  await connect({ connector: connectorToUse })
                   if (DEBUG) {
-                    console.log("[Farcaster] Wallet auto-connected")
+                    console.log("[Farcaster] Wallet auto-connected using:", connectorToUse.name)
                   }
                   setContext((prev) => ({ ...prev, isAutoConnecting: false }))
                 } catch (error) {
+                  console.error("[Farcaster] Auto-connect failed:", error)
                   if (DEBUG) {
-                    console.log("[Farcaster] Auto-connect failed:", error)
+                    console.log("[Farcaster] Available connectors:", connectors.map(c => ({ name: c.name, type: c.type })))
                   }
-                  setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+                  setContext((prev) => ({
+                    ...prev,
+                    isAutoConnecting: false,
+                    error: `Wallet auto-connect failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                  }))
                 }
               } else {
-                setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+                console.warn("[Farcaster] No suitable wallet connector found")
+                if (DEBUG) {
+                  console.log("[Farcaster] Available connectors:", connectors.map(c => ({ name: c.name, type: c.type })))
+                }
+                setContext((prev) => ({
+                  ...prev,
+                  isAutoConnecting: false,
+                  error: 'No wallet connector available',
+                }))
               }
             } else {
+              // Already connected
+              if (DEBUG) {
+                console.log("[Farcaster] Wallet already connected")
+              }
               setContext((prev) => ({ ...prev, isAutoConnecting: false }))
             }
           } catch (sdkError) {
