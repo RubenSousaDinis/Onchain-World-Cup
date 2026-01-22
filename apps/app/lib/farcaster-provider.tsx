@@ -51,7 +51,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
         let sdkContext = null
 
         try {
-          const sdk = await import("@farcaster/frame-sdk")
+          const { sdk } = await import("@farcaster/miniapp-sdk")
           sdkContext = await sdk.context
           isInFarcaster = !!sdkContext
         } catch {
