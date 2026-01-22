@@ -29,7 +29,7 @@ export function FarcasterUserInfo({
     return null
   }
 
-  const profileUrl = username ? `https://warpcast.com/${username}` : `https://warpcast.com/~/profiles/${fid}`
+  const profileUrl = username ? `https://farcaster.xyz/${username}` : `https://farcaster.xyz/~/profiles/${fid}`
 
   // Compact variant - just username and avatar
   if (variant === "compact") {
