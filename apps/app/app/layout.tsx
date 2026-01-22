@@ -9,6 +9,7 @@ import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { DemoBanner } from "@/components/demo-banner"
+import { generateMiniAppMetadata } from "@/lib/utils/miniapp-metadata"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -19,11 +20,16 @@ const barlowCondensed = Barlow_Condensed({
   display: "swap",
 })
 
+// Generate Farcaster Mini App metadata using utility
+const miniAppMetadata = generateMiniAppMetadata({
+  title: "Onchain World Cup | Vote on World Cup 2026",
+  description: "Vote on World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",
+  buttonTitle: "Open App",
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
-  title: "Live Matches | Crypto World Cup 2026",
-  description:
-    "Vote on live World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",
+  ...miniAppMetadata,
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -44,36 +50,7 @@ export const metadata: Metadata = {
       },
     ],
   },
-  openGraph: {
-    title: "Live Matches | Crypto World Cup 2026",
-    description: "Vote on live World Cup 2026 matches with ETH.",
-    images: [
-      {
-        url: "/splash_social.png",
-        width: 1200,
-        height: 1200,
-        alt: "Onchain World Cup - The World Cup, decided onchain",
-      },
-    ],
-  },
-  other: {
-    // Farcaster Mini App meta tag
-    "fc:miniapp": JSON.stringify({
-      version: "1",
-      imageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash_social.png`,
-      button: {
-        title: "Vote on Matches",
-        action: {
-          type: "launch_frame",
-          name: "Onchain World Cup",
-          url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app",
-          splashImageUrl: `${process.env.NEXT_PUBLIC_APP_DOMAIN || "https://your-domain.vercel.app"}/splash_social.png`,
-          splashBackgroundColor: "#0a1628",
-        },
-      },
-    }),
-  },
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
