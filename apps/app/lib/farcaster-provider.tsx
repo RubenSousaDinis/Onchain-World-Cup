@@ -46,35 +46,37 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     // Check if we're in a Farcaster Mini App context
     const checkFarcasterContext = async () => {
       try {
-        // Detect if running in Farcaster context
-        const isInFarcaster =
-          typeof window !== "undefined" &&
-          ((window as unknown as { ethereum?: { isFarcaster?: boolean }; farcaster?: unknown }).ethereum?.isFarcaster ||
-            (window as unknown as { ethereum?: { isFarcaster?: boolean }; farcaster?: unknown }).farcaster ||
-            navigator.userAgent.includes("Warpcast") ||
-            navigator.userAgent.includes("Farcaster"))
+        // Use SDK context API for reliable detection (same method as AddAppCTA)
+        let isInFarcaster = false
+        let sdkContext = null
+
+        try {
+          const { sdk } = await import("@farcaster/miniapp-sdk")
+          sdkContext = await sdk.context
+          isInFarcaster = !!sdkContext
+        } catch {
+          // SDK not available or context failed - not in Farcaster
+          isInFarcaster = false
+        }
 
         // Always log detection result for debugging
         console.log("[FarcasterProvider] Context detection:", {
           isInFarcaster,
           connectors: connectors.length,
           isConnected,
+          hasContext: !!sdkContext,
           userAgent: navigator.userAgent.substring(0, 50)
         })
 
         if (DEBUG) {
-          console.log("[Farcaster] Detection:", { isInFarcaster, userAgent: navigator.userAgent })
+          console.log("[Farcaster] Detection:", { isInFarcaster, sdkContext })
         }
 
-        if (isInFarcaster) {
-          // Initialize Farcaster Frame SDK
+        if (isInFarcaster && sdkContext) {
+          // We're in Farcaster and have SDK context
+          console.log("[FarcasterProvider] ✅ Farcaster context detected! Initializing...")
+
           try {
-            const sdk = await import("@farcaster/frame-sdk")
-
-            // Note: ready() is already called in FarcasterReady component
-            // Fetch user context data from SDK
-            const sdkContext = await sdk.context
-
             if (DEBUG) {
               console.log("[Farcaster] SDK initialized with context:", sdkContext)
             }
@@ -85,6 +87,8 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
             const username = userInfo?.username
             const displayName = userInfo?.displayName
             const pfpUrl = userInfo?.pfpUrl
+
+            console.log("[FarcasterProvider] User info extracted:", { fid, username, displayName, pfpUrl })
 
             if (DEBUG) {
               console.log("[Farcaster] User info:", { fid, username, displayName, pfpUrl })
@@ -155,14 +159,14 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
               console.log("[FarcasterProvider] Wallet already connected, skipping auto-connect")
               setContext((prev) => ({ ...prev, isAutoConnecting: false }))
             }
-          } catch (sdkError) {
-            console.error("[Farcaster] SDK initialization failed:", sdkError)
+          } catch (walletError) {
+            console.error("[FarcasterProvider] Error in Farcaster initialization:", walletError)
             setContext({
               isFrameContext: true,
-              isFarcasterMiniApp: false,
+              isFarcasterMiniApp: true,
               isAutoConnecting: false,
-              sdkReady: false,
-              error: sdkError instanceof Error ? sdkError.message : "SDK initialization failed",
+              sdkReady: true,
+              error: walletError instanceof Error ? walletError.message : "Initialization error",
               isLoading: false,
             })
           }
