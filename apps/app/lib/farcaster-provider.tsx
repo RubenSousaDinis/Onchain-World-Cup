@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react"
 import { useConnect, useAccount } from "wagmi"
 
 // Debug logging - only enable in development
@@ -41,6 +41,9 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
   })
   const { connect, connectors } = useConnect()
   const { isConnected } = useAccount()
+
+  // Track if we've already attempted connection to prevent double-connecting
+  const connectionAttempted = useRef(false)
 
   useEffect(() => {
     // Check if we're in a Farcaster Mini App context
@@ -108,12 +111,22 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
 
             // Auto-connect wallet if in Farcaster and not already connected
             if (!isConnected) {
+              // Prevent double-connecting
+              if (connectionAttempted.current) {
+                console.log("[FarcasterProvider] Connection already attempted, skipping")
+                setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+                return
+              }
+
               // Check if connectors are available yet
               if (connectors.length === 0) {
                 console.log("[FarcasterProvider] No connectors available yet, will retry when connectors load")
                 setContext((prev) => ({ ...prev, isAutoConnecting: true }))
                 return
               }
+
+              // Mark that we're attempting connection
+              connectionAttempted.current = true
 
               // In Farcaster, the embedded wallet appears as an injected provider
               // Priority: injected (Farcaster embedded wallet) > Coinbase Wallet
@@ -134,12 +147,16 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
               if (connectorToUse) {
                 try {
                   console.log("[FarcasterProvider] Calling connect() with:", connectorToUse.name)
+                  // Note: In Farcaster, this will prompt user to approve connection
+                  // The Farcaster embedded wallet requires explicit user approval
                   await connect({ connector: connectorToUse })
                   console.log("[FarcasterProvider] Wallet connected successfully using:", connectorToUse.name)
                   setContext((prev) => ({ ...prev, isAutoConnecting: false }))
                 } catch (error) {
                   console.error("[FarcasterProvider] Auto-connect failed:", error)
                   console.log("[FarcasterProvider] Available connectors after error:", connectors.map(c => ({ name: c.name, type: c.type })))
+                  // Reset flag on error so user can retry
+                  connectionAttempted.current = false
                   setContext((prev) => ({
                     ...prev,
                     isAutoConnecting: false,
@@ -148,6 +165,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
                 }
               } else {
                 console.warn("[FarcasterProvider] No suitable wallet connector found. Available:", connectors.map(c => ({ name: c.name, type: c.type })))
+                connectionAttempted.current = false
                 setContext((prev) => ({
                   ...prev,
                   isAutoConnecting: false,
@@ -157,6 +175,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
             } else {
               // Already connected
               console.log("[FarcasterProvider] Wallet already connected, skipping auto-connect")
+              connectionAttempted.current = true // Mark as attempted since we're already connected
               setContext((prev) => ({ ...prev, isAutoConnecting: false }))
             }
           } catch (walletError) {
