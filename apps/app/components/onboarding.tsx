@@ -55,109 +55,53 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const steps: OnboardingStep[] = [
     {
       title: "Welcome to Onchain World Cup!",
-      description: "A global football competition decided by you",
+      description: "Community-driven football decided by your votes",
       icon: Trophy,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">
-            This isn't your regular World Cup - it's a community-driven football competition where YOU decide the
-            winners!
-          </p>
-          <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Support your favorite countries with real money</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>The community votes determine ALL match outcomes</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Win big if your team comes out on top</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Early supporters get better rewards</span>
-            </li>
-          </ul>
-
           <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-xs lg:text-sm text-foreground/80">
-              <strong className="text-accent">Not based on real football:</strong> Results are 100% decided by the
-              community, not what happens on the pitch!
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "The Competition Journey",
-      description: "From qualification to champion",
-      icon: Flag,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-5 h-5 text-accent" />
-              <span className="text-sm font-bold text-accent">CURRENT PHASE: QUALIFICATION</span>
-            </div>
-            <p className="text-xs lg:text-sm text-foreground/80">
-              Countries compete for 48 tournament spots. Vote for your favorites - the top 48 by vote count qualify!
-            </p>
-            <p className="text-xs lg:text-sm text-foreground/70 mt-2">
-              <strong>How it works:</strong> Each country has its own vote count. The 48 countries with the most votes advance to the main tournament.
+            <p className="text-sm text-foreground/80">
+              <strong className="text-accent">Not based on real football!</strong> Results are 100% decided by community votes, not what happens on the pitch.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs lg:text-sm font-semibold text-foreground">Three Amazing Tournaments:</p>
-            <div className="space-y-2">
-              <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs lg:text-sm font-bold">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-foreground">How it works in 3 steps:</p>
+            <ol className="space-y-2 text-sm">
+              <li className="flex gap-2">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
                   1
+                </span>
+                <div>
+                  <strong>Connect wallet</strong> - Use Coinbase, MetaMask, or any crypto wallet
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-green-400">Qualification (Now!)</div>
-                  <div className="text-xs lg:text-sm text-foreground/70">192 countries compete → Top 48 advance</div>
-                </div>
-              </div>
-              <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
+              </li>
+              <li className="flex gap-2">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
                   2
+                </span>
+                <div>
+                  <strong>Buy votes</strong> - Support your favorite countries with ETH
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">Onchain World Cup</div>
-                  <div className="text-xs lg:text-sm text-foreground/70">
-                    The 48 qualified countries compete in our own tournament!
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2 items-start">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
+              </li>
+              <li className="flex gap-2">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
                   3
+                </span>
+                <div>
+                  <strong>Win prizes</strong> - Share the prize pool if your countries qualify
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold">Real World Cup Format</div>
-                  <div className="text-xs lg:text-sm text-foreground/70">
-                    Follows actual 2026 World Cup groups - but YOU vote on every match!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs lg:text-sm text-foreground/80">
-              <strong className="text-primary">⚽ Two parallel tournaments:</strong> After qualification, vote in BOTH
-              the Onchain World Cup AND a tournament that mirrors the real 2026 World Cup format!
-            </p>
+              </li>
+            </ol>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs lg:text-sm text-green-300">
-              <strong>🎯 Get started now</strong> in the qualification phase and follow your countries all the way to
-              the final!
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="w-5 h-5 text-green-400" />
+              <span className="text-sm font-bold text-green-400">CURRENT: QUALIFICATION</span>
+            </div>
+            <p className="text-sm text-green-300">
+              192 countries compete for 48 tournament spots. Vote for your favorites - top 48 by vote count qualify!
             </p>
           </div>
         </div>
@@ -165,103 +109,40 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "Vote Early, Pay Less",
-      description: "Prices increase linearly as more people vote",
+      description: "Earlier voters get more votes for less ETH",
       icon: Clock,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">
-            Like early bird tickets to a match - the earlier you vote, the cheaper it is! Each vote increases the price for the next one.
-          </p>
-
           <div className="bg-secondary/50 rounded-sm p-4 border border-border">
             <div className="text-center space-y-2">
               <div className="text-2xl font-bold text-green-400">0.001 ETH</div>
-              <div className="text-xs lg:text-sm text-foreground/70">First vote (Best value!)</div>
+              <div className="text-sm text-foreground/70">First vote</div>
               <div className="my-2">
                 <TrendingUp className="w-6 h-6 mx-auto text-muted-foreground" />
               </div>
-              <div className="text-2xl font-bold text-orange-400">0.0015+ ETH</div>
-              <div className="text-xs lg:text-sm text-foreground/70">Each additional vote costs +0.0005 ETH</div>
+              <div className="text-2xl font-bold text-orange-400">+0.0005 ETH</div>
+              <div className="text-sm text-foreground/70">Per additional vote</div>
             </div>
           </div>
 
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
-              <span>
-                <strong className="text-foreground">Linear pricing:</strong> Price = 0.001 ETH + (vote count × 0.0005 ETH)
-              </span>
+              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+              <span>Each country has its own vote count and pricing</span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>
-                <strong className="text-foreground">Per country:</strong> Each country has its own vote count and pricing
-              </span>
+              <span>More popular countries = higher prices</span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>
-                <strong className="text-foreground">Why?</strong> Early supporters get more votes for their money
-              </span>
+              <span>Early voters get more votes for their money</span>
             </li>
           </ul>
 
-          <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs lg:text-sm text-green-300">
-              <strong>⏰ Smart tip:</strong> Vote early for your country to get the best prices. The more popular a country becomes, the more expensive votes get!
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "How to Vote",
-      description: "Support your team in 3 easy steps",
-      icon: DollarSign,
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-foreground/80">Getting started is simple:</p>
-
-          <ol className="space-y-3 text-sm">
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
-                1
-              </span>
-              <div>
-                <div className="font-semibold mb-1">Set Up Payment</div>
-                <div className="text-xs lg:text-sm text-foreground/70">
-                  Connect your crypto wallet (like Coinbase or MetaMask). New to crypto? We'll guide you!
-                </div>
-              </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
-                2
-              </span>
-              <div>
-                <div className="font-semibold mb-1">Pick Your Country</div>
-                <div className="text-xs lg:text-sm text-foreground/70">
-                  Browse countries and see current support levels. Choose who you want to back!
-                </div>
-              </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs lg:text-sm font-bold">
-                3
-              </span>
-              <div>
-                <div className="font-semibold mb-1">Buy Votes & Watch</div>
-                <div className="text-xs lg:text-sm text-foreground/70">
-                  Decide how much to spend, confirm your purchase, and watch the competition unfold!
-                </div>
-              </div>
-            </li>
-          </ol>
-
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <p className="text-xs lg:text-sm text-foreground/80">
-              <strong className="text-primary">💡 First time?</strong> You can browse everything without payment to
-              see how it works!
+          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
+            <p className="text-sm text-foreground/80">
+              <strong className="text-accent">After qualification:</strong> Two parallel tournaments - Onchain World Cup with 48 qualified countries, plus a tournament mirroring the real 2026 World Cup format!
             </p>
           </div>
         </div>
@@ -269,72 +150,52 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     },
     {
       title: "Winning & Prizes",
-      description: "How payouts work in the qualification phase",
+      description: "Share the prize pool when your countries qualify",
       icon: Trophy,
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-foreground/80">If your country qualifies (top 48), you share the unified prize pool!</p>
-
-          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs lg:text-sm text-foreground/70 mb-2">How the money is split:</div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
-                    90% Prize Pool
-                  </div>
-                  <div className="w-20 h-10 bg-muted rounded-sm flex items-center justify-center text-sm font-bold text-foreground/70">
-                    10% Fee
-                  </div>
-                </div>
+          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
+                90% Prize Pool
               </div>
-              <div className="mt-3 pt-3 border-t border-border">
-                <p className="text-xs text-foreground/70">
-                  <strong>Unified Pool:</strong> All 48 qualified countries share one prize pool. Your share depends on your total votes across all qualified countries.
-                </p>
+              <div className="w-20 h-10 bg-muted rounded-sm flex items-center justify-center text-sm font-bold text-foreground/70">
+                10% Fee
               </div>
             </div>
+            <p className="text-sm text-foreground/70 mt-2">
+              All 48 qualified countries share one unified prize pool
+            </p>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground">Your share depends on:</p>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Your payout depends on:</p>
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                <span>
-                  <strong>Your votes for qualified countries</strong> - Sum of all your votes for any of the top 48
-                </span>
+                <span>Your total votes for any of the top 48 countries</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                <span>
-                  <strong>Total qualified votes</strong> - All votes across all 48 qualified countries
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                <span>
-                  <strong>Size of prize pool</strong> - 90% of all ETH collected (after platform fee)
-                </span>
+                <span>Total votes across all qualified countries</span>
               </li>
             </ul>
           </div>
 
           <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-xs lg:text-sm text-green-300">
-              <strong>💰 Formula:</strong> Your payout = (Your qualified votes / Total qualified votes) × Prize pool
+            <p className="text-sm text-green-300">
+              <strong>Formula:</strong> Your payout = (Your qualified votes / Total qualified votes) × Prize pool
             </p>
           </div>
 
           <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-xs lg:text-sm text-foreground/80">
-              <strong className="text-accent">💡 Tip:</strong> You can vote for multiple countries! If any of them qualify, you'll get a share of the prize pool.
+            <p className="text-sm text-foreground/80">
+              <strong className="text-accent">Tip:</strong> Vote for multiple countries to increase your chances!
             </p>
           </div>
 
-          {/* Add App CTA */}
-          <div className="mt-6 pt-6 border-t border-border">
-            <h3 className="text-sm font-bold mb-3 text-foreground">Stay Updated</h3>
+          <div className="mt-4 pt-4 border-t border-border">
+            <h3 className="text-sm font-bold mb-2 text-foreground">Stay Updated</h3>
             <AddAppCTA />
           </div>
         </div>
