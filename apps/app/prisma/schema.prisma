@@ -197,3 +197,22 @@ model UserStat {
   @@index([rank])
   @@map("user_stats")
 }
+
+// Farcaster notification tokens for Mini App users
+model FarcasterNotificationToken {
+  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fid              Int       // Farcaster ID
+  walletAddress    String?   @map("wallet_address") // Optional wallet address if linked
+  notificationUrl  String    @map("notification_url") // URL to POST notifications
+  token            String    // Authentication token
+  enabled          Boolean   @default(true) // Whether notifications are enabled
+  miniappAddedAt   DateTime  @map("miniapp_added_at") @db.Timestamptz(6) // When user added the Mini App
+  lastNotifiedAt   DateTime? @map("last_notified_at") @db.Timestamptz(6) // Last notification sent
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([fid, token]) // Each FID can have multiple tokens from different clients
+  @@index([fid])
+  @@index([enabled])
+  @@map("farcaster_notification_tokens")
+}

@@ -24,7 +24,7 @@ const barlowCondensed = Barlow_Condensed({
 const miniAppMetadata = generateMiniAppMetadata({
   title: "Onchain World Cup | Vote on World Cup 2026",
   description: "Vote on World Cup 2026 matches with ETH. Real-time crypto betting on Base network with dynamic pricing.",
-  buttonTitle: "Open App",
+  buttonTitle: "⚽ Vote Now",
 })
 
 export const metadata: Metadata = {

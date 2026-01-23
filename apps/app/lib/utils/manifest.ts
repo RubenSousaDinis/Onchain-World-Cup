@@ -17,6 +17,7 @@ export interface FrameManifest {
   iconUrl: string
   homeUrl: string
   imageUrl?: string
+  buttonTitle?: string
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
@@ -31,6 +32,7 @@ export interface ManifestConfig {
   appName: string
   appDomain: string
   iconUrl?: string
+  buttonTitle?: string
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
@@ -51,6 +53,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     appName,
     appDomain,
     iconUrl,
+    buttonTitle = "Open App",
     splashImageUrl,
     splashBackgroundColor = "#0a1628",
     webhookUrl,
@@ -78,6 +81,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       iconUrl: icon,
       homeUrl: home,
       imageUrl: splash,
+      buttonTitle,
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
@@ -172,6 +176,7 @@ export function getManifestConfig(): ManifestConfig {
   return {
     appName: "Onchain World Cup",
     appDomain,
+    buttonTitle: "⚽ Vote Now",
     splashBackgroundColor: "#0a1628",
     // Account association should be set via environment variables
     // These are generated using Farcaster's signing tool
