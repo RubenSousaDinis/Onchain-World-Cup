@@ -2,13 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, Flag } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet } from "lucide-react"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
-  { icon: Flag, label: "Countries", href: "/countries" },
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Wallet, label: "My Votes", href: "/my-bets" },

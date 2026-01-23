@@ -48,41 +48,41 @@ export function TimelineSection() {
 
         {/* Desktop: Horizontal Timeline */}
         <div className="hidden lg:block">
-          <div className="relative">
+          <div className="relative py-8">
             {/* Connection line */}
-            <div className="absolute left-0 right-0 top-12 h-1 bg-border" />
+            <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-border" />
             <div
-              className="absolute left-0 top-12 h-1 bg-primary transition-all duration-1000"
-              style={{ width: "0%" }}
+              className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-primary transition-all duration-1000"
+              style={{ width: "25%" }}
             />
 
-            <div className="grid grid-cols-4 gap-8">
+            <div className="relative grid grid-cols-4 gap-6">
               {milestones.map((milestone, index) => (
-                <div key={index} className="relative">
+                <div key={index} className="relative flex flex-col items-center">
                   {/* Dot */}
                   <div
-                    className={`relative z-10 mx-auto mb-6 flex h-6 w-6 items-center justify-center rounded-full border-4 ${
+                    className={`relative z-10 mb-6 flex h-8 w-8 items-center justify-center rounded-full border-4 ${
                       milestone.status === "upcoming"
                         ? "border-primary bg-primary"
                         : "border-border bg-background"
                     }`}
                   >
                     {milestone.status === "upcoming" && (
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground" />
+                      <div className="h-3 w-3 animate-pulse rounded-full bg-primary-foreground" />
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary">
+                  <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg">
                     <div
-                      className={`mb-2 text-sm font-semibold uppercase tracking-wide ${
+                      className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
                         milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
                       }`}
                     >
                       {milestone.date}
                     </div>
-                    <h3 className="mb-2 text-lg font-bold text-foreground">{milestone.title}</h3>
-                    <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                    <h3 className="mb-2 text-xl font-bold text-foreground">{milestone.title}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{milestone.description}</p>
                   </div>
                 </div>
               ))}
