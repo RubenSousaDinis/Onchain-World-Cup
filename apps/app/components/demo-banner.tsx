@@ -10,7 +10,7 @@ export function DemoBanner() {
 
   return (
     <div className="bg-gradient-to-r from-primary/20 to-accent/20 border-b-2 border-primary/50">
-      <div className="container mx-auto px-4 py-3">
+      <div className="lg:ml-24 px-4 lg:px-8 py-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
             <Info className="w-5 h-5 text-primary flex-shrink-0" />
@@ -24,7 +24,7 @@ export function DemoBanner() {
           </div>
           <button
             onClick={() => setIsVisible(false)}
-            className="flex-shrink-0 p-1 hover:bg-primary/20 rounded transition-colors"
+            className="flex-shrink-0 flex items-center justify-center p-1 hover:bg-primary/20 rounded transition-colors"
             aria-label="Dismiss"
           >
             <X className="w-4 h-4 text-foreground/70" />

@@ -2,7 +2,6 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { AddAppCTA } from "@/components/add-app-cta"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
 import Link from "next/link"
@@ -54,11 +53,6 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Add App CTA - Waitlist Phase */}
-          <div className="mb-4 lg:mb-6">
-            <AddAppCTA />
           </div>
 
           {/* Farcaster User Info */}
