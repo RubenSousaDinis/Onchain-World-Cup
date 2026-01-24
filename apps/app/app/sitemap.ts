@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://cryptoworldcup2026.com"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz"
 
   return [
     {
@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "hourly",
       priority: 1,
+    },
+    {
+      url: `${baseUrl}/qualification`,
+      lastModified: new Date(),
+      changeFrequency: "hourly",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/teams`,
@@ -29,9 +35,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/tournament`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/my-bets`,
       lastModified: new Date(),
       changeFrequency: "always",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/stats`,
+      lastModified: new Date(),
+      changeFrequency: "hourly",
       priority: 0.7,
     },
     {
