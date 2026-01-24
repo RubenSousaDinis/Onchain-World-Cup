@@ -9,6 +9,10 @@ if (!projectId) {
   console.warn('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set')
 }
 
+// Determine default chain based on environment
+const isProduction = process.env.NODE_ENV === 'production'
+const defaultChain = isProduction ? base : baseSepolia
+
 // Create Wagmi adapter
 export const wagmiAdapter = new WagmiAdapter({
   networks: [base, baseSepolia],
@@ -20,6 +24,7 @@ export const wagmiAdapter = new WagmiAdapter({
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
   networks: [base, baseSepolia],
+  defaultNetwork: defaultChain,
   projectId,
   metadata: {
     name: 'Onchain World Cup',
@@ -37,6 +42,7 @@ export const modal = createAppKit({
     '--w3m-accent': 'hsl(142.1 76.2% 36.3%)', // Primary green color
     '--w3m-border-radius-master': '2px', // Retro squared corners
   },
+  allowUnsupportedChain: false,
 })
 
 export const config = wagmiAdapter.wagmiConfig
