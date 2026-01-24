@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Trophy, Calendar, Users, Wallet } from "lucide-react"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
+import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const navItems = [
@@ -16,8 +17,8 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname()
   const { address, isConnected, chain } = useAccount()
-  const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
+  const { open } = useAppKit()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
 
   return (
@@ -65,16 +66,7 @@ export function MobileNav() {
           {/* Wallet Connection Button */}
           {!isFrameContext && !isConnected && !isAutoConnecting ? (
             <button
-              onClick={() => {
-                // Try injected wallet first (MetaMask, Rabby, Zerion, etc.)
-                const injectedConnector = connectors.find(c => c.type === 'injected')
-                if (injectedConnector) {
-                  connect({ connector: injectedConnector })
-                } else {
-                  // Fallback to first available connector
-                  connect({ connector: connectors[0] })
-                }
-              }}
+              onClick={() => open()}
               className="group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
               aria-label="Connect wallet"
             >

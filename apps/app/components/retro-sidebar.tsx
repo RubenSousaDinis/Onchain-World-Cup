@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
+import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const sidebarItems = [
@@ -17,8 +18,8 @@ const sidebarItems = [
 export function RetroSidebar() {
   const pathname = usePathname()
   const { address, isConnected, chain } = useAccount()
-  const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
+  const { open } = useAppKit()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
 
   return (
@@ -69,16 +70,7 @@ export function RetroSidebar() {
       <div className="w-full px-2">
         {!isFrameContext && !isConnected ? (
           <button
-            onClick={() => {
-              // Try injected wallet first (MetaMask, Rabby, Zerion, etc.)
-              const injectedConnector = connectors.find(c => c.type === 'injected')
-              if (injectedConnector) {
-                connect({ connector: injectedConnector })
-              } else {
-                // Fallback to first available connector
-                connect({ connector: connectors[0] })
-              }
-            }}
+            onClick={() => open()}
             className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
             aria-label="Connect wallet"
           >
