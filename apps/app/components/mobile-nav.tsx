@@ -18,7 +18,7 @@ export function MobileNav() {
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
-  const { isFrameContext, isAutoConnecting } = useFarcaster()
+  const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
 
   return (
     <>
@@ -79,11 +79,21 @@ export function MobileNav() {
               onClick={() => !isFrameContext && disconnect()}
               disabled={isFrameContext}
               className="group relative flex flex-col items-center gap-1 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
-              aria-label={`Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`}
+              aria-label={
+                isFrameContext && username
+                  ? `Farcaster user ${username}`
+                  : `Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`
+              }
             >
-              <Wallet className="w-6 h-6" aria-hidden="true" />
+              {isFrameContext && pfpUrl ? (
+                <div className="w-6 h-6 rounded-full overflow-hidden">
+                  <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <Wallet className="w-6 h-6" aria-hidden="true" />
+              )}
               <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
-                {address?.slice(0, 6)}...{address?.slice(-4)}
+                {isFrameContext && username ? username : `${address?.slice(0, 6)}...${address?.slice(-4)}`}
               </span>
             </button>
           ) : isAutoConnecting ? (
