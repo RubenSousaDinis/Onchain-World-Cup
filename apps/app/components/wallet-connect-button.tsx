@@ -1,16 +1,17 @@
 "use client"
 
 import { Wallet } from "lucide-react"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
+import { useAppKit } from "@reown/appkit/react"
 import { useNotifications } from "@/components/notifications"
 import { useEffect, useState } from "react"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 export function WalletConnectButton() {
   const { address, isConnected, chain } = useAccount()
-  const { connect, connectors, error: connectError } = useConnect()
   const { disconnect } = useDisconnect()
-  const { success, error, info } = useNotifications()
+  const { open } = useAppKit()
+  const { success, info } = useNotifications()
   const { isFrameContext } = useFarcaster()
   const [hasShownConnectedNotification, setHasShownConnectedNotification] = useState(false)
 
@@ -25,39 +26,8 @@ export function WalletConnectButton() {
     }
   }, [isConnected, address, chain, success, hasShownConnectedNotification])
 
-  // Show notification when connection fails
-  useEffect(() => {
-    if (connectError) {
-      const errorMessage = connectError.message || "Unable to connect wallet"
-
-      // Provide more helpful error messages
-      if (errorMessage.includes("Provider not found")) {
-        error(
-          "No Wallet Found",
-          "Please install MetaMask, Coinbase Wallet, or another Web3 wallet to continue"
-        )
-      } else if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
-        info("Connection Cancelled", "Wallet connection was cancelled")
-      } else {
-        error("Connection Failed", errorMessage)
-      }
-    }
-  }, [connectError, error, info])
-
   const handleConnect = () => {
-    if (connectors.length === 0) {
-      error("No Wallet Available", "Please install a Web3 wallet like MetaMask or Coinbase Wallet")
-      return
-    }
-
-    // Try to find the best connector to use
-    // Priority: Coinbase Wallet > Injected (MetaMask, etc.) > WalletConnect
-    const coinbaseConnector = connectors.find((c) => c.name.toLowerCase().includes("coinbase"))
-    const injectedConnector = connectors.find((c) => c.type === "injected")
-    const preferredConnector = coinbaseConnector || injectedConnector || connectors[0]
-
-    info("Connecting Wallet", "Please approve the connection request...")
-    connect({ connector: preferredConnector })
+    open()
   }
 
   const handleDisconnect = () => {

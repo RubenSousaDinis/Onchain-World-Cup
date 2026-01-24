@@ -19,17 +19,22 @@ export function useOnboarding() {
   // Fetch onboarding status from database
   const fetchOnboardingStatus = async (walletAddress: string) => {
     try {
-      const response = await fetch(`/api/users/${walletAddress}`)
+      const response = await fetch(`/api/users/${walletAddress}`, {
+        cache: 'no-store',
+      })
       if (!response.ok) {
-        throw new Error("Failed to fetch user data")
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.warn('[Onboarding] Failed to fetch user data:', errorData)
+        // Fall back to localStorage on error
+        return typeof window !== "undefined" ? localStorage.getItem(ONBOARDING_KEY) === "true" : false
       }
       const { data } = await response.json()
       // If timestamp exists (not null), onboarding is completed
       return data?.onboarding_completed_at != null
     } catch (error) {
-      console.error("Error fetching onboarding status:", error)
+      console.warn('[Onboarding] Network error fetching onboarding status, using localStorage fallback')
       // Fall back to localStorage on error
-      return localStorage.getItem(ONBOARDING_KEY) === "true"
+      return typeof window !== "undefined" ? localStorage.getItem(ONBOARDING_KEY) === "true" : false
     }
   }
 

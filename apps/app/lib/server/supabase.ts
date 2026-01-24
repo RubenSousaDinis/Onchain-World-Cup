@@ -20,26 +20,38 @@ let supabaseInstance: SupabaseClient | null = null
  * This client has full admin access - use only in API routes
  */
 export function getSupabaseClient(): SupabaseClient {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl) {
+    console.error('[Supabase] Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
     throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!supabaseKey) {
+    console.error('[Supabase] Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
   }
 
   // Singleton pattern - reuse client instance
   if (!supabaseInstance) {
-    supabaseInstance = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    )
+    console.log('[Supabase] Initializing client with URL:', supabaseUrl.substring(0, 30) + '...')
+
+    try {
+      supabaseInstance = createClient(
+        supabaseUrl,
+        supabaseKey,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+    } catch (error) {
+      console.error('[Supabase] Failed to create client:', error)
+      throw error
+    }
   }
 
   return supabaseInstance
@@ -118,6 +130,7 @@ export interface Database {
           matches_participated: number
           matches_won: number
           rank: number | null
+          onboarding_completed_at: string | null
           created_at: string
           updated_at: string
         }

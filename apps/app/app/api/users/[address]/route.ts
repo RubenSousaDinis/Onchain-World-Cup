@@ -22,9 +22,18 @@ export async function GET(
       .single()
 
     if (statsError && statsError.code !== 'PGRST116') {
-      console.error('Supabase error fetching user stats:', statsError)
+      console.error('Supabase error fetching user stats:', {
+        code: statsError.code,
+        message: statsError.message,
+        details: statsError.details,
+        hint: statsError.hint,
+      })
       return NextResponse.json(
-        { error: 'Failed to fetch user stats', details: statsError.message },
+        {
+          error: 'Failed to fetch user stats',
+          details: statsError.message,
+          code: statsError.code
+        },
         { status: 500 }
       )
     }

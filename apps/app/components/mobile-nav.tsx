@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Trophy, Calendar, Users, Wallet } from "lucide-react"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
+import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
 
 const navItems = [
@@ -16,8 +17,8 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname()
   const { address, isConnected, chain } = useAccount()
-  const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
+  const { open } = useAppKit()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
 
   return (
@@ -65,7 +66,7 @@ export function MobileNav() {
           {/* Wallet Connection Button */}
           {!isFrameContext && !isConnected && !isAutoConnecting ? (
             <button
-              onClick={() => connect({ connector: connectors[0] })}
+              onClick={() => open()}
               className="group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
               aria-label="Connect wallet"
             >
@@ -78,23 +79,32 @@ export function MobileNav() {
             <button
               onClick={() => !isFrameContext && disconnect()}
               disabled={isFrameContext}
-              className="group relative flex flex-col items-center gap-1 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
+              className="group relative flex flex-col items-center gap-0.5 py-2 px-2 rounded-sm transition-colors min-w-[44px] bg-accent text-accent-foreground disabled:opacity-70"
               aria-label={
                 isFrameContext && username
                   ? `Farcaster user ${username}`
                   : `Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`
               }
             >
-              {isFrameContext && pfpUrl ? (
-                <div className="w-6 h-6 rounded-full overflow-hidden">
-                  <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" />
-                </div>
+              {isFrameContext && (pfpUrl || username) ? (
+                <>
+                  {pfpUrl && (
+                    <div className="w-8 h-8 rounded-full overflow-hidden mb-0.5">
+                      <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <span className="text-[10px] font-semibold text-center leading-tight max-w-[60px] truncate">
+                    {displayName || username || "User"}
+                  </span>
+                </>
               ) : (
-                <Wallet className="w-6 h-6" aria-hidden="true" />
+                <>
+                  <Wallet className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                  <span className="text-[10px] font-semibold text-center leading-tight">
+                    {address?.slice(0, 4)}...{address?.slice(-3)}
+                  </span>
+                </>
               )}
-              <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
-                {isFrameContext && username ? username : `${address?.slice(0, 6)}...${address?.slice(-4)}`}
-              </span>
             </button>
           ) : isAutoConnecting ? (
             <div className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground" role="status" aria-live="polite">
