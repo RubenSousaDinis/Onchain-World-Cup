@@ -69,7 +69,16 @@ export function RetroSidebar() {
       <div className="w-full px-2">
         {!isFrameContext && !isConnected ? (
           <button
-            onClick={() => connect({ connector: connectors[0] })}
+            onClick={() => {
+              // Try injected wallet first (MetaMask, Rabby, Zerion, etc.)
+              const injectedConnector = connectors.find(c => c.type === 'injected')
+              if (injectedConnector) {
+                connect({ connector: injectedConnector })
+              } else {
+                // Fallback to first available connector
+                connect({ connector: connectors[0] })
+              }
+            }}
             className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
             aria-label="Connect wallet"
           >

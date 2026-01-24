@@ -65,7 +65,16 @@ export function MobileNav() {
           {/* Wallet Connection Button */}
           {!isFrameContext && !isConnected && !isAutoConnecting ? (
             <button
-              onClick={() => connect({ connector: connectors[0] })}
+              onClick={() => {
+                // Try injected wallet first (MetaMask, Rabby, Zerion, etc.)
+                const injectedConnector = connectors.find(c => c.type === 'injected')
+                if (injectedConnector) {
+                  connect({ connector: injectedConnector })
+                } else {
+                  // Fallback to first available connector
+                  connect({ connector: connectors[0] })
+                }
+              }}
               className="group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
               aria-label="Connect wallet"
             >
@@ -98,9 +107,9 @@ export function MobileNav() {
                 </>
               ) : (
                 <>
-                  <Wallet className="w-6 h-6" aria-hidden="true" />
-                  <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
-                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                  <Wallet className="w-5 h-5 mb-0.5" aria-hidden="true" />
+                  <span className="text-[10px] font-semibold text-center leading-tight">
+                    {address?.slice(0, 4)}...{address?.slice(-3)}
                   </span>
                 </>
               )}
