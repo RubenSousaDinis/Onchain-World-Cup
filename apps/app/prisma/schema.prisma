@@ -12,29 +12,21 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Countries competing in World Cup qualification
-model Country {
-  id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name                 String
-  code                 String   @unique // Two-letter country code (e.g., "BR", "AR")
-  flagEmoji            String   @map("flag_emoji")
-  fifaRank             Int?     @map("fifa_rank")
-  qualified            Boolean  @default(false)
-  totalVotes           Int      @default(0) @map("total_votes") // Total votes received
-  totalEth             String   @default("0") @map("total_eth") // Total ETH backing this country
-  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+// Aggregated voting statistics per country (static country data comes from lib/countries.ts)
+model CountryStats {
+  countryCode  String   @id @map("country_code") // Two-letter country code (e.g., "BR", "AR")
+  totalVotes   Int      @default(0) @map("total_votes") // Total votes received
+  totalEth     String   @default("0") @map("total_eth") // Total ETH backing this country
+  qualified    Boolean  @default(false) // Whether country qualified (top 48)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
-  qualificationVotes QualificationVote[]
-
-  @@index([code])
   @@index([totalVotes])
   @@index([qualified])
-  @@map("countries")
+  @@map("country_stats")
 }
 
-// Votes placed by users for countries to qualify
+// Individual votes placed by users for countries to qualify
 model QualificationVote {
   id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   countryCode  String   @map("country_code") // Two-letter country code
@@ -44,9 +36,6 @@ model QualificationVote {
   txHash       String   @unique @map("tx_hash")
   blockNumber  BigInt   @map("block_number")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  // Relations
-  country Country @relation(fields: [countryCode], references: [code], onDelete: Cascade)
 
   @@index([countryCode])
   @@index([voterAddress])
