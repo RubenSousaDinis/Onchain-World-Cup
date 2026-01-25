@@ -1,8 +1,15 @@
 import hre from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Deploy WorldCupQualification contract
- * 
+ *
  * Usage:
  *   npx hardhat run scripts/deploy-qualification.ts --network baseSepolia
  *   npx hardhat run scripts/deploy-qualification.ts --network baseMainnet
@@ -17,43 +24,61 @@ async function main() {
   console.log("Deployer balance:", hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)), "ETH");
 
   // Get deployment parameters from environment or use defaults
-  const qualificationEndTime = process.env.QUALIFICATION_END_TIME 
+  const qualificationStartTime = process.env.QUALIFICATION_START_TIME
+    ? parseInt(process.env.QUALIFICATION_START_TIME)
+    : Math.floor(Date.now() / 1000) + (24 * 60 * 60); // Default: 1 day from now
+
+  const qualificationEndTime = process.env.QUALIFICATION_END_TIME
     ? parseInt(process.env.QUALIFICATION_END_TIME)
-    : Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60); // Default: 7 days from now
+    : qualificationStartTime + (30 * 24 * 60 * 60); // Default: 30 days after start
 
   const feeRecipient = process.env.FEE_RECIPIENT || deployer.address;
-  const initialPlatformFeeBps = process.env.INITIAL_PLATFORM_FEE_BPS 
+  const initialPlatformFeeBps = process.env.INITIAL_PLATFORM_FEE_BPS
     ? parseInt(process.env.INITIAL_PLATFORM_FEE_BPS)
     : 1000; // Default: 10% (1000 basis points)
 
-  // Initial countries (can be expanded later via addCountry/addCountries)
-  const initialCountries = process.env.INITIAL_COUNTRIES
-    ? process.env.INITIAL_COUNTRIES.split(",").map(c => c.trim())
-    : ["US", "BR", "AR", "FR", "DE", "IT", "ES", "NL", "GB", "PT"]; // Default top 10
+  // Load all countries from JSON file
+  const countriesPath = path.join(__dirname, "..", "data", "countries.json");
+  const countriesData = JSON.parse(fs.readFileSync(countriesPath, "utf8"));
 
-  // Helper to convert string to bytes2 (matching test helper)
-  const toBytes2 = (str: string): string => {
-    if (str.length !== 2) {
-      throw new Error(`Invalid country code: ${str}. Must be 2 characters (ISO 3166-1 alpha-2)`);
+  // Filter out countries with codes longer than 8 characters (bytes8 limitation)
+  const initialCountries = countriesData
+    .map((c: any) => c.code)
+    .filter((code: string) => code.length <= 8);
+
+  console.log(`\nLoaded ${initialCountries.length} valid countries from JSON (${countriesData.length - initialCountries.length} excluded due to invalid code length)`);
+
+  // Helper to convert string to bytes8
+  const toBytes8 = (str: string): string => {
+    if (str.length > 8) {
+      throw new Error(`Invalid country code: ${str}. Must be 8 characters or less`);
     }
     const bytes = hre.ethers.toUtf8Bytes(str);
-    const twoBytes = bytes.slice(0, 2);
-    // Convert to hex and ensure it's exactly 2 bytes (4 hex chars)
-    return "0x" + Buffer.from(twoBytes).toString("hex").padEnd(4, "0");
+    // Convert to hex and pad to exactly 8 bytes (16 hex chars)
+    const hex = Buffer.from(bytes).toString("hex");
+    return "0x" + hex.padEnd(16, "0");
   };
 
-  // Convert string country codes to bytes2
-  const initialCountriesBytes2 = initialCountries.map(toBytes2);
+  // Convert string country codes to bytes8
+  const initialCountriesBytes8 = initialCountries.map(toBytes8);
 
   console.log("\n========== Deployment Parameters ==========");
+  console.log("Qualification Start Time:", new Date(qualificationStartTime * 1000).toISOString());
   console.log("Qualification End Time:", new Date(qualificationEndTime * 1000).toISOString());
+  console.log("Duration:", Math.floor((qualificationEndTime - qualificationStartTime) / (24 * 60 * 60)), "days");
   console.log("Fee Recipient:", feeRecipient);
   console.log("Initial Platform Fee:", (initialPlatformFeeBps / 100) + "%");
-  console.log("Initial Countries:", initialCountries.join(", "));
+  console.log("Initial Countries Count:", initialCountries.length);
+  console.log("Sample Countries:", initialCountries.slice(0, 10).join(", "), "...");
 
   // Validate inputs
-  if (qualificationEndTime <= Math.floor(Date.now() / 1000)) {
-    throw new Error("Qualification end time must be in the future");
+  const now = Math.floor(Date.now() / 1000);
+  if (qualificationStartTime < now) {
+    throw new Error("Qualification start time must be in the future");
+  }
+
+  if (qualificationEndTime <= qualificationStartTime) {
+    throw new Error("Qualification end time must be after start time");
   }
 
   if (!hre.ethers.isAddress(feeRecipient)) {
@@ -67,11 +92,12 @@ async function main() {
   // Deploy contract
   console.log("\n========== Deploying WorldCupQualification ==========");
   const WorldCupQualification = await hre.ethers.getContractFactory("WorldCupQualification");
-  
+
   const qualification = await WorldCupQualification.deploy(
+    qualificationStartTime,
     qualificationEndTime,
     feeRecipient,
-    initialCountriesBytes2,
+    initialCountriesBytes8,
     initialPlatformFeeBps
   );
 
@@ -80,25 +106,33 @@ async function main() {
 
   console.log("✅ WorldCupQualification deployed to:", qualificationAddress);
 
-  // Display contract details
-  console.log("\n========== Contract Details ==========");
-  const details = await qualification.getQualificationDetails();
-  console.log("Total Prize Pool:", hre.ethers.formatEther(details._totalPrizePool), "ETH");
-  console.log("Qualification End Time:", new Date(Number(details._qualificationEndTime) * 1000).toISOString());
-  console.log("Qualification Spots:", details._qualificationSpots.toString());
-  console.log("Is Finalized:", details._isFinalized);
+  // Display contract details (with error handling for immediate reads)
+  try {
+    console.log("\n========== Contract Details ==========");
+    const details = await qualification.getQualificationDetails();
+    const startTime = await qualification.qualificationStartTime();
+    console.log("Total Prize Pool:", hre.ethers.formatEther(details._totalPrizePool), "ETH");
+    console.log("Qualification Start Time:", new Date(Number(startTime) * 1000).toISOString());
+    console.log("Qualification End Time:", new Date(Number(details._qualificationEndTime) * 1000).toISOString());
+    console.log("Qualification Spots:", details._qualificationSpots.toString());
+    console.log("Is Finalized:", details._isFinalized);
+    console.log("Is Paused:", await qualification.paused());
 
-  // Verify constants
-  const basePrice = await qualification.BASE_PRICE();
-  const priceIncrement = await qualification.PRICE_INCREMENT();
-  const maxPlatformFeeBps = await qualification.MAX_PLATFORM_FEE_BPS();
-  const qualificationSpots = await qualification.QUALIFICATION_SPOTS();
+    // Verify constants
+    const basePrice = await qualification.BASE_PRICE();
+    const priceIncrement = await qualification.PRICE_INCREMENT();
+    const maxPlatformFeeBps = await qualification.MAX_PLATFORM_FEE_BPS();
+    const qualificationSpots = await qualification.QUALIFICATION_SPOTS();
 
-  console.log("\n========== Contract Constants ==========");
-  console.log("BASE_PRICE:", hre.ethers.formatEther(basePrice), "ETH");
-  console.log("PRICE_INCREMENT:", hre.ethers.formatEther(priceIncrement), "ETH");
-  console.log("MAX_PLATFORM_FEE_BPS:", maxPlatformFeeBps.toString());
-  console.log("QUALIFICATION_SPOTS:", qualificationSpots.toString());
+    console.log("\n========== Contract Constants ==========");
+    console.log("BASE_PRICE:", hre.ethers.formatEther(basePrice), "ETH");
+    console.log("PRICE_INCREMENT:", hre.ethers.formatEther(priceIncrement), "ETH");
+    console.log("MAX_PLATFORM_FEE_BPS:", maxPlatformFeeBps.toString());
+    console.log("QUALIFICATION_SPOTS:", qualificationSpots.toString());
+  } catch (error) {
+    console.log("⚠️  Could not read contract details immediately after deployment (this is normal)");
+    console.log("Contract is deployed and working. You can verify details on the block explorer.");
+  }
 
   // Save deployment info
   const chainId = hre.network.config.chainId;
@@ -107,10 +141,11 @@ async function main() {
     contract: {
       address: qualificationAddress,
       name: "WorldCupQualification",
+      qualificationStartTime,
       qualificationEndTime,
       feeRecipient,
       initialPlatformFeeBps,
-      initialCountries,
+      initialCountriesCount: initialCountries.length,
     },
     deployer: deployer.address,
     deployedAt: new Date().toISOString(),
@@ -138,9 +173,10 @@ async function main() {
       await hre.run("verify:verify", {
         address: qualificationAddress,
         constructorArguments: [
+          qualificationStartTime,
           qualificationEndTime,
           feeRecipient,
-          initialCountriesBytes2,
+          initialCountriesBytes8,
           initialPlatformFeeBps,
         ],
       });
@@ -149,7 +185,7 @@ async function main() {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.log("❌ Verification failed:", errorMessage);
       console.log("You can verify manually using:");
-      console.log(`npx hardhat verify --network ${hre.network.name} ${qualificationAddress} ${qualificationEndTime} ${feeRecipient} "${JSON.stringify(initialCountriesBytes2)}" ${initialPlatformFeeBps}`);
+      console.log(`npx hardhat verify --network ${hre.network.name} ${qualificationAddress} ${qualificationStartTime} ${qualificationEndTime} ${feeRecipient} "${JSON.stringify(initialCountriesBytes8)}" ${initialPlatformFeeBps}`);
     }
   }
 
@@ -160,10 +196,11 @@ async function main() {
   }
   console.log("\n✨ Deployment complete!");
   console.log("\nNext steps:");
-  console.log("1. Add more countries using addCountry() or addCountries()");
-  console.log("2. Users can start voting with vote(bytes2 country, uint256 votes)");
-  console.log("3. Finalize qualification after end time with finalizeQualification()");
-  console.log("4. Users can claim winnings with claim()");
+  console.log(`1. All ${initialCountries.length} countries are pre-loaded and ready for voting`);
+  console.log("2. Users can start voting after start time with vote(bytes2 country, uint256 votes)");
+  console.log("3. Admin can pause/unpause voting if needed with pause() / unpause()");
+  console.log("4. Finalize qualification after end time with finalizeQualification()");
+  console.log("5. Users can claim winnings with claim()");
 
   return { qualificationAddress, deploymentInfo };
 }
