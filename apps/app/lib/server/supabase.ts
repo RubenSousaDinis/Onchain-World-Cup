@@ -30,7 +30,15 @@ export function getSupabaseClient(): SupabaseClient {
 
   if (!supabaseKey) {
     console.error('[Supabase] Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+    console.error('[Supabase] Please set SUPABASE_SERVICE_ROLE_KEY in your .env.local file')
+    console.error('[Supabase] Get it from: Supabase Dashboard > Settings > API > Service Role Key')
     throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+  }
+
+  // Validate that it looks like a service role key (JWT tokens start with eyJ)
+  if (!supabaseKey.startsWith('eyJ')) {
+    console.warn('[Supabase] WARNING: SUPABASE_SERVICE_ROLE_KEY does not look like a valid JWT token')
+    console.warn('[Supabase] Make sure you are using the SERVICE ROLE KEY, not the anon key')
   }
 
   // Singleton pattern - reuse client instance
@@ -45,6 +53,9 @@ export function getSupabaseClient(): SupabaseClient {
           auth: {
             autoRefreshToken: false,
             persistSession: false,
+          },
+          db: {
+            schema: 'public',
           },
         }
       )
