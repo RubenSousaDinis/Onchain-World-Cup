@@ -12,89 +12,72 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Countries participating in World Cup qualification
+// Countries competing in World Cup qualification
 model Country {
   id                   String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   name                 String
-  code                 String   @unique
+  code                 String   @unique // Two-letter country code (e.g., "BR", "AR")
   flagEmoji            String   @map("flag_emoji")
   fifaRank             Int?     @map("fifa_rank")
   qualified            Boolean  @default(false)
-  qualificationStatus  String?  @map("qualification_status")
+  totalVotes           Int      @default(0) @map("total_votes") // Total votes received
+  totalEth             String   @default("0") @map("total_eth") // Total ETH backing this country
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
-  matchesAsTeam1    Match[]          @relation("Team1Matches")
-  matchesAsTeam2    Match[]          @relation("Team2Matches")
+  qualificationVotes QualificationVote[]
 
   @@index([code])
+  @@index([totalVotes])
   @@index([qualified])
   @@map("countries")
 }
 
-// Qualification matches between teams
-model Match {
-  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  team1Id         String    @map("team1_id") @db.Uuid
-  team2Id         String    @map("team2_id") @db.Uuid
-  contractAddress String    @map("contract_address")
-  matchStartTime  DateTime  @map("match_start_time") @db.Timestamptz(6)
-  votingEndTime   DateTime  @map("voting_end_time") @db.Timestamptz(6)
-  matchEndTime    DateTime  @map("match_end_time") @db.Timestamptz(6)
-  status          String    @default("upcoming")
-  winningTeam     Int?      @map("winning_team")
-  matchNumber     Int?      @map("match_number")
-  team1Score      Int?      @map("team1_score")
-  team2Score      Int?      @map("team2_score")
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  // Relations
-  team1      Country @relation("Team1Matches", fields: [team1Id], references: [id])
-  team2      Country @relation("Team2Matches", fields: [team2Id], references: [id])
-  votes      Vote[]
-
-  @@index([status])
-  @@map("matches")
-}
-
-// Votes placed by users on matches
-model Vote {
+// Votes placed by users for countries to qualify
+model QualificationVote {
   id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  matchId      String   @map("match_id") @db.Uuid
+  countryCode  String   @map("country_code") // Two-letter country code
   voterAddress String   @map("voter_address")
-  teamIndex    Int      @map("team_index")
-  voteCount    Int      @map("vote_count")
-  totalCostEth String   @map("total_cost_eth")
+  voteCount    Int      @map("vote_count") // Number of votes purchased
+  totalCostEth String   @map("total_cost_eth") // ETH spent on these votes
   txHash       String   @unique @map("tx_hash")
   blockNumber  BigInt   @map("block_number")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   // Relations
-  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  country Country @relation(fields: [countryCode], references: [code], onDelete: Cascade)
 
-  @@index([matchId])
+  @@index([countryCode])
   @@index([voterAddress])
-  @@map("votes")
+  @@index([createdAt])
+  @@map("qualification_votes")
 }
 
 // User statistics and rankings
 model UserStat {
-  id                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  walletAddress         String    @unique @map("wallet_address")
-  totalVotes            Int       @default(0) @map("total_votes")
-  totalSpentEth         String    @default("0") @map("total_spent_eth")
-  totalWonEth           String    @default("0") @map("total_won_eth")
-  matchesParticipated   Int       @default(0) @map("matches_participated")
-  matchesWon            Int       @default(0) @map("matches_won")
-  rank                  Int?
-  onboardingCompletedAt DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
-  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress            String    @unique @map("wallet_address")
+
+  // Qualification phase stats
+  qualificationVotes       Int       @default(0) @map("qualification_votes") // Total votes placed in qualification
+  qualificationSpentEth    String    @default("0") @map("qualification_spent_eth") // ETH spent in qualification
+  qualificationWonEth      String    @default("0") @map("qualification_won_eth") // ETH won from qualification
+  countriesVotedFor        Int       @default(0) @map("countries_voted_for") // Number of different countries voted for
+
+  // Overall stats (will be used for future tournament phases)
+  totalVotes               Int       @default(0) @map("total_votes")
+  totalSpentEth            String    @default("0") @map("total_spent_eth")
+  totalWonEth              String    @default("0") @map("total_won_eth")
+
+  rank                     Int?
+  onboardingCompletedAt    DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([walletAddress])
   @@index([rank])
+  @@index([qualificationVotes])
   @@map("user_stats")
 }
 
