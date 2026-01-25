@@ -1,3 +1,6 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- CreateTable
 CREATE TABLE "countries" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
