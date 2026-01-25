@@ -2,6 +2,24 @@
 
 This guide explains how to use the unified wallet connection system that works seamlessly in both **Desktop** and **Farcaster** contexts.
 
+## Setup
+
+Before using the wallet integration, configure the required environment variables:
+
+```bash
+# Copy the example file
+cp .env.example .env.local
+
+# Add the contract addresses
+NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA=0x5b202Aec41D1C85f294267D2A42Eac8865AAcCE9
+NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET=  # Add when deployed to mainnet
+
+# Add other required variables (see .env.example)
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+```
+
+**Important**: Never commit `.env.local` to version control!
+
 ## Architecture Overview
 
 The wallet integration is split into clear, context-specific modules:
@@ -410,8 +428,17 @@ function ChainSwitcher() {
 
 ## Contract Addresses
 
-- **Base Sepolia (Testnet)**: `0x5b202Aec41D1C85f294267D2A42Eac8865AAcCE9`
-- **Base Mainnet**: TBD
+Contract addresses are configured via environment variables:
+
+```bash
+# Base Sepolia (testnet)
+NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA=0x5b202Aec41D1C85f294267D2A42Eac8865AAcCE9
+
+# Base Mainnet (production)
+NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET=
+```
+
+**Important**: Always set these in your `.env.local` file. See `.env.example` for the template.
 
 ## Related Issues
 

@@ -4,30 +4,35 @@
  * Type-safe utilities for interacting with the WorldCupQualification contract.
  * Provides both read and write functions with proper error handling.
  *
- * CONTRACT ADDRESS:
- * - Base Sepolia (testnet): 0x5b202Aec41D1C85f294267D2A42Eac8865AAcCE9
- * - Base Mainnet: TBD
+ * CONTRACT ADDRESSES (from environment variables):
+ * - Base Sepolia (testnet): NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
+ * - Base Mainnet (production): NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
  */
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { Address, parseEther, formatEther } from "viem"
 import WorldCupQualificationABI from "@/lib/contracts/types/contracts/WorldCupQualification.sol/WorldCupQualification.json"
 
-// Contract addresses by chain ID
-const QUALIFICATION_ADDRESSES: Record<number, Address> = {
-  84532: "0x5b202Aec41D1C85f294267D2A42Eac8865AAcCE9", // Base Sepolia
-  8453: "0x0000000000000000000000000000000000000000", // Base Mainnet (TBD)
-}
-
 /**
  * Get the qualification contract address for the current chain
+ * Reads from environment variables based on chain ID
  */
 export function getQualificationAddress(chainId: number): Address {
-  const address = QUALIFICATION_ADDRESSES[chainId]
-  if (!address || address === "0x0000000000000000000000000000000000000000") {
-    throw new Error(`WorldCupQualification contract not deployed on chain ${chainId}`)
+  // Get address from environment variables
+  const address = chainId === 84532
+    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA // Base Sepolia
+    : chainId === 8453
+    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET // Base Mainnet
+    : null
+
+  if (!address) {
+    throw new Error(
+      `WorldCupQualification contract address not configured for chain ${chainId}. ` +
+      `Please set ${chainId === 84532 ? 'NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA' : 'NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET'} in your .env file.`
+    )
   }
-  return address
+
+  return address as Address
 }
 
 /**
