@@ -5,42 +5,44 @@ const { time } = require("@nomicfoundation/hardhat-network-helpers");
 describe("WorldCupQualification", function () {
   let qualification;
   let owner, platform, voter1, voter2, voter3;
-  let qualificationEndTime;
+  let qualificationStartTime, qualificationEndTime;
 
   // Helper to parse ether amounts
   const parseEth = (amount) => ethers.parseEther(amount.toString());
   const formatEth = (amount) => ethers.formatEther(amount);
 
-  // Helper to convert string to bytes2
-  const toBytes2 = (str) => {
+  // Helper to convert string to bytes8
+  const toBytes8 = (str) => {
     const bytes = ethers.toUtf8Bytes(str);
-    // Take first 2 bytes and pad to 2 bytes if needed
-    const twoBytes = bytes.slice(0, 2);
-    // Convert to hex and ensure it's exactly 2 bytes (4 hex chars)
-    return "0x" + Buffer.from(twoBytes).toString("hex").padEnd(4, "0");
+    // Convert to hex and pad to exactly 8 bytes (16 hex chars)
+    const hex = Buffer.from(bytes).toString("hex");
+    return "0x" + hex.padEnd(16, "0");
   };
 
   // Test countries
-  const US = toBytes2("US");
-  const BR = toBytes2("BR");
-  const AR = toBytes2("AR");
-  const FR = toBytes2("FR");
-  const DE = toBytes2("DE");
-  const IT = toBytes2("IT");
-  const ES = toBytes2("ES");
-  const NL = toBytes2("NL");
+  const US = toBytes8("US");
+  const BR = toBytes8("BR");
+  const AR = toBytes8("AR");
+  const FR = toBytes8("FR");
+  const DE = toBytes8("DE");
+  const IT = toBytes8("IT");
+  const ES = toBytes8("ES");
+  const NL = toBytes8("NL");
+  const GB_ENG = toBytes8("GB-ENG"); // Test longer country code
 
   beforeEach(async function () {
     [owner, platform, voter1, voter2, voter3] = await ethers.getSigners();
 
     const currentTime = await time.latest();
-    qualificationEndTime = currentTime + 7 * 24 * 3600; // 7 days from now
+    qualificationStartTime = currentTime + 60; // Start in 1 minute
+    qualificationEndTime = qualificationStartTime + 7 * 24 * 3600; // 7 days after start
 
     // Initial countries for testing
-    const initialCountries = [US, BR, AR, FR, DE, IT, ES, NL];
+    const initialCountries = [US, BR, AR, FR, DE, IT, ES, NL, GB_ENG];
 
     const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
     qualification = await WorldCupQualification.deploy(
+      qualificationStartTime,
       qualificationEndTime,
       platform.address,
       initialCountries,
@@ -51,6 +53,10 @@ describe("WorldCupQualification", function () {
   });
 
   describe("Deployment", function () {
+    it("Should set the correct qualification start time", async function () {
+      expect(await qualification.qualificationStartTime()).to.equal(qualificationStartTime);
+    });
+
     it("Should set the correct qualification end time", async function () {
       expect(await qualification.qualificationEndTime()).to.equal(qualificationEndTime);
     });
@@ -80,37 +86,59 @@ describe("WorldCupQualification", function () {
       expect(await qualification.validCountry(AR)).to.be.true;
     });
 
-    it("Should revert with invalid end time", async function () {
+    it("Should revert with start time in the past", async function () {
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const pastTime = await time.latest() - 1000;
-      
+      const currentTime = await time.latest();
+      const pastTime = currentTime - 1000;
+      const futureTime = currentTime + 10000;
+
       await expect(
-        WorldCupQualification.deploy(pastTime, platform.address, [US], 1000)
-      ).to.be.revertedWith("Invalid end time");
+        WorldCupQualification.deploy(pastTime, futureTime, platform.address, [US], 1000)
+      ).to.be.revertedWith("Start time must be in future");
+    });
+
+    it("Should revert with end time before start time", async function () {
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const currentTime = await time.latest();
+      const startTime = currentTime + 10000;
+      const endTime = currentTime + 5000; // Before start time
+
+      await expect(
+        WorldCupQualification.deploy(startTime, endTime, platform.address, [US], 1000)
+      ).to.be.revertedWith("End time must be after start time");
     });
 
     it("Should revert with zero fee recipient", async function () {
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
-      
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = startTime + 10000;
+
       await expect(
-        WorldCupQualification.deploy(futureTime, ethers.ZeroAddress, [US], 1000)
+        WorldCupQualification.deploy(startTime, endTime, ethers.ZeroAddress, [US], 1000)
       ).to.be.revertedWith("Invalid fee recipient");
     });
 
     it("Should revert with fee too high", async function () {
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
-      
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = startTime + 10000;
+
       await expect(
-        WorldCupQualification.deploy(futureTime, platform.address, [US], 2001)
+        WorldCupQualification.deploy(startTime, endTime, platform.address, [US], 2001)
       ).to.be.revertedWith("Fee too high");
     });
   });
 
   describe("Admin Functions", function () {
+    beforeEach(async function () {
+      // Fast forward to qualification start time for voting tests
+      await time.increaseTo(qualificationStartTime);
+    });
+
     it("Should allow owner to add a new country", async function () {
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       expect(await qualification.validCountry(GB)).to.be.false;
 
       await expect(qualification.connect(owner).addCountry(GB))
@@ -121,9 +149,9 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should allow owner to add multiple countries", async function () {
-      const GB = toBytes2("GB");
-      const JP = toBytes2("JP");
-      const CN = toBytes2("CN");
+      const GB = toBytes8("GB");
+      const JP = toBytes8("JP");
+      const CN = toBytes8("CN");
 
       await qualification.connect(owner).addCountries([GB, JP, CN]);
 
@@ -133,7 +161,7 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should revert if non-owner tries to add country", async function () {
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       await expect(
         qualification.connect(voter1).addCountry(GB)
       ).to.be.revertedWithCustomError(qualification, "OwnableUnauthorizedAccount");
@@ -147,7 +175,7 @@ describe("WorldCupQualification", function () {
 
     it("Should revert if trying to add country after qualification ends", async function () {
       await time.increase(7 * 24 * 3600 + 1);
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       
       await expect(
         qualification.connect(owner).addCountry(GB)
@@ -155,7 +183,7 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should allow owner to remove country with no votes", async function () {
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       await qualification.connect(owner).addCountry(GB);
       
       await expect(qualification.connect(owner).removeCountry(GB))
@@ -174,7 +202,7 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should revert if non-owner tries to remove country", async function () {
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       await qualification.connect(owner).addCountry(GB);
       
       await expect(
@@ -183,7 +211,7 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should revert if trying to remove country after qualification ends", async function () {
-      const GB = toBytes2("GB");
+      const GB = toBytes8("GB");
       await qualification.connect(owner).addCountry(GB);
       
       await time.increase(7 * 24 * 3600 + 1);
@@ -231,9 +259,12 @@ describe("WorldCupQualification", function () {
     it("Should revert if trying to update fee after finalization", async function () {
       // Create a fresh contract for this test
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 2000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 2000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US],
         1000
@@ -244,12 +275,13 @@ describe("WorldCupQualification", function () {
       const additionalCountries = [];
       for (let i = 1; i < 48; i++) {
         const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes2(countryCode);
+        const countryBytes = toBytes8(countryCode);
         additionalCountries.push(countryBytes);
       }
       await testQual.connect(owner).addCountries(additionalCountries);
 
-      // Add votes and finalize
+      // Fast forward to start time and add votes
+      await time.increaseTo(startTime);
       await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
       await time.increase(2001);
       
@@ -283,6 +315,11 @@ describe("WorldCupQualification", function () {
   });
 
   describe("Linear Pricing", function () {
+    beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+    });
+
     it("Should calculate correct first vote price (0.001 ETH)", async function () {
       const price = await qualification.votePrice(US);
       expect(price).to.equal(parseEth("0.001"));
@@ -389,7 +426,7 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should revert for invalid country", async function () {
-      const invalidCountry = toBytes2("XX");
+      const invalidCountry = toBytes8("XX");
       await expect(
         qualification.connect(voter1).vote(invalidCountry, 1, { value: parseEth("0.001") })
       ).to.be.revertedWith("Invalid country");
@@ -409,6 +446,11 @@ describe("WorldCupQualification", function () {
   });
 
   describe("Platform Fee", function () {
+    beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+    });
+
     it("Should accumulate 10% platform fee on vote", async function () {
       const votePrice = parseEth("0.001");
       const expectedFee = (votePrice * 1000n) / 10000n; // 10%
@@ -469,11 +511,14 @@ describe("WorldCupQualification", function () {
 
   describe("Qualification Finalization", function () {
     beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+
       // Add more countries before period ends (we need 48 total for finalization)
       const additionalCountries = [];
-      for (let i = 8; i < 48; i++) {
+      for (let i = 9; i < 48; i++) { // Start from 9 since we now have 9 initial countries (including GB_ENG)
         const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes2(countryCode);
+        const countryBytes = toBytes8(countryCode);
         additionalCountries.push(countryBytes);
       }
       await qualification.connect(owner).addCountries(additionalCountries);
@@ -510,9 +555,12 @@ describe("WorldCupQualification", function () {
 
     it("Should revert finalization before end time", async function () {
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const newQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR, AR],
         1000
@@ -527,20 +575,26 @@ describe("WorldCupQualification", function () {
     it("Should finalize qualification with specified countries", async function () {
       // Create a new contract with initial countries
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR, AR],
         1000
       );
       await testQual.waitForDeployment();
 
+      // Fast forward to start time
+      await time.increaseTo(startTime);
+
       // Add votes with correct prices
       const usPrice1 = await testQual.calculateVoteCost(US, 5);
       const brPrice1 = await testQual.calculateVoteCost(BR, 3);
       const arPrice1 = await testQual.calculateVoteCost(AR, 4);
-      
+
       await testQual.connect(voter1).vote(US, 5, { value: usPrice1 });
       await testQual.connect(voter2).vote(BR, 3, { value: brPrice1 });
       await testQual.connect(voter3).vote(AR, 4, { value: arPrice1 });
@@ -567,14 +621,20 @@ describe("WorldCupQualification", function () {
     it("Should revert if trying to qualify country with no votes (CRITICAL TRUST GUARANTEE)", async function () {
       // Create a new contract
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR, AR],
         1000
       );
       await testQual.waitForDeployment();
+
+      // Fast forward to start time
+      await time.increaseTo(startTime);
 
       // Add votes only for US
       await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
@@ -605,20 +665,26 @@ describe("WorldCupQualification", function () {
     it("Should prevent voting after finalization", async function () {
       // Create a fresh contract for this test
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 2000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 2000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR, AR, FR, DE, IT, ES, NL],
         1000
       );
       await testQual.waitForDeployment();
 
+      // Fast forward to start time
+      await time.increaseTo(startTime);
+
       // Add more countries to reach 48
       const additionalCountries = [];
       for (let i = 8; i < 48; i++) {
         const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes2(countryCode);
+        const countryBytes = toBytes8(countryCode);
         additionalCountries.push(countryBytes);
       }
       await testQual.connect(owner).addCountries(additionalCountries);
@@ -650,9 +716,12 @@ describe("WorldCupQualification", function () {
     it("Should prevent double finalization", async function () {
       // Create a fresh contract for this test
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 2000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 2000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US],
         1000
@@ -663,14 +732,17 @@ describe("WorldCupQualification", function () {
       const additionalCountries = [];
       for (let i = 1; i < 48; i++) {
         const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes2(countryCode);
+        const countryBytes = toBytes8(countryCode);
         additionalCountries.push(countryBytes);
       }
       await testQual.connect(owner).addCountries(additionalCountries);
 
+      // Fast forward to start time
+      await time.increaseTo(startTime);
+
       // Add votes to US first (required for trust guarantee)
       await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
-      
+
       // Fast forward past end time
       await time.increase(2001);
       
@@ -689,6 +761,9 @@ describe("WorldCupQualification", function () {
 
   describe("Winnings Calculation and Claiming", function () {
     beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+
       // Setup: US gets 5 votes, AR gets 4 votes, BR gets 3 votes
       // voter1 votes for US (5 votes)
       for (let i = 0; i < 5; i++) {
@@ -739,14 +814,20 @@ describe("WorldCupQualification", function () {
     it("Should return zero winnings for non-qualified country voters", async function () {
       // Create a new contract where BR doesn't qualify
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR, AR],
         1000
       );
       await testQual.waitForDeployment();
+
+      // Fast forward to start time
+      await time.increaseTo(startTime);
 
       await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
       await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
@@ -783,15 +864,19 @@ describe("WorldCupQualification", function () {
 
     it("Should revert claim before finalization", async function () {
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const newQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US],
         1000
       );
       await newQual.waitForDeployment();
 
+      await time.increaseTo(startTime);
       await newQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
 
       await expect(
@@ -802,14 +887,20 @@ describe("WorldCupQualification", function () {
     it("Should revert claim if no winnings", async function () {
       // Create user with no qualified votes
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
-      const futureTime = await time.latest() + 1000;
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 1000;
       const testQual = await WorldCupQualification.deploy(
-        futureTime,
+        startTime,
+        endTime,
         platform.address,
         [US, BR],
         1000
       );
       await testQual.waitForDeployment();
+
+      // Fast forward to start time
+      await time.increaseTo(startTime);
 
       await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
       await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
@@ -837,6 +928,9 @@ describe("WorldCupQualification", function () {
 
   describe("Read-Only Metrics", function () {
     beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+
       // Calculate correct prices for 2 votes: 0.001 + 0.0015 = 0.0025
       const usPrice2 = await qualification.calculateVoteCost(US, 2);
       await qualification.connect(voter1).vote(US, 2, { value: usPrice2 }); // 2 votes
@@ -873,6 +967,9 @@ describe("WorldCupQualification", function () {
 
   describe("View Functions", function () {
     beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+
       // Calculate correct prices for 2 votes: 0.001 + 0.0015 = 0.0025
       const usPrice2 = await qualification.calculateVoteCost(US, 2);
       await qualification.connect(voter1).vote(US, 2, { value: usPrice2 }); // 2 votes
@@ -911,6 +1008,11 @@ describe("WorldCupQualification", function () {
   });
 
   describe("Edge Cases", function () {
+    beforeEach(async function () {
+      // Fast forward to qualification start time
+      await time.increaseTo(qualificationStartTime);
+    });
+
     it("Should handle voting after qualification period ends", async function () {
       await time.increase(7 * 24 * 3600 + 1);
 

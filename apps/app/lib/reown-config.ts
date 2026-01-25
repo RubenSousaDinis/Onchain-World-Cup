@@ -1,48 +1,11 @@
-import { createAppKit } from '@reown/appkit/react'
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { base, baseSepolia } from '@reown/appkit/networks'
+/**
+ * BACKWARD COMPATIBILITY LAYER
+ *
+ * This file maintains backward compatibility with existing code.
+ * New code should import from:
+ * - lib/wallet/desktop-config.ts (for desktop wallet configuration)
+ * - lib/wallet/farcaster-config.ts (for Farcaster wallet utilities)
+ * - hooks/useWalletConnection.ts (for unified wallet hook)
+ */
 
-// Get projectId from environment variable
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''
-
-if (!projectId) {
-  console.warn('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set')
-}
-
-// Determine default chain based on environment
-const isProduction = process.env.NODE_ENV === 'production'
-const defaultChain = isProduction ? base : baseSepolia
-
-// Create Wagmi adapter
-export const wagmiAdapter = new WagmiAdapter({
-  networks: [base, baseSepolia],
-  projectId,
-  ssr: true,
-})
-
-// Create AppKit modal
-export const modal = createAppKit({
-  adapters: [wagmiAdapter],
-  networks: [base, baseSepolia],
-  defaultNetwork: defaultChain,
-  projectId,
-  metadata: {
-    name: 'Onchain World Cup',
-    description: 'Vote on World Cup 2026 matches with ETH on Base network',
-    url: process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://app.onchainworldcup.xyz',
-    icons: ['https://app.onchainworldcup.xyz/logo.png'],
-  },
-  features: {
-    analytics: true,
-    email: false,
-    socials: false,
-  },
-  themeMode: 'dark',
-  themeVariables: {
-    '--w3m-accent': 'hsl(142.1 76.2% 36.3%)', // Primary green color
-    '--w3m-border-radius-master': '2px', // Retro squared corners
-  },
-  allowUnsupportedChain: false,
-})
-
-export const config = wagmiAdapter.wagmiConfig
+export { wagmiAdapter, desktopWalletModal as modal, wagmiConfig as config } from "./wallet/desktop-config"

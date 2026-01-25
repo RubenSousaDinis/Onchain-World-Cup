@@ -29,6 +29,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
                                 IMMUTABLES
     //////////////////////////////////////////////////////////////*/
 
+    uint256 public immutable qualificationStartTime;
     uint256 public immutable qualificationEndTime;
     address public immutable feeRecipient;
 
@@ -37,6 +38,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
 
     bool public qualificationFinalized;
+    bool public paused;
 
     uint256 public totalVotes;
     uint256 public totalQualifiedVotes;
@@ -47,15 +49,15 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     uint256 public platformFeeBps;        // Platform fee in basis points (updatable)
 
     // Country data
-    mapping(bytes2 => bool) public validCountry;
-    mapping(bytes2 => uint256) public countryVotes;
-    mapping(bytes2 => uint256) public countryETH; // ETH collected per country
-    mapping(bytes2 => bool) public isQualified;
+    mapping(bytes8 => bool) public validCountry;
+    mapping(bytes8 => uint256) public countryVotes;
+    mapping(bytes8 => uint256) public countryETH; // ETH collected per country
+    mapping(bytes8 => bool) public isQualified;
 
-    bytes2[] public allCountries;
+    bytes8[] public allCountries;
 
     // User data
-    mapping(address => mapping(bytes2 => uint256)) public userVotes;
+    mapping(address => mapping(bytes8 => uint256)) public userVotes;
     mapping(address => bool) public hasClaimed;
 
     /*//////////////////////////////////////////////////////////////
@@ -64,23 +66,25 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
     event Voted(
         address indexed user,
-        bytes2 indexed country,
+        bytes8 indexed country,
         uint256 amount
     );
 
     event VotePlaced(
         address indexed voter,
-        bytes2 indexed country,
+        bytes8 indexed country,
         uint256 votes,
         uint256 cost,
         uint256 timestamp
     );
 
-    event CountryAdded(bytes2 country);
-    event CountryRemoved(bytes2 country);
+    event CountryAdded(bytes8 country);
+    event CountryRemoved(bytes8 country);
     event PlatformFeeUpdated(uint256 oldFeeBps, uint256 newFeeBps);
+    event Paused(address indexed account);
+    event Unpaused(address indexed account);
     event QualificationEnded();
-    event QualificationFinalized(bytes2[] qualifiedCountries);
+    event QualificationFinalized(bytes8[] qualifiedCountries);
     event WinningsClaimed(address indexed user, uint256 amount);
     event PlatformFeesWithdrawn(uint256 amount);
     event PrizesDistributed(uint256 totalPrizePool);
@@ -88,6 +92,11 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 MODIFIERS
     //////////////////////////////////////////////////////////////*/
+
+    modifier onlyAfterStart() {
+        require(block.timestamp >= qualificationStartTime, "Qualification not started");
+        _;
+    }
 
     modifier onlyBeforeEnd() {
         require(block.timestamp < qualificationEndTime, "Qualification ended");
@@ -104,28 +113,41 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         _;
     }
 
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+
+    modifier whenPaused() {
+        require(paused, "Contract is not paused");
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                                 CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
     constructor(
+        uint256 _qualificationStartTime,
         uint256 _qualificationEndTime,
         address _feeRecipient,
-        bytes2[] memory _initialCountries,
+        bytes8[] memory _initialCountries,
         uint256 _initialPlatformFeeBps
     ) Ownable(msg.sender) {
-        require(_qualificationEndTime > block.timestamp, "Invalid end time");
+        require(_qualificationStartTime >= block.timestamp, "Start time must be in future");
+        require(_qualificationEndTime > _qualificationStartTime, "End time must be after start time");
         require(_feeRecipient != address(0), "Invalid fee recipient");
         require(_initialPlatformFeeBps <= MAX_PLATFORM_FEE_BPS, "Fee too high");
 
+        qualificationStartTime = _qualificationStartTime;
         qualificationEndTime = _qualificationEndTime;
         feeRecipient = _feeRecipient;
         platformFeeBps = _initialPlatformFeeBps;
 
         // Add initial countries
         for (uint256 i = 0; i < _initialCountries.length; i++) {
-            bytes2 country = _initialCountries[i];
-            if (!validCountry[country] && country != bytes2(0)) {
+            bytes8 country = _initialCountries[i];
+            if (!validCountry[country] && country != bytes8(0)) {
                 validCountry[country] = true;
                 allCountries.push(country);
                 emit CountryAdded(country);
@@ -139,25 +161,25 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
     /**
      * @dev Add a new country to the whitelist (owner only, only during qualification)
-     * @param country ISO 3166-1 alpha-2 country code as bytes2
+     * @param country Country code as bytes8 (e.g., "US", "BR", "GB-ENG")
      */
-    function addCountry(bytes2 country) external onlyOwner onlyBeforeEnd {
+    function addCountry(bytes8 country) external onlyOwner onlyBeforeEnd {
         require(!validCountry[country], "Country already exists");
-        require(country != bytes2(0), "Invalid country code");
-        
+        require(country != bytes8(0), "Invalid country code");
+
         validCountry[country] = true;
         allCountries.push(country);
-        
+
         emit CountryAdded(country);
     }
 
     /**
      * @dev Add multiple countries at once (owner only, only during qualification)
      */
-    function addCountries(bytes2[] calldata countries) external onlyOwner onlyBeforeEnd {
+    function addCountries(bytes8[] calldata countries) external onlyOwner onlyBeforeEnd {
         for (uint256 i = 0; i < countries.length; i++) {
-            bytes2 country = countries[i];
-            if (!validCountry[country] && country != bytes2(0)) {
+            bytes8 country = countries[i];
+            if (!validCountry[country] && country != bytes8(0)) {
                 validCountry[country] = true;
                 allCountries.push(country);
                 emit CountryAdded(country);
@@ -167,15 +189,15 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
     /**
      * @dev Remove a country from the whitelist (owner only, only during qualification)
-     * @param country ISO 3166-1 alpha-2 country code as bytes2
+     * @param country Country code as bytes8
      * @notice Can only remove countries with 0 votes
      */
-    function removeCountry(bytes2 country) external onlyOwner onlyBeforeEnd {
+    function removeCountry(bytes8 country) external onlyOwner onlyBeforeEnd {
         require(validCountry[country], "Country does not exist");
         require(countryVotes[country] == 0, "Country has votes");
-        
+
         validCountry[country] = false;
-        
+
         emit CountryRemoved(country);
     }
 
@@ -187,23 +209,41 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     function setPlatformFee(uint256 newFeeBps) external onlyOwner onlyBeforeEnd {
         require(newFeeBps <= MAX_PLATFORM_FEE_BPS, "Fee too high");
         require(!qualificationFinalized, "Qualification finalized");
-        
+
         uint256 oldFeeBps = platformFeeBps;
         platformFeeBps = newFeeBps;
-        
+
         emit PlatformFeeUpdated(oldFeeBps, newFeeBps);
+    }
+
+    /**
+     * @dev Pause voting (owner only, emergency stop)
+     * @notice Can be used to pause voting in case of issues
+     */
+    function pause() external onlyOwner whenNotPaused {
+        paused = true;
+        emit Paused(msg.sender);
+    }
+
+    /**
+     * @dev Unpause voting (owner only)
+     * @notice Resume voting after emergency stop
+     */
+    function unpause() external onlyOwner whenPaused {
+        paused = false;
+        emit Unpaused(msg.sender);
     }
 
     /*//////////////////////////////////////////////////////////////
                             PRICING LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function votePrice(bytes2 country) public view returns (uint256) {
+    function votePrice(bytes8 country) public view returns (uint256) {
         require(validCountry[country], "Invalid country");
         return BASE_PRICE + (countryVotes[country] * PRICE_INCREMENT);
     }
 
-    function calculateVoteCost(bytes2 country, uint256 votes)
+    function calculateVoteCost(bytes8 country, uint256 votes)
         public
         view
         returns (uint256 totalCost)
@@ -221,10 +261,12 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
                                 VOTING
     //////////////////////////////////////////////////////////////*/
 
-    function vote(bytes2 country, uint256 votes)
+    function vote(bytes8 country, uint256 votes)
         external
         payable
+        onlyAfterStart
         onlyBeforeEnd
+        whenNotPaused
         nonReentrant
     {
         require(!qualificationFinalized, "Finalized");
@@ -265,7 +307,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
      * @param qualifiedCountries Array of exactly 48 country codes that qualified
      * @notice CRITICAL: Countries must have votes to qualify (trust guarantee)
      */
-    function finalizeQualification(bytes2[] calldata qualifiedCountries)
+    function finalizeQualification(bytes8[] calldata qualifiedCountries)
         external
         onlyOwner
         onlyAfterEnd
@@ -277,7 +319,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         );
 
         for (uint256 i = 0; i < qualifiedCountries.length; i++) {
-            bytes2 country = qualifiedCountries[i];
+            bytes8 country = qualifiedCountries[i];
             require(validCountry[country], "Invalid country");
             // CRITICAL TRUST GUARANTEE: Country cannot qualify without votes
             require(countryVotes[country] > 0, "Country has no votes");
@@ -315,7 +357,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         uint256 userQualifiedVotes;
 
         for (uint256 i = 0; i < allCountries.length; i++) {
-            bytes2 country = allCountries[i];
+            bytes8 country = allCountries[i];
             if (isQualified[country]) {
                 userQualifiedVotes += userVotes[user][country];
             }
@@ -365,7 +407,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
      * @param country Country code
      * @return Total ETH collected for this country
      */
-    function getETHPerCountry(bytes2 country) external view returns (uint256) {
+    function getETHPerCountry(bytes8 country) external view returns (uint256) {
         return countryETH[country];
     }
 
@@ -389,7 +431,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
      * @dev Get total ETH allocated to a country (for display purposes)
      * Note: This is not the payout amount - payouts use unified pool
      */
-    function ethForCountry(bytes2 country) external view returns (uint256) {
+    function ethForCountry(bytes8 country) external view returns (uint256) {
         return countryETH[country];
     }
 
@@ -399,19 +441,19 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     function getUserVotes(address user)
         external
         view
-        returns (bytes2[] memory countries, uint256[] memory votes)
+        returns (bytes8[] memory countries, uint256[] memory votes)
     {
         uint256 count;
         for (uint256 i = 0; i < allCountries.length; i++) {
             if (userVotes[user][allCountries[i]] > 0) count++;
         }
 
-        countries = new bytes2[](count);
+        countries = new bytes8[](count);
         votes = new uint256[](count);
 
         uint256 idx;
         for (uint256 i = 0; i < allCountries.length; i++) {
-            bytes2 c = allCountries[i];
+            bytes8 c = allCountries[i];
             uint256 v = userVotes[user][c];
             if (v > 0) {
                 countries[idx] = c;

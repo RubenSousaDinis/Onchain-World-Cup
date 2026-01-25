@@ -50,9 +50,12 @@ export interface WorldCupQualificationInterface extends Interface {
       | "hasClaimed"
       | "isQualified"
       | "owner"
+      | "pause"
+      | "paused"
       | "platformFeeBps"
       | "qualificationEndTime"
       | "qualificationFinalized"
+      | "qualificationStartTime"
       | "removeCountry"
       | "renounceOwnership"
       | "setPlatformFee"
@@ -62,6 +65,7 @@ export interface WorldCupQualificationInterface extends Interface {
       | "totalQualifiedVotes"
       | "totalVotes"
       | "transferOwnership"
+      | "unpause"
       | "userVotes"
       | "validCountry"
       | "vote"
@@ -74,11 +78,13 @@ export interface WorldCupQualificationInterface extends Interface {
       | "CountryAdded"
       | "CountryRemoved"
       | "OwnershipTransferred"
+      | "Paused"
       | "PlatformFeeUpdated"
       | "PlatformFeesWithdrawn"
       | "PrizesDistributed"
       | "QualificationEnded"
       | "QualificationFinalized"
+      | "Unpaused"
       | "VotePlaced"
       | "Voted"
       | "WinningsClaimed"
@@ -174,6 +180,8 @@ export interface WorldCupQualificationInterface extends Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
+  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "platformFeeBps",
     values?: undefined
@@ -184,6 +192,10 @@ export interface WorldCupQualificationInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "qualificationFinalized",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "qualificationStartTime",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -222,6 +234,7 @@ export interface WorldCupQualificationInterface extends Interface {
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "userVotes",
     values: [AddressLike, BytesLike]
@@ -318,6 +331,8 @@ export interface WorldCupQualificationInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "platformFeeBps",
     data: BytesLike
@@ -328,6 +343,10 @@ export interface WorldCupQualificationInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "qualificationFinalized",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "qualificationStartTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -363,6 +382,7 @@ export interface WorldCupQualificationInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "userVotes", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validCountry",
@@ -406,6 +426,18 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -465,6 +497,18 @@ export namespace QualificationFinalizedEvent {
   export type OutputTuple = [qualifiedCountries: string[]];
   export interface OutputObject {
     qualifiedCountries: string[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace UnpausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -650,11 +694,17 @@ export interface WorldCupQualification extends BaseContract {
 
   owner: TypedContractMethod<[], [string], "view">;
 
+  pause: TypedContractMethod<[], [void], "nonpayable">;
+
+  paused: TypedContractMethod<[], [boolean], "view">;
+
   platformFeeBps: TypedContractMethod<[], [bigint], "view">;
 
   qualificationEndTime: TypedContractMethod<[], [bigint], "view">;
 
   qualificationFinalized: TypedContractMethod<[], [boolean], "view">;
+
+  qualificationStartTime: TypedContractMethod<[], [bigint], "view">;
 
   removeCountry: TypedContractMethod<
     [country: BytesLike],
@@ -685,6 +735,8 @@ export interface WorldCupQualification extends BaseContract {
     [void],
     "nonpayable"
   >;
+
+  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   userVotes: TypedContractMethod<
     [arg0: AddressLike, arg1: BytesLike],
@@ -805,6 +857,12 @@ export interface WorldCupQualification extends BaseContract {
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
+    nameOrSignature: "pause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "paused"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
     nameOrSignature: "platformFeeBps"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -813,6 +871,9 @@ export interface WorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "qualificationFinalized"
   ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "qualificationStartTime"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "removeCountry"
   ): TypedContractMethod<[country: BytesLike], [void], "nonpayable">;
@@ -840,6 +901,9 @@ export interface WorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "unpause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "userVotes"
   ): TypedContractMethod<
@@ -886,6 +950,13 @@ export interface WorldCupQualification extends BaseContract {
     OwnershipTransferredEvent.OutputObject
   >;
   getEvent(
+    key: "Paused"
+  ): TypedContractEvent<
+    PausedEvent.InputTuple,
+    PausedEvent.OutputTuple,
+    PausedEvent.OutputObject
+  >;
+  getEvent(
     key: "PlatformFeeUpdated"
   ): TypedContractEvent<
     PlatformFeeUpdatedEvent.InputTuple,
@@ -921,6 +992,13 @@ export interface WorldCupQualification extends BaseContract {
     QualificationFinalizedEvent.OutputObject
   >;
   getEvent(
+    key: "Unpaused"
+  ): TypedContractEvent<
+    UnpausedEvent.InputTuple,
+    UnpausedEvent.OutputTuple,
+    UnpausedEvent.OutputObject
+  >;
+  getEvent(
     key: "VotePlaced"
   ): TypedContractEvent<
     VotePlacedEvent.InputTuple,
@@ -943,7 +1021,7 @@ export interface WorldCupQualification extends BaseContract {
   >;
 
   filters: {
-    "CountryAdded(bytes2)": TypedContractEvent<
+    "CountryAdded(bytes8)": TypedContractEvent<
       CountryAddedEvent.InputTuple,
       CountryAddedEvent.OutputTuple,
       CountryAddedEvent.OutputObject
@@ -954,7 +1032,7 @@ export interface WorldCupQualification extends BaseContract {
       CountryAddedEvent.OutputObject
     >;
 
-    "CountryRemoved(bytes2)": TypedContractEvent<
+    "CountryRemoved(bytes8)": TypedContractEvent<
       CountryRemovedEvent.InputTuple,
       CountryRemovedEvent.OutputTuple,
       CountryRemovedEvent.OutputObject
@@ -974,6 +1052,17 @@ export interface WorldCupQualification extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
+    >;
+
+    "Paused(address)": TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
+    >;
+    Paused: TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
     >;
 
     "PlatformFeeUpdated(uint256,uint256)": TypedContractEvent<
@@ -1020,7 +1109,7 @@ export interface WorldCupQualification extends BaseContract {
       QualificationEndedEvent.OutputObject
     >;
 
-    "QualificationFinalized(bytes2[])": TypedContractEvent<
+    "QualificationFinalized(bytes8[])": TypedContractEvent<
       QualificationFinalizedEvent.InputTuple,
       QualificationFinalizedEvent.OutputTuple,
       QualificationFinalizedEvent.OutputObject
@@ -1031,7 +1120,18 @@ export interface WorldCupQualification extends BaseContract {
       QualificationFinalizedEvent.OutputObject
     >;
 
-    "VotePlaced(address,bytes2,uint256,uint256,uint256)": TypedContractEvent<
+    "Unpaused(address)": TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
+    >;
+    Unpaused: TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
+    >;
+
+    "VotePlaced(address,bytes8,uint256,uint256,uint256)": TypedContractEvent<
       VotePlacedEvent.InputTuple,
       VotePlacedEvent.OutputTuple,
       VotePlacedEvent.OutputObject
@@ -1042,7 +1142,7 @@ export interface WorldCupQualification extends BaseContract {
       VotePlacedEvent.OutputObject
     >;
 
-    "Voted(address,bytes2,uint256)": TypedContractEvent<
+    "Voted(address,bytes8,uint256)": TypedContractEvent<
       VotedEvent.InputTuple,
       VotedEvent.OutputTuple,
       VotedEvent.OutputObject
