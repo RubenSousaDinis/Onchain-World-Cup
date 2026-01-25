@@ -25,41 +25,23 @@ export async function GET(
       return NextResponse.json({
         data: {
           wallet_address: normalizedAddress,
+          qualification_votes: 0,
+          qualification_spent_eth: '0',
+          qualification_won_eth: '0',
+          countries_voted_for: 0,
           total_votes: 0,
           total_spent_eth: '0',
           total_won_eth: '0',
-          matches_participated: 0,
-          matches_won: 0,
           rank: null,
           votes: [],
         },
       })
     }
 
-    // Fetch user's recent votes with match and team information
-    const votes = await prisma.vote.findMany({
+    // Fetch user's recent qualification votes
+    const votes = await prisma.qualificationVote.findMany({
       where: {
         voterAddress: normalizedAddress,
-      },
-      include: {
-        match: {
-          include: {
-            team1: {
-              select: {
-                name: true,
-                code: true,
-                flagEmoji: true,
-              },
-            },
-            team2: {
-              select: {
-                name: true,
-                code: true,
-                flagEmoji: true,
-              },
-            },
-          },
-        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -70,41 +52,26 @@ export async function GET(
     // Transform votes to match the expected format
     const formattedVotes = votes.map((vote) => ({
       id: vote.id,
-      match_id: vote.matchId,
+      country_code: vote.countryCode,
       voter_address: vote.voterAddress,
-      team_index: vote.teamIndex,
       vote_count: vote.voteCount,
       total_cost_eth: vote.totalCostEth,
       tx_hash: vote.txHash,
       block_number: Number(vote.blockNumber), // Convert BigInt to number for JSON
       created_at: vote.createdAt.toISOString(),
-      match: vote.match
-        ? {
-            id: vote.match.id,
-            status: vote.match.status,
-            team1: {
-              name: vote.match.team1.name,
-              code: vote.match.team1.code,
-              flag_emoji: vote.match.team1.flagEmoji,
-            },
-            team2: {
-              name: vote.match.team2.name,
-              code: vote.match.team2.code,
-              flag_emoji: vote.match.team2.flagEmoji,
-            },
-          }
-        : null,
     }))
 
     // Transform stats to match the expected format
     const formattedStats = {
       id: stats.id,
       wallet_address: stats.walletAddress,
+      qualification_votes: stats.qualificationVotes,
+      qualification_spent_eth: stats.qualificationSpentEth,
+      qualification_won_eth: stats.qualificationWonEth,
+      countries_voted_for: stats.countriesVotedFor,
       total_votes: stats.totalVotes,
       total_spent_eth: stats.totalSpentEth,
       total_won_eth: stats.totalWonEth,
-      matches_participated: stats.matchesParticipated,
-      matches_won: stats.matchesWon,
       rank: stats.rank,
       onboarding_completed_at: stats.onboardingCompletedAt?.toISOString() || null,
       created_at: stats.createdAt.toISOString(),
