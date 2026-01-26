@@ -2,7 +2,8 @@ import { NextRequest } from "next/server"
 import { indexEvents } from "@/lib/indexer/event-indexer"
 import { processEvents } from "@/lib/indexer/transaction-processor"
 import { prisma } from "@/lib/prisma"
-import { jsonResponse, handleOptions } from "@/lib/api-utils"
+import { jsonResponse, handleOptions, applyRateLimit, requireAuth } from "@/lib/api-utils"
+import { RATE_LIMITS } from "@/lib/rate-limit"
 
 /**
  * OPTIONS /api/indexer/sync
@@ -16,6 +17,9 @@ export async function OPTIONS() {
  * POST /api/indexer/sync
  * Trigger blockchain event indexing and database updates
  *
+ * PROTECTED: Requires API key authentication
+ * RATE LIMITED: 5 requests per minute
+ *
  * Body:
  *   - chainId: number (84532 for Base Sepolia, 8453 for Base Mainnet)
  *
@@ -25,11 +29,24 @@ export async function OPTIONS() {
  * 3. Returns statistics about indexed events
  *
  * Usage:
- * - Can be triggered on-demand via API call
- * - Can be called by Vercel cron job for automatic indexing
- * - Can be called by external monitoring service
+ * - Can be triggered on-demand via API call with valid API key
+ * - Can be called by Vercel cron job (bypasses auth in localhost)
+ * - Can be called by external monitoring service with API key
+ *
+ * Authentication:
+ * - Include API key in Authorization header: "Bearer YOUR_API_KEY"
+ * - Or include in X-API-Key header
+ * - Authentication bypassed in development (localhost)
  */
 export async function POST(request: NextRequest) {
+  // Check authentication (bypassed in development)
+  const authError = requireAuth(request)
+  if (authError) return authError
+
+  // Check rate limit (5 requests per minute)
+  const rateLimitError = applyRateLimit(request, RATE_LIMITS.WRITE)
+  if (rateLimitError) return rateLimitError
+
   try {
     const body = await request.json()
     const { chainId } = body
@@ -85,10 +102,16 @@ export async function POST(request: NextRequest) {
  * GET /api/indexer/sync
  * Get indexer status and last synced block
  *
+ * RATE LIMITED: 20 requests per minute
+ *
  * Query params:
  *   - chainId: number (optional, defaults to 84532)
  */
 export async function GET(request: NextRequest) {
+  // Check rate limit (20 requests per minute)
+  const rateLimitError = applyRateLimit(request, RATE_LIMITS.EXPENSIVE_READ)
+  if (rateLimitError) return rateLimitError
+
   try {
     const { searchParams } = new URL(request.url)
     const chainId = parseInt(searchParams.get("chainId") || "84532")
