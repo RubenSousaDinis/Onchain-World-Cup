@@ -1,7 +1,16 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { indexEvents } from "@/lib/indexer/event-indexer"
 import { processEvents } from "@/lib/indexer/transaction-processor"
 import { prisma } from "@/lib/prisma"
+import { jsonResponse, handleOptions } from "@/lib/api-utils"
+
+/**
+ * OPTIONS /api/indexer/sync
+ * Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return handleOptions()
+}
 
 /**
  * POST /api/indexer/sync
@@ -27,11 +36,11 @@ export async function POST(request: NextRequest) {
 
     // Validate chainId
     if (!chainId || (chainId !== 84532 && chainId !== 8453)) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           error: "Invalid chainId. Must be 84532 (Base Sepolia) or 8453 (Base Mainnet)",
         },
-        { status: 400 }
+        400
       )
     }
 
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Indexer API] Sync completed successfully`)
 
-    return NextResponse.json({
+    return jsonResponse({
       success: true,
       chainId,
       blockRange: {
@@ -62,12 +71,12 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("[Indexer API] Sync failed:", error)
-    return NextResponse.json(
+    return jsonResponse(
       {
         error: "Failed to sync blockchain events",
         details: error.message,
       },
-      { status: 500 }
+      500
     )
   }
 }
@@ -85,11 +94,11 @@ export async function GET(request: NextRequest) {
     const chainId = parseInt(searchParams.get("chainId") || "84532")
 
     if (chainId !== 84532 && chainId !== 8453) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           error: "Invalid chainId. Must be 84532 (Base Sepolia) or 8453 (Base Mainnet)",
         },
-        { status: 400 }
+        400
       )
     }
 
@@ -99,7 +108,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!indexerState) {
-      return NextResponse.json({
+      return jsonResponse({
         chainId,
         lastIndexedBlock: null,
         lastIndexedAt: null,
@@ -108,7 +117,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json({
+    return jsonResponse({
       chainId,
       lastIndexedBlock: indexerState.lastIndexedBlock.toString(),
       lastIndexedAt: indexerState.lastIndexedAt.toISOString(),
@@ -117,12 +126,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("[Indexer API] Status check failed:", error)
-    return NextResponse.json(
+    return jsonResponse(
       {
         error: "Failed to get indexer status",
         details: error.message,
       },
-      { status: 500 }
+      500
     )
   }
 }
