@@ -11,7 +11,7 @@
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { Address, parseEther, formatEther } from "viem"
-import WorldCupQualificationABI from "@/lib/contracts/types/contracts/WorldCupQualification.sol/WorldCupQualification.json"
+import WorldCupQualificationABI from "@/artifacts/contracts/WorldCupQualification.sol/WorldCupQualification.json"
 
 /**
  * Get the qualification contract address for the current chain
