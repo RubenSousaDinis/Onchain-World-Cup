@@ -17,6 +17,7 @@
 import { createPublicClient, http, type Log, parseAbiItem } from "viem"
 import { base, baseSepolia } from "viem/chains"
 import { getQualificationAddress } from "@/lib/contracts/qualification"
+import { prisma } from "@/lib/prisma"
 
 // Chain configuration
 const CHAIN_CONFIG = {
@@ -40,25 +41,56 @@ export function createIndexerClient(chainId: number) {
 }
 
 /**
- * Get the last indexed block number from database or storage
- * For now, we'll use a simple in-memory cache or database
- * In production, this should be stored in the database
+ * Get the last indexed block number from database
+ * If no record exists, returns a starting block (1000 blocks ago from current)
  */
 export async function getLastIndexedBlock(chainId: number): Promise<bigint> {
-  // TODO: Read from database table `indexer_state`
-  // For now, return a recent block to avoid indexing from genesis
+  const indexerState = await prisma.indexerState.findUnique({
+    where: { chainId },
+  })
+
+  if (indexerState) {
+    console.log(`[Indexer] Found last indexed block for chain ${chainId}: ${indexerState.lastIndexedBlock}`)
+    return indexerState.lastIndexedBlock
+  }
+
+  // No previous indexing - start from recent blocks to avoid indexing from genesis
+  console.log(`[Indexer] No previous indexing found for chain ${chainId}. Starting from recent blocks.`)
   const client = createIndexerClient(chainId)
   const currentBlock = await client.getBlockNumber()
 
   // Start indexing from 1000 blocks ago (adjust as needed)
-  return currentBlock - 1000n
+  const startBlock = currentBlock - 1000n
+
+  // Save initial state
+  await prisma.indexerState.create({
+    data: {
+      chainId,
+      lastIndexedBlock: startBlock,
+      lastIndexedAt: new Date(),
+    },
+  })
+
+  return startBlock
 }
 
 /**
- * Save the last indexed block number
+ * Save the last indexed block number to database
  */
 export async function saveLastIndexedBlock(chainId: number, blockNumber: bigint): Promise<void> {
-  // TODO: Save to database table `indexer_state`
+  await prisma.indexerState.upsert({
+    where: { chainId },
+    update: {
+      lastIndexedBlock: blockNumber,
+      lastIndexedAt: new Date(),
+    },
+    create: {
+      chainId,
+      lastIndexedBlock: blockNumber,
+      lastIndexedAt: new Date(),
+    },
+  })
+
   console.log(`[Indexer] Saved last indexed block for chain ${chainId}: ${blockNumber}`)
 }
 

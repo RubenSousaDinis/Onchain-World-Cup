@@ -88,3 +88,14 @@ model FarcasterNotificationToken {
   @@index([enabled])
   @@map("farcaster_notification_tokens")
 }
+
+// Indexer state tracking for blockchain event synchronization
+model IndexerState {
+  chainId          Int      @id @map("chain_id") // 84532 (Base Sepolia) or 8453 (Base Mainnet)
+  lastIndexedBlock BigInt   @map("last_indexed_block") // Last block number indexed
+  lastIndexedAt    DateTime @map("last_indexed_at") @db.Timestamptz(6) // Timestamp of last indexing
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("indexer_state")
+}

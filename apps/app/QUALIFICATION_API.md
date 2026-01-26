@@ -32,6 +32,79 @@ The qualification system indexes blockchain events from the `WorldCupQualificati
 └─────────────┘
 ```
 
+## Database Setup
+
+Before using the indexer, ensure the `indexer_state` table exists in your database:
+
+### Run Migration
+
+```bash
+# Apply the migration to create the indexer_state table
+npm run prisma:push
+
+# Or run migrations in order
+npm run prisma:migrate
+```
+
+### Database Schema
+
+The indexer uses the following tables:
+
+**indexer_state** - Tracks last indexed block per chain
+```sql
+CREATE TABLE "indexer_state" (
+    "chain_id" INTEGER NOT NULL PRIMARY KEY,  -- 84532 or 8453
+    "last_indexed_block" BIGINT NOT NULL,      -- Last indexed block number
+    "last_indexed_at" TIMESTAMPTZ(6) NOT NULL, -- Last indexing timestamp
+    "created_at" TIMESTAMPTZ(6) NOT NULL,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL
+);
+```
+
+**country_stats** - Aggregated voting per country
+```sql
+CREATE TABLE "country_stats" (
+    "country_code" TEXT PRIMARY KEY,
+    "total_votes" INTEGER NOT NULL DEFAULT 0,
+    "total_eth" TEXT NOT NULL DEFAULT '0',
+    "qualified" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMPTZ(6),
+    "updated_at" TIMESTAMPTZ(6)
+);
+```
+
+**qualification_votes** - Individual vote records
+```sql
+CREATE TABLE "qualification_votes" (
+    "id" UUID PRIMARY KEY,
+    "country_code" TEXT NOT NULL,
+    "voter_address" TEXT NOT NULL,
+    "vote_count" INTEGER NOT NULL,
+    "total_cost_eth" TEXT NOT NULL,
+    "tx_hash" TEXT UNIQUE NOT NULL,
+    "block_number" BIGINT NOT NULL,
+    "created_at" TIMESTAMPTZ(6)
+);
+```
+
+**user_stats** - User statistics
+```sql
+CREATE TABLE "user_stats" (
+    "id" UUID PRIMARY KEY,
+    "wallet_address" TEXT UNIQUE NOT NULL,
+    "qualification_votes" INTEGER DEFAULT 0,
+    "qualification_spent_eth" TEXT DEFAULT '0',
+    "qualification_won_eth" TEXT DEFAULT '0',
+    "countries_voted_for" INTEGER DEFAULT 0,
+    "total_votes" INTEGER DEFAULT 0,
+    "total_spent_eth" TEXT DEFAULT '0',
+    "total_won_eth" TEXT DEFAULT '0',
+    "rank" INTEGER,
+    "created_at" TIMESTAMPTZ(6),
+    "updated_at" TIMESTAMPTZ(6)
+);
+```
+
 ## Endpoints
 
 ### 1. Indexer Sync
@@ -78,13 +151,25 @@ Trigger blockchain event indexing and database updates.
 
 Get indexer status and last synced block.
 
-**Response:**
+**Response (Initialized):**
 ```json
 {
   "chainId": 84532,
   "lastIndexedBlock": "10100",
+  "lastIndexedAt": "2024-01-20T15:45:00.000Z",
   "status": "ready",
-  "message": "Indexer is ready. Call POST /api/indexer/sync to sync events."
+  "message": "Indexer is ready. Call POST /api/indexer/sync to sync new events."
+}
+```
+
+**Response (Not Initialized):**
+```json
+{
+  "chainId": 84532,
+  "lastIndexedBlock": null,
+  "lastIndexedAt": null,
+  "status": "not_initialized",
+  "message": "Indexer has not been initialized yet. Call POST /api/indexer/sync to start indexing."
 }
 ```
 

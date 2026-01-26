@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { indexEvents } from "@/lib/indexer/event-indexer"
+import { indexEvents, getLastIndexedBlock } from "@/lib/indexer/event-indexer"
 import { processEvents } from "@/lib/indexer/transaction-processor"
+import { prisma } from "@/lib/prisma"
 
 /**
  * POST /api/indexer/sync
@@ -92,13 +93,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // TODO: Implement getLastIndexedBlock from database
-    // For now, return a placeholder response
+    // Get indexer state from database
+    const indexerState = await prisma.indexerState.findUnique({
+      where: { chainId },
+    })
+
+    if (!indexerState) {
+      return NextResponse.json({
+        chainId,
+        lastIndexedBlock: null,
+        lastIndexedAt: null,
+        status: "not_initialized",
+        message: "Indexer has not been initialized yet. Call POST /api/indexer/sync to start indexing.",
+      })
+    }
+
     return NextResponse.json({
       chainId,
-      lastIndexedBlock: "0",
+      lastIndexedBlock: indexerState.lastIndexedBlock.toString(),
+      lastIndexedAt: indexerState.lastIndexedAt.toISOString(),
       status: "ready",
-      message: "Indexer is ready. Call POST /api/indexer/sync to sync events.",
+      message: "Indexer is ready. Call POST /api/indexer/sync to sync new events.",
     })
   } catch (error: any) {
     console.error("[Indexer API] Status check failed:", error)
