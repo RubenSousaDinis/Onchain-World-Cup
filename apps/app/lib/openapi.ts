@@ -19,6 +19,8 @@ export const openApiSpec = {
     },
   ],
   tags: [
+    { name: 'Indexer', description: 'Blockchain event indexing and synchronization' },
+    { name: 'Qualification', description: 'Qualification phase data and statistics' },
     { name: 'Matches', description: 'Match management and queries' },
     { name: 'Countries', description: 'Country/team data' },
     { name: 'Votes', description: 'Vote tracking and history' },
@@ -29,6 +31,318 @@ export const openApiSpec = {
     { name: 'Standings', description: 'Group standings and rankings' },
   ],
   paths: {
+    '/api/indexer/sync': {
+      get: {
+        tags: ['Indexer'],
+        summary: 'Get indexer status',
+        description: 'Check the current status and last indexed block for a blockchain',
+        parameters: [
+          {
+            name: 'chainId',
+            in: 'query',
+            schema: { type: 'integer', enum: [84532, 8453], default: 84532 },
+            description: 'Chain ID (84532 for Base Sepolia, 8453 for Base Mainnet)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    chainId: { type: 'integer' },
+                    lastIndexedBlock: { type: 'string', nullable: true },
+                    lastIndexedAt: { type: 'string', format: 'date-time', nullable: true },
+                    status: { type: 'string', enum: ['ready', 'not_initialized'] },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          400: { description: 'Invalid chainId' },
+        },
+      },
+      post: {
+        tags: ['Indexer'],
+        summary: 'Sync blockchain events',
+        description: 'Trigger blockchain event indexing and database updates',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['chainId'],
+                properties: {
+                  chainId: {
+                    type: 'integer',
+                    enum: [84532, 8453],
+                    description: 'Chain ID (84532 for Base Sepolia, 8453 for Base Mainnet)',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Sync completed successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    chainId: { type: 'integer' },
+                    blockRange: {
+                      type: 'object',
+                      properties: {
+                        from: { type: 'string' },
+                        to: { type: 'string' },
+                      },
+                    },
+                    processed: {
+                      type: 'object',
+                      properties: {
+                        votes: { type: 'integer' },
+                        qualifications: { type: 'integer' },
+                        claims: { type: 'integer' },
+                        countries: { type: 'integer' },
+                      },
+                    },
+                    message: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          400: { description: 'Invalid chainId' },
+          500: { description: 'Sync failed' },
+        },
+      },
+    },
+    '/api/qualification/countries': {
+      get: {
+        tags: ['Qualification'],
+        summary: 'List qualification country statistics',
+        description: 'Fetch aggregated voting statistics for all countries',
+        parameters: [
+          {
+            name: 'qualified',
+            in: 'query',
+            schema: { type: 'string', enum: ['true', 'false'] },
+            description: 'Filter by qualification status',
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            schema: { type: 'string', enum: ['votes', 'eth', 'code'], default: 'votes' },
+            description: 'Sort field',
+          },
+          {
+            name: 'order',
+            in: 'query',
+            schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+            description: 'Sort order',
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', default: 50, maximum: 100 },
+            description: 'Maximum number of results',
+          },
+          {
+            name: 'offset',
+            in: 'query',
+            schema: { type: 'integer', default: 0 },
+            description: 'Pagination offset',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/CountryStats' },
+                    },
+                    count: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    offset: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/qualification/countries/{code}': {
+      get: {
+        tags: ['Qualification'],
+        summary: 'Get country statistics',
+        description: 'Fetch detailed statistics for a specific country including rank and top voters',
+        parameters: [
+          {
+            name: 'code',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Country code (e.g., US, BR, GB-ENG)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { $ref: '#/components/schemas/CountryStatsDetailed' },
+                  },
+                },
+              },
+            },
+          },
+          404: { description: 'Country not found' },
+        },
+      },
+    },
+    '/api/qualification/votes': {
+      get: {
+        tags: ['Qualification'],
+        summary: 'List qualification votes',
+        description: 'Fetch vote history with filtering and pagination',
+        parameters: [
+          {
+            name: 'country',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filter by country code',
+          },
+          {
+            name: 'voter',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filter by voter address',
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            schema: { type: 'string', enum: ['recent', 'oldest', 'votes', 'cost'], default: 'recent' },
+            description: 'Sort field',
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', default: 20, maximum: 100 },
+          },
+          {
+            name: 'offset',
+            in: 'query',
+            schema: { type: 'integer', default: 0 },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/QualificationVote' },
+                    },
+                    count: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    offset: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/qualification/leaderboard': {
+      get: {
+        tags: ['Qualification'],
+        summary: 'Get qualification leaderboard',
+        description: 'Fetch top users by various metrics',
+        parameters: [
+          {
+            name: 'metric',
+            in: 'query',
+            schema: { type: 'string', enum: ['votes', 'spent', 'countries'], default: 'votes' },
+            description: 'Sort metric (votes: total votes, spent: ETH spent, countries: number of countries voted for)',
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', default: 10, maximum: 100 },
+          },
+          {
+            name: 'offset',
+            in: 'query',
+            schema: { type: 'integer', default: 0 },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/LeaderboardEntry' },
+                    },
+                    count: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    offset: { type: 'integer' },
+                    metric: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/qualification/summary': {
+      get: {
+        tags: ['Qualification'],
+        summary: 'Get qualification summary',
+        description: 'Fetch overall statistics, top countries, recent votes, and top voters',
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { $ref: '#/components/schemas/QualificationSummary' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     '/api/matches': {
       get: {
         tags: ['Matches'],
@@ -404,6 +718,91 @@ export const openApiSpec = {
           vote_difference: { type: 'integer' },
           points: { type: 'integer' },
           qualified: { type: 'boolean' },
+        },
+      },
+      CountryStats: {
+        type: 'object',
+        properties: {
+          country_code: { type: 'string', description: 'Country code (e.g., US, BR)' },
+          total_votes: { type: 'integer', description: 'Total votes received' },
+          total_eth: { type: 'string', description: 'Total ETH backing this country' },
+          qualified: { type: 'boolean', description: 'Whether country qualified' },
+          created_at: { type: 'string', format: 'date-time' },
+          updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      CountryStatsDetailed: {
+        type: 'object',
+        properties: {
+          country_code: { type: 'string' },
+          total_votes: { type: 'integer' },
+          total_eth: { type: 'string' },
+          qualified: { type: 'boolean' },
+          rank: { type: 'integer', description: '1-based ranking by votes' },
+          top_voters: {
+            type: 'array',
+            description: 'Top 5 voters for this country',
+            items: {
+              type: 'object',
+              properties: {
+                voter_address: { type: 'string' },
+                total_votes: { type: 'integer' },
+              },
+            },
+          },
+          created_at: { type: 'string', format: 'date-time' },
+          updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      QualificationVote: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          country_code: { type: 'string' },
+          voter_address: { type: 'string' },
+          vote_count: { type: 'integer', description: 'Number of votes purchased' },
+          total_cost_eth: { type: 'string', description: 'ETH spent on these votes' },
+          tx_hash: { type: 'string', description: 'Transaction hash' },
+          block_number: { type: 'integer', description: 'Block number' },
+          created_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      LeaderboardEntry: {
+        type: 'object',
+        properties: {
+          rank: { type: 'integer', description: '1-based rank' },
+          wallet_address: { type: 'string' },
+          qualification_votes: { type: 'integer' },
+          qualification_spent_eth: { type: 'string' },
+          qualification_won_eth: { type: 'string' },
+          countries_voted_for: { type: 'integer' },
+          created_at: { type: 'string', format: 'date-time' },
+          updated_at: { type: 'string', format: 'date-time' },
+        },
+      },
+      QualificationSummary: {
+        type: 'object',
+        properties: {
+          total_votes: { type: 'integer', description: 'Total votes across all countries' },
+          total_eth: { type: 'string', description: 'Total ETH spent' },
+          total_countries: { type: 'integer', description: 'Number of countries with votes' },
+          total_voters: { type: 'integer', description: 'Number of unique voters' },
+          qualified_count: { type: 'integer', description: 'Number of qualified countries' },
+          top_countries: {
+            type: 'array',
+            description: 'Top 5 countries by votes',
+            items: { $ref: '#/components/schemas/CountryStats' },
+          },
+          recent_votes: {
+            type: 'array',
+            description: '5 most recent votes',
+            items: { $ref: '#/components/schemas/QualificationVote' },
+          },
+          top_voters: {
+            type: 'array',
+            description: 'Top 5 voters',
+            items: { $ref: '#/components/schemas/LeaderboardEntry' },
+          },
         },
       },
     },
