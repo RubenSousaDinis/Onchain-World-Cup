@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { indexEvents, getLastIndexedBlock } from "@/lib/indexer/event-indexer"
+import { indexEvents } from "@/lib/indexer/event-indexer"
 import { processEvents } from "@/lib/indexer/transaction-processor"
 import { prisma } from "@/lib/prisma"
 
