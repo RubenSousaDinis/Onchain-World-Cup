@@ -14,9 +14,8 @@
  * - CountryAdded/CountryRemoved: Country list changes
  */
 
-import { createPublicClient, http, type Log, type Address, parseAbiItem } from "viem"
+import { createPublicClient, http, type Log, parseAbiItem } from "viem"
 import { base, baseSepolia } from "viem/chains"
-import WorldCupQualificationABI from "@/lib/contracts/types/contracts/WorldCupQualification.sol/WorldCupQualification.json"
 import { getQualificationAddress } from "@/lib/contracts/qualification"
 
 // Chain configuration

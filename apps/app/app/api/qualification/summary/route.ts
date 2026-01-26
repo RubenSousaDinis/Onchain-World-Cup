@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma"
  *
  * Caching: 5 minutes
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Create cached function
     const getSummary = unstable_cache(

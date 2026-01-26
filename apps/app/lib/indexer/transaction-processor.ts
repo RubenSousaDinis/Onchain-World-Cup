@@ -23,7 +23,7 @@ export async function processVotePlacedEvents(events: Log[]) {
 
   for (const event of events) {
     try {
-      const { voter, country, votes, cost, timestamp } = event.args as {
+      const { voter, country, votes, cost, timestamp: _timestamp } = event.args as {
         voter: string
         country: string
         votes: bigint
