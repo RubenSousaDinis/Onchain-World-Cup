@@ -3,6 +3,11 @@ import hre from "hardhat";
 /**
  * Vote for a country and immediately index the transaction
  *
+ * ⚠️ DEVELOPMENT ONLY - DO NOT RUN IN PRODUCTION ⚠️
+ *
+ * This script is designed for local testing and development purposes only.
+ * It should NOT be used in production environments.
+ *
  * This script:
  * 1. Connects to the WorldCupQualification contract
  * 2. Calculates the cost for the requested number of votes
@@ -19,6 +24,7 @@ import hre from "hardhat";
  *   - PRIVATE_KEY: Private key of the wallet voting
  *   - NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA: Contract address on Base Sepolia
  *   - NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET: Contract address on Base Mainnet (optional)
+ *   - NODE_ENV: Must be "development" or unset (defaults to development)
  */
 
 interface VoteResult {
@@ -30,6 +36,27 @@ interface VoteResult {
 }
 
 async function main() {
+  // Safety check: Only run in development
+  const nodeEnv = process.env.NODE_ENV || "development";
+
+  if (nodeEnv === "production") {
+    console.error("\n❌ ERROR: This script is for DEVELOPMENT ONLY");
+    console.error("❌ Running this script in production is not allowed.");
+    console.error("\nThis script is designed for:");
+    console.error("  - Local testing and development");
+    console.error("  - Seeding test data");
+    console.error("  - Manual testing of vote flow");
+    console.error("\nFor production voting:");
+    console.error("  - Users should vote through the web interface");
+    console.error("  - Votes are automatically indexed via the cron job");
+    console.error("\nIf you really need to run this, unset NODE_ENV:");
+    console.error("  unset NODE_ENV && npm run vote -- BR 5");
+    process.exit(1);
+  }
+
+  console.log("⚠️  DEVELOPMENT MODE - This script is for testing only");
+  console.log("Environment:", nodeEnv);
+
   // Parse command line arguments
   const args = process.argv.slice(2);
 
@@ -49,6 +76,18 @@ async function main() {
   const countryCode = args[0].toUpperCase();
   const voteCount = parseInt(args[1]);
   const chainId = args[2] ? parseInt(args[2]) : 84532; // Default to Base Sepolia
+
+  // Additional safety: Warn about mainnet usage
+  if (chainId === 8453) {
+    console.warn("\n⚠️  WARNING: You are about to interact with BASE MAINNET");
+    console.warn("⚠️  This will use REAL ETH and create REAL transactions");
+    console.warn("⚠️  Make sure this is intentional!");
+    console.warn("\nPress Ctrl+C within 5 seconds to cancel...\n");
+
+    // Wait 5 seconds to allow user to cancel
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    console.log("Proceeding with mainnet transaction...\n");
+  }
 
   // Validate inputs
   if (countryCode.length > 8) {
@@ -168,35 +207,34 @@ async function main() {
     blockNumber: voteResult.blockNumber.toString(),
   }, null, 2));
 
-  // Trigger immediate indexing via API (only in development)
-  if (process.env.NODE_ENV !== "production") {
-    console.log("\n========== Triggering Indexer API ==========");
+  // Trigger immediate indexing via API (development only)
+  console.log("\n========== Triggering Indexer API ==========");
 
-    const indexerUrl = "http://localhost:3101/api/indexer/sync";
+  const indexerUrl = "http://localhost:3101/api/indexer/sync";
 
-    try {
-      console.log("Calling indexer API:", indexerUrl);
-      const response = await fetch(indexerUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ chainId }),
-      });
+  try {
+    console.log("Calling indexer API:", indexerUrl);
+    const response = await fetch(indexerUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ chainId }),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("❌ Indexer API error:", response.status, errorText);
-      } else {
-        const result = await response.json();
-        console.log("✅ Indexer API response:", JSON.stringify(result, null, 2));
-      }
-    } catch (error) {
-      console.error("❌ Error calling indexer API:", error);
-      console.log("⚠️  Transaction is on blockchain but not indexed. The cron job will pick it up later.");
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Indexer API error:", response.status, errorText);
+      console.log("⚠️  This is normal if the dev server is not running.");
+      console.log("⚠️  Start dev server: npm run dev");
+    } else {
+      const result = await response.json();
+      console.log("✅ Indexer API response:", JSON.stringify(result, null, 2));
     }
-  } else {
-    console.log("\n⚠️  Skipping indexer API call (production mode). Transaction will be indexed by cron job.");
+  } catch (error) {
+    console.error("❌ Error calling indexer API:", error);
+    console.log("⚠️  Make sure the dev server is running: npm run dev");
+    console.log("⚠️  Transaction is on blockchain and will be indexed by cron job.");
   }
 
   console.log("\n✨ Vote complete!");

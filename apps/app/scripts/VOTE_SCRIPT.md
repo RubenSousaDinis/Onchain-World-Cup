@@ -1,6 +1,28 @@
 # Vote Script
 
+⚠️ **DEVELOPMENT ONLY** - This script is for local testing and development purposes only.
+
 A utility script to submit votes to the WorldCupQualification contract and immediately index them in the database.
+
+## ⚠️ Important Safety Notice
+
+This script is **ONLY for development and testing**. It should NOT be used in production environments.
+
+**The script will automatically exit if `NODE_ENV=production` is set.**
+
+### Why Development Only?
+
+- This script uses private keys directly from environment variables
+- It bypasses normal user authentication flows
+- It's designed for manual testing and data seeding
+- Production votes should go through the web interface
+
+### Production Voting
+
+In production, users should:
+- Vote through the web application interface
+- Authenticate with wallet signatures (SIWE/SIWF)
+- Votes are automatically indexed via the daily cron job
 
 ## Overview
 
@@ -86,10 +108,32 @@ npm run vote -- GB-ENG 1
 - Waits for the transaction to be mined
 - Displays block number and gas used
 
-### Step 5: Indexing (Development Only)
+### Step 5: Indexing
 - Calls `POST /api/indexer/sync` to immediately index the transaction
 - Updates database with vote data
-- In production, the cron job handles indexing
+- Requires dev server to be running (`npm run dev`)
+- If dev server is not running, transaction will still be on blockchain and indexed by cron job later
+
+## Safety Features
+
+### 1. Production Check
+The script automatically exits if `NODE_ENV=production`:
+```
+❌ ERROR: This script is for DEVELOPMENT ONLY
+❌ Running this script in production is not allowed.
+```
+
+### 2. Mainnet Warning
+When voting on Base Mainnet (chainId 8453), the script displays a 5-second warning:
+```
+⚠️  WARNING: You are about to interact with BASE MAINNET
+⚠️  This will use REAL ETH and create REAL transactions
+⚠️  Make sure this is intentional!
+
+Press Ctrl+C within 5 seconds to cancel...
+```
+
+This gives you time to cancel if you accidentally selected mainnet.
 
 ## Output
 
@@ -225,9 +269,25 @@ The script automatically detects the network from chain ID:
 - [Indexer Documentation](../lib/indexer/)
 - [Deployment Guide](./deploy-qualification.ts)
 
-## Notes
+## Security Notes
 
-- **Development Mode**: Authentication is bypassed for the indexer API in development
-- **Production Mode**: The script skips API indexing; the cron job handles it
+- ⚠️ **Development Only**: Script will not run if `NODE_ENV=production`
+- ⚠️ **Private Keys**: Never commit `.env.local` with real private keys
+- ⚠️ **Mainnet Warning**: 5-second delay before mainnet transactions
+- ⚠️ **Test Networks**: Prefer Base Sepolia for testing
+- **Authentication**: Indexer API authentication is bypassed in development
 - **Gas Prices**: The script uses default gas prices from the network
 - **Nonce Management**: Hardhat automatically manages nonces for sequential transactions
+
+## For Production Use
+
+**DO NOT use this script in production.** Instead:
+
+1. Users vote through the web interface at `https://your-domain.com`
+2. Users authenticate with wallet signatures (SIWE/SIWF)
+3. Frontend calls contract directly via wagmi
+4. Votes are indexed by:
+   - Immediate indexing via `/api/votes/immediate-index` (requires auth)
+   - Daily cron job at `/api/cron/indexer-sync`
+
+If you need to submit a vote programmatically in production, use the web API with proper authentication.
