@@ -9,7 +9,7 @@ import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
-import WorldCupQualificationABI from "@/artifacts/contracts/WorldCupQualification.sol/WorldCupQualification.json"
+import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -190,7 +190,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
       writeContract({
         address: contractAddress,
-        abi: WorldCupQualificationABI.abi,
+        abi: WORLD_CUP_QUALIFICATION_ABI,
         functionName: "vote",
         args: [countryCodeToBytes8(country?.code || "")],
         value: parseEther(totalCost.toString()),
