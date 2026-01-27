@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
-import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
-import { parseEther } from "viem"
+import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
+import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
+import { parseEther, formatEther } from "viem"
 import { useQueryClient } from "@tanstack/react-query"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
@@ -46,6 +46,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract()
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
+  // Get wallet balance
+  const { data: balanceData } = useBalance({
+    address: address,
+  })
+
   // Real-time vote price from contract (if contract address is provided)
   const {
     currentVotes: contractVotes,
@@ -69,6 +74,15 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const currentPrice = useMockPricing ? mockCurrentPrice : parseFloat(pricePerVote)
   const totalCost = useMockPricing ? mockTotalCost : parseFloat(votePrice)
   const displayVotes = useMockPricing ? country?.votes || 0 : contractVotes
+
+  // Calculate max votes based on wallet balance and current price
+  const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
+  const maxVotesPossible = currentPrice > 0 ? Math.floor(walletBalance / currentPrice) : 0
+
+  // Helper to format ETH values without trailing zeros
+  const formatETH = (value: number): string => {
+    return parseFloat(value.toFixed(6)).toString()
+  }
 
   useEffect(() => {
     if (!isOpen) {
@@ -178,12 +192,24 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     }
 
     // Step 3: Validate contract address
-    if (!contractAddress) {
-      error("Contract Not Available", "Smart contract is not deployed yet")
+    if (!contractAddress || contractAddress === "0x0000000000000000000000000000000000000000") {
+      error(
+        "Contract Not Available",
+        `The qualification contract is not deployed on ${chain?.name || "this network"} yet. Please try again later or switch to Base Sepolia testnet.`
+      )
       return
     }
 
-    // Step 4: Submit transaction to blockchain
+    // Step 4: Check wallet balance
+    if (walletBalance < totalCost) {
+      error(
+        "Insufficient Balance",
+        `You need ${formatETH(totalCost)} ETH but only have ${formatETH(walletBalance)} ETH`
+      )
+      return
+    }
+
+    // Step 5: Submit transaction to blockchain
     try {
       console.log("[Vote Modal] Submitting vote transaction")
       info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
@@ -198,6 +224,12 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     } catch (err) {
       console.error("Failed to submit vote:", err)
       error("Vote Failed", "Failed to submit your vote. Please try again.")
+    }
+  }
+
+  const handleMaxVotes = () => {
+    if (maxVotesPossible > 0) {
+      setVoteCount(maxVotesPossible)
     }
   }
 
@@ -234,9 +266,27 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </div>
           </div>
 
+          {/* Wallet Balance */}
+          {isConnected && balanceData && (
+            <div className="bg-secondary/20 border border-border rounded-sm p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Wallet Balance:</span>
+              </div>
+              <span className="font-bold cm-highlight">{formatETH(walletBalance)} ETH</span>
+            </div>
+          )}
+
           {/* Vote Count Selector */}
           <div className="space-y-2">
-            <label className="text-sm font-bold cm-highlight">Number of Votes</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold cm-highlight">Number of Votes</label>
+              {isConnected && maxVotesPossible > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  Max: {maxVotesPossible.toLocaleString("en-US")} votes
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setVoteCount(Math.max(1, voteCount - 1))}
@@ -269,6 +319,14 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   {amount}
                 </button>
               ))}
+              {isConnected && maxVotesPossible > 0 && (
+                <button
+                  onClick={handleMaxVotes}
+                  className="flex-1 bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30 py-1.5 text-xs lg:text-sm font-bold rounded-sm transition-colors"
+                >
+                  MAX
+                </button>
+              )}
             </div>
           </div>
 
@@ -277,20 +335,22 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Current Price per Vote:</span>
               <span className="font-bold cm-highlight">
-                {isPriceLoading && !useMockPricing ? "Loading..." : `${currentPrice.toFixed(6)} ETH`}
+                {isPriceLoading && !useMockPricing ? "Loading..." : `${formatETH(currentPrice)} ETH`}
                 {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1 text-xs lg:text-sm">LIVE</span>}
               </span>
             </div>
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
               <span className="text-accent">
-                {isPriceLoading && !useMockPricing ? "..." : `${totalCost.toFixed(6)} ETH`}
+                {isPriceLoading && !useMockPricing ? "..." : `${formatETH(totalCost)} ETH`}
               </span>
             </div>
             {useMockPricing && (
-              <p className="text-xs lg:text-sm text-muted-foreground italic">
-                * Estimated prices - Contract not deployed yet
-              </p>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-sm p-2">
+                <p className="text-xs text-yellow-500">
+                  ⚠️ Contract not deployed on {chain?.name || "this network"}. Prices are estimates only.
+                </p>
+              </div>
             )}
           </div>
 
@@ -351,7 +411,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                 ? "Connect Wallet"
                 : !isAuthenticated
                 ? "Sign In to Vote"
-                : `Vote ${totalCost.toFixed(6)} ETH`}
+                : `Vote ${formatETH(totalCost)} ETH`}
             </button>
           </div>
         </div>
