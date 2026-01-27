@@ -26,8 +26,24 @@ declare module "next-auth/jwt" {
   }
 }
 
+// Log environment configuration on startup
+console.log("[NextAuth Config] Initializing with:", {
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? `SET (${process.env.NEXTAUTH_SECRET.slice(0, 10)}...)` : "NOT SET",
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL || "NOT SET",
+  NODE_ENV: process.env.NODE_ENV,
+})
+
+// Validate required environment variables
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error("[NextAuth Config] ERROR: NEXTAUTH_SECRET is not set!")
+}
+if (!process.env.NEXTAUTH_URL) {
+  console.warn("[NextAuth Config] WARNING: NEXTAUTH_URL is not set (may cause issues in production)")
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Ethereum & Farcaster",
@@ -38,6 +54,7 @@ export const authOptions: NextAuthOptions = {
         fid: { label: "Farcaster ID", type: "text" },
       },
       async authorize(credentials) {
+        console.log("[NextAuth] authorize() called with authType:", credentials?.authType)
         try {
           if (!credentials?.message || !credentials?.signature) {
             console.error("[Auth] Missing credentials")
@@ -130,15 +147,22 @@ export const authOptions: NextAuthOptions = {
           }
 
           console.log(`[Auth] Authentication successful via ${authType} for:`, user.walletAddress)
-          return {
+          const userObject = {
             id: user.id,
             walletAddress: user.walletAddress,
             name: user.name,
             email: user.email,
             image: user.image,
           }
+          console.log("[Auth] Returning user object:", userObject)
+          return userObject
         } catch (error) {
           console.error("[Auth] Error during authorization:", error)
+          if (error instanceof Error) {
+            console.error("[Auth] Error name:", error.name)
+            console.error("[Auth] Error message:", error.message)
+            console.error("[Auth] Error stack:", error.stack)
+          }
           return null
         }
       },
@@ -150,16 +174,20 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      console.log("[NextAuth] jwt callback - user:", user ? "present" : "null")
       if (user) {
         token.id = user.id
         token.walletAddress = user.walletAddress
+        console.log("[NextAuth] jwt callback - set token for wallet:", user.walletAddress)
       }
       return token
     },
     async session({ session, token }) {
+      console.log("[NextAuth] session callback - token:", token ? "present" : "null")
       if (token && session.user) {
         session.user.id = token.id as string
         session.user.walletAddress = token.walletAddress as string
+        console.log("[NextAuth] session callback - session user wallet:", session.user.walletAddress)
       }
       return session
     },
@@ -168,7 +196,8 @@ export const authOptions: NextAuthOptions = {
     signIn: "/", // Redirect to home page for sign-in
     error: "/", // Redirect to home page on error
   },
-  debug: process.env.NODE_ENV === "development",
+  // Enable debug mode to get detailed error messages
+  debug: true,
 }
 
 const handler = NextAuth(authOptions)

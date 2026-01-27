@@ -33,14 +33,18 @@ export function useSIWEAuth() {
    */
   const loginWithFarcaster = async () => {
     console.log("[Farcaster Auth] Starting SIWF authentication...")
+    console.log("[Farcaster Auth] FID:", fid)
 
     try {
       // Import Farcaster SDK dynamically
       const { sdk } = await import("@farcaster/miniapp-sdk")
 
       // Fetch nonce from server
+      console.log("[Farcaster Auth] Fetching nonce from /api/auth/nonce...")
       const nonceResponse = await fetch("/api/auth/nonce")
-      const { nonce } = await nonceResponse.json()
+      const nonceData = await nonceResponse.json()
+      console.log("[Farcaster Auth] Nonce response:", nonceData)
+      const { nonce } = nonceData
 
       console.log("[Farcaster Auth] Nonce received, requesting signature from user...")
 
@@ -50,7 +54,9 @@ export function useSIWEAuth() {
         acceptAuthAddress: true, // Accept auth addresses for better UX
       })
 
-      console.log("[Farcaster Auth] Signature received, authenticating with Next-Auth...")
+      console.log("[Farcaster Auth] Signature received:", signature.slice(0, 20) + "...")
+      console.log("[Farcaster Auth] Message:", message)
+      console.log("[Farcaster Auth] Calling signIn with credentials...")
 
       // Authenticate with next-auth using Farcaster credentials
       const result = await signIn("credentials", {
@@ -61,8 +67,16 @@ export function useSIWEAuth() {
         redirect: false,
       })
 
+      console.log("[Farcaster Auth] signIn result:", result)
+
       if (result?.error) {
+        console.error("[Farcaster Auth] signIn returned error:", result.error)
         throw new Error(result.error)
+      }
+
+      if (!result?.ok) {
+        console.error("[Farcaster Auth] signIn returned NOT OK:", result)
+        throw new Error("Sign in failed")
       }
 
       console.log("[Farcaster Auth] Login successful for FID:", fid)
@@ -83,14 +97,20 @@ export function useSIWEAuth() {
    */
   const loginWithSIWE = async () => {
     console.log("[SIWE Auth] Starting SIWE authentication...")
+    console.log("[SIWE Auth] Wallet state:", { address, chainId: chain?.id })
 
     if (!address || !chain) {
-      throw new Error("Wallet not connected")
+      const error = "Wallet not connected"
+      console.error("[SIWE Auth] Error:", error)
+      throw new Error(error)
     }
 
     // Fetch nonce from server
+    console.log("[SIWE Auth] Fetching nonce from /api/auth/nonce...")
     const nonceResponse = await fetch("/api/auth/nonce")
-    const { nonce } = await nonceResponse.json()
+    const nonceData = await nonceResponse.json()
+    console.log("[SIWE Auth] Nonce response:", nonceData)
+    const { nonce } = nonceData
 
     // Create SIWE message
     const message = new SiweMessage({
@@ -103,14 +123,21 @@ export function useSIWEAuth() {
       nonce,
     })
 
-    console.log("[SIWE Auth] SIWE message created, requesting signature from wallet...")
+    console.log("[SIWE Auth] SIWE message created:", {
+      domain: message.domain,
+      address: message.address,
+      uri: message.uri,
+      chainId: message.chainId,
+    })
+    console.log("[SIWE Auth] Requesting signature from wallet...")
 
     // Sign message with wallet
     const signature = await signMessageAsync({
       message: message.prepareMessage(),
     })
 
-    console.log("[SIWE Auth] Signature received, authenticating with Next-Auth...")
+    console.log("[SIWE Auth] Signature received:", signature.slice(0, 20) + "...")
+    console.log("[SIWE Auth] Calling signIn with credentials...")
 
     // Authenticate with next-auth
     const result = await signIn("credentials", {
@@ -120,8 +147,16 @@ export function useSIWEAuth() {
       redirect: false,
     })
 
+    console.log("[SIWE Auth] signIn result:", result)
+
     if (result?.error) {
+      console.error("[SIWE Auth] signIn returned error:", result.error)
       throw new Error(result.error)
+    }
+
+    if (!result?.ok) {
+      console.error("[SIWE Auth] signIn returned NOT OK:", result)
+      throw new Error("Sign in failed")
     }
 
     console.log("[SIWE Auth] Login successful for:", address)
