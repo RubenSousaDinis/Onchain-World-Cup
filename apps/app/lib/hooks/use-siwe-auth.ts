@@ -1,0 +1,180 @@
+"use client"
+
+import { useAccount, useSignMessage } from "wagmi"
+import { signIn, signOut, useSession } from "next-auth/react"
+import { SiweMessage } from "siwe"
+import { useState } from "react"
+import { useFarcaster } from "@/lib/farcaster-provider"
+
+/**
+ * Custom hook for unified authentication (SIWE + SIWF)
+ * - Uses SIWF (Sign in with Farcaster) when in Farcaster Mini App
+ * - Uses SIWE (Sign in with Ethereum) for regular web
+ *
+ * Usage:
+ * ```tsx
+ * const { login, logout, isAuthenticated, isLoading, session } = useSIWEAuth()
+ *
+ * // Check if user is authenticated
+ * if (!isAuthenticated) {
+ *   await login()
+ * }
+ * ```
+ */
+export function useSIWEAuth() {
+  const { address, chain } = useAccount()
+  const { signMessageAsync } = useSignMessage()
+  const { data: session, status } = useSession()
+  const { isFarcasterMiniApp, fid } = useFarcaster()
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  /**
+   * Farcaster authentication using SIWF
+   */
+  const loginWithFarcaster = async () => {
+    console.log("[Farcaster Auth] Starting SIWF authentication...")
+
+    try {
+      // Import Farcaster SDK dynamically
+      const { sdk } = await import("@farcaster/miniapp-sdk")
+
+      // Fetch nonce from server
+      const nonceResponse = await fetch("/api/auth/nonce")
+      const { nonce } = await nonceResponse.json()
+
+      console.log("[Farcaster Auth] Nonce received, requesting signature from user...")
+
+      // Request signature from Farcaster
+      const { signature, message } = await sdk.actions.signIn({
+        nonce,
+        acceptAuthAddress: true, // Accept auth addresses for better UX
+      })
+
+      console.log("[Farcaster Auth] Signature received, authenticating with Next-Auth...")
+
+      // Authenticate with next-auth using Farcaster credentials
+      const result = await signIn("credentials", {
+        message,
+        signature,
+        authType: "farcaster",
+        fid: fid?.toString(),
+        redirect: false,
+      })
+
+      if (result?.error) {
+        throw new Error(result.error)
+      }
+
+      console.log("[Farcaster Auth] Login successful for FID:", fid)
+      return result
+    } catch (error) {
+      // Handle user rejection specifically
+      if (error && typeof error === "object" && "name" in error && error.name === "RejectedByUser") {
+        console.log("[Farcaster Auth] User rejected sign-in request")
+        throw new Error("User rejected the sign-in request")
+      }
+      console.error("[Farcaster Auth] Login failed:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Standard SIWE authentication for web
+   */
+  const loginWithSIWE = async () => {
+    console.log("[SIWE Auth] Starting SIWE authentication...")
+
+    if (!address || !chain) {
+      throw new Error("Wallet not connected")
+    }
+
+    // Fetch nonce from server
+    const nonceResponse = await fetch("/api/auth/nonce")
+    const { nonce } = await nonceResponse.json()
+
+    // Create SIWE message
+    const message = new SiweMessage({
+      domain: window.location.host,
+      address,
+      statement: "Sign in to Onchain World Cup with your wallet",
+      uri: window.location.origin,
+      version: "1",
+      chainId: chain.id,
+      nonce,
+    })
+
+    console.log("[SIWE Auth] SIWE message created, requesting signature from wallet...")
+
+    // Sign message with wallet
+    const signature = await signMessageAsync({
+      message: message.prepareMessage(),
+    })
+
+    console.log("[SIWE Auth] Signature received, authenticating with Next-Auth...")
+
+    // Authenticate with next-auth
+    const result = await signIn("credentials", {
+      message: JSON.stringify(message),
+      signature,
+      authType: "siwe",
+      redirect: false,
+    })
+
+    if (result?.error) {
+      throw new Error(result.error)
+    }
+
+    console.log("[SIWE Auth] Login successful for:", address)
+    return result
+  }
+
+  /**
+   * Unified login method that chooses the right authentication method
+   */
+  const login = async () => {
+    console.log("[useSIWEAuth] login() called, state:", {
+      address,
+      chain: chain?.id,
+      isFarcasterMiniApp,
+      fid,
+      isLoggingIn
+    })
+
+    setIsLoggingIn(true)
+    try {
+      // Choose authentication method based on context
+      if (isFarcasterMiniApp && fid) {
+        console.log("[Auth] Using Farcaster authentication (SIWF)")
+        return await loginWithFarcaster()
+      } else {
+        console.log("[Auth] Using wallet authentication (SIWE)")
+        return await loginWithSIWE()
+      }
+    } catch (error) {
+      console.error("[Auth] Login failed:", error)
+      throw error
+    } finally {
+      setIsLoggingIn(false)
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await signOut({ redirect: false })
+      console.log("[Auth] Logout successful")
+    } catch (error) {
+      console.error("[Auth] Logout failed:", error)
+      throw error
+    }
+  }
+
+  return {
+    login,
+    logout,
+    session,
+    isAuthenticated: status === "authenticated",
+    isLoading: status === "loading" || isLoggingIn,
+    walletAddress: session?.user?.walletAddress,
+    authMethod: isFarcasterMiniApp ? "farcaster" : "siwe",
+  }
+}

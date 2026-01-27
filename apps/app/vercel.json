@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/indexer-sync",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}

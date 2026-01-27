@@ -11,7 +11,7 @@
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { Address, parseEther, formatEther } from "viem"
-import WorldCupQualificationABI from "@/lib/contracts/types/contracts/WorldCupQualification.sol/WorldCupQualification.json"
+import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 
 /**
  * Get the qualification contract address for the current chain
@@ -69,7 +69,7 @@ export function useVotePrice(chainId: number, countryCode: string) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "votePrice",
     args: [countryBytes],
     query: {
@@ -87,7 +87,7 @@ export function useCalculateVoteCost(chainId: number, countryCode: string, votes
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVoteCost",
     args: [countryBytes, BigInt(votes)],
     query: {
@@ -105,7 +105,7 @@ export function useCountryVotes(chainId: number, countryCode: string) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "countryVotes",
     args: [countryBytes],
     query: {
@@ -123,7 +123,7 @@ export function useCountryETH(chainId: number, countryCode: string) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getETHPerCountry",
     args: [countryBytes],
     query: {
@@ -141,7 +141,7 @@ export function useUserVotes(chainId: number, userAddress: Address | undefined, 
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "userVotes",
     args: [userAddress!, countryBytes],
     query: {
@@ -158,7 +158,7 @@ export function useGetUserVotes(chainId: number, userAddress: Address | undefine
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getUserVotes",
     args: [userAddress!],
     query: {
@@ -176,7 +176,7 @@ export function useIsQualified(chainId: number, countryCode: string) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "isQualified",
     args: [countryBytes],
     query: {
@@ -193,7 +193,7 @@ export function useQualificationFinalized(chainId: number) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationFinalized",
   })
 }
@@ -206,7 +206,7 @@ export function useQualificationStartTime(chainId: number) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationStartTime",
   })
 }
@@ -219,7 +219,7 @@ export function useQualificationEndTime(chainId: number) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationEndTime",
   })
 }
@@ -232,7 +232,7 @@ export function useTotalPrizePool(chainId: number) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getTotalPrizePool",
   })
 }
@@ -245,7 +245,7 @@ export function useClaimable(chainId: number, userAddress: Address | undefined) 
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "claimable",
     args: [userAddress!],
     query: {
@@ -262,7 +262,7 @@ export function usePaused(chainId: number) {
 
   return useReadContract({
     address,
-    abi: WorldCupQualificationABI.abi,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "paused",
   })
 }
@@ -291,7 +291,7 @@ export function useVote() {
 
     return writeContract({
       address,
-      abi: WorldCupQualificationABI.abi,
+      abi: WORLD_CUP_QUALIFICATION_ABI,
       functionName: "vote",
       args: [countryBytes, BigInt(votes)],
       value,
@@ -316,7 +316,7 @@ export function useClaim() {
 
     return writeContract({
       address,
-      abi: WorldCupQualificationABI.abi,
+      abi: WORLD_CUP_QUALIFICATION_ABI,
       functionName: "claim",
     })
   }

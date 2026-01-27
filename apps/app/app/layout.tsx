@@ -6,6 +6,8 @@ import { Web3Provider } from "@/components/providers/web3-provider"
 import { FarcasterProvider } from "@/lib/farcaster-provider"
 import { FarcasterReady } from "@/components/farcaster-ready"
 import { QueryProvider } from "@/providers/query-provider"
+import { SessionProvider } from "@/providers/session-provider"
+import { AutoAuthProvider } from "@/providers/auto-auth-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
@@ -108,13 +110,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <SkipToContent />
         <DemoBanner />
         <QueryProvider>
-          <Web3Provider>
-            <FarcasterProvider>
-              <NotificationProvider>
-                <OnboardingProvider>{children}</OnboardingProvider>
-              </NotificationProvider>
-            </FarcasterProvider>
-          </Web3Provider>
+          <SessionProvider>
+            <Web3Provider>
+              <FarcasterProvider>
+                <NotificationProvider>
+                  <AutoAuthProvider>
+                    <OnboardingProvider>{children}</OnboardingProvider>
+                  </AutoAuthProvider>
+                </NotificationProvider>
+              </FarcasterProvider>
+            </Web3Provider>
+          </SessionProvider>
         </QueryProvider>
       </body>
     </html>

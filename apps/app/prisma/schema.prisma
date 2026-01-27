@@ -37,9 +37,13 @@ model QualificationVote {
   blockNumber  BigInt   @map("block_number")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  // Foreign key to indexed_transactions (enforces referential integrity)
+  transaction  IndexedTransaction @relation(fields: [txHash], references: [txHash], onDelete: Cascade)
+
   @@index([countryCode])
   @@index([voterAddress])
   @@index([createdAt])
+  @@index([txHash])
   @@map("qualification_votes")
 }
 
@@ -64,6 +68,10 @@ model UserStat {
   createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  // Optional link to authenticated User (for next-auth integration)
+  userId                   String?   @unique @map("user_id") @db.Uuid
+  user                     User?     @relation(fields: [userId], references: [id])
+
   @@index([walletAddress])
   @@index([rank])
   @@index([qualificationVotes])
@@ -87,4 +95,106 @@ model FarcasterNotificationToken {
   @@index([fid])
   @@index([enabled])
   @@map("farcaster_notification_tokens")
+}
+
+// Indexer state tracking for blockchain event synchronization
+model IndexerState {
+  chainId          Int      @id @map("chain_id") // 84532 (Base Sepolia) or 8453 (Base Mainnet)
+  lastIndexedBlock BigInt   @map("last_indexed_block") // Last block number indexed
+  lastIndexedAt    DateTime @map("last_indexed_at") @db.Timestamptz(6) // Timestamp of last indexing
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("indexer_state")
+}
+
+// Transaction indexing tracking (for both immediate and cron-based indexing)
+model IndexedTransaction {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  txHash          String    @unique @map("tx_hash")
+  contractAddress String    @map("contract_address")
+  walletAddress   String    @map("wallet_address")
+  chainId         Int       @map("chain_id")
+  syncType        String    @map("sync_type") // "immediate" | "cron"
+  status          String    // "pending" | "confirmed" | "failed" | "replaced"
+  blockNumber     BigInt?   @map("block_number")
+  eventType       String    @map("event_type") // "vote" | "claim" | "qualification"
+  metadata        Json?     // Flexible field for vote data, error messages, etc.
+  indexedAt       DateTime  @default(now()) @map("indexed_at") @db.Timestamptz(6)
+  confirmedAt     DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  errorMessage    String?   @map("error_message")
+
+  // Relationship: One transaction can have one vote
+  vote QualificationVote?
+
+  @@index([txHash])
+  @@index([walletAddress])
+  @@index([syncType])
+  @@index([status])
+  @@index([chainId])
+  @@index([contractAddress])
+  @@map("indexed_transactions")
+}
+
+// Next-Auth User model for SIWE authentication
+model User {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress String    @unique @map("wallet_address")
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  accounts Account[]
+  sessions Session[]
+  stats    UserStat?
+
+  @@index([walletAddress])
+  @@map("users")
+}
+
+// Next-Auth Account model
+model Account {
+  id                String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// Next-Auth Session model
+model Session {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// Next-Auth VerificationToken model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }

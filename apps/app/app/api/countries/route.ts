@@ -1,83 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { unstable_cache } from 'next/cache'
-import { getSupabaseClient } from '@/lib/server/supabase'
+import { countries } from '@/lib/countries'
+import { prisma } from '@/lib/prisma'
+import { handleOptions, addCorsHeaders } from '@/lib/api-utils'
+
+/**
+ * OPTIONS /api/countries
+ * Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return handleOptions()
+}
 
 /**
  * GET /api/countries
- * Fetch all countries
+ * Fetch all countries with optional voting statistics
  *
  * Query params:
- *   - qualified: 'true' | 'false' (optional) - filter by qualification status
- *   - group: string (optional) - filter by group (e.g., 'A', 'B', 'C')
+ *   - includeStats: 'true' | 'false' (optional) - include voting statistics from country_stats
+ *   - qualified: 'true' | 'false' (optional) - filter by qualification status (requires includeStats=true)
  *   - limit: number (default: 100)
  *   - offset: number (default: 0)
  *
- * Caching: 1 day (countries rarely change)
+ * Returns static country data (code, name, flag) optionally merged with voting stats
+ *
+ * Caching: 1 day for static data, 5 minutes for data with stats
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters
-    const qualified = searchParams.get('qualified') || undefined
-    const group = searchParams.get('group') || undefined
+    const includeStats = searchParams.get('includeStats') === 'true'
+    const qualified = searchParams.get('qualified')
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Create cached function for fetching countries
-    const getCountries = unstable_cache(
-      async () => {
-        const supabase = getSupabaseClient()
+    let result = countries
 
-        // Build query
-        let query = supabase
-          .from('countries')
-          .select('*', { count: 'exact' })
-          .order('fifa_rank', { ascending: true, nullsFirst: false })
-          .range(offset, offset + limit - 1)
+    // Optionally merge with voting statistics
+    if (includeStats) {
+      const stats = await prisma.countryStats.findMany()
+      const statsMap = new Map(stats.map((s) => [s.countryCode, s]))
 
-        // Apply filters
-        if (qualified === 'true') {
-          query = query.eq('qualified', true)
-        } else if (qualified === 'false') {
-          query = query.eq('qualified', false)
-        }
-
-        if (group) {
-          query = query.eq('group', group.toUpperCase())
-        }
-
-        const { data, error, count } = await query
-
-        if (error) {
-          throw new Error(`Failed to fetch countries: ${error.message}`)
-        }
-
+      result = countries.map((country) => {
+        const countryStats = statsMap.get(country.code)
         return {
-          data,
-          count,
-          limit,
-          offset,
+          code: country.code,
+          name: country.name,
+          flag_emoji: country.flagEmoji,
+          total_votes: countryStats?.totalVotes || 0,
+          total_eth: countryStats?.totalEth || '0',
+          qualified: countryStats?.qualified || false,
         }
-      },
-      ['countries', qualified || 'all', group || 'all', String(limit), String(offset)],
-      {
-        revalidate: 86400, // 1 day
-        tags: ['countries'],
+      })
+
+      // Apply qualified filter if requested
+      if (qualified === 'true') {
+        result = result.filter((c: any) => c.qualified === true)
+      } else if (qualified === 'false') {
+        result = result.filter((c: any) => c.qualified === false)
       }
+    }
+
+    // Apply pagination
+    const paginatedData = result.slice(offset, offset + limit)
+
+    const response = NextResponse.json({
+      data: paginatedData,
+      count: result.length,
+      limit,
+      offset,
+    })
+
+    // Cache static data for 1 day, data with stats for 5 minutes
+    const cacheTime = includeStats ? 300 : 86400
+    response.headers.set(
+      'Cache-Control',
+      `public, s-maxage=${cacheTime}, stale-while-revalidate=${cacheTime * 2}`
     )
 
-    const result = await getCountries()
-
-    const response = NextResponse.json(result)
-    response.headers.set('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=172800')
-    return response
+    return addCorsHeaders(response)
   } catch (error) {
     console.error('Unexpected error in GET /api/countries:', error)
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     )
+    return addCorsHeaders(response)
   }
 }
 
