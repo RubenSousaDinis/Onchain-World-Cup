@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { useAccount } from "wagmi"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useNotifications } from "@/components/notifications"
+import { useFarcaster } from "@/lib/farcaster-provider"
 
 /**
  * Auto-Authentication Provider
@@ -19,6 +20,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected } = useAccount()
   const { isAuthenticated, login, isLoading, logout } = useSIWEAuth()
   const { info, success, error } = useNotifications()
+  const { isFarcasterMiniApp } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
 
   // Sign out when wallet disconnects
@@ -52,10 +54,14 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     // Trigger authentication after a short delay to allow UI to settle
     const timer = setTimeout(async () => {
       console.log("[AutoAuth] Executing authentication flow")
-      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated })
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp })
 
       try {
-        info("Authentication Required", "Please sign the message to authenticate with your wallet")
+        // In Farcaster, authentication is automatic (no user interaction needed)
+        // In desktop, user needs to sign a message
+        if (!isFarcasterMiniApp) {
+          info("Authentication Required", "Please sign the message to authenticate with your wallet")
+        }
 
         console.log("[AutoAuth] Calling login()...")
         const result = await login()
@@ -67,7 +73,13 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           url: result?.url,
           error: result?.error,
         })
-        success("Authenticated Successfully", "You're now signed in and can place votes")
+
+        // Show success message
+        if (isFarcasterMiniApp) {
+          success("Authenticated", "You can now place votes!")
+        } else {
+          success("Authenticated Successfully", "You're now signed in and can place votes")
+        }
       } catch (err) {
         console.error("[AutoAuth] Authentication failed:", err)
         console.error("[AutoAuth] Error details:", {
@@ -90,7 +102,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }, 1000) // 1 second delay to let wallet connection settle
 
     return () => clearTimeout(timer)
-  }, [isConnected, isAuthenticated, address, isLoading, login, info, success, error])
+  }, [isConnected, isAuthenticated, address, isLoading, login, info, success, error, isFarcasterMiniApp])
 
   // This provider doesn't render anything, just manages authentication
   return <>{children}</>
