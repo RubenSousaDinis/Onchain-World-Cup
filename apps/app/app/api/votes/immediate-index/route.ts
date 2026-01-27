@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
         success: true,
         txHash,
         status: "pending",
-        message: "Transaction indexed immediately - will be confirmed by cron job within 5 minutes",
+        message: "Transaction indexed immediately - will be confirmed by daily cron job within 24 hours",
       },
       { status: 201 }
     )

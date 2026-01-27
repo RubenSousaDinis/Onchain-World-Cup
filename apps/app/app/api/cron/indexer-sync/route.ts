@@ -7,7 +7,7 @@ import { jsonResponse } from "@/lib/api-utils"
  * GET /api/cron/indexer-sync
  *
  * Cron job endpoint for automatic blockchain event indexing.
- * Called by Vercel Cron every 5 minutes.
+ * Called by Vercel Cron once daily at midnight UTC.
  *
  * Security:
  * - Verifies CRON_SECRET environment variable

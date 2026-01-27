@@ -156,7 +156,7 @@ fetch('/api/indexer/sync', {
 
 ### Automatic Syncing (Recommended)
 
-**Vercel Cron Job** - Runs every 5 minutes on the server:
+**Vercel Cron Job** - Runs once daily at midnight UTC on the server (Hobby plan limitation):
 
 ```json
 // vercel.json
@@ -164,7 +164,7 @@ fetch('/api/indexer/sync', {
   "crons": [
     {
       "path": "/api/cron/indexer-sync",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
@@ -172,7 +172,7 @@ fetch('/api/indexer/sync', {
 
 **Flow:**
 ```
-1. Vercel Cron triggers (server-side, every 5 minutes)
+1. Vercel Cron triggers (server-side, daily at midnight UTC)
 2. Calls /api/cron/indexer-sync with CRON_SECRET
 3. Fetches events from blockchain (RPC call)
 4. Updates database with new votes/events

@@ -123,13 +123,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
             onClose()
           } else {
-            error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the cron job within 5 minutes.")
+            error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the daily cron job within 24 hours.")
           }
         })
         .catch((err) => {
           console.error("Failed to index vote:", err)
           setIsIndexing(false)
-          error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed within 5 minutes.")
+          error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed by the daily cron job within 24 hours.")
         })
     }
   }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, info, queryClient, onClose])
