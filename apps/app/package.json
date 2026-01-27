@@ -20,6 +20,7 @@
     "deploy:qualification:sepolia": "hardhat run scripts/deploy-qualification.ts --network baseSepolia",
     "deploy:qualification:mainnet": "hardhat run scripts/deploy-qualification.ts --network baseMainnet",
     "seed:countries": "tsx scripts/seed-countries.ts",
+    "vote": "hardhat run scripts/vote-and-index.ts",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prisma:push": "prisma db push",
