@@ -52,15 +52,29 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     // Trigger authentication after a short delay to allow UI to settle
     const timer = setTimeout(async () => {
       console.log("[AutoAuth] Executing authentication flow")
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated })
+
       try {
         info("Authentication Required", "Please sign the message to authenticate with your wallet")
 
+        console.log("[AutoAuth] Calling login()...")
         const result = await login()
 
         console.log("[AutoAuth] Authentication successful:", result)
+        console.log("[AutoAuth] Result details:", {
+          ok: result?.ok,
+          status: result?.status,
+          url: result?.url,
+          error: result?.error,
+        })
         success("Authenticated Successfully", "You're now signed in and can place votes")
       } catch (err) {
         console.error("[AutoAuth] Authentication failed:", err)
+        console.error("[AutoAuth] Error details:", {
+          name: err instanceof Error ? err.name : "Unknown",
+          message: err instanceof Error ? err.message : "Unknown error",
+          stack: err instanceof Error ? err.stack : undefined,
+        })
         const errorMessage = err instanceof Error ? err.message : "Unknown error"
 
         // Don't show error if user rejected (they might want to skip auth)
