@@ -49,6 +49,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   // Get wallet balance
   const { data: balanceData } = useBalance({
     address: address,
+    chainId: chain?.id,
   })
 
   // Real-time vote price from contract (if contract address is provided)
