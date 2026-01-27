@@ -50,11 +50,11 @@ export function MobileNav() {
                 aria-label={`Navigate to ${item.label}`}
               >
                 {item.isLogo ? (
-                  <div className="w-6 h-6 rounded-sm bg-primary flex items-center justify-center overflow-hidden pointer-events-none">
+                  <div className="w-5 h-5 rounded-sm bg-primary flex items-center justify-center overflow-hidden pointer-events-none">
                     <img src="/logo.png" alt="Onchain World Cup logo" className="w-full h-full object-contain p-0.5" />
                   </div>
                 ) : (
-                  Icon && <Icon className="w-6 h-6" aria-hidden="true" />
+                  Icon && <Icon className="w-5 h-5" aria-hidden="true" />
                 )}
                 <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
                   {item.label}
@@ -70,7 +70,7 @@ export function MobileNav() {
               className="group relative flex flex-col items-center gap-1 py-2 px-3 rounded-sm transition-colors min-w-[44px] cm-nav-tab"
               aria-label="Connect wallet"
             >
-              <Wallet className="w-6 h-6" aria-hidden="true" />
+              <Wallet className="w-5 h-5" aria-hidden="true" />
               <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
                 CONNECT
               </span>
@@ -89,7 +89,7 @@ export function MobileNav() {
               {isFrameContext && (pfpUrl || username) ? (
                 <>
                   {pfpUrl && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden mb-0.5">
+                    <div className="w-6 h-6 rounded-full overflow-hidden mb-0.5">
                       <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -108,7 +108,7 @@ export function MobileNav() {
             </button>
           ) : isAutoConnecting ? (
             <div className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground" role="status" aria-live="polite">
-              <Wallet className="w-6 h-6" aria-hidden="true" />
+              <Wallet className="w-5 h-5" aria-hidden="true" />
               <span className="text-xs font-medium text-center leading-tight opacity-0">Connecting...</span>
             </div>
           ) : null}
