@@ -86,23 +86,15 @@ export function AddAppCTA() {
     )
   }
 
-  // Not in Farcaster context - prompt to open in Farcaster
+  // Not in Farcaster context - show alternative message
   if (!inFarcaster) {
     return (
       <div className="cm-panel p-6 text-center">
-        <Wallet className="w-12 h-12 mx-auto mb-4 text-accent" />
-        <h3 className="text-xl font-bold mb-2">Open in Farcaster</h3>
+        <Bell className="w-12 h-12 mx-auto mb-4 text-accent" />
+        <h3 className="text-xl font-bold mb-2">Stay Updated</h3>
         <p className="text-muted-foreground mb-4">
-          Get notified when qualification opens
+          Connect your wallet to get started with voting when qualification opens
         </p>
-        <a
-          href="https://warpcast.com/~/add-cast-action?url=https://app.onchainworldcup.xyz"
-          className="cm-nav-tab inline-block px-6 py-3"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open in Farcaster
-        </a>
       </div>
     )
   }
