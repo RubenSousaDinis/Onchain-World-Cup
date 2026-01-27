@@ -18,7 +18,7 @@ import { useFarcaster } from "@/lib/farcaster-provider"
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected } = useAccount()
-  const { isAuthenticated, login, isLoading, logout } = useSIWEAuth()
+  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet } = useSIWEAuth()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
@@ -36,6 +36,22 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isConnected, isAuthenticated, logout])
 
+  // Sign out when wallet address changes (user switched wallets)
+  useEffect(() => {
+    if (isConnected && address && isAuthenticated && sessionWallet) {
+      const normalizedAddress = address.toLowerCase()
+      const normalizedSessionWallet = sessionWallet.toLowerCase()
+
+      if (normalizedAddress !== normalizedSessionWallet) {
+        console.log("[AutoAuth] Wallet address mismatch → Signing out and re-authenticating")
+        console.log("[AutoAuth] Connected wallet:", normalizedAddress)
+        console.log("[AutoAuth] Session wallet:", normalizedSessionWallet)
+        logout()
+        hasTriggeredAuth.current = false
+      }
+    }
+  }, [address, isConnected, isAuthenticated, sessionWallet, logout])
+
   // Trigger authentication when wallet connects
   useEffect(() => {
     // Only proceed if wallet is connected
@@ -43,8 +59,19 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // Don't trigger if already authenticated or already tried
-    if (isAuthenticated || hasTriggeredAuth.current || isLoading) {
+    // If authenticated and session wallet matches connected wallet, we're good
+    if (isAuthenticated && sessionWallet) {
+      const normalizedAddress = address.toLowerCase()
+      const normalizedSessionWallet = sessionWallet.toLowerCase()
+
+      if (normalizedAddress === normalizedSessionWallet) {
+        console.log("[AutoAuth] Already authenticated with matching wallet")
+        return
+      }
+    }
+
+    // Don't trigger if already tried or currently loading
+    if (hasTriggeredAuth.current || isLoading) {
       return
     }
 
