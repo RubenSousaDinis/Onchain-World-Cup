@@ -2,9 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
-import { useAccount, useConnect } from "wagmi"
+import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { parseEther } from "viem"
+import { useQueryClient } from "@tanstack/react-query"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
+import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
+import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
+import WorldCupQualificationABI from "@/artifacts/contracts/WorldCupQualification.sol/WorldCupQualification.json"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -21,11 +26,25 @@ interface QualificationVoteModalProps {
 
 export function QualificationVoteModal({ isOpen, onClose, country, contractAddress }: QualificationVoteModalProps) {
   const [voteCount, setVoteCount] = useState(1)
-  const [isVoting, setIsVoting] = useState(false)
+  const [isIndexing, setIsIndexing] = useState(false)
 
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
   const { success, error, info } = useNotifications()
+  const { isAuthenticated, login } = useSIWEAuth()
+  const queryClient = useQueryClient()
+
+  // Debug logging for authentication state
+  console.log("[Vote Modal] Auth state:", {
+    isConnected,
+    isAuthenticated,
+    address,
+    isOpen
+  })
+
+  // Contract interaction hooks
+  const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract()
+  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
   // Real-time vote price from contract (if contract address is provided)
   const {
@@ -54,7 +73,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   useEffect(() => {
     if (!isOpen) {
       setVoteCount(1)
-      setIsVoting(false)
+      setIsIndexing(false)
     }
   }, [isOpen])
 
@@ -68,17 +87,74 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return () => window.removeEventListener("keydown", handleEscape as any)
   }, [isOpen, onClose])
 
+  // Handle immediate indexing when transaction is confirmed
+  useEffect(() => {
+    if (isConfirmed && hash && country && contractAddress && address && chain) {
+      setIsIndexing(true)
+      info("Indexing Vote", "Saving your vote to the database...")
+
+      // Call immediate indexing API
+      fetch("/api/votes/immediate-index", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          txHash: hash,
+          contractAddress: contractAddress,
+          walletAddress: address,
+          chainId: chain.id,
+          countryCode: country.code,
+          voteCount: voteCount,
+          totalCostEth: totalCost.toString(),
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setIsIndexing(false)
+          if (data.success) {
+            success(
+              "Vote Recorded!",
+              `Your ${voteCount} vote${voteCount !== 1 ? "s" : ""} for ${country.name} ${voteCount !== 1 ? "have" : "has"} been recorded on-chain and indexed`
+            )
+
+            // Invalidate queries to refresh data
+            queryClient.invalidateQueries({ queryKey: ["qualification-votes"] })
+            queryClient.invalidateQueries({ queryKey: ["country-stats"] })
+            queryClient.invalidateQueries({ queryKey: ["user-stats"] })
+
+            onClose()
+          } else {
+            error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the cron job within 5 minutes.")
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to index vote:", err)
+          setIsIndexing(false)
+          error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed within 5 minutes.")
+        })
+    }
+  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, info, queryClient, onClose])
+
+  // Handle write errors
+  useEffect(() => {
+    if (isWriteError) {
+      error("Transaction Failed", "Failed to submit vote transaction. Please try again.")
+    }
+  }, [isWriteError, error])
+
   const handleVote = async () => {
+    console.log("[Vote Modal] handleVote called", { isConnected, isAuthenticated, address })
+
     if (voteCount < 1) return
 
+    // Step 1: Check wallet connection
     if (!isConnected) {
-      // Try to connect wallet first
       const coinbaseConnector = connectors.find((c) => c.name === "Coinbase Wallet")
       if (coinbaseConnector) {
         try {
           info("Connecting Wallet", "Please approve the connection request...")
           await connect({ connector: coinbaseConnector })
-          success("Wallet Connected", "You can now place your vote")
+          // AutoAuthProvider will automatically trigger authentication after connection
+          info("Wallet Connected", "Authentication prompt will appear shortly...")
         } catch (err) {
           console.error("Failed to connect wallet:", err)
           error("Connection Failed", "Unable to connect wallet. Please try again.")
@@ -87,19 +163,42 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       return
     }
 
-    setIsVoting(true)
-    info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
+    // Step 2: Check authentication (handled by AutoAuthProvider)
+    // This should not happen if AutoAuthProvider works correctly
+    if (!isAuthenticated) {
+      console.log("[Vote Modal] Not authenticated - this shouldn't happen with AutoAuthProvider")
+      error("Not Authenticated", "Please sign the authentication message that appeared after connecting your wallet")
+      // Manual fallback (should rarely be needed)
+      try {
+        await login()
+      } catch (err) {
+        console.error("Manual authentication failed:", err)
+      }
+      return
+    }
 
-    // TODO: Call smart contract to vote
-    // For now, just simulate
-    setTimeout(() => {
-      setIsVoting(false)
-      success(
-        "Vote Confirmed!",
-        `Your ${voteCount} vote${voteCount !== 1 ? "s" : ""} for ${country?.name} ${voteCount !== 1 ? "have" : "has"} been recorded`
-      )
-      onClose()
-    }, 2000)
+    // Step 3: Validate contract address
+    if (!contractAddress) {
+      error("Contract Not Available", "Smart contract is not deployed yet")
+      return
+    }
+
+    // Step 4: Submit transaction to blockchain
+    try {
+      console.log("[Vote Modal] Submitting vote transaction")
+      info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
+
+      writeContract({
+        address: contractAddress,
+        abi: WorldCupQualificationABI.abi,
+        functionName: "vote",
+        args: [countryCodeToBytes8(country?.code || "")],
+        value: parseEther(totalCost.toString()),
+      })
+    } catch (err) {
+      console.error("Failed to submit vote:", err)
+      error("Vote Failed", "Failed to submit your vote. Please try again.")
+    }
   }
 
   if (!isOpen || !country) return null
@@ -207,7 +306,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </div>
           </div>
 
-          {/* Wallet Status */}
+          {/* Wallet & Auth Status */}
           {!isConnected && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-3 text-center">
               <p className="text-sm text-destructive-foreground">
@@ -216,9 +315,17 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </div>
           )}
 
-          {address && (
+          {isConnected && !isAuthenticated && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-sm p-3 text-center">
+              <p className="text-sm text-yellow-500">
+                Please authenticate with your wallet to vote
+              </p>
+            </div>
+          )}
+
+          {address && isAuthenticated && (
             <div className="text-xs lg:text-sm text-muted-foreground text-center">
-              Voting from: {address.slice(0, 6)}...{address.slice(-4)}
+              Voting from: {address.slice(0, 6)}...{address.slice(-4)} <span className="text-green-500">✓ Authenticated</span>
             </div>
           )}
 
@@ -227,15 +334,24 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <button
               onClick={onClose}
               className="flex-1 cm-nav-tab py-3 font-bold"
+              disabled={isPending || isIndexing}
             >
               Cancel
             </button>
             <button
               onClick={handleVote}
-              disabled={isVoting || voteCount < 1}
+              disabled={isPending || isIndexing || voteCount < 1}
               className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isVoting ? "Voting..." : isConnected ? `Vote ${totalCost.toFixed(6)} ETH` : "Connect & Vote"}
+              {isPending
+                ? "Confirming..."
+                : isIndexing
+                ? "Indexing..."
+                : !isConnected
+                ? "Connect Wallet"
+                : !isAuthenticated
+                ? "Sign In to Vote"
+                : `Vote ${totalCost.toFixed(6)} ETH`}
             </button>
           </div>
         </div>

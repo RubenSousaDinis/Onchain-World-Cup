@@ -1,0 +1,231 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { createPublicClient, http } from "viem"
+import { base, baseSepolia } from "viem/chains"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { prisma } from "@/lib/server/prisma"
+
+/**
+ * POST /api/votes/immediate-index
+ * Immediately index a vote transaction after user submission
+ *
+ * This endpoint is called by the frontend immediately after a vote transaction is submitted.
+ * It creates an "optimistic" indexed_transactions record with status="pending", which will
+ * be upgraded to "confirmed" by the cron job once the transaction is mined and verified.
+ *
+ * Requirements:
+ * - User must be authenticated (SIWE session)
+ * - Transaction must exist on blockchain
+ * - Wallet address must match session
+ *
+ * Body:
+ *   - txHash: string (transaction hash)
+ *   - contractAddress: string
+ *   - walletAddress: string
+ *   - chainId: number (8453 or 84532)
+ *   - countryCode: string (e.g., "BR", "AR")
+ *   - voteCount: number
+ *   - totalCostEth: string
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Verify authentication
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.walletAddress) {
+      console.error("[Immediate Index] Unauthorized - no session")
+      return NextResponse.json({ error: "Unauthorized - authentication required" }, { status: 401 })
+    }
+
+    // 2. Parse and validate request body
+    const body = await request.json()
+    const { txHash, contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth } = body
+
+    if (!txHash || !contractAddress || !walletAddress || !chainId || !countryCode || !voteCount || !totalCostEth) {
+      console.error("[Immediate Index] Missing required fields")
+      return NextResponse.json(
+        { error: "Missing required fields: txHash, contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth" },
+        { status: 400 }
+      )
+    }
+
+    // 3. Verify wallet address matches authenticated session
+    if (walletAddress.toLowerCase() !== session.user.walletAddress.toLowerCase()) {
+      console.error("[Immediate Index] Wallet address mismatch")
+      return NextResponse.json(
+        { error: "Wallet address mismatch - you can only index your own transactions" },
+        { status: 403 }
+      )
+    }
+
+    // 4. Validate chain ID
+    if (chainId !== 8453 && chainId !== 84532) {
+      console.error("[Immediate Index] Invalid chain ID:", chainId)
+      return NextResponse.json({ error: "Invalid chain ID - must be Base (8453) or Base Sepolia (84532)" }, { status: 400 })
+    }
+
+    // 5. Check if transaction already indexed
+    const existingTx = await prisma.indexedTransaction.findUnique({
+      where: { txHash },
+    })
+
+    if (existingTx) {
+      console.log("[Immediate Index] Transaction already indexed:", txHash)
+      return NextResponse.json(
+        { success: true, txHash, alreadyIndexed: true, status: existingTx.status },
+        { status: 200 }
+      )
+    }
+
+    // 6. Verify transaction exists on blockchain
+    const chain = chainId === 8453 ? base : baseSepolia
+    const publicClient = createPublicClient({
+      chain,
+      transport: http(),
+    })
+
+    let transaction
+    try {
+      transaction = await publicClient.getTransaction({ hash: txHash as `0x${string}` })
+      if (!transaction) {
+        console.error("[Immediate Index] Transaction not found on blockchain:", txHash)
+        return NextResponse.json({ error: "Transaction not found on blockchain" }, { status: 404 })
+      }
+    } catch (error) {
+      console.error("[Immediate Index] Error fetching transaction from blockchain:", error)
+      return NextResponse.json({ error: "Failed to verify transaction on blockchain" }, { status: 500 })
+    }
+
+    // 7. Verify transaction is to the correct contract
+    if (transaction.to?.toLowerCase() !== contractAddress.toLowerCase()) {
+      console.error("[Immediate Index] Transaction not to contract address")
+      return NextResponse.json(
+        { error: "Transaction is not to the specified contract address" },
+        { status: 400 }
+      )
+    }
+
+    // 8. Create indexed_transactions record FIRST, then vote record (foreign key relationship)
+    console.log("[Immediate Index] Creating indexed_transactions and vote records for:", txHash)
+
+    await prisma.$transaction(async (tx) => {
+      // Create indexed_transactions record
+      await tx.indexedTransaction.create({
+        data: {
+          txHash,
+          contractAddress: contractAddress.toLowerCase(),
+          walletAddress: walletAddress.toLowerCase(),
+          chainId,
+          syncType: "immediate",
+          status: "pending",
+          eventType: "qualification",
+          metadata: {
+            countryCode,
+            voteCount,
+            totalCostEth,
+          },
+          indexedAt: new Date(),
+        },
+      })
+
+      // Create vote record (foreign key to indexed_transactions via txHash)
+      await tx.qualificationVote.create({
+        data: {
+          countryCode,
+          voterAddress: walletAddress.toLowerCase(),
+          voteCount: parseInt(voteCount.toString()),
+          totalCostEth: totalCostEth.toString(),
+          txHash,
+          blockNumber: 0n, // Will be updated by cron when confirmed
+        },
+      })
+
+      // Update CountryStats
+      const existingCountry = await tx.countryStats.findUnique({
+        where: { countryCode },
+      })
+
+      if (existingCountry) {
+        await tx.countryStats.update({
+          where: { countryCode },
+          data: {
+            totalVotes: { increment: parseInt(voteCount.toString()) },
+            totalEth: (parseFloat(existingCountry.totalEth) + parseFloat(totalCostEth)).toString(),
+          },
+        })
+      } else {
+        await tx.countryStats.create({
+          data: {
+            countryCode,
+            totalVotes: parseInt(voteCount.toString()),
+            totalEth: totalCostEth.toString(),
+            qualified: false,
+          },
+        })
+      }
+
+      // Update UserStat
+      const existingStats = await tx.userStat.findUnique({
+        where: { walletAddress: walletAddress.toLowerCase() },
+      })
+
+      if (existingStats) {
+        // Count unique countries voted for
+        const uniqueCountries = await tx.qualificationVote.findMany({
+          where: { voterAddress: walletAddress.toLowerCase() },
+          select: { countryCode: true },
+          distinct: ["countryCode"],
+        })
+
+        await tx.userStat.update({
+          where: { walletAddress: walletAddress.toLowerCase() },
+          data: {
+            qualificationVotes: { increment: parseInt(voteCount.toString()) },
+            qualificationSpentEth: (parseFloat(existingStats.qualificationSpentEth) + parseFloat(totalCostEth)).toString(),
+            totalVotes: { increment: parseInt(voteCount.toString()) },
+            totalSpentEth: (parseFloat(existingStats.totalSpentEth) + parseFloat(totalCostEth)).toString(),
+            countriesVotedFor: uniqueCountries.length,
+          },
+        })
+      } else {
+        // Create new user stat
+        await tx.userStat.create({
+          data: {
+            walletAddress: walletAddress.toLowerCase(),
+            qualificationVotes: parseInt(voteCount.toString()),
+            qualificationSpentEth: totalCostEth.toString(),
+            totalVotes: parseInt(voteCount.toString()),
+            totalSpentEth: totalCostEth.toString(),
+            countriesVotedFor: 1,
+            userId: session.user.id,
+          },
+        })
+      }
+    })
+
+    console.log("[Immediate Index] Successfully indexed transaction:", txHash)
+    return NextResponse.json(
+      {
+        success: true,
+        txHash,
+        status: "pending",
+        message: "Transaction indexed immediately - will be confirmed by cron job within 5 minutes",
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error("[Immediate Index] Error:", error)
+
+    // Check if it's a unique constraint violation (duplicate transaction)
+    if (error instanceof Error && error.message.includes("Unique constraint")) {
+      return NextResponse.json(
+        { error: "Transaction already indexed", txHash: (await request.json()).txHash },
+        { status: 409 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: "Failed to index transaction", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    )
+  }
+}

@@ -10,7 +10,7 @@
  * This runs server-side only and uses Prisma for database access.
  */
 
-import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/server/prisma"
 import { type Log } from "viem"
 import { formatEther } from "viem"
 import { bytes8ToCountryCode } from "./event-indexer"
@@ -40,19 +40,68 @@ export async function processVotePlacedEvents(events: Log[]) {
 
       console.log(`[Processor] Vote: ${voterAddress} voted ${voteCount} for ${countryCode} (${totalCostEth} ETH)`)
 
-      // Check if this vote already exists (avoid duplicates)
-      const existingVote = await prisma.qualificationVote.findUnique({
+      // Check if this transaction is already indexed
+      const existingIndexedTx = await prisma.indexedTransaction.findUnique({
         where: { txHash },
       })
 
-      if (existingVote) {
-        console.log(`[Processor] Vote ${txHash} already indexed, skipping`)
+      if (existingIndexedTx) {
+        // Transaction already indexed - check if we need to upgrade from pending to confirmed
+        if (existingIndexedTx.status === "pending" && existingIndexedTx.syncType === "immediate") {
+          console.log(`[Processor] Upgrading transaction ${txHash} from pending to confirmed`)
+
+          await prisma.$transaction(async (tx) => {
+            // Upgrade indexed_transactions status
+            await tx.indexedTransaction.update({
+              where: { txHash },
+              data: {
+                status: "confirmed",
+                blockNumber,
+                confirmedAt: new Date(),
+              },
+            })
+
+            // Update vote blockNumber (was set to 0 by immediate indexing)
+            await tx.qualificationVote.update({
+              where: { txHash },
+              data: { blockNumber },
+            })
+          })
+
+          console.log(`[Processor] Successfully upgraded transaction ${txHash} to confirmed`)
+        } else {
+          console.log(`[Processor] Transaction ${txHash} already indexed with status=${existingIndexedTx.status}, skipping`)
+        }
         continue
       }
 
+      // New transaction - create indexed_transactions and vote records
+      console.log(`[Processor] Creating new transaction and vote records for ${txHash}`)
+
       // Use a transaction to ensure atomicity
       await prisma.$transaction(async (tx) => {
-        // 1. Create the vote record
+        // 1. Create indexed_transactions record (cron-based indexing)
+        await tx.indexedTransaction.create({
+          data: {
+            txHash,
+            contractAddress: event.address.toLowerCase(),
+            walletAddress: voterAddress,
+            chainId: event.blockNumber! > 0n ? (event.blockNumber! > 10000000n ? 8453 : 84532) : 84532, // Heuristic: Base Mainnet has higher block numbers
+            syncType: "cron",
+            status: "confirmed",
+            blockNumber,
+            eventType: "qualification",
+            metadata: {
+              countryCode,
+              voteCount,
+              totalCostEth,
+            },
+            indexedAt: new Date(),
+            confirmedAt: new Date(),
+          },
+        })
+
+        // 2. Create the vote record (foreign key to indexed_transactions)
         await tx.qualificationVote.create({
           data: {
             countryCode,
@@ -64,7 +113,7 @@ export async function processVotePlacedEvents(events: Log[]) {
           },
         })
 
-        // 2. Update or create country stats
+        // 3. Update or create country stats (only for NEW transactions)
         const existingCountryStats = await tx.countryStats.findUnique({
           where: { countryCode },
         })
@@ -88,7 +137,7 @@ export async function processVotePlacedEvents(events: Log[]) {
           })
         }
 
-        // 3. Update or create user stats
+        // 4. Update or create user stats (only for NEW transactions)
         const existingUserStats = await tx.userStat.findUnique({
           where: { walletAddress: voterAddress },
         })
