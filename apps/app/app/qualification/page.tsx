@@ -9,17 +9,14 @@ import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
+import { useAccount } from "wagmi"
 
-// Transform countries data with ranking and mock vote data (will be replaced with real data)
-const allCountries = countriesData.map((country, index) => ({
-  rank: index + 1,
-  name: country.name,
-  flag: country.flagEmoji,
-  code: country.code,
-  votes: Math.max(100, 2500 - index * 35), // Mock votes for now
-  momentum: index % 3 === 0 ? "up" : index % 3 === 1 ? "down" : "stable",
-  change: ((index * 37) % 200) - 100, // Deterministic mock change based on index (37 is a prime number for better distribution)
-}))
+type CountryStats = {
+  country_code: string
+  total_votes: number
+  total_eth: string
+  qualified: boolean
+}
 
 type Country = {
   rank: number
@@ -37,46 +34,101 @@ export default function QualificationPage() {
   const [voteModalOpen, setVoteModalOpen] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [timeRemaining, setTimeRemaining] = useState({ days: 30, hours: 14, minutes: 23, seconds: 45 })
-  const [totalPrizePool, _setTotalPrizePool] = useState(125.8) // ETH prize pool from all votes
+  const [timeRemaining, setTimeRemaining] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+  const [totalPrizePool, setTotalPrizePool] = useState(0)
+  const [countryStats, setCountryStats] = useState<CountryStats[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [qualificationEndTime, setQualificationEndTime] = useState<number | null>(null)
+
+  const { chain } = useAccount()
+  const chainId = chain?.id || 84532 // Default to Base Sepolia
+
+  // Get contract address based on chain
+  const contractAddress = (chainId === 84532
+    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
+    : process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET) as `0x${string}` | undefined
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
-    hasMore: displayedCountries < allCountries.length,
+    hasMore: displayedCountries < countriesData.length,
     isLoading: isLoadingMore,
   })
+
+  // Fetch qualification summary data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+
+        // Fetch summary data (includes total ETH, voters, etc.)
+        const summaryRes = await fetch("/api/qualification/summary")
+        if (summaryRes.ok) {
+          const summaryData = await summaryRes.json()
+          setTotalPrizePool(parseFloat(summaryData.totalEth || "0"))
+
+          // If qualification end time is available from contract
+          if (summaryData.qualificationEndTime) {
+            setQualificationEndTime(summaryData.qualificationEndTime)
+          }
+        }
+
+        // Fetch country statistics
+        const countriesRes = await fetch("/api/qualification/countries?limit=200")
+        if (countriesRes.ok) {
+          const countriesData = await countriesRes.json()
+          setCountryStats(countriesData.data || [])
+        }
+      } catch (error) {
+        console.error("Failed to fetch qualification data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Calculate countdown timer
+  useEffect(() => {
+    if (!qualificationEndTime) {
+      // Default to 30 days from now if not set
+      const defaultEndTime = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60)
+      setQualificationEndTime(defaultEndTime)
+    }
+
+    const timer = setInterval(() => {
+      if (qualificationEndTime) {
+        const now = Math.floor(Date.now() / 1000)
+        const diff = qualificationEndTime - now
+
+        if (diff > 0) {
+          const days = Math.floor(diff / (24 * 60 * 60))
+          const hours = Math.floor((diff % (24 * 60 * 60)) / (60 * 60))
+          const minutes = Math.floor((diff % (60 * 60)) / 60)
+          const seconds = diff % 60
+
+          setTimeRemaining({ days, hours, minutes, seconds })
+        } else {
+          setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+        }
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [qualificationEndTime])
 
   useEffect(() => {
     if (shouldLoadMore) {
       setIsLoadingMore(true)
       setTimeout(() => {
-        setDisplayedCountries((prev) => Math.min(prev + 20, allCountries.length))
+        setDisplayedCountries((prev) => Math.min(prev + 20, countriesData.length))
         setIsLoadingMore(false)
       }, 300)
     }
   }, [shouldLoadMore])
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        let { days, hours, minutes, seconds } = prev
-        seconds--
-        if (seconds < 0) {
-          seconds = 59
-          minutes--
-        }
-        if (minutes < 0) {
-          minutes = 59
-          hours--
-        }
-        if (hours < 0) {
-          hours = 23
-          days--
-        }
-        return { days, hours, minutes, seconds }
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   const handleVote = (country: Country) => {
     setSelectedCountry(country)
@@ -97,6 +149,27 @@ export default function QualificationPage() {
         return <Minus className="w-4 h-4 text-muted-foreground" />
     }
   }
+
+  // Merge country data with stats from API
+  const allCountries = countriesData.map((country) => {
+    const stats = countryStats.find((s) => s.country_code === country.code)
+    const votes = stats?.total_votes || 0
+
+    return {
+      rank: 0, // Will be set after sorting
+      name: country.name,
+      flag: country.flagEmoji,
+      code: country.code,
+      votes,
+      momentum: votes > 1000 ? "up" : votes > 500 ? "stable" : "down",
+      change: 0, // TODO: Calculate change from historical data
+    }
+  })
+    .sort((a, b) => b.votes - a.votes) // Sort by votes desc
+    .map((country, index) => ({
+      ...country,
+      rank: index + 1,
+    }))
 
   const filteredCountries = allCountries.filter(
     (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
@@ -165,7 +238,7 @@ export default function QualificationPage() {
             <div className="mt-4 flex items-center gap-2 text-sm lg:text-base">
               <Trophy className="w-4 h-4 text-accent" />
               <span className="text-foreground/70">
-                Current Prize Pool: <span className="cm-highlight font-bold text-base lg:text-lg">{totalPrizePool} ETH</span> from
+                Current Prize Pool: <span className="cm-highlight font-bold text-base lg:text-lg">{totalPrizePool.toFixed(4)} ETH</span> from
                 community votes
               </span>
             </div>
@@ -203,117 +276,132 @@ export default function QualificationPage() {
 
         {/* Qualification Table */}
         <div className="cm-panel rounded-sm border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm lg:text-base">
-              <thead>
-                <tr className="bg-secondary/40 border-b-2 border-accent/30">
-                  <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Rank</th>
-                  <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Country</th>
-                  <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Votes</th>
-                  <th className="text-center p-2 lg:p-3 font-bold cm-highlight hidden lg:table-cell">Momentum</th>
-                  <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Change</th>
-                  <th className="text-right p-2 lg:p-3 font-bold cm-highlight">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCountries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-0">
-                      <div className="py-12">
-                        <NoSearchResults query={searchQuery} />
-                      </div>
-                    </td>
+          {isLoading ? (
+            <div className="p-12 text-center">
+              <InlineLoader text="Loading countries..." />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm lg:text-base">
+                <thead>
+                  <tr className="bg-secondary/40 border-b-2 border-accent/30">
+                    <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Rank</th>
+                    <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Country</th>
+                    <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Votes</th>
+                    <th className="text-center p-2 lg:p-3 font-bold cm-highlight hidden lg:table-cell">Momentum</th>
+                    <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Change</th>
+                    <th className="text-right p-2 lg:p-3 font-bold cm-highlight">Actions</th>
                   </tr>
-                ) : (
-                  filteredCountries.slice(0, displayedCountries).map((country) => {
-                    const isCutoff = country.rank === 48
-                    const isAtRisk = country.rank >= 46 && country.rank <= 50
-                    const isQualified = country.rank <= 48
+                </thead>
+                <tbody>
+                  {filteredCountries.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-0">
+                        <div className="py-12">
+                          <NoSearchResults query={searchQuery} />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCountries.slice(0, displayedCountries).map((country) => {
+                      const isCutoff = country.rank === 48
+                      const isAtRisk = country.rank >= 46 && country.rank <= 50
+                      const isQualified = country.rank <= 48
 
-                    return (
-                      <Fragment key={country.rank}>
-                        {isCutoff && (
-                          <tr>
-                            <td colSpan={6} className="p-0">
-                              <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
-                                <div className="text-sm lg:text-base font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
-                                  <span className="hidden lg:inline">━━━━━</span>
-                                  Qualification Cutoff (Top 48)
-                                  <span className="hidden lg:inline">━━━━━</span>
+                      return (
+                        <Fragment key={country.rank}>
+                          {isCutoff && (
+                            <tr>
+                              <td colSpan={6} className="p-0">
+                                <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
+                                  <div className="text-sm lg:text-base font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
+                                    <span className="hidden lg:inline">━━━━━</span>
+                                    Qualification Cutoff (Top 48)
+                                    <span className="hidden lg:inline">━━━━━</span>
+                                  </div>
                                 </div>
+                              </td>
+                            </tr>
+                          )}
+                          <tr
+                            className={`border-b border-border hover:bg-accent/5 transition-colors ${
+                              isAtRisk ? "bg-yellow-500/10" : ""
+                            } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
+                              !isQualified && !isAtRisk ? "bg-red-500/5" : ""
+                            }`}
+                            onClick={() => handleVote(country)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <td className="p-2 lg:p-3">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold ${isQualified ? "cm-highlight" : "text-muted-foreground"}`}>
+                                  {country.rank}
+                                </span>
+                                {isAtRisk && <span className="text-yellow-500 text-sm font-bold">⚠</span>}
+                              </div>
+                            </td>
+                            <td className="p-2 lg:p-3">
+                              <Link
+                                href={`/qualification/${country.name.toLowerCase().replace(/\s+/g, "-")}`}
+                                className="flex items-center gap-2 hover:text-accent transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="text-xl lg:text-2xl">{country.flag}</span>
+                                <span className="font-bold">{country.name}</span>
+                              </Link>
+                            </td>
+                            <td className="text-center p-2 lg:p-3">
+                              <div className="font-bold cm-highlight">{country.votes.toLocaleString("en-US")}</div>
+                            </td>
+                            <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
+                              <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
+                            </td>
+                            <td className="text-center p-2 lg:p-3">
+                              <span
+                                className={`font-bold ${
+                                  country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
+                                }`}
+                              >
+                                {country.change > 0 ? "+" : ""}
+                                {country.change}
+                              </span>
+                            </td>
+                            <td className="text-right p-2 lg:p-3">
+                              <div className="flex items-center justify-end gap-1 lg:gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleVote(country)
+                                  }}
+                                  className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold"
+                                >
+                                  VOTE
+                                </button>
                               </div>
                             </td>
                           </tr>
-                        )}
-                        <tr
-                          className={`border-b border-border hover:bg-accent/5 transition-colors ${
-                            isAtRisk ? "bg-yellow-500/10" : ""
-                          } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
-                            !isQualified && !isAtRisk ? "bg-red-500/5" : ""
-                          }`}
-                          onClick={() => handleVote(country)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td className="p-2 lg:p-3">
-                            <div className="flex items-center gap-2">
-                              <span className={`font-bold ${isQualified ? "cm-highlight" : "text-muted-foreground"}`}>
-                                {country.rank}
-                              </span>
-                              {isAtRisk && <span className="text-yellow-500 text-sm font-bold">⚠</span>}
-                            </div>
-                          </td>
-                          <td className="p-2 lg:p-3">
-                            <Link
-                              href={`/qualification/${country.name.toLowerCase().replace(/\s+/g, "-")}`}
-                              className="flex items-center gap-2 hover:text-accent transition-colors"
-                            >
-                              <span className="text-xl lg:text-2xl">{country.flag}</span>
-                              <span className="font-bold">{country.name}</span>
-                            </Link>
-                          </td>
-                          <td className="text-center p-2 lg:p-3">
-                            <div className="font-bold cm-highlight">{country.votes.toLocaleString("en-US")}</div>
-                          </td>
-                          <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
-                            <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
-                          </td>
-                          <td className="text-center p-2 lg:p-3">
-                            <span
-                              className={`font-bold ${
-                                country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
-                              }`}
-                            >
-                              {country.change > 0 ? "+" : ""}
-                              {country.change}
-                            </span>
-                          </td>
-                          <td className="text-right p-2 lg:p-3">
-                            <div className="flex items-center justify-end gap-1 lg:gap-2">
-                              <button
-                                onClick={() => handleVote(country)}
-                                className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold"
-                              >
-                                VOTE
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      </Fragment>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-            {displayedCountries < filteredCountries.length && (
-              <div ref={sentinelRef} className="p-4 text-center">
-                <InlineLoader text="Loading more countries..." />
-              </div>
-            )}
-          </div>
+                        </Fragment>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+              {displayedCountries < filteredCountries.length && (
+                <div ref={sentinelRef} className="p-4 text-center">
+                  <InlineLoader text="Loading more countries..." />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
 
-      <QualificationVoteModal isOpen={voteModalOpen} onClose={() => setVoteModalOpen(false)} country={selectedCountry} />
+      <QualificationVoteModal
+        isOpen={voteModalOpen}
+        onClose={() => setVoteModalOpen(false)}
+        country={selectedCountry}
+        contractAddress={contractAddress}
+      />
       </div>
     </div>
   )

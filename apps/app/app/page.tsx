@@ -1,11 +1,12 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
 import Link from "next/link"
-import { countries as countriesData } from "@/lib/countries"
+import { countries as countriesDataStatic } from "@/lib/countries"
 import {
   StatCard,
   SectionCard,
@@ -16,19 +17,62 @@ import {
   EmptyState,
 } from "@/components/dashboard"
 
+type CountryStats = {
+  country_code: string
+  total_votes: number
+  total_eth: string
+}
+
+type SummaryData = {
+  totalVotes: number
+  totalEth: string
+  totalVoters: number
+  topCountries: CountryStats[]
+}
+
 export default function HomePage() {
-  // Mock data - will be replaced with real data from API/blockchain
-  const topCountries = countriesData.slice(0, 5).map((country, index) => ({
-    rank: index + 1,
-    name: country.name,
-    flag: country.flagEmoji,
-    votes: Math.max(100, 2500 - index * 35),
-  }))
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch real data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        const res = await fetch("/api/qualification/summary")
+        if (res.ok) {
+          const data = await res.json()
+          setSummaryData(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch summary data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Map country codes to full country data
+  const topCountries = (summaryData?.topCountries || []).map((stats, index) => {
+    const countryData = countriesDataStatic.find((c) => c.code === stats.country_code)
+    return {
+      rank: index + 1,
+      name: countryData?.name || stats.country_code,
+      flag: countryData?.flagEmoji || "🏳️",
+      votes: stats.total_votes,
+    }
+  }).slice(0, 5)
 
   const stats = {
-    totalVotes: 48750,
-    totalPrizePool: 125.8, // ETH
-    activePlayers: 1247,
+    totalVotes: summaryData?.totalVotes || 0,
+    totalPrizePool: parseFloat(summaryData?.totalEth || "0"),
+    activePlayers: summaryData?.totalVoters || 0,
   }
 
   return (
@@ -66,9 +110,9 @@ export default function HomePage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" aria-hidden="true" />
                   <div>
                     <div className="text-xs lg:text-sm text-accent font-bold uppercase mb-1">Current Phase</div>
-                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Opens Soon</h2>
+                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Active</h2>
                     <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-                      Add the app to be notified when voting begins
+                      Vote for countries to qualify for the tournament
                     </p>
                   </div>
                 </div>
@@ -79,12 +123,23 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
-            <StatCard icon={Users} label="Active Voters" value={stats.activePlayers} formatValue />
-            <StatCard icon={TrendingUp} label="Total Votes" value={stats.totalVotes} formatValue valueColor="green" />
+            <StatCard
+              icon={Users}
+              label="Active Voters"
+              value={isLoading ? "..." : stats.activePlayers}
+              formatValue
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Total Votes"
+              value={isLoading ? "..." : stats.totalVotes}
+              formatValue
+              valueColor="green"
+            />
             <StatCard
               icon={Trophy}
               label="Prize Pool"
-              value={`${stats.totalPrizePool} ETH`}
+              value={isLoading ? "..." : `${stats.totalPrizePool.toFixed(4)} ETH`}
               valueColor="accent"
               className="col-span-2 lg:col-span-1"
             />
@@ -119,18 +174,26 @@ export default function HomePage() {
               }
             >
               <div className="space-y-3">
-                {topCountries.map((country) => (
-                  <TopListItem
-                    key={country.rank}
-                    rank={country.rank}
-                    icon={country.flag}
-                    title={country.name}
-                    value={country.votes}
-                    valueLabel="votes"
-                    href="/qualification"
-                    highlighted
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                ) : topCountries.length > 0 ? (
+                  topCountries.map((country) => (
+                    <TopListItem
+                      key={country.rank}
+                      rank={country.rank}
+                      icon={country.flag}
+                      title={country.name}
+                      value={country.votes}
+                      valueLabel="votes"
+                      href="/qualification"
+                      highlighted
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No votes yet. Be the first to vote!
+                  </div>
+                )}
               </div>
             </SectionCard>
 
