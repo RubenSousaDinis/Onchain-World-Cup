@@ -49,11 +49,14 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
   // Get wallet balance - explicitly query on the current chain
-  const { data: balanceData } = useBalance({
+  // Refetch when modal opens to ensure we have fresh balance data
+  const { data: balanceData, refetch: refetchBalance } = useBalance({
     address: address,
     chainId: chain?.id,
     query: {
-      enabled: !!address && !!chain?.id, // Only query when we have both address and chainId
+      enabled: !!address && !!chain?.id && isOpen, // Only query when modal is open
+      refetchInterval: false, // Don't auto-refetch
+      staleTime: 0, // Always consider stale to force refetch on modal open
     },
   })
 
@@ -62,8 +65,17 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     balance: balanceData?.formatted,
     symbol: balanceData?.symbol,
     decimals: balanceData?.decimals,
+    value: balanceData?.value,
     chainId: chain?.id,
   })
+
+  // Refetch balance when modal opens or chain changes
+  useEffect(() => {
+    if (isOpen && address && chain?.id) {
+      console.log("[Vote Modal] Refetching balance for chain:", chain.id)
+      refetchBalance()
+    }
+  }, [isOpen, address, chain?.id, refetchBalance])
 
   // Real-time vote price from contract (if contract address is provided)
   const {
@@ -280,14 +292,19 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </div>
           </div>
 
-          {/* Wallet Balance */}
+          {/* Wallet Balance & Network */}
           {isConnected && balanceData && (
-            <div className="bg-secondary/20 border border-border rounded-sm p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Wallet Balance:</span>
+            <div className="bg-secondary/20 border border-border rounded-sm p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Wallet Balance:</span>
+                </div>
+                <span className="font-bold cm-highlight">{formatETH(walletBalance)} ETH</span>
               </div>
-              <span className="font-bold cm-highlight">{formatETH(walletBalance)} ETH</span>
+              <div className="mt-1 text-xs text-muted-foreground">
+                Network: <span className="text-accent font-semibold">{chain?.name || "Unknown"}</span>
+              </div>
             </div>
           )}
 
