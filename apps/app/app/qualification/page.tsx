@@ -10,6 +10,7 @@ import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
+import { getDefaultChainId } from "@/lib/chain-config"
 
 type CountryStats = {
   country_code: string
@@ -41,7 +42,7 @@ export default function QualificationPage() {
   const [qualificationEndTime, setQualificationEndTime] = useState<number | null>(null)
 
   const { chain } = useAccount()
-  const chainId = chain?.id || 84532 // Default to Base Sepolia
+  const chainId = chain?.id || getDefaultChainId() // Use configured default chain
 
   // Get contract address based on chain
   const contractAddress = (chainId === 84532
