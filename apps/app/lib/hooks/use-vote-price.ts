@@ -4,6 +4,7 @@ import { useReadContract, useWatchContractEvent } from "wagmi"
 import { formatEther, parseEther } from "viem"
 import { WORLD_CUP_QUALIFICATION_ABI } from "../contracts/qualification-abi"
 import { WORLD_CUP_MATCH_ABI } from "../contracts/match-abi"
+import { countryCodeToBytes8 } from "../contracts/qualification"
 import { useEffect, useState } from "react"
 
 interface UseQualificationVotePriceOptions {
@@ -31,27 +32,42 @@ export function useQualificationVotePrice({
 }: UseQualificationVotePriceOptions) {
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
+  // Convert country code to bytes8 format
+  const countryCodeBytes = countryCode ? countryCodeToBytes8(countryCode) : "0x0000000000000000"
+
+  console.log("[useQualificationVotePrice] Hook state:", {
+    contractAddress,
+    countryCode,
+    countryCodeBytes,
+    voteCount,
+    enabled,
+  })
+
   // Get current vote count for the country
-  const { data: currentVotes, refetch: refetchVotes } = useReadContract({
+  const { data: currentVotes, refetch: refetchVotes, error: votesError } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getCountryVotes",
-    args: [countryCode],
+    args: [countryCodeBytes],
     query: {
-      enabled: enabled && !!countryCode,
+      enabled: enabled && !!countryCode && contractAddress !== "0x0000000000000000000000000000000000000000",
     },
   })
 
   // Calculate price for the specified number of votes
-  const { data: votePrice, refetch: refetchPrice } = useReadContract({
+  const { data: votePrice, refetch: refetchPrice, error: priceError } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVotePrice",
-    args: [countryCode, BigInt(voteCount)],
+    args: [countryCodeBytes, BigInt(voteCount)],
     query: {
-      enabled: enabled && !!countryCode && voteCount > 0,
+      enabled: enabled && !!countryCode && voteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
     },
   })
+
+  // Log any errors
+  if (votesError) console.error("[useQualificationVotePrice] Votes error:", votesError)
+  if (priceError) console.error("[useQualificationVotePrice] Price error:", priceError)
 
   // Get base price constant
   const { data: basePrice } = useReadContract({
@@ -68,14 +84,17 @@ export function useQualificationVotePrice({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     eventName: "VotePlaced",
+    enabled: contractAddress !== "0x0000000000000000000000000000000000000000",
     onLogs: (logs) => {
       // Check if any vote was for this country
       const hasRelevantVote = logs.some((log) => {
         const args = log.args as { countryCode?: string }
-        return args.countryCode === countryCode
+        // Compare bytes8 values
+        return args.countryCode === countryCodeBytes
       })
 
       if (hasRelevantVote) {
+        console.log("[useQualificationVotePrice] Vote detected for country, refetching...")
         setRefetchTrigger((prev) => prev + 1)
       }
     },
@@ -84,24 +103,34 @@ export function useQualificationVotePrice({
   // Refetch on trigger
   useEffect(() => {
     if (refetchTrigger > 0) {
+      console.log("[useQualificationVotePrice] Refetching due to trigger:", refetchTrigger)
       refetchVotes()
       refetchPrice()
     }
   }, [refetchTrigger, refetchVotes, refetchPrice])
 
-  return {
+  const result = {
     currentVotes: currentVotes ? Number(currentVotes) : 0,
     votePrice: votePrice ? formatEther(votePrice) : "0",
     votePriceRaw: votePrice,
     basePrice: basePrice ? formatEther(basePrice) : "0",
     basePriceRaw: basePrice,
     pricePerVote: votePrice && voteCount > 0 ? formatEther(votePrice / BigInt(voteCount)) : "0",
-    isLoading: !votePrice && enabled,
+    isLoading: !votePrice && enabled && contractAddress !== "0x0000000000000000000000000000000000000000",
     refetch: () => {
       refetchVotes()
       refetchPrice()
     },
   }
+
+  console.log("[useQualificationVotePrice] Returning:", {
+    currentVotes: result.currentVotes,
+    votePrice: result.votePrice,
+    pricePerVote: result.pricePerVote,
+    isLoading: result.isLoading,
+  })
+
+  return result
 }
 
 /**
