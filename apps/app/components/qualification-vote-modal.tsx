@@ -34,11 +34,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { isAuthenticated, login } = useSIWEAuth()
   const queryClient = useQueryClient()
 
-  // Debug logging for authentication state
-  console.log("[Vote Modal] Auth state:", {
+  // Debug logging for authentication state and chain
+  console.log("[Vote Modal] State:", {
     isConnected,
     isAuthenticated,
     address,
+    chainId: chain?.id,
+    chainName: chain?.name,
     isOpen
   })
 
@@ -46,9 +48,20 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract()
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
 
-  // Get wallet balance
+  // Get wallet balance - explicitly query on the current chain
   const { data: balanceData } = useBalance({
     address: address,
+    chainId: chain?.id,
+    query: {
+      enabled: !!address && !!chain?.id, // Only query when we have both address and chainId
+    },
+  })
+
+  // Debug balance data
+  console.log("[Vote Modal] Balance data:", {
+    balance: balanceData?.formatted,
+    symbol: balanceData?.symbol,
+    decimals: balanceData?.decimals,
     chainId: chain?.id,
   })
 
