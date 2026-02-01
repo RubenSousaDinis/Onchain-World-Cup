@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
@@ -27,6 +27,7 @@ interface QualificationVoteModalProps {
 export function QualificationVoteModal({ isOpen, onClose, country, contractAddress }: QualificationVoteModalProps) {
   const [voteCount, setVoteCount] = useState(1)
   const [isIndexing, setIsIndexing] = useState(false)
+  const indexedTxRef = useRef<string | null>(null)
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -129,6 +130,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (!isOpen) {
       setVoteCount(1)
       setIsIndexing(false)
+      indexedTxRef.current = null  // Reset for next transaction
     }
   }, [isOpen])
 
@@ -145,8 +147,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   // Handle immediate indexing when transaction is confirmed
   useEffect(() => {
     if (isConfirmed && hash && country && contractAddress && address && chain) {
+      // Prevent duplicate indexing of the same transaction
+      if (indexedTxRef.current === hash) {
+        return
+      }
+
+      indexedTxRef.current = hash
       setIsIndexing(true)
-      info("Indexing Vote", "Saving your vote to the database...")
 
       // Call immediate indexing API
       fetch("/api/votes/immediate-index", {
