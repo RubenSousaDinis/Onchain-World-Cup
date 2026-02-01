@@ -48,7 +48,7 @@ export function useQualificationVotePrice({
 
   // Calculate price for the specified number of votes
   // Cap at 100 votes to respect contract's MAX_VOTES_PER_TX limit
-  const cappedVoteCount = Math.min(100, voteCount)
+  const cappedVoteCount = Math.min(100, Math.max(1, voteCount))
   const { data: votePrice, refetch: refetchPrice } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
@@ -81,10 +81,37 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const totalCost = useMockPricing ? mockTotalCost : parseFloat(votePrice)
   const displayVotes = useMockPricing ? country?.votes || 0 : contractVotes
 
-  // Calculate max votes based on wallet balance and current price
-  // Cap at 100 (contract's MAX_VOTES_PER_TX limit)
+  // Calculate max votes based on wallet balance with dynamic pricing
+  // Price increases with each vote, so we need to calculate iteratively
   const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
-  const maxVotesPossible = currentPrice > 0 ? Math.min(100, Math.floor(walletBalance / currentPrice)) : 0
+  const maxVotesPossible = useMemo(() => {
+    if (walletBalance === 0 || useMockPricing) {
+      return useMockPricing ? Math.floor(walletBalance / mockCurrentPrice) : 0
+    }
+
+    // For real contract pricing, calculate iteratively since price increases per vote
+    // BASE_PRICE = 0.001 ETH, PRICE_INCREMENT = 0.0005 ETH
+    const BASE_PRICE = 0.001
+    const PRICE_INCREMENT = 0.0005
+    const currentVotesCount = contractVotes || 0
+
+    let totalCostAccumulated = 0
+    let votesAffordable = 0
+
+    // Calculate up to 100 votes (contract limit) or until we run out of balance
+    for (let i = 0; i < 100; i++) {
+      const votePriceForThisVote = BASE_PRICE + ((currentVotesCount + i) * PRICE_INCREMENT)
+
+      if (totalCostAccumulated + votePriceForThisVote <= walletBalance) {
+        totalCostAccumulated += votePriceForThisVote
+        votesAffordable++
+      } else {
+        break
+      }
+    }
+
+    return votesAffordable
+  }, [walletBalance, contractVotes, useMockPricing, mockCurrentPrice])
 
   // Ensure vote count doesn't exceed max possible
   useEffect(() => {
@@ -381,6 +408,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                 </p>
               </div>
             )}
+            {isConnected && maxVotesPossible > 0 && totalCost > walletBalance && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-2">
+                <p className="text-xs text-destructive">
+                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatETH(walletBalance)} ETH available).
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Info Box */}
@@ -429,7 +463,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </button>
             <button
               onClick={handleVote}
-              disabled={isPending || isIndexing || voteCount < 1}
+              disabled={isPending || isIndexing || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
               className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending
@@ -440,6 +474,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                 ? "Connect Wallet"
                 : !isAuthenticated
                 ? "Sign In to Vote"
+                : (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)
+                ? "Insufficient Balance"
                 : `Vote ${formatETH(totalCost)} ETH`}
             </button>
           </div>
