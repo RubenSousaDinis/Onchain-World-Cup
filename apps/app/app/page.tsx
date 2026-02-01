@@ -53,9 +53,20 @@ export default function HomePage() {
 
     fetchData()
 
+    // Listen for vote-recorded events to refresh immediately
+    const handleVoteRecorded = () => {
+      console.log("[HomePage] Vote recorded - refreshing data")
+      fetchData()
+    }
+    window.addEventListener("vote-recorded", handleVoteRecorded)
+
     // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("vote-recorded", handleVoteRecorded)
+    }
   }, [])
 
   // Map country codes to full country data

@@ -87,9 +87,20 @@ export default function QualificationPage() {
 
     fetchData()
 
+    // Listen for vote-recorded events to refresh immediately
+    const handleVoteRecorded = () => {
+      console.log("[Qualification] Vote recorded - refreshing data")
+      fetchData()
+    }
+    window.addEventListener("vote-recorded", handleVoteRecorded)
+
     // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("vote-recorded", handleVoteRecorded)
+    }
   }, [])
 
   // Calculate countdown timer

@@ -146,55 +146,62 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   // Handle immediate indexing when transaction is confirmed
   useEffect(() => {
-    if (isConfirmed && hash && country && contractAddress && address && chain) {
-      // Prevent duplicate indexing of the same transaction
-      if (indexedTxRef.current === hash) {
-        return
-      }
-
-      indexedTxRef.current = hash
-      setIsIndexing(true)
-
-      // Call immediate indexing API
-      fetch("/api/votes/immediate-index", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          txHash: hash,
-          contractAddress: contractAddress,
-          walletAddress: address,
-          chainId: chain.id,
-          countryCode: country.code,
-          voteCount: voteCount,
-          totalCostEth: totalCost.toString(),
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setIsIndexing(false)
-          if (data.success) {
-            success(
-              "Vote Recorded!",
-              `Your ${voteCount} vote${voteCount !== 1 ? "s" : ""} for ${country.name} ${voteCount !== 1 ? "have" : "has"} been recorded on-chain and indexed`
-            )
-
-            // Invalidate queries to refresh data
-            queryClient.invalidateQueries({ queryKey: ["qualification-votes"] })
-            queryClient.invalidateQueries({ queryKey: ["country-stats"] })
-            queryClient.invalidateQueries({ queryKey: ["user-stats"] })
-
-            onClose()
-          } else {
-            error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the daily cron job within 24 hours.")
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to index vote:", err)
-          setIsIndexing(false)
-          error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed by the daily cron job within 24 hours.")
-        })
+    if (!isConfirmed || !hash || !country || !contractAddress || !address || !chain) {
+      return
     }
-  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, info, queryClient, onClose])
+
+    // Prevent duplicate indexing of the same transaction
+    if (indexedTxRef.current === hash) {
+      return
+    }
+
+    indexedTxRef.current = hash
+    setIsIndexing(true)
+
+    const countryName = country.name
+    const votes = voteCount
+    const cost = totalCost.toString()
+
+    // Call immediate indexing API
+    fetch("/api/votes/immediate-index", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        txHash: hash,
+        contractAddress: contractAddress,
+        walletAddress: address,
+        chainId: chain.id,
+        countryCode: country.code,
+        voteCount: votes,
+        totalCostEth: cost,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setIsIndexing(false)
+        if (data.success) {
+          success(
+            "Vote Recorded!",
+            `Your ${votes} vote${votes !== 1 ? "s" : ""} for ${countryName} ${votes !== 1 ? "have" : "has"} been recorded on-chain and indexed`
+          )
+
+          // Trigger page refresh by dispatching custom event
+          window.dispatchEvent(new CustomEvent("vote-recorded"))
+
+          // Close modal after short delay to let user see the success message
+          setTimeout(() => {
+            onClose()
+          }, 1000)
+        } else {
+          error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the daily cron job within 24 hours.")
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to index vote:", err)
+        setIsIndexing(false)
+        error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed by the daily cron job within 24 hours.")
+      })
+  }, [isConfirmed, hash])  // Only depend on confirmation and hash
 
   // Handle write errors
   useEffect(() => {
