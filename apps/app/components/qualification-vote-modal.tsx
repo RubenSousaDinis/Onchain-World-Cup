@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
+import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 
 interface QualificationVoteModalProps {
@@ -243,7 +244,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         address: contractAddress,
         abi: WORLD_CUP_QUALIFICATION_ABI,
         functionName: "vote",
-        args: [country?.code || "", BigInt(voteCount)],
+        args: [countryCodeToBytes8(country?.code || ""), BigInt(voteCount)],
         value: parseEther(totalCost.toString()),
       })
     } catch (err) {

@@ -4,6 +4,7 @@ import { useReadContract, useWatchContractEvent } from "wagmi"
 import { formatEther, parseEther } from "viem"
 import { WORLD_CUP_QUALIFICATION_ABI } from "../contracts/qualification-abi"
 import { WORLD_CUP_MATCH_ABI } from "../contracts/match-abi"
+import { countryCodeToBytes8 } from "../contracts/qualification"
 import { useEffect, useState } from "react"
 
 interface UseQualificationVotePriceOptions {
@@ -31,9 +32,13 @@ export function useQualificationVotePrice({
 }: UseQualificationVotePriceOptions) {
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
+  // Convert country code to bytes8 format
+  const countryCodeBytes = countryCode ? countryCodeToBytes8(countryCode) : "0x0000000000000000"
+
   console.log("[useQualificationVotePrice] Hook state:", {
     contractAddress,
     countryCode,
+    countryCodeBytes,
     voteCount,
     enabled,
   })
@@ -42,8 +47,8 @@ export function useQualificationVotePrice({
   const { data: currentVotes, refetch: refetchVotes, error: votesError } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "getCountryVotes",
-    args: [countryCode],
+    functionName: "countryVotes",
+    args: [countryCodeBytes],
     query: {
       enabled: enabled && !!countryCode && contractAddress !== "0x0000000000000000000000000000000000000000",
     },
@@ -53,8 +58,8 @@ export function useQualificationVotePrice({
   const { data: votePrice, refetch: refetchPrice, error: priceError } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "calculateVotePrice",
-    args: [countryCode, BigInt(voteCount)],
+    functionName: "calculateVoteCost",
+    args: [countryCodeBytes, BigInt(voteCount)],
     query: {
       enabled: enabled && !!countryCode && voteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
     },
@@ -83,9 +88,9 @@ export function useQualificationVotePrice({
     onLogs: (logs) => {
       // Check if any vote was for this country
       const hasRelevantVote = logs.some((log) => {
-        const args = log.args as { countryCode?: string }
-        // Compare string values
-        return args.countryCode === countryCode
+        const args = log.args as { country?: string }
+        // Compare bytes8 values
+        return args.country === countryCodeBytes
       })
 
       if (hasRelevantVote) {
