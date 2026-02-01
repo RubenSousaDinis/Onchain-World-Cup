@@ -28,10 +28,6 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     if (!isConnected && isAuthenticated) {
       console.log("[AutoAuth] Wallet disconnected → Signing out")
       logout()
-    }
-
-    // Reset auth trigger when wallet disconnects
-    if (!isConnected) {
       hasTriggeredAuth.current = false
     }
   }, [isConnected, isAuthenticated, logout])
@@ -54,8 +50,24 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Trigger authentication when wallet connects
   useEffect(() => {
+    console.log("[AutoAuth] Effect triggered - State:", {
+      isConnected,
+      address: address?.slice(0, 10),
+      isAuthenticated,
+      sessionWallet: sessionWallet?.slice(0, 10),
+      isLoading,
+      hasTriggeredAuth: hasTriggeredAuth.current,
+    })
+
     // Only proceed if wallet is connected
     if (!isConnected || !address) {
+      console.log("[AutoAuth] Skipping - wallet not connected")
+      return
+    }
+
+    // Wait for session to load before making decisions
+    if (isLoading) {
+      console.log("[AutoAuth] Skipping - session is still loading")
       return
     }
 
@@ -65,17 +77,23 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       const normalizedSessionWallet = sessionWallet.toLowerCase()
 
       if (normalizedAddress === normalizedSessionWallet) {
-        console.log("[AutoAuth] Already authenticated with matching wallet")
+        console.log("[AutoAuth] Already authenticated with matching wallet - skipping auth")
         return
+      } else {
+        console.log("[AutoAuth] Wallet mismatch detected", {
+          connected: normalizedAddress,
+          session: normalizedSessionWallet,
+        })
       }
     }
 
-    // Don't trigger if already tried or currently loading
-    if (hasTriggeredAuth.current || isLoading) {
+    // Don't trigger if already tried
+    if (hasTriggeredAuth.current) {
+      console.log("[AutoAuth] Skipping - already triggered auth for this session")
       return
     }
 
-    console.log("[AutoAuth] Wallet connected → Triggering authentication")
+    console.log("[AutoAuth] Wallet connected and not authenticated → Triggering authentication")
     hasTriggeredAuth.current = true
 
     // Trigger authentication after a short delay to allow UI to settle
