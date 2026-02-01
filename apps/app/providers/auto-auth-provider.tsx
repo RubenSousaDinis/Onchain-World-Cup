@@ -17,20 +17,29 @@ import { useFarcaster } from "@/lib/farcaster-provider"
  * This ensures the authenticated session always matches the connected wallet.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, isReconnecting, status } = useAccount()
   const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet } = useSIWEAuth()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
 
-  // Sign out when wallet disconnects
+  // Sign out when wallet disconnects (but not during reconnection)
   useEffect(() => {
+    console.log("[AutoAuth] Disconnect check:", { isConnected, isReconnecting, status, isAuthenticated })
+
+    // Don't logout during reconnection - wait for wagmi to finish
+    if (isReconnecting) {
+      console.log("[AutoAuth] Skipping logout - wallet is reconnecting")
+      return
+    }
+
+    // Only logout if wallet is truly disconnected (not reconnecting)
     if (!isConnected && isAuthenticated) {
-      console.log("[AutoAuth] Wallet disconnected → Signing out")
+      console.log("[AutoAuth] Wallet disconnected (not reconnecting) → Signing out")
       logout()
       hasTriggeredAuth.current = false
     }
-  }, [isConnected, isAuthenticated, logout])
+  }, [isConnected, isReconnecting, status, isAuthenticated, logout])
 
   // Sign out when wallet address changes (user switched wallets)
   useEffect(() => {
@@ -52,12 +61,20 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log("[AutoAuth] Effect triggered - State:", {
       isConnected,
+      isReconnecting,
+      status,
       address: address?.slice(0, 10),
       isAuthenticated,
       sessionWallet: sessionWallet?.slice(0, 10),
       isLoading,
       hasTriggeredAuth: hasTriggeredAuth.current,
     })
+
+    // Wait for wagmi reconnection to finish
+    if (isReconnecting) {
+      console.log("[AutoAuth] Skipping - wallet is reconnecting")
+      return
+    }
 
     // Only proceed if wallet is connected
     if (!isConnected || !address) {
@@ -147,7 +164,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }, 1000) // 1 second delay to let wallet connection settle
 
     return () => clearTimeout(timer)
-  }, [isConnected, isAuthenticated, address, sessionWallet, isLoading, login, info, success, error, isFarcasterMiniApp])
+  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, login, info, success, error, isFarcasterMiniApp])
 
   // This provider doesn't render anything, just manages authentication
   return <>{children}</>
