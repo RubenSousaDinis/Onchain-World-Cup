@@ -179,6 +179,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       .then((res) => res.json())
       .then((data) => {
         setIsIndexing(false)
+        console.log("[Vote Modal] Indexing API response:", data)
+
         if (data.success) {
           success(
             "Vote Recorded!",
@@ -186,7 +188,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           )
 
           // Trigger page refresh by dispatching custom event
+          console.log("[Vote Modal] Dispatching vote-recorded event")
           window.dispatchEvent(new CustomEvent("vote-recorded"))
+          console.log("[Vote Modal] Event dispatched")
 
           // Close modal after short delay to let user see the success message
           setTimeout(() => {

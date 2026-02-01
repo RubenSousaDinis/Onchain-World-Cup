@@ -76,6 +76,7 @@ export default function QualificationPage() {
         const countriesRes = await fetch("/api/qualification/countries?limit=200")
         if (countriesRes.ok) {
           const countriesData = await countriesRes.json()
+          console.log("[Qualification] Fetched country stats:", countriesData.data?.length, "countries")
           setCountryStats(countriesData.data || [])
         }
       } catch (error) {
@@ -89,10 +90,11 @@ export default function QualificationPage() {
 
     // Listen for vote-recorded events to refresh immediately
     const handleVoteRecorded = () => {
-      console.log("[Qualification] Vote recorded - refreshing data")
+      console.log("[Qualification] vote-recorded event received - refreshing data NOW")
       fetchData()
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
+    console.log("[Qualification] Event listener added for vote-recorded")
 
     // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000)

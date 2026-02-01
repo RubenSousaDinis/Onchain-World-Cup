@@ -55,10 +55,11 @@ export default function HomePage() {
 
     // Listen for vote-recorded events to refresh immediately
     const handleVoteRecorded = () => {
-      console.log("[HomePage] Vote recorded - refreshing data")
+      console.log("[HomePage] vote-recorded event received - refreshing data NOW")
       fetchData()
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
+    console.log("[HomePage] Event listener added for vote-recorded")
 
     // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000)

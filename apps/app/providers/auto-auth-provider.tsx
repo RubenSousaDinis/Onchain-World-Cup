@@ -129,7 +129,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }, 1000) // 1 second delay to let wallet connection settle
 
     return () => clearTimeout(timer)
-  }, [isConnected, isAuthenticated, address, isLoading, login, info, success, error, isFarcasterMiniApp])
+  }, [isConnected, isAuthenticated, address, sessionWallet, isLoading, login, info, success, error, isFarcasterMiniApp])
 
   // This provider doesn't render anything, just manages authentication
   return <>{children}</>
