@@ -34,16 +34,6 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { isAuthenticated, login } = useSIWEAuth()
   const queryClient = useQueryClient()
 
-  // Debug logging for authentication state and chain
-  console.log("[Vote Modal] State:", {
-    isConnected,
-    isAuthenticated,
-    address,
-    chainId: chain?.id,
-    chainName: chain?.name,
-    isOpen
-  })
-
   // Contract interaction hooks
   const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract()
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
@@ -60,19 +50,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     },
   })
 
-  // Debug balance data
-  console.log("[Vote Modal] Balance data:", {
-    balance: balanceData?.formatted,
-    symbol: balanceData?.symbol,
-    decimals: balanceData?.decimals,
-    value: balanceData?.value,
-    chainId: chain?.id,
-  })
-
   // Refetch balance when modal opens or chain changes
   useEffect(() => {
     if (isOpen && address && chain?.id) {
-      console.log("[Vote Modal] Refetching balance for chain:", chain.id)
       refetchBalance()
     }
   }, [isOpen, address, chain?.id, refetchBalance])
@@ -102,8 +82,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const displayVotes = useMockPricing ? country?.votes || 0 : contractVotes
 
   // Calculate max votes based on wallet balance and current price
+  // Cap at 100 (contract's MAX_VOTES_PER_TX limit)
   const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
-  const maxVotesPossible = currentPrice > 0 ? Math.floor(walletBalance / currentPrice) : 0
+  const maxVotesPossible = currentPrice > 0 ? Math.min(100, Math.floor(walletBalance / currentPrice)) : 0
 
   // Helper to format ETH values without trailing zeros
   const formatETH = (value: number): string => {

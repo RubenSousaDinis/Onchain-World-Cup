@@ -35,16 +35,8 @@ export function useQualificationVotePrice({
   // Convert country code to bytes8 format
   const countryCodeBytes = countryCode ? countryCodeToBytes8(countryCode) : "0x0000000000000000"
 
-  console.log("[useQualificationVotePrice] Hook state:", {
-    contractAddress,
-    countryCode,
-    countryCodeBytes,
-    voteCount,
-    enabled,
-  })
-
   // Get current vote count for the country
-  const { data: currentVotes, refetch: refetchVotes, error: votesError } = useReadContract({
+  const { data: currentVotes, refetch: refetchVotes } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "countryVotes",
@@ -55,19 +47,17 @@ export function useQualificationVotePrice({
   })
 
   // Calculate price for the specified number of votes
-  const { data: votePrice, refetch: refetchPrice, error: priceError } = useReadContract({
+  // Cap at 100 votes to respect contract's MAX_VOTES_PER_TX limit
+  const cappedVoteCount = Math.min(100, voteCount)
+  const { data: votePrice, refetch: refetchPrice } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVoteCost",
-    args: [countryCodeBytes, BigInt(voteCount)],
+    args: [countryCodeBytes, BigInt(cappedVoteCount)],
     query: {
-      enabled: enabled && !!countryCode && voteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
+      enabled: enabled && !!countryCode && cappedVoteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
     },
   })
-
-  // Log any errors
-  if (votesError) console.error("[useQualificationVotePrice] Votes error:", votesError)
-  if (priceError) console.error("[useQualificationVotePrice] Price error:", priceError)
 
   // Get base price constant
   const { data: basePrice } = useReadContract({
@@ -94,7 +84,6 @@ export function useQualificationVotePrice({
       })
 
       if (hasRelevantVote) {
-        console.log("[useQualificationVotePrice] Vote detected for country, refetching...")
         setRefetchTrigger((prev) => prev + 1)
       }
     },
@@ -103,34 +92,24 @@ export function useQualificationVotePrice({
   // Refetch on trigger
   useEffect(() => {
     if (refetchTrigger > 0) {
-      console.log("[useQualificationVotePrice] Refetching due to trigger:", refetchTrigger)
       refetchVotes()
       refetchPrice()
     }
   }, [refetchTrigger, refetchVotes, refetchPrice])
 
-  const result = {
+  return {
     currentVotes: currentVotes ? Number(currentVotes) : 0,
     votePrice: votePrice ? formatEther(votePrice) : "0",
     votePriceRaw: votePrice,
     basePrice: basePrice ? formatEther(basePrice) : "0",
     basePriceRaw: basePrice,
-    pricePerVote: votePrice && voteCount > 0 ? formatEther(votePrice / BigInt(voteCount)) : "0",
+    pricePerVote: votePrice && cappedVoteCount > 0 ? formatEther(votePrice / BigInt(cappedVoteCount)) : "0",
     isLoading: !votePrice && enabled && contractAddress !== "0x0000000000000000000000000000000000000000",
     refetch: () => {
       refetchVotes()
       refetchPrice()
     },
   }
-
-  console.log("[useQualificationVotePrice] Returning:", {
-    currentVotes: result.currentVotes,
-    votePrice: result.votePrice,
-    pricePerVote: result.pricePerVote,
-    isLoading: result.isLoading,
-  })
-
-  return result
 }
 
 /**
