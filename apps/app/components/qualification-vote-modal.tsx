@@ -86,6 +86,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
   const maxVotesPossible = currentPrice > 0 ? Math.min(100, Math.floor(walletBalance / currentPrice)) : 0
 
+  // Ensure vote count doesn't exceed max possible
+  useEffect(() => {
+    if (maxVotesPossible > 0 && voteCount > maxVotesPossible) {
+      setVoteCount(maxVotesPossible)
+    }
+  }, [maxVotesPossible, voteCount])
+
   // Helper to format ETH values without trailing zeros
   const formatETH = (value: number): string => {
     return parseFloat(value.toFixed(6)).toString()
@@ -294,8 +301,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold cm-highlight">Number of Votes</label>
               {isConnected && maxVotesPossible > 0 && (
-                <span className="text-xs text-muted-foreground">
+                <span className={`text-xs ${voteCount >= maxVotesPossible ? 'text-accent font-semibold' : 'text-muted-foreground'}`}>
                   Max: {maxVotesPossible.toLocaleString("en-US")} votes
+                  {voteCount >= maxVotesPossible && ' (reached)'}
                 </span>
               )}
             </div>
@@ -310,13 +318,19 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               <input
                 type="number"
                 value={voteCount}
-                onChange={(e) => setVoteCount(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value) || 1
+                  const capped = maxVotesPossible > 0 ? Math.min(maxVotesPossible, Math.max(1, value)) : Math.max(1, value)
+                  setVoteCount(capped)
+                }}
                 className="flex-1 bg-input border border-border rounded-sm px-4 py-2 text-center text-lg font-bold cm-highlight"
                 min="1"
+                max={maxVotesPossible > 0 ? maxVotesPossible : undefined}
               />
               <button
                 onClick={() => setVoteCount(voteCount + 1)}
                 className="cm-nav-tab w-10 h-10 flex items-center justify-center font-bold"
+                disabled={maxVotesPossible > 0 && voteCount >= maxVotesPossible}
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -325,8 +339,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               {[1, 5, 10, 25].map((amount) => (
                 <button
                   key={amount}
-                  onClick={() => setVoteCount(amount)}
+                  onClick={() => setVoteCount(Math.min(maxVotesPossible || amount, amount))}
                   className="flex-1 cm-nav-tab py-1.5 text-xs lg:text-sm font-bold"
+                  disabled={maxVotesPossible > 0 && amount > maxVotesPossible}
                 >
                   {amount}
                 </button>
@@ -334,9 +349,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               {isConnected && maxVotesPossible > 0 && (
                 <button
                   onClick={handleMaxVotes}
-                  className="flex-1 bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30 py-1.5 text-xs lg:text-sm font-bold rounded-sm transition-colors"
+                  className="flex-1 bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30 py-1.5 text-xs lg:text-sm font-bold rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={voteCount >= maxVotesPossible}
+                  title={`Maximum affordable votes: ${maxVotesPossible}`}
                 >
-                  MAX
+                  MAX ({maxVotesPossible})
                 </button>
               )}
             </div>
