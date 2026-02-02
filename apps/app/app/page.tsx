@@ -41,8 +41,15 @@ export default function HomePage() {
         setIsLoading(true)
         const res = await fetch("/api/qualification/summary")
         if (res.ok) {
-          const data = await res.json()
-          setSummaryData(data)
+          const response = await res.json()
+          const apiData = response.data
+          // Transform API response to expected format
+          setSummaryData({
+            totalVotes: apiData?.total_votes || 0,
+            totalEth: apiData?.total_eth || "0",
+            totalVoters: apiData?.total_voters || 0,
+            topCountries: apiData?.top_countries || [],
+          })
         }
       } catch (error) {
         console.error("Failed to fetch summary data:", error)
