@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
+import { revalidateTag } from "next/cache"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/server/prisma"
 
@@ -227,6 +228,12 @@ export async function POST(request: NextRequest) {
       })
 
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
+
+      // Revalidate Next.js caches to show updated data immediately
+      revalidateTag("qualification-countries")
+      revalidateTag("qualification-summary")
+      console.log("[Immediate Index] Cache revalidated")
+
       return NextResponse.json(
         {
           success: true,
