@@ -37,6 +37,7 @@ export default function QualificationPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [timeRemaining, setTimeRemaining] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [totalPrizePool, setTotalPrizePool] = useState(0)
+  const [prizePoolUpdating, setPrizePoolUpdating] = useState(false)
   const [countryStats, setCountryStats] = useState<CountryStats[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [qualificationEndTime, setQualificationEndTime] = useState<number | null>(null)
@@ -64,7 +65,15 @@ export default function QualificationPage() {
         const summaryRes = await fetch("/api/qualification/summary")
         if (summaryRes.ok) {
           const summaryData = await summaryRes.json()
-          setTotalPrizePool(parseFloat(summaryData.totalEth || "0"))
+          const newPrizePool = parseFloat(summaryData.totalEth || "0")
+
+          // Trigger animation if prize pool changed
+          if (newPrizePool !== totalPrizePool && totalPrizePool > 0) {
+            setPrizePoolUpdating(true)
+            setTimeout(() => setPrizePoolUpdating(false), 1000)
+          }
+
+          setTotalPrizePool(newPrizePool)
 
           // If qualification end time is available from contract
           if (summaryData.qualificationEndTime) {
@@ -216,6 +225,25 @@ export default function QualificationPage() {
           </div>
         </div>
 
+        {/* Prize Pool - Prominent Display */}
+        <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-all duration-300 ${prizePoolUpdating ? 'scale-105 border-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
+          <div className="bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 p-6 lg:p-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
+                <h3 className="text-base lg:text-xl font-bold text-accent uppercase">Total Prize Pool</h3>
+                <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
+              </div>
+              <div className={`text-5xl lg:text-7xl font-bold cm-highlight mb-2 transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
+                {totalPrizePool.toFixed(4)} ETH
+              </div>
+              <p className="text-sm lg:text-base text-foreground/70">
+                90% distributed to winning voters • 10% platform fee
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Countdown Timer */}
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
           <div className="bg-secondary/40 p-4 lg:p-6">
@@ -248,13 +276,6 @@ export default function QualificationPage() {
                   <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 flex items-center gap-2 text-sm lg:text-base">
-              <Trophy className="w-4 h-4 text-accent" />
-              <span className="text-foreground/70">
-                Current Prize Pool: <span className="cm-highlight font-bold text-base lg:text-lg">{totalPrizePool.toFixed(4)} ETH</span> from
-                community votes
-              </span>
             </div>
           </div>
         </div>
