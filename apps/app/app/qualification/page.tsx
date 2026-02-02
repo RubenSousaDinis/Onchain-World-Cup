@@ -135,7 +135,7 @@ export default function QualificationPage() {
       clearInterval(interval)
       window.removeEventListener("vote-recorded", handleVoteRecorded)
     }
-  }, [])
+  }, [address]) // Re-fetch when wallet address becomes available
 
   // Calculate countdown timer
   useEffect(() => {
