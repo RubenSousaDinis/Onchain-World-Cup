@@ -57,9 +57,9 @@ export default function QualificationPage() {
     isLoading: isLoadingMore,
   })
 
-  // Fetch qualification summary data
+  // Fetch qualification summary and countries (NOT dependent on address)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPublicData = async () => {
       try {
         setIsLoading(true)
 
@@ -90,17 +90,6 @@ export default function QualificationPage() {
           const countriesData = await countriesRes.json()
           setCountryStats(countriesData.data || [])
         }
-
-        // Fetch user stats if logged in
-        if (address) {
-          const userStatsRes = await fetch(`/api/users/${address}`)
-          if (userStatsRes.ok) {
-            const userStatsResponse = await userStatsRes.json()
-            const userStatsData = userStatsResponse.data
-            setUserVotes(userStatsData?.qualification_votes || 0)
-            setUserSpentEth(parseFloat(userStatsData?.qualification_spent_eth || "0"))
-          }
-        }
       } catch (error) {
         console.error("Failed to fetch qualification data:", error)
       } finally {
@@ -108,24 +97,57 @@ export default function QualificationPage() {
       }
     }
 
-    fetchData()
+    fetchPublicData()
 
     // Listen for vote-recorded events to refresh immediately
     const handleVoteRecorded = () => {
-      console.log("[Qualification] vote-recorded event received - refreshing data NOW")
-      fetchData()
+      fetchPublicData()
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
-    console.log("[Qualification] Event listener added for vote-recorded")
 
     // Refresh data every 30 seconds
-    const interval = setInterval(fetchData, 30000)
+    const interval = setInterval(fetchPublicData, 30000)
 
     return () => {
       clearInterval(interval)
       window.removeEventListener("vote-recorded", handleVoteRecorded)
     }
-  }, [address]) // Re-fetch when wallet address becomes available
+  }, []) // Only run once on mount
+
+  // Fetch user stats separately when address becomes available
+  useEffect(() => {
+    const fetchUserStats = async () => {
+      if (!address) {
+        setUserVotes(0)
+        setUserSpentEth(0)
+        return
+      }
+
+      try {
+        const userStatsRes = await fetch(`/api/users/${address}`)
+        if (userStatsRes.ok) {
+          const userStatsResponse = await userStatsRes.json()
+          const userStatsData = userStatsResponse.data
+          setUserVotes(userStatsData?.qualification_votes || 0)
+          setUserSpentEth(parseFloat(userStatsData?.qualification_spent_eth || "0"))
+        }
+      } catch (error) {
+        console.error("Failed to fetch user stats:", error)
+      }
+    }
+
+    fetchUserStats()
+
+    // Also listen for vote events to update user stats
+    const handleVoteRecorded = () => {
+      fetchUserStats()
+    }
+    window.addEventListener("vote-recorded", handleVoteRecorded)
+
+    return () => {
+      window.removeEventListener("vote-recorded", handleVoteRecorded)
+    }
+  }, [address]) // Only re-fetch user stats when address changes
 
   // Calculate countdown timer
   useEffect(() => {
