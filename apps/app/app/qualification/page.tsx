@@ -94,13 +94,22 @@ export default function QualificationPage() {
 
         // Fetch user stats if logged in
         if (address) {
+          console.log("[Qualification] Fetching user stats for:", address)
           const userStatsRes = await fetch(`/api/users/${address}`)
           if (userStatsRes.ok) {
             const userStatsResponse = await userStatsRes.json()
             const userStatsData = userStatsResponse.data
+            console.log("[Qualification] User stats received:", {
+              votes: userStatsData?.qualification_votes,
+              spent: userStatsData?.qualification_spent_eth,
+            })
             setUserVotes(userStatsData?.qualification_votes || 0)
             setUserSpentEth(parseFloat(userStatsData?.qualification_spent_eth || "0"))
+          } else {
+            console.error("[Qualification] Failed to fetch user stats:", userStatsRes.status)
           }
+        } else {
+          console.log("[Qualification] No wallet address - skipping user stats")
         }
       } catch (error) {
         console.error("Failed to fetch qualification data:", error)
@@ -256,20 +265,29 @@ export default function QualificationPage() {
               </div>
 
               {/* User Stats - Only show if logged in and has votes */}
-              {address && userVotes > 0 && (
-                <>
-                  <div className="hidden lg:block w-px h-24 bg-accent/30" />
-                  <div className="flex flex-col items-center text-center flex-1">
-                    <h3 className="text-base lg:text-xl font-bold text-accent uppercase mb-2">Your Contribution</h3>
-                    <div className="text-3xl lg:text-4xl font-bold cm-highlight mb-1">
-                      {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
+              {(() => {
+                const shouldShow = address && userVotes > 0
+                console.log("[Qualification] User contribution display check:", {
+                  address: address?.slice(0, 10),
+                  userVotes,
+                  userSpentEth,
+                  shouldShow
+                })
+                return shouldShow ? (
+                  <>
+                    <div className="hidden lg:block w-px h-24 bg-accent/30" />
+                    <div className="flex flex-col items-center text-center flex-1">
+                      <h3 className="text-base lg:text-xl font-bold text-accent uppercase mb-2">Your Contribution</h3>
+                      <div className="text-3xl lg:text-4xl font-bold cm-highlight mb-1">
+                        {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
+                      </div>
+                      <div className="text-xl lg:text-2xl font-bold text-foreground/70">
+                        {userSpentEth >= 0.01 ? userSpentEth.toFixed(4) : userSpentEth.toFixed(6)} ETH
+                      </div>
                     </div>
-                    <div className="text-xl lg:text-2xl font-bold text-foreground/70">
-                      {userSpentEth >= 0.01 ? userSpentEth.toFixed(4) : userSpentEth.toFixed(6)} ETH
-                    </div>
-                  </div>
-                </>
-              )}
+                  </>
+                ) : null
+              })()}
             </div>
           </div>
         </div>
