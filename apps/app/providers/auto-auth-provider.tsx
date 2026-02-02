@@ -23,19 +23,19 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { isFarcasterMiniApp } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
 
-  // Sign out when wallet disconnects (but not during reconnection)
+  // Sign out when wallet disconnects (but not during reconnection/connection)
   useEffect(() => {
     console.log("[AutoAuth] Disconnect check:", { isConnected, isReconnecting, status, isAuthenticated })
 
-    // Don't logout during reconnection - wait for wagmi to finish
-    if (isReconnecting) {
-      console.log("[AutoAuth] Skipping logout - wallet is reconnecting")
+    // Don't logout during reconnection or initial connection - wait for wagmi to finish
+    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+      console.log("[AutoAuth] Skipping logout - wallet is connecting/reconnecting")
       return
     }
 
-    // Only logout if wallet is truly disconnected (not reconnecting)
-    if (!isConnected && isAuthenticated) {
-      console.log("[AutoAuth] Wallet disconnected (not reconnecting) → Signing out")
+    // Only logout if wallet is truly disconnected (not connecting/reconnecting)
+    if (!isConnected && isAuthenticated && status === 'disconnected') {
+      console.log("[AutoAuth] Wallet fully disconnected → Signing out")
       logout()
       hasTriggeredAuth.current = false
     }
@@ -70,15 +70,15 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       hasTriggeredAuth: hasTriggeredAuth.current,
     })
 
-    // Wait for wagmi reconnection to finish
-    if (isReconnecting) {
-      console.log("[AutoAuth] Skipping - wallet is reconnecting")
+    // Wait for wagmi reconnection/connection to finish
+    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+      console.log("[AutoAuth] Skipping - wallet is connecting/reconnecting")
       return
     }
 
-    // Only proceed if wallet is connected
-    if (!isConnected || !address) {
-      console.log("[AutoAuth] Skipping - wallet not connected")
+    // Only proceed if wallet is fully connected
+    if (!isConnected || !address || status !== 'connected') {
+      console.log("[AutoAuth] Skipping - wallet not fully connected")
       return
     }
 
