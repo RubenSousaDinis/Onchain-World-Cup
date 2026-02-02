@@ -1,6 +1,5 @@
 import NextAuth, { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { SiweMessage } from "siwe"
 import { prisma } from "@/lib/server/prisma"
 
@@ -42,7 +41,6 @@ if (!process.env.NEXTAUTH_URL) {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
