@@ -4,13 +4,14 @@ import { useState, useEffect, Fragment, useRef } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2 } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2 } from "lucide-react"
 import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
+import { ShareModal } from "@/components/share-modal"
 
 type CountryStats = {
   country_code: string
@@ -46,6 +47,7 @@ export default function QualificationPage() {
   const [qualificationEndTime, setQualificationEndTime] = useState<number | null>(null)
   const isFetchingRef = useRef(false)
   const isFetchingUserStatsRef = useRef(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
@@ -337,10 +339,22 @@ export default function QualificationPage() {
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-4 lg:p-6">
-            <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-              <span className="cm-highlight">Onchain World Cup</span>
-            </h1>
-            <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <div className="flex-1">
+                <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+                  <span className="cm-highlight">Onchain World Cup</span>
+                </h1>
+                <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
+              </div>
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0"
+                aria-label="Share leaderboard"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            </div>
             <p className="text-sm lg:text-base text-foreground/80 mb-2">
               Onchain users decide who qualifies - No matches yet, pure community voting
             </p>
@@ -578,6 +592,20 @@ export default function QualificationPage() {
         onClose={() => setVoteModalOpen(false)}
         country={selectedCountry}
         contractAddress={contractAddress}
+      />
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type="leaderboard"
+        data={{
+          topCountries: allCountries.slice(0, 5).map((country) => ({
+            rank: country.rank,
+            name: country.name,
+            flag: country.flag,
+            votes: country.votes,
+          })),
+        }}
       />
       </div>
     </div>

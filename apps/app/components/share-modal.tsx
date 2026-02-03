@@ -7,7 +7,7 @@ import { useNotifications } from "@/components/notifications"
 interface ShareModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "vote" | "result" | "milestone" | "country"
+  type: "vote" | "result" | "milestone" | "country" | "leaderboard"
   data: {
     team?: string
     teamFlag?: string
@@ -26,6 +26,12 @@ interface ShareModalProps {
     country?: string
     countryCode?: string
     countryFlag?: string
+    topCountries?: Array<{
+      rank: number
+      name: string
+      flag: string
+      votes: number
+    }>
   }
 }
 
@@ -47,6 +53,18 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
   const getShareText = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+
+    if (type === "leaderboard") {
+      const top3 = data.topCountries?.slice(0, 3) || []
+      const top3Text = top3.map((c, i) => `${i + 1}. ${c.flag} ${c.name} - ${c.votes.toLocaleString()} votes`).join('\n')
+
+      return {
+        title: "Qualification Leaderboard",
+        text: `🏆 Current Qualification Leaderboard:\n\n${top3Text}\n\nTop 48 countries qualify! Vote for your country now! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: `${baseUrl}/qualification`,
+        ogImage: `${baseUrl}/api/og/leaderboard`,
+      }
+    }
 
     if (type === "country") {
       return {
@@ -135,11 +153,14 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
         {/* Header */}
         <div className="soccer-field-bg p-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
+            {type === "leaderboard" && <Trophy className="w-6 h-6 text-accent" />}
+            {type === "country" && <Zap className="w-6 h-6 text-accent" />}
             {type === "vote" && <Zap className="w-6 h-6 text-accent" />}
             {type === "result" && <Trophy className="w-6 h-6 text-accent" />}
             {type === "milestone" && <Flame className="w-6 h-6 text-accent" />}
             <div>
               <div className="text-lg font-bold cm-highlight">
+                {type === "leaderboard" && "Share Leaderboard"}
                 {type === "country" && "Country Vote Placed!"}
                 {type === "vote" && "Vote Placed!"}
                 {type === "result" && (data.result === "won" || data.result === "earned" ? "You Won!" : "Match Ended")}
@@ -155,6 +176,27 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
         {/* Content Preview */}
         <div className="p-4 bg-card/50">
+          {type === "leaderboard" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <div className="text-xl font-bold cm-highlight mb-3">Qualification Leaderboard</div>
+              <div className="space-y-2 text-left max-w-sm mx-auto">
+                {data.topCountries?.slice(0, 5).map((country) => (
+                  <div key={country.rank} className="flex items-center justify-between bg-secondary/20 border border-border rounded px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold text-sm ${country.rank === 1 ? 'text-yellow-400' : country.rank === 2 ? 'text-gray-300' : country.rank === 3 ? 'text-orange-400' : 'text-muted-foreground'}`}>
+                        #{country.rank}
+                      </span>
+                      <span className="text-xl">{country.flag}</span>
+                      <span className="text-sm font-bold">{country.name}</span>
+                    </div>
+                    <span className="text-xs font-mono text-accent">{country.votes.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {type === "country" && (
             <div className="text-center">
               <div className="text-6xl mb-3">{data.countryFlag}</div>
