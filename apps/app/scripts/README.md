@@ -129,7 +129,7 @@ NEXT_PUBLIC_BASE_RPC_URL=https://sepolia.base.org
 BASE_MAINNET_RPC_URL=https://mainnet.base.org
 
 # Block explorer API key for verification
-BASESCAN_API_KEY=your_basescan_api_key
+ETHERSCAN_API_KEY=your_etherscan_api_key  # From https://etherscan.io/apidashboard (required for contract verification)
 ```
 
 ## Verification
@@ -179,7 +179,7 @@ This sets platform fee to 0% (100% discount) for a promotion.
 Make sure your deployer account has enough ETH for gas fees.
 
 ### "Contract verification failed"
-The script will show manual verification command. Make sure your BASESCAN_API_KEY is set.
+The script will show manual verification command. Make sure ETHERSCAN_API_KEY is set in .env (get one at https://etherscan.io/apidashboard).
 
 ### "Qualification ended"
 Time-based restrictions prevent certain actions after qualification period ends. Check `qualificationEndTime` in contract.
