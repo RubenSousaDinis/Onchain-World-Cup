@@ -3,18 +3,90 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Users, TrendingUp, Target, DollarSign, Activity, BarChart3, PieChart } from "lucide-react"
-import {
-  platformStats,
-  ethOverTime,
-  votesPerDay,
-  topCountriesByVotes,
-  phaseDistribution,
-  activityByHour,
-  type ChartDataPoint,
-} from "@/lib/mock-data/statistics-data"
+import { type ChartDataPoint } from "@/lib/mock-data/statistics-data"
 import { StatCard } from "@/components/dashboard"
+import { useState, useEffect, useRef } from "react"
+import { InlineLoader } from "@/components/states"
+import { getCountryName, getCountryFlag } from "@/lib/countries"
+
+type SummaryData = {
+  total_votes: number
+  total_eth: string
+  total_countries: number
+  total_voters: number
+  qualified_count: number
+  top_countries: Array<{
+    country_code: string
+    total_votes: number
+    total_eth: string
+    qualified: boolean
+  }>
+  recent_votes: Array<any>
+  top_voters: Array<any>
+}
 
 export default function StatsPage() {
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const isFetchingRef = useRef(false)
+
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      if (isFetchingRef.current) return
+
+      isFetchingRef.current = true
+      setIsLoading(true)
+
+      try {
+        const res = await fetch('/api/qualification/summary')
+        if (res.ok) {
+          const response = await res.json()
+          setSummaryData(response.data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats data:', error)
+      } finally {
+        setIsLoading(false)
+        isFetchingRef.current = false
+      }
+    }
+
+    fetchData()
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Calculate derived stats
+  const totalETH = parseFloat(summaryData?.total_eth || '0')
+  const averageVoteSize = summaryData?.total_voters
+    ? totalETH / summaryData.total_voters
+    : 0
+
+  // Transform top countries for chart
+  const topCountriesChart: ChartDataPoint[] = (summaryData?.top_countries || [])
+    .slice(0, 5)
+    .map((country) => ({
+      label: `${getCountryFlag(country.country_code)} ${getCountryName(country.country_code)}`,
+      value: country.total_votes,
+      displayValue: `${country.total_votes} votes`,
+    }))
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex">
+        <RetroSidebar />
+        <MobileNav />
+        <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8">
+          <div className="cm-panel rounded-sm p-8 text-center">
+            <InlineLoader text="Loading statistics..." />
+          </div>
+        </main>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen flex">
       <RetroSidebar />
@@ -37,75 +109,99 @@ export default function StatsPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
           <StatCard
             icon={DollarSign}
-            label="Total ETH in Pools"
-            value={`${platformStats.totalETHInPools} ETH`}
+            label="Total ETH Spent"
+            value={`${totalETH.toFixed(4)} ETH`}
             valueColor="accent"
           />
           <StatCard
             icon={TrendingUp}
-            label="Total ETH Wagered"
-            value={`${platformStats.totalETHWagered} ETH`}
+            label="Prize Pool (90%)"
+            value={`${(totalETH * 0.9).toFixed(4)} ETH`}
             valueColor="green"
           />
-          <StatCard icon={Target} label="Total Votes" value={platformStats.totalVotesCast} formatValue valueColor="default" />
-          <StatCard icon={Trophy} label="Matches Created" value={platformStats.matchesCreated} formatValue />
-          <StatCard icon={Users} label="Unique Voters" value={platformStats.uniqueVoters} formatValue />
-          <StatCard icon={Activity} label="Avg Vote Size" value={`${platformStats.averageVoteSize} ETH`} />
+          <StatCard
+            icon={Target}
+            label="Total Votes"
+            value={summaryData?.total_votes || 0}
+            formatValue
+            valueColor="default"
+          />
+          <StatCard
+            icon={Trophy}
+            label="Countries Competing"
+            value={summaryData?.total_countries || 0}
+            formatValue
+          />
+          <StatCard
+            icon={Users}
+            label="Unique Voters"
+            value={summaryData?.total_voters || 0}
+            formatValue
+          />
+          <StatCard
+            icon={Activity}
+            label="Avg ETH per Voter"
+            value={`${averageVoteSize.toFixed(4)} ETH`}
+          />
           <StatCard
             icon={BarChart3}
-            label="Phase 1 Votes"
-            value={`${platformStats.phase1VotesPercent}%`}
+            label="Qualified Countries"
+            value={summaryData?.qualified_count || 0}
+            formatValue
             valueColor="green"
           />
           <StatCard
             icon={PieChart}
-            label="Phase 2 Votes"
-            value={`${platformStats.phase2VotesPercent}%`}
+            label="Qualification Spots"
+            value="48"
             valueColor="accent"
           />
         </div>
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {/* ETH Over Time */}
-          <ChartCard title="ETH Wagered Over Time" subtitle="Last 7 days" icon={TrendingUp}>
-            <AreaChart data={ethOverTime} height={200} color="accent" />
-          </ChartCard>
-
-          {/* Votes Per Day */}
-          <ChartCard title="Votes Per Day" subtitle="Last 7 days" icon={Target}>
-            <BarChartComponent data={votesPerDay} height={200} color="green" />
-          </ChartCard>
-
           {/* Top Countries */}
-          <ChartCard title="Top Countries by Votes" subtitle="Leading the qualification" icon={Trophy}>
-            <HorizontalBarChart data={topCountriesByVotes.slice(0, 5)} height={250} />
-          </ChartCard>
-
-          {/* Phase Distribution */}
-          <ChartCard title="Vote Distribution by Phase" subtitle="Pricing model breakdown" icon={PieChart}>
-            <div className="space-y-4">
-              {phaseDistribution.map((phase) => (
-                <div key={phase.label}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm lg:text-base font-bold text-foreground">{phase.label}</span>
-                    <span className="text-sm lg:text-base font-mono font-bold cm-highlight">{phase.value}%</span>
-                  </div>
-                  <div className="w-full h-8 bg-secondary/20 rounded-sm overflow-hidden border border-border">
-                    <div
-                      className={`h-full ${phase.color} transition-all duration-500`}
-                      style={{ width: `${phase.value}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ChartCard>
-
-          {/* Activity by Hour */}
           <div className="lg:col-span-2">
-            <ChartCard title="Platform Activity by Hour" subtitle="24-hour voting pattern" icon={Activity}>
-              <LineChart data={activityByHour} height={200} />
+            <ChartCard title="Top Countries by Votes" subtitle="Leading the qualification" icon={Trophy}>
+              <HorizontalBarChart data={topCountriesChart} height={300} />
+            </ChartCard>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2">
+            <ChartCard title="Recent Votes" subtitle="Latest voting activity" icon={Activity}>
+              <div className="space-y-3">
+                {(summaryData?.recent_votes || []).slice(0, 5).map((vote, index) => {
+                  const countryName = getCountryName(vote.country_code)
+                  const countryFlag = getCountryFlag(vote.country_code)
+                  const date = new Date(vote.created_at)
+
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-secondary/20 rounded-sm border border-border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{countryFlag}</span>
+                        <div>
+                          <div className="text-sm lg:text-base font-bold">{countryName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {vote.voter_address.slice(0, 6)}...{vote.voter_address.slice(-4)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm lg:text-base font-mono font-bold cm-highlight">
+                          {vote.vote_count} votes
+                        </div>
+                        <div className="text-xs text-accent">
+                          {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </ChartCard>
           </div>
         </div>
@@ -115,12 +211,30 @@ export default function StatsPage() {
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-4">
               <Trophy className="w-5 h-5 text-accent" />
-              <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Voting Insights</h3>
+              <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Top Country</h3>
             </div>
             <div className="space-y-3">
-              <StatRow label="Most Voted Country" value="🇧🇷 Brazil" valueClass="cm-highlight" />
-              <StatRow label="Avg Votes per Match" value="312" valueClass="text-accent" />
-              <StatRow label="Peak Hour" value="18:00 UTC" valueClass="text-green-500" />
+              {summaryData?.top_countries && summaryData.top_countries.length > 0 ? (
+                <>
+                  <StatRow
+                    label="Leading Country"
+                    value={`${getCountryFlag(summaryData.top_countries[0].country_code)} ${getCountryName(summaryData.top_countries[0].country_code)}`}
+                    valueClass="cm-highlight"
+                  />
+                  <StatRow
+                    label="Total Votes"
+                    value={summaryData.top_countries[0].total_votes.toLocaleString()}
+                    valueClass="text-accent"
+                  />
+                  <StatRow
+                    label="ETH Backing"
+                    value={`${parseFloat(summaryData.top_countries[0].total_eth).toFixed(4)} ETH`}
+                    valueClass="text-green-500"
+                  />
+                </>
+              ) : (
+                <div className="text-sm text-muted-foreground">No data yet</div>
+              )}
             </div>
           </div>
 
@@ -130,9 +244,21 @@ export default function StatsPage() {
               <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Financial Metrics</h3>
             </div>
             <div className="space-y-3">
-              <StatRow label="Largest Single Vote" value="12.5 ETH" valueClass="cm-highlight" />
-              <StatRow label="Prize Pool Growth" value="+45%" valueClass="text-green-500" />
-              <StatRow label="Platform Fee Collected" value="34.25 ETH" valueClass="text-accent" />
+              <StatRow
+                label="Total Prize Pool"
+                value={`${(totalETH * 0.9).toFixed(4)} ETH`}
+                valueClass="cm-highlight"
+              />
+              <StatRow
+                label="Platform Fees (10%)"
+                value={`${(totalETH * 0.1).toFixed(4)} ETH`}
+                valueClass="text-accent"
+              />
+              <StatRow
+                label="Avg per Country"
+                value={`${summaryData?.total_countries ? (totalETH / summaryData.total_countries).toFixed(4) : '0.0000'} ETH`}
+                valueClass="text-green-500"
+              />
             </div>
           </div>
 
@@ -142,9 +268,21 @@ export default function StatsPage() {
               <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">User Engagement</h3>
             </div>
             <div className="space-y-3">
-              <StatRow label="Avg Votes per User" value="39" valueClass="cm-highlight" />
-              <StatRow label="Returning Users" value="78%" valueClass="text-green-500" />
-              <StatRow label="New Users Today" value="89" valueClass="text-accent" />
+              <StatRow
+                label="Avg Votes per User"
+                value={summaryData?.total_voters ? Math.round(summaryData.total_votes / summaryData.total_voters).toString() : '0'}
+                valueClass="cm-highlight"
+              />
+              <StatRow
+                label="Total Participants"
+                value={summaryData?.total_voters.toLocaleString() || '0'}
+                valueClass="text-accent"
+              />
+              <StatRow
+                label="Countries Competing"
+                value={summaryData?.total_countries.toString() || '0'}
+                valueClass="text-green-500"
+              />
             </div>
           </div>
         </div>

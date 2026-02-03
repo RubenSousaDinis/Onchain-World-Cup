@@ -281,10 +281,28 @@ export default function QualificationPage() {
     }
   }
 
+  // Calculate average votes for momentum calculation
+  const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
+  const averageVotes = countryStats.length > 0 ? totalVotes / countryStats.length : 0
+
   // Merge country data with stats from API
   const allCountries = countriesData.map((country) => {
     const stats = countryStats.find((s) => s.country_code === country.code)
     const votes = stats?.total_votes || 0
+
+    // Calculate momentum based on votes relative to average
+    let momentum = "stable"
+    if (votes === 0) {
+      momentum = "stable"
+    } else if (votes > averageVotes * 2) {
+      momentum = "critical-up" // More than 2x average
+    } else if (votes > averageVotes * 1.2) {
+      momentum = "up" // Above average
+    } else if (votes < averageVotes * 0.5 && averageVotes > 0) {
+      momentum = "critical-down" // Less than half average
+    } else if (votes < averageVotes * 0.8 && averageVotes > 0) {
+      momentum = "down" // Below average
+    }
 
     return {
       rank: 0, // Will be set after sorting
@@ -292,8 +310,7 @@ export default function QualificationPage() {
       flag: country.flagEmoji,
       code: country.code,
       votes,
-      momentum: votes > 1000 ? "up" : votes > 500 ? "stable" : "down",
-      change: 0, // TODO: Calculate change from historical data
+      momentum,
     }
   })
     .sort((a, b) => b.votes - a.votes) // Sort by votes desc
@@ -460,14 +477,13 @@ export default function QualificationPage() {
                     <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Country</th>
                     <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Votes</th>
                     <th className="text-center p-2 lg:p-3 font-bold cm-highlight hidden lg:table-cell">Momentum</th>
-                    <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Change</th>
                     <th className="text-right p-2 lg:p-3 font-bold cm-highlight">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCountries.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-0">
+                      <td colSpan={5} className="p-0">
                         <div className="py-12">
                           <NoSearchResults query={searchQuery} />
                         </div>
@@ -526,16 +542,6 @@ export default function QualificationPage() {
                             </td>
                             <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
                               <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
-                            </td>
-                            <td className="text-center p-2 lg:p-3">
-                              <span
-                                className={`font-bold ${
-                                  country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
-                                }`}
-                              >
-                                {country.change > 0 ? "+" : ""}
-                                {country.change}
-                              </span>
                             </td>
                             <td className="text-right p-2 lg:p-3">
                               <div className="flex items-center justify-end gap-1 lg:gap-2">
