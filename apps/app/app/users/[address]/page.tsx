@@ -1,9 +1,10 @@
 "use client"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, Trophy, TrendingUp, DollarSign } from "lucide-react"
+import { ArrowLeft, Trophy, TrendingUp, DollarSign, Share2 } from "lucide-react"
 import Link from "next/link"
-import { use } from "react"
+import { use, useState } from "react"
+import { ShareModal } from "@/components/share-modal"
 
 const mockUserData = {
   address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
@@ -81,6 +82,15 @@ const mockUserData = {
 export default function UserProfilePage({ params }: { params: Promise<{ address: string }> }) {
   // Unwrap params immediately to prevent React DevTools serialization issues
   const { address } = use(params)
+  const [showShareModal, setShowShareModal] = useState(false)
+
+  // Calculate total ETH spent from favorite teams
+  const totalEthSpent = mockUserData.favoriteTeams.reduce((sum, team) => {
+    return sum + parseFloat(team.totalBets.replace(' ETH', ''))
+  }, 0).toFixed(3)
+
+  // Get favorite country (most bets)
+  const favoriteTeam = mockUserData.favoriteTeams[0]
 
   return (
     <div className="min-h-screen flex">
@@ -140,6 +150,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
                   </div>
                 </div>
               </div>
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="cm-nav-tab flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform"
+                aria-label="Share stats"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>Share</span>
+              </button>
             </div>
           </div>
         </div>
@@ -270,6 +288,22 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
           </div>
         </div>
       </main>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type="user-stats"
+        data={{
+          userStats: {
+            ethSpent: totalEthSpent,
+            currentEarnings: mockUserData.totalWinnings,
+            favoriteCountry: favoriteTeam.name,
+            favoriteCountryFlag: favoriteTeam.flag,
+            totalVotes: mockUserData.totalBets,
+            rank: mockUserData.rank,
+          },
+        }}
+      />
     </div>
   )
 }
