@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap } from "lucide-react"
+import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap, TrendingUp } from "lucide-react"
 import { useNotifications } from "@/components/notifications"
 
 interface ShareModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "vote" | "result" | "milestone" | "country" | "leaderboard"
+  type: "vote" | "result" | "milestone" | "country" | "leaderboard" | "user-stats"
   data: {
     team?: string
     teamFlag?: string
@@ -32,6 +32,14 @@ interface ShareModalProps {
       flag: string
       votes: number
     }>
+    userStats?: {
+      ethSpent: string
+      currentEarnings: string
+      favoriteCountry: string
+      favoriteCountryFlag: string
+      totalVotes: number
+      rank?: number
+    }
   }
 }
 
@@ -53,6 +61,16 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
   const getShareText = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+
+    if (type === "user-stats") {
+      const stats = data.userStats
+      return {
+        title: "My Crypto World Cup Stats",
+        text: `My Crypto World Cup 2026 Stats:\n\n💰 Spent: ${stats?.ethSpent} ETH\n🏆 Earnings: ${stats?.currentEarnings} ETH\n⚽ Favorite: ${stats?.favoriteCountryFlag} ${stats?.favoriteCountry}\n📊 Total Votes: ${stats?.totalVotes}${stats?.rank ? `\n🎯 Rank: #${stats.rank}` : ''}\n\nJoin the action and vote for your favorite teams!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: baseUrl,
+        ogImage: `${baseUrl}/api/og/user-stats?ethSpent=${stats?.ethSpent}&earnings=${stats?.currentEarnings}&country=${encodeURIComponent(stats?.favoriteCountry || "")}&countryFlag=${encodeURIComponent(stats?.favoriteCountryFlag || "")}&votes=${stats?.totalVotes}&rank=${stats?.rank || 0}`,
+      }
+    }
 
     if (type === "leaderboard") {
       const top3 = data.topCountries?.slice(0, 3) || []
@@ -158,6 +176,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             {type === "vote" && <Zap className="w-6 h-6 text-accent" />}
             {type === "result" && <Trophy className="w-6 h-6 text-accent" />}
             {type === "milestone" && <Flame className="w-6 h-6 text-accent" />}
+            {type === "user-stats" && <TrendingUp className="w-6 h-6 text-accent" />}
             <div>
               <div className="text-lg font-bold cm-highlight">
                 {type === "leaderboard" && "Share Leaderboard"}
@@ -165,6 +184,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
                 {type === "vote" && "Vote Placed!"}
                 {type === "result" && (data.result === "won" || data.result === "earned" ? "You Won!" : "Match Ended")}
                 {type === "milestone" && "Achievement Unlocked!"}
+                {type === "user-stats" && "Share Your Stats"}
               </div>
               <div className="text-xs text-foreground/80">Share with your friends</div>
             </div>
@@ -245,6 +265,42 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
               <div className="text-5xl mb-3">{data.milestone?.icon}</div>
               <div className="text-xl font-bold cm-highlight mb-2">{data.milestone?.title}</div>
               <div className="text-sm text-foreground/80">{data.milestone?.description}</div>
+            </div>
+          )}
+
+          {type === "user-stats" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">📊</div>
+              <div className="text-xl font-bold cm-highlight mb-4">My Crypto World Cup Stats</div>
+              <div className="space-y-3 max-w-sm mx-auto">
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Total Spent</div>
+                  <div className="text-lg font-bold text-foreground font-mono">{data.userStats?.ethSpent} ETH</div>
+                </div>
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Current Earnings</div>
+                  <div className="text-lg font-bold text-accent font-mono">{data.userStats?.currentEarnings} ETH</div>
+                </div>
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Favorite Country</div>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl">{data.userStats?.favoriteCountryFlag}</span>
+                    <span className="text-lg font-bold">{data.userStats?.favoriteCountry}</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
+                    <div className="text-xs text-muted-foreground mb-1">Votes</div>
+                    <div className="text-sm font-bold cm-highlight font-mono">{data.userStats?.totalVotes}</div>
+                  </div>
+                  {data.userStats?.rank && (
+                    <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
+                      <div className="text-xs text-muted-foreground mb-1">Rank</div>
+                      <div className="text-sm font-bold text-accent font-mono">#{data.userStats.rank}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
