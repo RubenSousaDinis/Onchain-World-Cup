@@ -7,7 +7,7 @@ import { useNotifications } from "@/components/notifications"
 interface ShareModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "vote" | "result" | "milestone"
+  type: "vote" | "result" | "milestone" | "country"
   data: {
     team?: string
     teamFlag?: string
@@ -23,6 +23,9 @@ interface ShareModalProps {
       description: string
       icon: string
     }
+    country?: string
+    countryCode?: string
+    countryFlag?: string
   }
 }
 
@@ -44,6 +47,15 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
   const getShareText = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+
+    if (type === "country") {
+      return {
+        title: "I just voted for my country!",
+        text: `I just backed ${data.countryFlag} ${data.country} with ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} to qualify for the World Cup 2026!\n\nVote early = better prices. Help your country qualify! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: `${baseUrl}/qualification/${data.countryCode}`,
+        ogImage: `${baseUrl}/api/og/country-vote?country=${encodeURIComponent(data.country || "")}&countryCode=${data.countryCode}&votes=${data.votes}&amount=${data.amount}`,
+      }
+    }
 
     if (type === "vote") {
       return {
@@ -128,6 +140,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             {type === "milestone" && <Flame className="w-6 h-6 text-accent" />}
             <div>
               <div className="text-lg font-bold cm-highlight">
+                {type === "country" && "Country Vote Placed!"}
                 {type === "vote" && "Vote Placed!"}
                 {type === "result" && (data.result === "won" || data.result === "earned" ? "You Won!" : "Match Ended")}
                 {type === "milestone" && "Achievement Unlocked!"}
@@ -142,6 +155,18 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
         {/* Content Preview */}
         <div className="p-4 bg-card/50">
+          {type === "country" && (
+            <div className="text-center">
+              <div className="text-6xl mb-3">{data.countryFlag}</div>
+              <div className="text-2xl font-bold text-foreground mb-2">{data.country}</div>
+              <div className="text-sm text-muted-foreground mb-3">Qualification Vote</div>
+              <div className="inline-block bg-primary/20 border border-primary px-4 py-2 rounded-sm">
+                <span className="text-lg font-bold cm-highlight">{data.votes} Votes</span>
+                <span className="text-sm text-muted-foreground ml-2">({data.amount} ETH)</span>
+              </div>
+            </div>
+          )}
+
           {type === "vote" && (
             <div className="text-center">
               <div className="text-4xl mb-2">{data.teamFlag}</div>

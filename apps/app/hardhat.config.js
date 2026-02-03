@@ -45,10 +45,8 @@ module.exports = {
     currency: "USD",
   },
   etherscan: {
-    apiKey: {
-      baseSepolia: process.env.BASESCAN_API_KEY || "",
-      base: process.env.BASESCAN_API_KEY || "",
-    },
+    // Single Etherscan.io API key for API V2 (works for Base, Base Sepolia, etc.)
+    apiKey: process.env.ETHERSCAN_API_KEY || "",
     customChains: [
       {
         network: "baseSepolia",
