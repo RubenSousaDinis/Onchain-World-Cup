@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
-import { useQueryClient } from "@tanstack/react-query"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
@@ -27,17 +26,22 @@ interface QualificationVoteModalProps {
 export function QualificationVoteModal({ isOpen, onClose, country, contractAddress }: QualificationVoteModalProps) {
   const [voteCount, setVoteCount] = useState(1)
   const [isIndexing, setIsIndexing] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false) // Track if we're processing a vote (confirmed but not indexed yet)
+  const processedTxRef = useRef<string | null>(null) // Track which tx we're currently processing
   const indexedTxRef = useRef<string | null>(null)
+  const hasVotedRef = useRef(false) // Track if user has voted during this modal session
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
   const { success, error, info } = useNotifications()
   const { isAuthenticated, login } = useSIWEAuth()
-  const queryClient = useQueryClient()
 
   // Contract interaction hooks
-  const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract()
-  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash })
+  const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContract()
+  const { isSuccess: isConfirmed, isError: isReceiptError, error: receiptError } = useWaitForTransactionReceipt({
+    hash: hash,
+    confirmations: 2, // Wait for 2 block confirmations to ensure transaction is propagated
+  })
 
   // Get wallet balance - explicitly query on the current chain
   // Refetch when modal opens to ensure we have fresh balance data
@@ -54,6 +58,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   // Refetch balance when modal opens or chain changes
   useEffect(() => {
     if (isOpen && address && chain?.id) {
+      console.log("[Vote Modal] Modal opened - refetching balance for fresh data")
       refetchBalance()
     }
   }, [isOpen, address, chain?.id, refetchBalance])
@@ -64,6 +69,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     votePrice,
     pricePerVote,
     isLoading: isPriceLoading,
+    refetch: refetchVotePrice,
   } = useQualificationVotePrice({
     contractAddress: contractAddress || "0x0000000000000000000000000000000000000000",
     countryCode: country?.code || "",
@@ -126,11 +132,26 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return parseFloat(value.toFixed(6)).toString()
   }
 
+  // Reset state when modal opens
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
       setVoteCount(1)
       setIsIndexing(false)
-      indexedTxRef.current = null  // Reset for next transaction
+      setIsProcessing(false)
+      processedTxRef.current = null
+      indexedTxRef.current = null
+      hasVotedRef.current = false
+      resetWrite()
+    }
+  }, [isOpen, resetWrite])
+
+  // Refresh leaderboard when modal closes IF user voted
+  useEffect(() => {
+    if (!isOpen && hasVotedRef.current) {
+      const eventTime = Date.now()
+      console.log(`[Vote Modal] ⏱️ Modal closed after voting at ${new Date().toISOString()} - dispatching refresh event`)
+      window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: eventTime } }))
+      hasVotedRef.current = false
     }
   }, [isOpen])
 
@@ -144,6 +165,30 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return () => window.removeEventListener("keydown", handleEscape as any)
   }, [isOpen, onClose])
 
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("[Vote Modal] State changed:", {
+      isPending,
+      isProcessing,
+      isIndexing,
+      isConfirmed,
+      hasHash: !!hash,
+      processedTx: processedTxRef.current?.slice(0, 10),
+      buttonDisabled: isPending || isProcessing,
+    })
+  }, [isPending, isProcessing, isIndexing, isConfirmed, hash])
+
+  // Process new transaction hash from writeContract
+  // Set isProcessing immediately to keep button disabled
+  useEffect(() => {
+    if (hash && hash !== processedTxRef.current) {
+      console.log("[Vote Modal] New transaction hash:", hash)
+      processedTxRef.current = hash
+      setIsProcessing(true) // Immediately disable button while waiting for confirmations
+      console.log("[Vote Modal] Set isProcessing = true - waiting for confirmations")
+    }
+  }, [hash])
+
   // Handle immediate indexing when transaction is confirmed
   useEffect(() => {
     if (!isConfirmed || !hash || !country || !contractAddress || !address || !chain) {
@@ -155,14 +200,34 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       return
     }
 
+    const startTime = Date.now()
+    console.log(`[Vote Modal] ⏱️ TIMING START - Transaction confirmed at ${new Date().toISOString()}`)
+
     indexedTxRef.current = hash
-    setIsIndexing(true)
+    hasVotedRef.current = true // Mark that user has voted this session
+    // isProcessing already set to true when hash was received, no need to set again
 
     const countryName = country.name
     const votes = voteCount
     const cost = totalCost.toString()
 
-    // Call immediate indexing API
+    // Show success notification
+    success(
+      "Vote Recorded!",
+      `Your ${votes} vote${votes !== 1 ? "s" : ""} for ${countryName} ${votes !== 1 ? "have" : "has"} been recorded on-chain`
+    )
+
+    // Reset vote count for next vote
+    setVoteCount(1)
+
+    // Index in background (don't block UI)
+    // Transaction has 2 confirmations at this point, should be visible on RPC nodes
+    setIsIndexing(true)
+    console.log("[Vote Modal] Transaction confirmed with 2 blocks - starting indexing...")
+
+    const indexingStartTime = Date.now()
+    console.log(`[Vote Modal] ⏱️ Starting indexing API call (${indexingStartTime - startTime}ms since confirmation)`)
+
     fetch("/api/votes/immediate-index", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -176,43 +241,85 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         totalCostEth: cost,
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        const fetchEndTime = Date.now()
+        console.log(`[Vote Modal] ⏱️ Indexing API responded (took ${fetchEndTime - indexingStartTime}ms)`)
+        return res.json()
+      })
       .then((data) => {
-        setIsIndexing(false)
-        console.log("[Vote Modal] Indexing API response:", data)
+        const parseEndTime = Date.now()
+        console.log(`[Vote Modal] ⏱️ Response parsed (took ${parseEndTime - indexingStartTime}ms total)`)
 
         if (data.success) {
-          success(
-            "Vote Recorded!",
-            `Your ${votes} vote${votes !== 1 ? "s" : ""} for ${countryName} ${votes !== 1 ? "have" : "has"} been recorded on-chain and indexed`
-          )
+          console.log("[Vote Modal] Vote indexed successfully")
+          console.log(`[Vote Modal] ⏱️ TOTAL TIME: ${Date.now() - startTime}ms from confirmation to indexing complete`)
 
-          // Trigger page refresh by dispatching custom event
-          console.log("[Vote Modal] Dispatching vote-recorded event")
-          window.dispatchEvent(new CustomEvent("vote-recorded"))
-          console.log("[Vote Modal] Event dispatched")
+          // Refetch vote prices and balance to get updated data for next vote
+          console.log("[Vote Modal] Refetching vote prices and balance with updated counts...")
 
-          // Close modal after short delay to let user see the success message
-          setTimeout(() => {
-            onClose()
-          }, 1000)
+          // Wait for both refetches to complete before re-enabling button
+          Promise.all([
+            refetchVotePrice(),
+            refetchBalance(),
+          ]).then(() => {
+            // Re-enable button for next vote ONLY after balance is updated
+            console.log("[Vote Modal] Setting isIndexing = false, isProcessing = false")
+            setIsIndexing(false)
+            setIsProcessing(false)
+            // Note: We DON'T clear processedTxRef here - wagmi will clear hash on next transaction
+
+            console.log("[Vote Modal] Ready for next vote - button should be enabled now")
+          }).catch((err) => {
+            console.error("[Vote Modal] Error refetching data:", err)
+            // Re-enable anyway even if refetch fails
+            setIsIndexing(false)
+            setIsProcessing(false)
+          })
         } else {
-          error("Indexing Failed", data.error || "Failed to index your vote. It will be indexed by the daily cron job within 24 hours.")
+          console.error("[Vote Modal] Indexing failed:", data.error)
+          error("Indexing Failed", data.error || "Failed to index vote. It will be indexed by the daily cron job.")
+          console.log("[Vote Modal] Indexing failed - resetting state")
+          setIsIndexing(false)
+          setIsProcessing(false)
+          console.log("[Vote Modal] State reset after indexing failure")
         }
       })
       .catch((err) => {
         console.error("Failed to index vote:", err)
+        error("Indexing Failed", "Failed to index vote. It will be indexed by the daily cron job.")
+        console.log("[Vote Modal] Indexing error - resetting state")
         setIsIndexing(false)
-        error("Indexing Failed", "Your vote is on-chain but failed to index immediately. It will be indexed by the daily cron job within 24 hours.")
+        setIsProcessing(false)
+        console.log("[Vote Modal] State reset after indexing error")
       })
-  }, [isConfirmed, hash])  // Only depend on confirmation and hash
+  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, refetchVotePrice, refetchBalance])  // Include all dependencies
 
   // Handle write errors
   useEffect(() => {
-    if (isWriteError) {
-      error("Transaction Failed", "Failed to submit vote transaction. Please try again.")
+    if (isWriteError && writeError) {
+      console.error("[Vote Modal] Write error:", writeError)
+      const errorMessage = writeError.message || "Failed to submit vote transaction"
+
+      // Check for user rejection
+      if (errorMessage.includes("User rejected") || errorMessage.includes("user rejected")) {
+        info("Transaction Cancelled", "You cancelled the transaction")
+      } else {
+        error("Transaction Failed", errorMessage)
+      }
+
+      setIsProcessing(false)
     }
-  }, [isWriteError, error])
+  }, [isWriteError, writeError, error, info])
+
+  // Handle receipt errors (transaction failed on-chain)
+  useEffect(() => {
+    if (isReceiptError && receiptError && hash) {
+      console.error("[Vote Modal] Receipt error:", receiptError)
+      error("Transaction Failed", "Transaction failed on blockchain. Please try again.")
+      setIsProcessing(false)
+      setIsIndexing(false)
+    }
+  }, [isReceiptError, receiptError, hash, error])
 
   const handleVote = async () => {
     console.log("[Vote Modal] handleVote called", { isConnected, isAuthenticated, address })
@@ -268,9 +375,20 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       return
     }
 
-    // Step 5: Submit transaction to blockchain
+    // Step 5: Double-check balance with a small buffer for gas (safety check)
+    const balanceBuffer = 0.0001 // Small buffer for gas costs
+    if (walletBalance < totalCost + balanceBuffer) {
+      error(
+        "Insufficient Balance (including gas)",
+        `You need at least ${formatETH(totalCost + balanceBuffer)} ETH (including gas) but only have ${formatETH(walletBalance)} ETH`
+      )
+      return
+    }
+
+    // Step 6: Submit transaction to blockchain
     try {
       console.log("[Vote Modal] Submitting vote transaction")
+      console.log("[Vote Modal] Total cost:", totalCost, "ETH, Wallet balance:", walletBalance, "ETH")
       info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
 
       writeContract({
@@ -406,13 +524,6 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
           {/* Price Info */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Current Price per Vote:</span>
-              <span className="font-bold cm-highlight">
-                {isPriceLoading && !useMockPricing ? "Loading..." : `${formatETH(currentPrice)} ETH`}
-                {!useMockPricing && !isPriceLoading && <span className="text-accent ml-1 text-xs lg:text-sm">LIVE</span>}
-              </span>
-            </div>
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
               <span className="text-accent">
@@ -475,19 +586,19 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <button
               onClick={onClose}
               className="flex-1 cm-nav-tab py-3 font-bold"
-              disabled={isPending || isIndexing}
+              disabled={isPending || isProcessing}
             >
-              Cancel
+              Close
             </button>
             <button
               onClick={handleVote}
-              disabled={isPending || isIndexing || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
+              disabled={isPending || isProcessing || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
               className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending
                 ? "Confirming..."
-                : isIndexing
-                ? "Indexing..."
+                : isProcessing
+                ? isIndexing ? "Indexing..." : "Processing..."
                 : !isConnected
                 ? "Connect Wallet"
                 : !isAuthenticated

@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
-import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
+import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesDataStatic } from "@/lib/countries"
 import {
@@ -33,13 +33,37 @@ type SummaryData = {
 export default function HomePage() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const isFetchingRef = useRef(false)
 
   // Fetch real data from API
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (isRefresh = false, eventTimestamp?: number) => {
+      // Prevent multiple simultaneous fetches
+      if (isFetchingRef.current) {
+        console.log(`[HomePage] ⏱️ Skipping fetch - already in progress`)
+        return
+      }
+
+      isFetchingRef.current = true
+      const fetchStartTime = Date.now()
+      if (eventTimestamp) {
+        console.log(`[HomePage] ⏱️ Starting fetch ${fetchStartTime - eventTimestamp}ms after event dispatch`)
+      }
+
       try {
-        setIsLoading(true)
-        const res = await fetch("/api/qualification/summary")
+        if (isRefresh) {
+          setIsRefreshing(true)
+        } else {
+          setIsLoading(true)
+        }
+
+        // Add cache-busting for vote updates
+        const cacheBuster = isRefresh && eventTimestamp ? `?t=${eventTimestamp}` : ''
+        const apiFetchStart = Date.now()
+        const res = await fetch(`/api/qualification/summary${cacheBuster}`)
+        console.log(`[HomePage] ⏱️ Summary API responded in ${Date.now() - apiFetchStart}ms`)
+
         if (res.ok) {
           const response = await res.json()
           const apiData = response.data
@@ -51,25 +75,43 @@ export default function HomePage() {
             topCountries: apiData?.top_countries || [],
           })
         }
+
+        console.log(`[HomePage] ⏱️ Total fetch time: ${Date.now() - fetchStartTime}ms`)
+
+        // Keep spinner visible for at least 1 second for user feedback
+        if (isRefresh) {
+          const minDisplayStart = Date.now()
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          console.log(`[HomePage] ⏱️ Minimum display delay: ${Date.now() - minDisplayStart}ms`)
+        }
       } catch (error) {
         console.error("Failed to fetch summary data:", error)
       } finally {
         setIsLoading(false)
+        setIsRefreshing(false)
+        isFetchingRef.current = false
+        if (eventTimestamp) {
+          console.log(`[HomePage] ⏱️ TOTAL TIME: ${Date.now() - eventTimestamp}ms from modal close to UI update complete`)
+        }
       }
     }
 
     fetchData()
 
-    // Listen for vote-recorded events to refresh immediately
-    const handleVoteRecorded = () => {
-      console.log("[HomePage] vote-recorded event received - refreshing data NOW")
-      fetchData()
+    // Listen for modal close after voting - refresh stats
+    const handleVoteRecorded = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail?.modalClosed) {
+        const eventTimestamp = customEvent.detail?.timestamp || Date.now()
+        console.log(`[HomePage] ⏱️ Received vote-recorded event at ${new Date().toISOString()}`)
+        fetchData(true, eventTimestamp)
+      }
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
     console.log("[HomePage] Event listener added for vote-recorded")
 
     // Refresh data every 30 seconds
-    const interval = setInterval(fetchData, 30000)
+    const interval = setInterval(() => fetchData(true), 30000)
 
     return () => {
       clearInterval(interval)
@@ -101,6 +143,18 @@ export default function HomePage() {
         <MobileNav />
 
         <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+          {/* Refreshing Indicator - Fixed position at top */}
+          {isRefreshing && (
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+              <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
+                <div className="px-6 py-3 flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                  <span className="text-sm lg:text-base font-bold text-accent">Updating stats...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Hero Section */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
             <div className="soccer-field-bg p-6 lg:p-8">

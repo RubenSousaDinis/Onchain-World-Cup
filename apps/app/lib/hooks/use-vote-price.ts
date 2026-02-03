@@ -43,6 +43,9 @@ export function useQualificationVotePrice({
     args: [countryCodeBytes],
     query: {
       enabled: enabled && !!countryCode && contractAddress !== "0x0000000000000000000000000000000000000000",
+      refetchInterval: false, // Don't poll - rely on event watching
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      staleTime: 30000, // Consider data fresh for 30 seconds
     },
   })
 
@@ -56,6 +59,9 @@ export function useQualificationVotePrice({
     args: [countryCodeBytes, BigInt(cappedVoteCount)],
     query: {
       enabled: enabled && !!countryCode && cappedVoteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
+      refetchInterval: false, // Don't poll - rely on event watching
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      staleTime: 30000, // Consider data fresh for 30 seconds
     },
   })
 
@@ -66,6 +72,9 @@ export function useQualificationVotePrice({
     functionName: "BASE_PRICE",
     query: {
       enabled,
+      refetchInterval: false, // Don't poll - base price never changes
+      refetchOnWindowFocus: false,
+      staleTime: Infinity, // Base price is constant, never refetch
     },
   })
 

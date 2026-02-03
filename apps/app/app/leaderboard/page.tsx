@@ -5,10 +5,11 @@ import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { Trophy, Medal, TrendingUp, Zap, Target, Clock } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { InlineLoader, NoLeaderboardData, NoSearchResults } from "@/components/states"
-import { successfulVoters, largestVotes, activeVoters, earlyBirds, type LeaderboardEntry } from "@/lib/mock-data/leaderboard-data"
+import { type LeaderboardEntry } from "@/lib/mock-data/leaderboard-data"
+import { getCountryName, getCountryFlag } from "@/lib/countries"
 
 type LeaderboardCategory = "successful" | "largest" | "active" | "early"
 
@@ -17,24 +18,60 @@ export default function LeaderboardPage() {
   const [activeCategory, setActiveCategory] = useState<LeaderboardCategory>("successful")
   const [displayedCount, setDisplayedCount] = useState(10)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
+  const isFetchingRef = useRef(false)
 
-  // Get data based on active category
-  const getLeaderboardData = (): LeaderboardEntry[] => {
-    switch (activeCategory) {
-      case "successful":
-        return successfulVoters
-      case "largest":
-        return largestVotes
-      case "active":
-        return activeVoters
-      case "early":
-        return earlyBirds
-      default:
-        return successfulVoters
+  // Fetch leaderboard data from API
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      if (isFetchingRef.current) return
+
+      isFetchingRef.current = true
+      setIsLoading(true)
+
+      try {
+        const res = await fetch(`/api/leaderboard?category=${activeCategory}&limit=100&offset=0`)
+        if (res.ok) {
+          const response = await res.json()
+          const data = response.data || []
+
+          // Format "largest" category data to include country names and flags
+          if (activeCategory === 'largest') {
+            const formattedData = data.map((entry: LeaderboardEntry) => {
+              if (entry.team) {
+                const countryName = getCountryName(entry.team)
+                const countryFlag = getCountryFlag(entry.team)
+                return {
+                  ...entry,
+                  matchName: `${countryFlag} ${countryName}`,
+                  team: countryName,
+                }
+              }
+              return entry
+            })
+            setLeaderboardData(formattedData)
+          } else {
+            setLeaderboardData(data)
+          }
+
+          setTotalCount(response.count || 0)
+        } else {
+          console.error('Failed to fetch leaderboard:', res.statusText)
+          setLeaderboardData([])
+        }
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error)
+        setLeaderboardData([])
+      } finally {
+        setIsLoading(false)
+        isFetchingRef.current = false
+      }
     }
-  }
 
-  const leaderboardData = getLeaderboardData()
+    fetchLeaderboard()
+  }, [activeCategory])
 
   const filteredLeaderboard = leaderboardData.filter(
     (entry) =>
@@ -156,8 +193,15 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="cm-panel rounded-sm p-8 text-center">
+            <InlineLoader text="Loading leaderboard..." />
+          </div>
+        )}
+
         {/* Top 3 Podium */}
-        {filteredLeaderboard.length >= 3 && (
+        {!isLoading && filteredLeaderboard.length >= 3 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
             {/* 1st Place */}
             <div className="cm-panel rounded-sm p-4 lg:p-6 flex flex-col items-center border-2 border-primary/50 lg:order-2 bg-secondary/20">
@@ -234,7 +278,8 @@ export default function LeaderboardPage() {
         )}
 
         {/* Complete Rankings Table */}
-        <div className="cm-panel rounded-sm overflow-hidden max-w-full">
+        {!isLoading && (
+          <div className="cm-panel rounded-sm overflow-hidden max-w-full">
           <div className="bg-secondary/40 px-3 lg:px-4 py-3 border-b-2 border-border">
             <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Complete Rankings</h3>
           </div>
@@ -274,6 +319,7 @@ export default function LeaderboardPage() {
             )}
           </div>
         </div>
+        )}
       </main>
     </div>
   )
@@ -283,13 +329,13 @@ export default function LeaderboardPage() {
 function getCategoryDescription(category: LeaderboardCategory): string {
   switch (category) {
     case "successful":
-      return "Top voters ranked by total ETH winnings. Higher win rates and total winnings indicate successful voting strategies."
+      return "Top voters ranked by total ETH spent in qualification. Bigger spenders get more votes and better positions."
     case "largest":
-      return "Users with the biggest single vote transactions. Shows the largest individual bets placed on matches."
+      return "Users with the biggest single vote transactions. Shows the largest individual votes placed on countries."
     case "active":
-      return "Most engaged voters ranked by total number of votes cast. Consistent participation across multiple matches."
+      return "Most engaged voters ranked by total number of votes cast. Consistent participation across different countries."
     case "early":
-      return "Early adopters who voted during Phase 1 (linear pricing). Rewarding those who participated when prices were lowest."
+      return "Early adopters who voted first. Being early means lower prices and more votes for less ETH."
     default:
       return ""
   }
@@ -307,7 +353,7 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalWinnings} ETH</div>
           <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalVotes} Total Votes</div>
-          <div className="text-sm lg:text-base text-muted-foreground">{entry.winRate}% Win Rate</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{entry.totalBets || 0} Countries</div>
         </>
       )
     case "largest":
@@ -322,16 +368,20 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalVotes}</div>
-          <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalBets} Matches</div>
-          <div className="text-sm lg:text-base text-muted-foreground">{entry.winRate}% Win Rate</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalBets || 0} Countries</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH</div>
         </>
       )
     case "early":
       return (
         <>
-          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.phase1Votes}</div>
-          <div className="text-sm lg:text-base text-accent font-bold mb-1">Phase 1 Votes</div>
-          <div className="text-sm lg:text-base text-muted-foreground">{entry.totalVotes} Total Votes</div>
+          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalVotes}</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">{parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH</div>
+          <div className="text-sm lg:text-base text-muted-foreground">
+            {entry.totalVotes > 0
+              ? `${(parseFloat(entry.totalWinnings || '0') / entry.totalVotes).toFixed(6)} ETH/vote`
+              : 'No votes yet'}
+          </div>
         </>
       )
   }
@@ -355,10 +405,10 @@ function renderTableHeaders(category: LeaderboardCategory) {
             Total Votes
           </th>
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Winnings
+            ETH Spent
           </th>
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Win Rate
+            Countries
           </th>
         </>
       )
@@ -385,10 +435,10 @@ function renderTableHeaders(category: LeaderboardCategory) {
             Total Votes
           </th>
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Matches
+            Countries
           </th>
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Win Rate
+            ETH Spent
           </th>
         </>
       )
@@ -397,13 +447,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
         <>
           {baseHeaders}
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Phase 1 Votes
-          </th>
-          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
             Total Votes
           </th>
           <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
-            Winnings
+            ETH Spent
+          </th>
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
+            Avg. Cost
           </th>
         </>
       )
@@ -466,18 +516,13 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {entry.totalWinnings} ETH
+              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <div className="flex items-center justify-end gap-2">
-              <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
-                <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
-              </div>
-              <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-                {entry.winRate}%
-              </span>
-            </div>
+            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
+              {entry.totalBets || 0}
+            </span>
           </td>
         </>
       )
@@ -508,19 +553,14 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {entry.totalBets}
+            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
+              {entry.totalBets || 0}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
-            <div className="flex items-center justify-end gap-2">
-              <div className="w-12 lg:w-16 h-2 bg-card rounded-full overflow-hidden border border-border">
-                <div className="h-full bg-accent transition-all" style={{ width: `${entry.winRate}%` }} />
-              </div>
-              <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-                {entry.winRate}%
-              </span>
-            </div>
+            <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
+              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
+            </span>
           </td>
         </>
       )
@@ -530,17 +570,19 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono font-bold cm-highlight whitespace-nowrap">
-              {entry.phase1Votes}
-            </span>
-          </td>
-          <td className="px-3 lg:px-4 py-3 text-right">
-            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
               {entry.totalVotes}
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {entry.totalWinnings} ETH
+              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
+            </span>
+          </td>
+          <td className="px-3 lg:px-4 py-3 text-right">
+            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
+              {entry.totalVotes > 0
+                ? (parseFloat(entry.totalWinnings || '0') / entry.totalVotes).toFixed(6)
+                : '0.000000'} ETH
             </span>
           </td>
         </>

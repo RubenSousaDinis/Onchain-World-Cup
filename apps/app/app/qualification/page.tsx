@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect, Fragment } from "react"
+import { useState, useEffect, Fragment, useRef } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { TrendingUp, TrendingDown, Minus, Clock, Trophy } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2 } from "lucide-react"
 import { QualificationVoteModal } from "@/components/qualification-vote-modal"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
@@ -42,7 +42,10 @@ export default function QualificationPage() {
   const [userSpentEth, setUserSpentEth] = useState(0)
   const [countryStats, setCountryStats] = useState<CountryStats[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [qualificationEndTime, setQualificationEndTime] = useState<number | null>(null)
+  const isFetchingRef = useRef(false)
+  const isFetchingUserStatsRef = useRef(false)
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
@@ -59,12 +62,33 @@ export default function QualificationPage() {
 
   // Fetch qualification summary and countries (NOT dependent on address)
   useEffect(() => {
-    const fetchPublicData = async () => {
+    const fetchPublicData = async (isRefresh = false, eventTimestamp?: number) => {
+      // Prevent multiple simultaneous fetches
+      if (isFetchingRef.current) {
+        console.log(`[QualificationPage] ⏱️ Skipping fetch - already in progress`)
+        return
+      }
+
+      isFetchingRef.current = true
+      const fetchStartTime = Date.now()
+      if (eventTimestamp) {
+        console.log(`[QualificationPage] ⏱️ Starting fetch ${fetchStartTime - eventTimestamp}ms after event dispatch`)
+      }
+
       try {
-        setIsLoading(true)
+        if (isRefresh) {
+          setIsRefreshing(true)
+        } else {
+          setIsLoading(true)
+        }
 
         // Fetch summary data (includes total ETH, voters, etc.)
-        const summaryRes = await fetch("/api/qualification/summary")
+        // Add cache-busting for vote updates to ensure fresh data
+        const cacheBuster = isRefresh && eventTimestamp ? `?t=${eventTimestamp}` : ''
+        const summaryFetchStart = Date.now()
+        const summaryRes = await fetch(`/api/qualification/summary${cacheBuster}`)
+        console.log(`[QualificationPage] ⏱️ Summary API responded in ${Date.now() - summaryFetchStart}ms`)
+
         if (summaryRes.ok) {
           const summaryResponse = await summaryRes.json()
           const summaryData = summaryResponse.data
@@ -85,28 +109,54 @@ export default function QualificationPage() {
         }
 
         // Fetch country statistics
-        const countriesRes = await fetch("/api/qualification/countries?limit=200")
+        const countriesFetchStart = Date.now()
+        const countriesParams = new URLSearchParams({ limit: '200' })
+        if (cacheBuster) {
+          countriesParams.set('t', eventTimestamp!.toString())
+        }
+        const countriesRes = await fetch(`/api/qualification/countries?${countriesParams}`)
+        console.log(`[QualificationPage] ⏱️ Countries API responded in ${Date.now() - countriesFetchStart}ms`)
+
         if (countriesRes.ok) {
           const countriesData = await countriesRes.json()
           setCountryStats(countriesData.data || [])
+        }
+
+        console.log(`[QualificationPage] ⏱️ Total fetch time: ${Date.now() - fetchStartTime}ms`)
+
+        // Keep spinner visible for at least 1 second for user feedback
+        if (isRefresh) {
+          const minDisplayStart = Date.now()
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          console.log(`[QualificationPage] ⏱️ Minimum display delay: ${Date.now() - minDisplayStart}ms`)
         }
       } catch (error) {
         console.error("Failed to fetch qualification data:", error)
       } finally {
         setIsLoading(false)
+        setIsRefreshing(false)
+        isFetchingRef.current = false
+        if (eventTimestamp) {
+          console.log(`[QualificationPage] ⏱️ TOTAL TIME: ${Date.now() - eventTimestamp}ms from modal close to UI update complete`)
+        }
       }
     }
 
     fetchPublicData()
 
-    // Listen for vote-recorded events to refresh immediately
-    const handleVoteRecorded = () => {
-      fetchPublicData()
+    // Listen for modal close after voting - refresh leaderboard
+    const handleVoteRecorded = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail?.modalClosed) {
+        const eventTimestamp = customEvent.detail?.timestamp || Date.now()
+        console.log(`[QualificationPage] ⏱️ Received vote-recorded event at ${new Date().toISOString()}`)
+        fetchPublicData(true, eventTimestamp)
+      }
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
 
     // Refresh data every 30 seconds
-    const interval = setInterval(fetchPublicData, 30000)
+    const interval = setInterval(() => fetchPublicData(true), 30000)
 
     return () => {
       clearInterval(interval)
@@ -116,15 +166,31 @@ export default function QualificationPage() {
 
   // Fetch user stats separately when address becomes available
   useEffect(() => {
-    const fetchUserStats = async () => {
+    const fetchUserStats = async (eventTimestamp?: number) => {
       if (!address) {
         setUserVotes(0)
         setUserSpentEth(0)
         return
       }
 
+      // Prevent multiple simultaneous fetches
+      if (isFetchingUserStatsRef.current) {
+        console.log(`[QualificationPage] ⏱️ Skipping user stats fetch - already in progress`)
+        return
+      }
+
+      isFetchingUserStatsRef.current = true
+      const fetchStartTime = Date.now()
+      if (eventTimestamp) {
+        console.log(`[QualificationPage] ⏱️ Starting user stats fetch ${fetchStartTime - eventTimestamp}ms after event`)
+      }
+
       try {
-        const userStatsRes = await fetch(`/api/users/${address}`)
+        // Add cache-busting for vote updates
+        const cacheBuster = eventTimestamp ? `?t=${eventTimestamp}` : ''
+        const userStatsRes = await fetch(`/api/users/${address}${cacheBuster}`)
+        console.log(`[QualificationPage] ⏱️ User stats API responded in ${Date.now() - fetchStartTime}ms`)
+
         if (userStatsRes.ok) {
           const userStatsResponse = await userStatsRes.json()
           const userStatsData = userStatsResponse.data
@@ -133,14 +199,21 @@ export default function QualificationPage() {
         }
       } catch (error) {
         console.error("Failed to fetch user stats:", error)
+      } finally {
+        isFetchingUserStatsRef.current = false
       }
     }
 
     fetchUserStats()
 
-    // Also listen for vote events to update user stats
-    const handleVoteRecorded = () => {
-      fetchUserStats()
+    // Also listen for modal close after voting to update user stats
+    const handleVoteRecorded = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail?.modalClosed) {
+        const eventTimestamp = customEvent.detail?.timestamp || Date.now()
+        console.log("[QualificationPage] Modal closed - refreshing user stats")
+        fetchUserStats(eventTimestamp)
+      }
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
 
@@ -259,6 +332,18 @@ export default function QualificationPage() {
             </p>
           </div>
         </div>
+
+        {/* Refreshing Indicator - Fixed position at top */}
+        {isRefreshing && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+            <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
+              <div className="px-6 py-3 flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                <span className="text-sm lg:text-base font-bold text-accent">Updating leaderboard...</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Prize Pool - Prominent Display */}
         <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-all duration-300 ${prizePoolUpdating ? 'scale-105 border-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
