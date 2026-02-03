@@ -76,6 +76,11 @@ export default function HomePage() {
         if (res.ok) {
           const response = await res.json()
           const apiData = response.data
+          console.log(`[HomePage] API data received:`, {
+            total_voters: apiData?.total_voters,
+            top_voters_count: apiData?.top_voters?.length,
+            top_voters: apiData?.top_voters,
+          })
           // Transform API response to expected format
           setSummaryData({
             totalVotes: apiData?.total_votes || 0,
@@ -350,24 +355,30 @@ export default function HomePage() {
                 {isLoading ? (
                   <div className="text-center py-8 text-muted-foreground">Loading...</div>
                 ) : (summaryData?.topVoters || []).length > 0 ? (
-                  (summaryData?.topVoters || []).map((voter) => (
-                    <TopListItem
-                      key={voter.wallet_address}
-                      rank={voter.rank}
-                      icon="👤"
-                      title={`${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`}
-                      value={voter.qualification_votes}
-                      valueLabel="votes"
-                      href={`/users/${voter.wallet_address}`}
-                      highlighted
-                    />
-                  ))
+                  <>
+                    {console.log('[HomePage] Rendering top voters:', summaryData?.topVoters)}
+                    {(summaryData?.topVoters || []).map((voter) => (
+                      <TopListItem
+                        key={voter.wallet_address}
+                        rank={voter.rank}
+                        icon="👤"
+                        title={`${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`}
+                        value={voter.qualification_votes}
+                        valueLabel="votes"
+                        href={`/users/${voter.wallet_address}`}
+                        highlighted
+                      />
+                    ))}
+                  </>
                 ) : (
-                  <EmptyState
-                    icon={Award}
-                    title="Compete for the top spot"
-                    description="Start voting to appear on the leaderboard"
-                  />
+                  <>
+                    {console.log('[HomePage] No top voters to display, summaryData:', summaryData)}
+                    <EmptyState
+                      icon={Award}
+                      title="Compete for the top spot"
+                      description="Start voting to appear on the leaderboard"
+                    />
+                  </>
                 )}
               </div>
             </SectionCard>
