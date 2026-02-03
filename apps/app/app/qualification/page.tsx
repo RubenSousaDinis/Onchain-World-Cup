@@ -285,12 +285,6 @@ export default function QualificationPage() {
   const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
   const averageVotes = countryStats.length > 0 ? totalVotes / countryStats.length : 0
 
-  // Get previous rankings from localStorage for change calculation
-  const previousRankingsKey = 'qualification_previous_rankings'
-  const previousRankings = typeof window !== 'undefined'
-    ? JSON.parse(localStorage.getItem(previousRankingsKey) || '{}')
-    : {}
-
   // Merge country data with stats from API
   const allCountries = countriesData.map((country) => {
     const stats = countryStats.find((s) => s.country_code === country.code)
@@ -317,32 +311,13 @@ export default function QualificationPage() {
       code: country.code,
       votes,
       momentum,
-      change: 0, // Will be calculated after sorting
     }
   })
     .sort((a, b) => b.votes - a.votes) // Sort by votes desc
-    .map((country, index) => {
-      const currentRank = index + 1
-      const previousRank = previousRankings[country.code] || currentRank
-      const rankChange = previousRank - currentRank // Positive = moved up, negative = moved down
-
-      return {
-        ...country,
-        rank: currentRank,
-        change: rankChange,
-      }
-    })
-
-  // Store current rankings in localStorage for next comparison
-  useEffect(() => {
-    if (typeof window !== 'undefined' && allCountries.length > 0) {
-      const currentRankings: Record<string, number> = {}
-      allCountries.forEach(country => {
-        currentRankings[country.code] = country.rank
-      })
-      localStorage.setItem(previousRankingsKey, JSON.stringify(currentRankings))
-    }
-  }, [countryStats])
+    .map((country, index) => ({
+      ...country,
+      rank: index + 1,
+    }))
 
   const filteredCountries = allCountries.filter(
     (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
@@ -502,14 +477,13 @@ export default function QualificationPage() {
                     <th className="text-left p-2 lg:p-3 font-bold cm-highlight">Country</th>
                     <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Votes</th>
                     <th className="text-center p-2 lg:p-3 font-bold cm-highlight hidden lg:table-cell">Momentum</th>
-                    <th className="text-center p-2 lg:p-3 font-bold cm-highlight">Change</th>
                     <th className="text-right p-2 lg:p-3 font-bold cm-highlight">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredCountries.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-0">
+                      <td colSpan={5} className="p-0">
                         <div className="py-12">
                           <NoSearchResults query={searchQuery} />
                         </div>
@@ -568,16 +542,6 @@ export default function QualificationPage() {
                             </td>
                             <td className="text-center p-2 lg:p-3 hidden lg:table-cell">
                               <div className="flex items-center justify-center">{getMomentumIcon(country.momentum)}</div>
-                            </td>
-                            <td className="text-center p-2 lg:p-3">
-                              <span
-                                className={`font-bold ${
-                                  country.change > 0 ? "text-green-500" : country.change < 0 ? "text-red-500" : ""
-                                }`}
-                              >
-                                {country.change > 0 ? "+" : ""}
-                                {country.change}
-                              </span>
                             </td>
                             <td className="text-right p-2 lg:p-3">
                               <div className="flex items-center justify-end gap-1 lg:gap-2">
