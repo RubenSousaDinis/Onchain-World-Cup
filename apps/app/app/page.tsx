@@ -23,11 +23,20 @@ type CountryStats = {
   total_eth: string
 }
 
+type TopVoter = {
+  rank: number
+  wallet_address: string
+  qualification_votes: number
+  qualification_spent_eth: string
+  countries_voted_for: number
+}
+
 type SummaryData = {
   totalVotes: number
   totalEth: string
   totalVoters: number
   topCountries: CountryStats[]
+  topVoters: TopVoter[]
 }
 
 export default function HomePage() {
@@ -73,6 +82,7 @@ export default function HomePage() {
             totalEth: apiData?.total_eth || "0",
             totalVoters: apiData?.total_voters || 0,
             topCountries: apiData?.top_countries || [],
+            topVoters: apiData?.top_voters || [],
           })
         }
 
@@ -336,11 +346,30 @@ export default function HomePage() {
                 </Link>
               }
             >
-              <EmptyState
-                icon={Award}
-                title="Compete for the top spot"
-                description="Start voting to appear on the leaderboard"
-              />
+              <div className="space-y-3">
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                ) : (summaryData?.topVoters || []).length > 0 ? (
+                  (summaryData?.topVoters || []).map((voter) => (
+                    <TopListItem
+                      key={voter.wallet_address}
+                      rank={voter.rank}
+                      icon="👤"
+                      title={`${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`}
+                      value={voter.qualification_votes}
+                      valueLabel="votes"
+                      href={`/users/${voter.wallet_address}`}
+                      highlighted
+                    />
+                  ))
+                ) : (
+                  <EmptyState
+                    icon={Award}
+                    title="Compete for the top spot"
+                    description="Start voting to appear on the leaderboard"
+                  />
+                )}
+              </div>
             </SectionCard>
 
             {/* Quick Actions */}
