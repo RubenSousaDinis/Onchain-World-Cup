@@ -281,10 +281,34 @@ export default function QualificationPage() {
     }
   }
 
+  // Calculate average votes for momentum calculation
+  const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
+  const averageVotes = countryStats.length > 0 ? totalVotes / countryStats.length : 0
+
+  // Get previous rankings from localStorage for change calculation
+  const previousRankingsKey = 'qualification_previous_rankings'
+  const previousRankings = typeof window !== 'undefined'
+    ? JSON.parse(localStorage.getItem(previousRankingsKey) || '{}')
+    : {}
+
   // Merge country data with stats from API
   const allCountries = countriesData.map((country) => {
     const stats = countryStats.find((s) => s.country_code === country.code)
     const votes = stats?.total_votes || 0
+
+    // Calculate momentum based on votes relative to average
+    let momentum = "stable"
+    if (votes === 0) {
+      momentum = "stable"
+    } else if (votes > averageVotes * 2) {
+      momentum = "critical-up" // More than 2x average
+    } else if (votes > averageVotes * 1.2) {
+      momentum = "up" // Above average
+    } else if (votes < averageVotes * 0.5 && averageVotes > 0) {
+      momentum = "critical-down" // Less than half average
+    } else if (votes < averageVotes * 0.8 && averageVotes > 0) {
+      momentum = "down" // Below average
+    }
 
     return {
       rank: 0, // Will be set after sorting
@@ -292,15 +316,33 @@ export default function QualificationPage() {
       flag: country.flagEmoji,
       code: country.code,
       votes,
-      momentum: votes > 1000 ? "up" : votes > 500 ? "stable" : "down",
-      change: 0, // TODO: Calculate change from historical data
+      momentum,
+      change: 0, // Will be calculated after sorting
     }
   })
     .sort((a, b) => b.votes - a.votes) // Sort by votes desc
-    .map((country, index) => ({
-      ...country,
-      rank: index + 1,
-    }))
+    .map((country, index) => {
+      const currentRank = index + 1
+      const previousRank = previousRankings[country.code] || currentRank
+      const rankChange = previousRank - currentRank // Positive = moved up, negative = moved down
+
+      return {
+        ...country,
+        rank: currentRank,
+        change: rankChange,
+      }
+    })
+
+  // Store current rankings in localStorage for next comparison
+  useEffect(() => {
+    if (typeof window !== 'undefined' && allCountries.length > 0) {
+      const currentRankings: Record<string, number> = {}
+      allCountries.forEach(country => {
+        currentRankings[country.code] = country.rank
+      })
+      localStorage.setItem(previousRankingsKey, JSON.stringify(currentRankings))
+    }
+  }, [countryStats])
 
   const filteredCountries = allCountries.filter(
     (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
