@@ -4,6 +4,9 @@ import { prisma } from '@/lib/prisma'
 
 export const runtime = 'edge'
 
+// Cache configuration - shorter cache for leaderboard since data changes frequently
+export const revalidate = 1800 // Cache for 30 minutes (ISR)
+
 // Function to get country flag emoji from code
 function getCountryFlag(countryCode: string): string {
   const codePoints = countryCode
@@ -51,7 +54,7 @@ export async function GET(request: NextRequest) {
       eth: parseFloat(country.totalEth).toFixed(4),
     }))
 
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       (
         <div
           style={{
@@ -285,6 +288,15 @@ export async function GET(request: NextRequest) {
         height: 630,
       },
     )
+
+    // Add cache headers for CDN and browser caching
+    // Shorter cache time for leaderboard since rankings change frequently
+    imageResponse.headers.set(
+      'Cache-Control',
+      'public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600'
+    )
+
+    return imageResponse
   } catch (e: any) {
     console.error('OG Image generation error:', e)
     return new Response(`Failed to generate image: ${e.message}`, {

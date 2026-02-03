@@ -3,6 +3,9 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
+// Cache configuration
+export const revalidate = 3600 // Cache for 1 hour (ISR)
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -15,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Get country flag emoji
     const countryFlag = getCountryFlag(countryCode)
 
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       (
         <div
           style={{
@@ -194,6 +197,14 @@ export async function GET(request: NextRequest) {
         height: 630,
       },
     )
+
+    // Add cache headers for CDN and browser caching
+    imageResponse.headers.set(
+      'Cache-Control',
+      'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
+    )
+
+    return imageResponse
   } catch (e: any) {
     console.error('OG Image generation error:', e)
     return new Response(`Failed to generate image: ${e.message}`, {
