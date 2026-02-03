@@ -3,10 +3,11 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { Clock, TrendingUp, Trophy } from "lucide-react"
+import { Clock, TrendingUp, Trophy, Share2 } from "lucide-react"
 import Link from "next/link"
 import { useState, use } from "react"
 import { NFTMintModal } from "@/components/nft-mint-modal"
+import { ShareModal } from "@/components/share-modal"
 
 interface MatchDetailPageProps {
   params: Promise<{
@@ -48,9 +49,10 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
   // Unwrap params immediately to prevent React DevTools serialization issues
   const unwrappedParams = use(params)
   const { matchId } = unwrappedParams
-  
+
   const [activeTab, setActiveTab] = useState("bets")
   const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const totalPool = mockMatchData.team1.eth + mockMatchData.team2.eth
   const totalVotes = mockMatchData.team1.votes + mockMatchData.team2.votes
@@ -269,10 +271,20 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
 
         {activeTab === "pool" && (
           <div className="cm-panel rounded-sm p-4 lg:p-6">
-            <h3 className="text-sm font-bold cm-highlight uppercase mb-4 flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              Prize Pool Distribution
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold cm-highlight uppercase flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Prize Pool Distribution
+              </h3>
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="cm-nav-tab flex items-center gap-2 px-3 py-2 rounded-sm font-bold text-xs hover:scale-105 transition-transform"
+                aria-label="Share prize pool"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            </div>
 
             <div className="bg-card rounded-sm p-4 mb-6 border-2 border-primary">
               <div className="text-sm text-muted-foreground mb-1">Total Prize Pool</div>
@@ -357,6 +369,26 @@ export default function MatchDetailPage({ params }: MatchDetailPageProps) {
             matchId,
             teams: [mockMatchData.team1.name, mockMatchData.team2.name],
             score: [mockMatchData.team1.votes, mockMatchData.team2.votes],
+          },
+        }}
+      />
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type="prize-pool"
+        data={{
+          prizePool: {
+            totalPool: totalPool.toFixed(2),
+            team1Name: mockMatchData.team1.name,
+            team1Flag: mockMatchData.team1.flag,
+            team1Pool: mockMatchData.team1.eth.toFixed(2),
+            team1Votes: mockMatchData.team1.votes,
+            team2Name: mockMatchData.team2.name,
+            team2Flag: mockMatchData.team2.flag,
+            team2Pool: mockMatchData.team2.eth.toFixed(2),
+            team2Votes: mockMatchData.team2.votes,
+            matchId,
           },
         }}
       />
