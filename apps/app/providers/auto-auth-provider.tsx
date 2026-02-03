@@ -17,38 +17,100 @@ import { useFarcaster } from "@/lib/farcaster-provider"
  * This ensures the authenticated session always matches the connected wallet.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
-  const { address, isConnected } = useAccount()
-  const { isAuthenticated, login, isLoading, logout } = useSIWEAuth()
+  const { address, isConnected, isReconnecting, status } = useAccount()
+  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet } = useSIWEAuth()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
 
-  // Sign out when wallet disconnects
+  // Sign out when wallet disconnects (but not during reconnection/connection)
   useEffect(() => {
-    if (!isConnected && isAuthenticated) {
-      console.log("[AutoAuth] Wallet disconnected → Signing out")
-      logout()
+    console.log("[AutoAuth] Disconnect check:", { isConnected, isReconnecting, status, isAuthenticated })
+
+    // Don't logout during reconnection or initial connection - wait for wagmi to finish
+    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+      console.log("[AutoAuth] Skipping logout - wallet is connecting/reconnecting")
+      return
     }
 
-    // Reset auth trigger when wallet disconnects
-    if (!isConnected) {
+    // Only logout if wallet is truly disconnected (not connecting/reconnecting)
+    if (!isConnected && isAuthenticated && status === 'disconnected') {
+      console.log("[AutoAuth] Wallet fully disconnected → Signing out")
+      logout()
       hasTriggeredAuth.current = false
     }
-  }, [isConnected, isAuthenticated, logout])
+  }, [isConnected, isReconnecting, status, isAuthenticated, logout])
+
+  // Sign out when wallet address changes (user switched wallets)
+  useEffect(() => {
+    if (isConnected && address && isAuthenticated && sessionWallet) {
+      const normalizedAddress = address.toLowerCase()
+      const normalizedSessionWallet = sessionWallet.toLowerCase()
+
+      if (normalizedAddress !== normalizedSessionWallet) {
+        console.log("[AutoAuth] Wallet address mismatch → Signing out and re-authenticating")
+        console.log("[AutoAuth] Connected wallet:", normalizedAddress)
+        console.log("[AutoAuth] Session wallet:", normalizedSessionWallet)
+        logout()
+        hasTriggeredAuth.current = false
+      }
+    }
+  }, [address, isConnected, isAuthenticated, sessionWallet, logout])
 
   // Trigger authentication when wallet connects
   useEffect(() => {
-    // Only proceed if wallet is connected
-    if (!isConnected || !address) {
+    console.log("[AutoAuth] Effect triggered - State:", {
+      isConnected,
+      isReconnecting,
+      status,
+      address: address?.slice(0, 10),
+      isAuthenticated,
+      sessionWallet: sessionWallet?.slice(0, 10),
+      isLoading,
+      hasTriggeredAuth: hasTriggeredAuth.current,
+    })
+
+    // Wait for wagmi reconnection/connection to finish
+    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+      console.log("[AutoAuth] Skipping - wallet is connecting/reconnecting")
       return
     }
 
-    // Don't trigger if already authenticated or already tried
-    if (isAuthenticated || hasTriggeredAuth.current || isLoading) {
+    // Only proceed if wallet is fully connected
+    if (!isConnected || !address || status !== 'connected') {
+      console.log("[AutoAuth] Skipping - wallet not fully connected")
       return
     }
 
-    console.log("[AutoAuth] Wallet connected → Triggering authentication")
+    // Wait for session to load before making decisions
+    if (isLoading) {
+      console.log("[AutoAuth] Skipping - session is still loading")
+      return
+    }
+
+    // If authenticated and session wallet matches connected wallet, we're good
+    if (isAuthenticated && sessionWallet) {
+      const normalizedAddress = address.toLowerCase()
+      const normalizedSessionWallet = sessionWallet.toLowerCase()
+
+      if (normalizedAddress === normalizedSessionWallet) {
+        console.log("[AutoAuth] Already authenticated with matching wallet - skipping auth")
+        return
+      } else {
+        console.log("[AutoAuth] Wallet mismatch detected", {
+          connected: normalizedAddress,
+          session: normalizedSessionWallet,
+        })
+      }
+    }
+
+    // Don't trigger if already tried
+    if (hasTriggeredAuth.current) {
+      console.log("[AutoAuth] Skipping - already triggered auth for this session")
+      return
+    }
+
+    console.log("[AutoAuth] Wallet connected and not authenticated → Triggering authentication")
     hasTriggeredAuth.current = true
 
     // Trigger authentication after a short delay to allow UI to settle
@@ -102,7 +164,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }, 1000) // 1 second delay to let wallet connection settle
 
     return () => clearTimeout(timer)
-  }, [isConnected, isAuthenticated, address, isLoading, login, info, success, error, isFarcasterMiniApp])
+  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, login, info, success, error, isFarcasterMiniApp])
 
   // This provider doesn't render anything, just manages authentication
   return <>{children}</>

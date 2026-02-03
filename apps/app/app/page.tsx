@@ -1,11 +1,12 @@
 "use client"
 
+import { useState, useEffect, useRef } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
-import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3 } from "lucide-react"
+import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { countries as countriesData } from "@/lib/countries"
+import { countries as countriesDataStatic } from "@/lib/countries"
 import {
   StatCard,
   SectionCard,
@@ -16,19 +17,123 @@ import {
   EmptyState,
 } from "@/components/dashboard"
 
+type CountryStats = {
+  country_code: string
+  total_votes: number
+  total_eth: string
+}
+
+type SummaryData = {
+  totalVotes: number
+  totalEth: string
+  totalVoters: number
+  topCountries: CountryStats[]
+}
+
 export default function HomePage() {
-  // Mock data - will be replaced with real data from API/blockchain
-  const topCountries = countriesData.slice(0, 5).map((country, index) => ({
-    rank: index + 1,
-    name: country.name,
-    flag: country.flagEmoji,
-    votes: Math.max(100, 2500 - index * 35),
-  }))
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const isFetchingRef = useRef(false)
+
+  // Fetch real data from API
+  useEffect(() => {
+    const fetchData = async (isRefresh = false, eventTimestamp?: number) => {
+      // Prevent multiple simultaneous fetches
+      if (isFetchingRef.current) {
+        console.log(`[HomePage] ⏱️ Skipping fetch - already in progress`)
+        return
+      }
+
+      isFetchingRef.current = true
+      const fetchStartTime = Date.now()
+      if (eventTimestamp) {
+        console.log(`[HomePage] ⏱️ Starting fetch ${fetchStartTime - eventTimestamp}ms after event dispatch`)
+      }
+
+      try {
+        if (isRefresh) {
+          setIsRefreshing(true)
+        } else {
+          setIsLoading(true)
+        }
+
+        // Add cache-busting for vote updates
+        const cacheBuster = isRefresh && eventTimestamp ? `?t=${eventTimestamp}` : ''
+        const apiFetchStart = Date.now()
+        const res = await fetch(`/api/qualification/summary${cacheBuster}`)
+        console.log(`[HomePage] ⏱️ Summary API responded in ${Date.now() - apiFetchStart}ms`)
+
+        if (res.ok) {
+          const response = await res.json()
+          const apiData = response.data
+          // Transform API response to expected format
+          setSummaryData({
+            totalVotes: apiData?.total_votes || 0,
+            totalEth: apiData?.total_eth || "0",
+            totalVoters: apiData?.total_voters || 0,
+            topCountries: apiData?.top_countries || [],
+          })
+        }
+
+        console.log(`[HomePage] ⏱️ Total fetch time: ${Date.now() - fetchStartTime}ms`)
+
+        // Keep spinner visible for at least 1 second for user feedback
+        if (isRefresh) {
+          const minDisplayStart = Date.now()
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          console.log(`[HomePage] ⏱️ Minimum display delay: ${Date.now() - minDisplayStart}ms`)
+        }
+      } catch (error) {
+        console.error("Failed to fetch summary data:", error)
+      } finally {
+        setIsLoading(false)
+        setIsRefreshing(false)
+        isFetchingRef.current = false
+        if (eventTimestamp) {
+          console.log(`[HomePage] ⏱️ TOTAL TIME: ${Date.now() - eventTimestamp}ms from modal close to UI update complete`)
+        }
+      }
+    }
+
+    fetchData()
+
+    // Listen for modal close after voting - refresh stats
+    const handleVoteRecorded = (event: Event) => {
+      const customEvent = event as CustomEvent
+      if (customEvent.detail?.modalClosed) {
+        const eventTimestamp = customEvent.detail?.timestamp || Date.now()
+        console.log(`[HomePage] ⏱️ Received vote-recorded event at ${new Date().toISOString()}`)
+        fetchData(true, eventTimestamp)
+      }
+    }
+    window.addEventListener("vote-recorded", handleVoteRecorded)
+    console.log("[HomePage] Event listener added for vote-recorded")
+
+    // Refresh data every 30 seconds
+    const interval = setInterval(() => fetchData(true), 30000)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener("vote-recorded", handleVoteRecorded)
+    }
+  }, [])
+
+  // Map country codes to full country data
+  const topCountries = (summaryData?.topCountries || []).map((stats, index) => {
+    const countryData = countriesDataStatic.find((c) => c.code === stats.country_code)
+    return {
+      rank: index + 1,
+      name: countryData?.name || stats.country_code,
+      flag: countryData?.flagEmoji || "🏳️",
+      votes: stats.total_votes,
+    }
+  }).slice(0, 5)
 
   const stats = {
-    totalVotes: 48750,
-    totalPrizePool: 125.8, // ETH
-    activePlayers: 1247,
+    totalVotes: summaryData?.totalVotes || 0,
+    totalPrizePool: parseFloat(summaryData?.totalEth || "0"),
+    activePlayers: summaryData?.totalVoters || 0,
   }
 
   return (
@@ -38,6 +143,18 @@ export default function HomePage() {
         <MobileNav />
 
         <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+          {/* Refreshing Indicator - Fixed position at top */}
+          {isRefreshing && (
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+              <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
+                <div className="px-6 py-3 flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                  <span className="text-sm lg:text-base font-bold text-accent">Updating stats...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Hero Section */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
             <div className="soccer-field-bg p-6 lg:p-8">
@@ -66,9 +183,9 @@ export default function HomePage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" aria-hidden="true" />
                   <div>
                     <div className="text-xs lg:text-sm text-accent font-bold uppercase mb-1">Current Phase</div>
-                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Opens Soon</h2>
+                    <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Qualification Active</h2>
                     <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-                      Add the app to be notified when voting begins
+                      Vote for countries to qualify for the tournament
                     </p>
                   </div>
                 </div>
@@ -79,12 +196,23 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
-            <StatCard icon={Users} label="Active Voters" value={stats.activePlayers} formatValue />
-            <StatCard icon={TrendingUp} label="Total Votes" value={stats.totalVotes} formatValue valueColor="green" />
+            <StatCard
+              icon={Users}
+              label="Active Voters"
+              value={isLoading ? "..." : stats.activePlayers}
+              formatValue
+            />
+            <StatCard
+              icon={TrendingUp}
+              label="Total Votes"
+              value={isLoading ? "..." : stats.totalVotes}
+              formatValue
+              valueColor="green"
+            />
             <StatCard
               icon={Trophy}
               label="Prize Pool"
-              value={`${stats.totalPrizePool} ETH`}
+              value={isLoading ? "..." : `${stats.totalPrizePool.toFixed(4)} ETH`}
               valueColor="accent"
               className="col-span-2 lg:col-span-1"
             />
@@ -119,18 +247,26 @@ export default function HomePage() {
               }
             >
               <div className="space-y-3">
-                {topCountries.map((country) => (
-                  <TopListItem
-                    key={country.rank}
-                    rank={country.rank}
-                    icon={country.flag}
-                    title={country.name}
-                    value={country.votes}
-                    valueLabel="votes"
-                    href="/qualification"
-                    highlighted
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                ) : topCountries.length > 0 ? (
+                  topCountries.map((country) => (
+                    <TopListItem
+                      key={country.rank}
+                      rank={country.rank}
+                      icon={country.flag}
+                      title={country.name}
+                      value={country.votes}
+                      valueLabel="votes"
+                      href="/qualification"
+                      highlighted
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No votes yet. Be the first to vote!
+                  </div>
+                )}
               </div>
             </SectionCard>
 

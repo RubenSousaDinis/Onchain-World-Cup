@@ -2,160 +2,108 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Clock, Eye } from "lucide-react"
-import { useAccount } from "wagmi"
+import { Clock, Eye, Trophy } from "lucide-react"
+import { useAccount, useChainId } from "wagmi"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
-import { useState } from "react"
-import { NoVotesEmpty, EmptyState } from "@/components/states"
+import { useState, useEffect, useRef } from "react"
+import { NoVotesEmpty, InlineLoader } from "@/components/states"
+import { getCountryName, getCountryFlag } from "@/lib/countries"
+import Link from "next/link"
+import { base, baseSepolia } from "wagmi/chains"
 
-const mockUserBets = [
-  {
-    matchId: "1",
-    team1: "Brazil",
-    team2: "Argentina",
-    team1Flag: "🇧🇷",
-    team2Flag: "🇦🇷",
-    votedTeam: "Argentina",
-    votedTeamFlag: "🇦🇷",
-    votes: 12,
-    costPaid: "0.05",
-    status: "active" as const,
-    winningTeam: null,
-    potentialReturn: "0.089",
-    matchDate: "June 15, 2026",
-  },
-  {
-    matchId: "2",
-    team1: "Germany",
-    team2: "France",
-    team1Flag: "🇩🇪",
-    team2Flag: "🇫🇷",
-    votedTeam: "Germany",
-    votedTeamFlag: "🇩🇪",
-    votes: 25,
-    costPaid: "0.1",
-    status: "active" as const,
-    winningTeam: null,
-    potentialReturn: "0.18",
-    matchDate: "June 16, 2026",
-  },
-  {
-    matchId: "3",
-    team1: "Spain",
-    team2: "Italy",
-    team1Flag: "🇪🇸",
-    team2Flag: "🇮🇹",
-    votedTeam: "Spain",
-    votedTeamFlag: "🇪🇸",
-    votes: 6,
-    costPaid: "0.025",
-    status: "settled" as const,
-    winningTeam: "Spain",
-    potentialReturn: "0.047",
-    matchDate: "June 10, 2026",
-  },
-  {
-    matchId: "4",
-    team1: "England",
-    team2: "Portugal",
-    team1Flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    team2Flag: "🇵🇹",
-    votedTeam: "England",
-    votedTeamFlag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    votes: 18,
-    costPaid: "0.08",
-    status: "settled" as const,
-    winningTeam: "England",
-    potentialReturn: "0.152",
-    matchDate: "June 8, 2026",
-  },
-  {
-    matchId: "5",
-    team1: "Netherlands",
-    team2: "Belgium",
-    team1Flag: "🇳🇱",
-    team2Flag: "🇧🇪",
-    votedTeam: "Netherlands",
-    votedTeamFlag: "🇳🇱",
-    votes: 10,
-    costPaid: "0.04",
-    status: "settled" as const,
-    winningTeam: "Netherlands",
-    potentialReturn: "0.072",
-    matchDate: "June 5, 2026",
-  },
-  {
-    matchId: "6",
-    team1: "Croatia",
-    team2: "Morocco",
-    team1Flag: "🇭🇷",
-    team2Flag: "🇲🇦",
-    votedTeam: "Croatia",
-    votedTeamFlag: "🇭🇷",
-    votes: 8,
-    costPaid: "0.03",
-    status: "settled" as const,
-    winningTeam: "Morocco",
-    potentialReturn: "0.0",
-    matchDate: "June 3, 2026",
-  },
-  {
-    matchId: "7",
-    team1: "Japan",
-    team2: "South Korea",
-    team1Flag: "🇯🇵",
-    team2Flag: "🇰🇷",
-    votedTeam: "Japan",
-    votedTeamFlag: "🇯🇵",
-    votes: 5,
-    costPaid: "0.02",
-    status: "settled" as const,
-    winningTeam: "South Korea",
-    potentialReturn: "0.0",
-    matchDate: "June 1, 2026",
-  },
-  {
-    matchId: "7",
-    team1: "Japan",
-    team2: "South Korea",
-    team1Flag: "🇯🇵",
-    team2Flag: "🇰🇷",
-    votedTeam: "South Korea",
-    votedTeamFlag: "🇰🇷",
-    votes: 8,
-    costPaid: "0.035",
-    status: "settled" as const,
-    winningTeam: "South Korea",
-    potentialReturn: "0.062",
-    matchDate: "June 1, 2026",
-  },
-]
+type UserVote = {
+  id: string
+  country_code: string
+  voter_address: string
+  vote_count: number
+  total_cost_eth: string
+  tx_hash: string
+  created_at: string
+}
+
+type UserStats = {
+  qualification_votes: number
+  qualification_spent_eth: string
+  countries_voted_for: number
+  total_votes: number
+  total_spent_eth: string
+  total_won_eth: string
+}
 
 export default function MyBetsPage() {
-  const { address: _address, isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
+  const chainId = useChainId()
   const [shareModalOpen, setShareModalOpen] = useState(false)
-  const [selectedBet, setSelectedBet] = useState<(typeof mockUserBets)[0] | null>(null)
-  const [showDemoData, setShowDemoData] = useState(true)
+  const [selectedBet, setSelectedBet] = useState<any | null>(null)
+  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [userVotes, setUserVotes] = useState<UserVote[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const isFetchingRef = useRef(false)
 
-  const totalVotes = mockUserBets.reduce((sum, bet) => sum + bet.votes, 0)
-  const totalSpent = mockUserBets.reduce((sum, bet) => sum + Number.parseFloat(bet.costPaid), 0)
-  const activeBets = mockUserBets.filter((b) => b.status === "active").length
-  const _settledBets = mockUserBets.filter((b) => b.status === "settled").length
+  // Get block explorer URL based on chain
+  const getExplorerUrl = (txHash: string) => {
+    const baseUrl = chainId === baseSepolia.id
+      ? 'https://sepolia.basescan.org'
+      : 'https://basescan.org'
+    return `${baseUrl}/tx/${txHash}`
+  }
 
-  const earningBets = mockUserBets.filter((b) => b.status === "settled" && b.winningTeam === b.votedTeam)
-  const totalEarnings = earningBets.reduce((sum, bet) => sum + Number.parseFloat(bet.potentialReturn), 0)
+  // Fetch user data when wallet connects
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!address || isFetchingRef.current) return
 
-  const _handleShareWin = (bet: (typeof mockUserBets)[0]) => {
+      isFetchingRef.current = true
+      setIsLoading(true)
+
+      try {
+        const res = await fetch(`/api/users/${address}`)
+        if (res.ok) {
+          const response = await res.json()
+          setUserStats({
+            qualification_votes: response.data.qualification_votes,
+            qualification_spent_eth: response.data.qualification_spent_eth,
+            countries_voted_for: response.data.countries_voted_for,
+            total_votes: response.data.total_votes,
+            total_spent_eth: response.data.total_spent_eth,
+            total_won_eth: response.data.total_won_eth,
+          })
+          setUserVotes(response.data.votes || [])
+        } else {
+          console.error('Failed to fetch user data:', res.statusText)
+          setUserStats(null)
+          setUserVotes([])
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error)
+        setUserStats(null)
+        setUserVotes([])
+      } finally {
+        setIsLoading(false)
+        isFetchingRef.current = false
+      }
+    }
+
+    if (isConnected && address) {
+      fetchUserData()
+    } else {
+      setUserStats(null)
+      setUserVotes([])
+    }
+  }, [address, isConnected])
+
+  const totalVotes = userStats?.qualification_votes || 0
+  const totalSpent = parseFloat(userStats?.qualification_spent_eth || '0')
+  const countriesVoted = userStats?.countries_voted_for || 0
+  const totalEarnings = parseFloat(userStats?.total_won_eth || '0')
+
+  const _handleShareWin = (bet: any) => {
     setSelectedBet(bet)
     setShareModalOpen(true)
   }
-
-  const shouldShowContent = isConnected || showDemoData
-
-  const _didEarn = (bet: (typeof mockUserBets)[0]) => bet.status === "settled" && bet.winningTeam === bet.votedTeam
 
   return (
     <div className="min-h-screen flex">
@@ -183,34 +131,26 @@ export default function MyBetsPage() {
               <div className="flex items-center gap-3">
                 <Eye className="w-5 h-5 text-accent" />
                 <div>
-                  <p className="text-sm font-bold text-accent">Demo Mode</p>
+                  <p className="text-sm font-bold text-accent">Connect Wallet</p>
                   <p className="text-xs lg:text-sm text-foreground/70">
-                    {showDemoData
-                      ? "Viewing sample data. Connect wallet to see your actual votes."
-                      : "Connect wallet to view your votes and milestones."}
+                    Connect your wallet to view your voting history and statistics.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowDemoData(!showDemoData)}
-                  className={`px-4 py-2 rounded-sm text-xs font-bold uppercase transition-all ${
-                    showDemoData ? "bg-accent text-accent-foreground" : "cm-nav-tab"
-                  }`}
-                >
-                  {showDemoData ? "Hide Demo" : "Show Demo"}
-                </button>
-                <WalletConnectButton />
-              </div>
+              <WalletConnectButton />
             </div>
           </div>
         )}
 
-        {!shouldShowContent ? (
+        {!isConnected ? (
           <NoVotesEmpty />
+        ) : isLoading ? (
+          <div className="cm-panel rounded-sm p-8 text-center">
+            <InlineLoader text="Loading your votes..." />
+          </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4 mb-6 lg:mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-primary">
                 <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Votes</div>
                 <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">{totalVotes}</div>
@@ -218,25 +158,20 @@ export default function MyBetsPage() {
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
                 <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
-                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{totalSpent.toFixed(3)}</div>
+                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{totalSpent.toFixed(4)}</div>
                 <div className="text-xs lg:text-sm text-muted-foreground">ETH total</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-accent">
-                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Active</div>
-                <div className="text-lg lg:text-2xl font-bold text-accent font-mono">{activeBets}</div>
-                <div className="text-xs lg:text-sm text-muted-foreground">matches</div>
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Countries</div>
+                <div className="text-lg lg:text-2xl font-bold text-accent font-mono">{countriesVoted}</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">countries voted</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-green-500">
-                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Earned</div>
-                <div className="text-lg lg:text-2xl font-bold text-green-400 font-mono">{earningBets.length}</div>
-                <div className="text-xs lg:text-sm text-muted-foreground">winning votes</div>
-              </div>
-              <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-primary col-span-2 lg:col-span-1">
-                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Total Earnings</div>
-                <div className="text-lg lg:text-2xl font-bold cm-highlight font-mono">
-                  {totalEarnings.toFixed(3)} ETH
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Avg. Cost</div>
+                <div className="text-lg lg:text-2xl font-bold text-green-400 font-mono">
+                  {totalVotes > 0 ? (totalSpent / totalVotes).toFixed(6) : '0.000000'}
                 </div>
-                <div className="text-xs lg:text-sm text-muted-foreground">ETH earned</div>
+                <div className="text-xs lg:text-sm text-muted-foreground">ETH per vote</div>
               </div>
             </div>
 
@@ -245,16 +180,106 @@ export default function MyBetsPage() {
               <UserMilestones />
             </div>
 
-            {/* Bets List */}
-            <EmptyState
-              icon={<Clock className="w-16 h-16" />}
-              title="Match Voting History Coming Soon"
-              description="Match voting history will be available during the Tournament Phase. Currently in Qualification Phase - only country voting is active."
-              action={{
-                label: "Go to Qualification",
-                href: "/qualification"
-              }}
-            />
+            {/* Qualification Votes List */}
+            <div className="cm-panel rounded-sm overflow-hidden">
+              <div className="bg-secondary/40 px-4 py-3 border-b-2 border-border">
+                <h3 className="text-base lg:text-lg font-bold cm-highlight uppercase">Qualification Votes</h3>
+                <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+                  Your voting history for country qualification
+                </p>
+              </div>
+
+              {userVotes.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-bold mb-2">No Votes Yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Start voting for countries to help them qualify for the tournament!
+                  </p>
+                  <Link
+                    href="/qualification"
+                    className="inline-block cm-nav-tab px-6 py-3 rounded-sm font-bold uppercase text-sm"
+                  >
+                    Vote Now
+                  </Link>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-secondary/30 border-b-2 border-border">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase">
+                          Country
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                          Votes
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                          ETH Spent
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs lg:text-sm font-bold cm-highlight uppercase">
+                          Transaction
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userVotes.map((vote, index) => {
+                        const countryName = getCountryName(vote.country_code)
+                        const countryFlag = getCountryFlag(vote.country_code)
+                        const date = new Date(vote.created_at)
+
+                        return (
+                          <tr
+                            key={vote.id}
+                            className={`border-b border-border hover:bg-secondary/20 transition-colors ${
+                              index % 2 === 0 ? 'bg-card/30' : 'bg-card/10'
+                            }`}
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">{countryFlag}</span>
+                                <span className="text-sm lg:text-base font-bold">{countryName}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="text-sm lg:text-base font-mono font-bold cm-highlight">
+                                {vote.vote_count}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="text-sm lg:text-base font-mono text-accent font-bold">
+                                {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="text-sm lg:text-base text-muted-foreground">
+                                {date.toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {date.toLocaleTimeString()}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <a
+                                href={getExplorerUrl(vote.tx_hash)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs lg:text-sm text-accent hover:text-accent/80 font-mono"
+                              >
+                                {vote.tx_hash.slice(0, 6)}...{vote.tx_hash.slice(-4)}
+                              </a>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </>
         )}
       </main>

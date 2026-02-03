@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
+import { revalidateTag } from "next/cache"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/server/prisma"
 
@@ -63,15 +64,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid chain ID - must be Base (8453) or Base Sepolia (84532)" }, { status: 400 })
     }
 
-    // 5. Check if transaction already indexed
+    // 5. Check if transaction already indexed (first quick check)
     const existingTx = await prisma.indexedTransaction.findUnique({
       where: { txHash },
     })
 
     if (existingTx) {
       console.log("[Immediate Index] Transaction already indexed:", txHash)
+
+      // Also check if vote record exists
+      const existingVote = await prisma.qualificationVote.findUnique({
+        where: { txHash },
+      })
+
       return NextResponse.json(
-        { success: true, txHash, alreadyIndexed: true, status: existingTx.status },
+        {
+          success: true,
+          txHash,
+          alreadyIndexed: true,
+          status: existingTx.status,
+          voteExists: !!existingVote
+        },
         { status: 200 }
       )
     }
@@ -107,28 +120,40 @@ export async function POST(request: NextRequest) {
     // 8. Create indexed_transactions record FIRST, then vote record (foreign key relationship)
     console.log("[Immediate Index] Creating indexed_transactions and vote records for:", txHash)
 
-    await prisma.$transaction(async (tx) => {
-      // Create indexed_transactions record
-      await tx.indexedTransaction.create({
-        data: {
-          txHash,
-          contractAddress: contractAddress.toLowerCase(),
-          walletAddress: walletAddress.toLowerCase(),
-          chainId,
-          syncType: "immediate",
-          status: "pending",
-          eventType: "qualification",
-          metadata: {
-            countryCode,
-            voteCount,
-            totalCostEth,
-          },
-          indexedAt: new Date(),
-        },
-      })
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Double-check if transaction exists (race condition protection)
+        const existsInTx = await tx.indexedTransaction.findUnique({
+          where: { txHash },
+        })
 
-      // Create vote record (foreign key to indexed_transactions via txHash)
-      await tx.qualificationVote.create({
+        if (existsInTx) {
+          console.log("[Immediate Index] Transaction was just indexed by another request:", txHash)
+          // Don't throw error, just skip - transaction is already indexed
+          return
+        }
+
+        // Create indexed_transactions record
+        await tx.indexedTransaction.create({
+          data: {
+            txHash,
+            contractAddress: contractAddress.toLowerCase(),
+            walletAddress: walletAddress.toLowerCase(),
+            chainId,
+            syncType: "immediate",
+            status: "pending",
+            eventType: "qualification",
+            metadata: {
+              countryCode,
+              voteCount,
+              totalCostEth,
+            },
+            indexedAt: new Date(),
+          },
+        })
+
+        // Create vote record (foreign key to indexed_transactions via txHash)
+        await tx.qualificationVote.create({
         data: {
           countryCode,
           voterAddress: walletAddress.toLowerCase(),
@@ -200,25 +225,82 @@ export async function POST(request: NextRequest) {
           },
         })
       }
-    })
+      })
 
-    console.log("[Immediate Index] Successfully indexed transaction:", txHash)
-    return NextResponse.json(
-      {
-        success: true,
-        txHash,
-        status: "pending",
-        message: "Transaction indexed immediately - will be confirmed by daily cron job within 24 hours",
-      },
-      { status: 201 }
-    )
+      console.log("[Immediate Index] Successfully indexed transaction:", txHash)
+
+      // Revalidate Next.js caches to show updated data immediately
+      revalidateTag("qualification-countries")
+      revalidateTag("qualification-summary")
+      console.log("[Immediate Index] Cache revalidated")
+
+      return NextResponse.json(
+        {
+          success: true,
+          txHash,
+          status: "pending",
+          message: "Transaction indexed immediately - will be confirmed by daily cron job within 24 hours",
+        },
+        { status: 201 }
+      )
+    } catch (txError) {
+      // Handle unique constraint violation from within the transaction
+      if (txError instanceof Error && (txError.message.includes("Unique constraint") || txError.message.includes("unique constraint"))) {
+        console.log("[Immediate Index] Transaction already indexed (caught in transaction):", txHash)
+
+        // Verify it exists now
+        const nowExists = await prisma.indexedTransaction.findUnique({
+          where: { txHash },
+        })
+
+        if (nowExists) {
+          return NextResponse.json(
+            {
+              success: true,
+              txHash,
+              alreadyIndexed: true,
+              status: nowExists.status,
+              message: "Transaction was already indexed by another request"
+            },
+            { status: 200 }
+          )
+        }
+      }
+
+      // Re-throw if it's not a duplicate error
+      throw txError
+    }
   } catch (error) {
     console.error("[Immediate Index] Error:", error)
 
     // Check if it's a unique constraint violation (duplicate transaction)
-    if (error instanceof Error && error.message.includes("Unique constraint")) {
+    if (error instanceof Error && (error.message.includes("Unique constraint") || error.message.includes("unique constraint"))) {
+      console.log("[Immediate Index] Unique constraint error - transaction may already be indexed")
+
+      // Try to return the existing transaction status
+      try {
+        const existingTx = await prisma.indexedTransaction.findUnique({
+          where: { txHash },
+        })
+
+        if (existingTx) {
+          return NextResponse.json(
+            {
+              success: true,
+              txHash,
+              alreadyIndexed: true,
+              status: existingTx.status,
+              message: "Transaction already indexed"
+            },
+            { status: 200 }
+          )
+        }
+      } catch (lookupError) {
+        console.error("[Immediate Index] Error looking up existing transaction:", lookupError)
+      }
+
       return NextResponse.json(
-        { error: "Transaction already indexed", txHash: (await request.json()).txHash },
+        { error: "Transaction already indexed", txHash },
         { status: 409 }
       )
     }

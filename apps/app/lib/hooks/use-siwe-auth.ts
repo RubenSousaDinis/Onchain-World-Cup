@@ -1,10 +1,11 @@
 "use client"
 
-import { useAccount, useSignMessage } from "wagmi"
+import { useAccount, useSignMessage, useSwitchChain } from "wagmi"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { SiweMessage } from "siwe"
 import { useState } from "react"
 import { useFarcaster } from "@/lib/farcaster-provider"
+import { getDefaultChainId, getDefaultChain } from "@/lib/chain-config"
 
 /**
  * Custom hook for unified authentication (SIWE + SIWF)
@@ -24,9 +25,13 @@ import { useFarcaster } from "@/lib/farcaster-provider"
 export function useSIWEAuth() {
   const { address, chain } = useAccount()
   const { signMessageAsync } = useSignMessage()
+  const { switchChain } = useSwitchChain()
   const { data: session, status } = useSession()
   const { isFarcasterMiniApp, fid } = useFarcaster()
   const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  const defaultChainId = getDefaultChainId()
+  const defaultChain = getDefaultChain()
 
   /**
    * Farcaster authentication using SIWF
@@ -97,12 +102,26 @@ export function useSIWEAuth() {
    */
   const loginWithSIWE = async () => {
     console.log("[SIWE Auth] Starting SIWE authentication...")
-    console.log("[SIWE Auth] Wallet state:", { address, chainId: chain?.id })
+    console.log("[SIWE Auth] Wallet state:", { address, chainId: chain?.id, defaultChainId })
 
-    if (!address || !chain) {
+    if (!address) {
       const error = "Wallet not connected"
       console.error("[SIWE Auth] Error:", error)
       throw new Error(error)
+    }
+
+    // Check if user is on the correct chain, if not, switch them
+    if (chain?.id !== defaultChainId) {
+      console.log(`[SIWE Auth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}...`)
+      try {
+        await switchChain({ chainId: defaultChainId })
+        console.log(`[SIWE Auth] Successfully switched to chain ${defaultChainId}`)
+        // Give the wallet a moment to update
+        await new Promise(resolve => setTimeout(resolve, 500))
+      } catch (error) {
+        console.error("[SIWE Auth] Failed to switch chain:", error)
+        throw new Error(`Please switch your wallet to ${defaultChain.name} to continue`)
+      }
     }
 
     // Fetch nonce from server
@@ -112,14 +131,14 @@ export function useSIWEAuth() {
     console.log("[SIWE Auth] Nonce response:", nonceData)
     const { nonce } = nonceData
 
-    // Create SIWE message
+    // Create SIWE message with default chain ID
     const message = new SiweMessage({
       domain: window.location.host,
       address,
       statement: "Sign in to Onchain World Cup with your wallet",
       uri: window.location.origin,
       version: "1",
-      chainId: chain.id,
+      chainId: defaultChainId, // Use default chain ID for consistency
       nonce,
     })
 
@@ -211,5 +230,8 @@ export function useSIWEAuth() {
     isLoading: status === "loading" || isLoggingIn,
     walletAddress: session?.user?.walletAddress,
     authMethod: isFarcasterMiniApp ? "farcaster" : "siwe",
+    defaultChainId,
+    defaultChain,
+    switchChain,
   }
 }

@@ -4,6 +4,7 @@ import { useReadContract, useWatchContractEvent } from "wagmi"
 import { formatEther, parseEther } from "viem"
 import { WORLD_CUP_QUALIFICATION_ABI } from "../contracts/qualification-abi"
 import { WORLD_CUP_MATCH_ABI } from "../contracts/match-abi"
+import { countryCodeToBytes8 } from "../contracts/qualification"
 import { useEffect, useState } from "react"
 
 interface UseQualificationVotePriceOptions {
@@ -31,25 +32,36 @@ export function useQualificationVotePrice({
 }: UseQualificationVotePriceOptions) {
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
+  // Convert country code to bytes8 format
+  const countryCodeBytes = countryCode ? countryCodeToBytes8(countryCode) : "0x0000000000000000"
+
   // Get current vote count for the country
   const { data: currentVotes, refetch: refetchVotes } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "getCountryVotes",
-    args: [countryCode],
+    functionName: "countryVotes",
+    args: [countryCodeBytes],
     query: {
-      enabled: enabled && !!countryCode,
+      enabled: enabled && !!countryCode && contractAddress !== "0x0000000000000000000000000000000000000000",
+      refetchInterval: false, // Don't poll - rely on event watching
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      staleTime: 30000, // Consider data fresh for 30 seconds
     },
   })
 
   // Calculate price for the specified number of votes
+  // Cap at 100 votes to respect contract's MAX_VOTES_PER_TX limit
+  const cappedVoteCount = Math.min(100, Math.max(1, voteCount))
   const { data: votePrice, refetch: refetchPrice } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "calculateVotePrice",
-    args: [countryCode, BigInt(voteCount)],
+    functionName: "calculateVoteCost",
+    args: [countryCodeBytes, BigInt(cappedVoteCount)],
     query: {
-      enabled: enabled && !!countryCode && voteCount > 0,
+      enabled: enabled && !!countryCode && cappedVoteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
+      refetchInterval: false, // Don't poll - rely on event watching
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      staleTime: 30000, // Consider data fresh for 30 seconds
     },
   })
 
@@ -60,6 +72,9 @@ export function useQualificationVotePrice({
     functionName: "BASE_PRICE",
     query: {
       enabled,
+      refetchInterval: false, // Don't poll - base price never changes
+      refetchOnWindowFocus: false,
+      staleTime: Infinity, // Base price is constant, never refetch
     },
   })
 
@@ -68,11 +83,13 @@ export function useQualificationVotePrice({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     eventName: "VotePlaced",
+    enabled: contractAddress !== "0x0000000000000000000000000000000000000000",
     onLogs: (logs) => {
       // Check if any vote was for this country
       const hasRelevantVote = logs.some((log) => {
-        const args = log.args as { countryCode?: string }
-        return args.countryCode === countryCode
+        const args = log.args as { country?: string }
+        // Compare bytes8 values
+        return args.country === countryCodeBytes
       })
 
       if (hasRelevantVote) {
@@ -95,8 +112,8 @@ export function useQualificationVotePrice({
     votePriceRaw: votePrice,
     basePrice: basePrice ? formatEther(basePrice) : "0",
     basePriceRaw: basePrice,
-    pricePerVote: votePrice && voteCount > 0 ? formatEther(votePrice / BigInt(voteCount)) : "0",
-    isLoading: !votePrice && enabled,
+    pricePerVote: votePrice && cappedVoteCount > 0 ? formatEther(votePrice / BigInt(cappedVoteCount)) : "0",
+    isLoading: !votePrice && enabled && contractAddress !== "0x0000000000000000000000000000000000000000",
     refetch: () => {
       refetchVotes()
       refetchPrice()
