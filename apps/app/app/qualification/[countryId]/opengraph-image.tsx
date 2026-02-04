@@ -81,7 +81,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
         >
           {/* Soccer field pattern background */}
           <div
-            tw="absolute inset-0"
+            tw="flex absolute inset-0"
             style={{
               opacity: 0.1,
               backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
@@ -92,7 +92,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           <div tw="flex flex-col items-center justify-center z-10" style={{ padding: 60 }}>
             {/* Flag */}
             <div
-              tw="mb-10"
+              tw="flex mb-10"
               style={{
                 fontSize: 180,
                 filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
@@ -103,7 +103,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Country Name */}
             <div
-              tw="font-bold mb-5 text-center uppercase"
+              tw="flex font-bold mb-5 text-center uppercase"
               style={{
                 fontSize: 72,
                 color: '#00ff88',
@@ -116,7 +116,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Subtitle */}
             <div
-              tw="uppercase"
+              tw="flex uppercase"
               style={{
                 fontSize: 32,
                 marginBottom: 50,
@@ -138,7 +138,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               }}
             >
               <div
-                tw="font-bold"
+                tw="flex font-bold"
                 style={{
                   fontSize: 56,
                   marginBottom: 10,
@@ -149,6 +149,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
                 {votes} VOTES
               </div>
               <div
+                tw="flex"
                 style={{
                   fontSize: 28,
                   color: '#a8b3cf',
@@ -197,7 +198,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             }}
           >
             <div
-              tw="rounded-full"
+              tw="flex rounded-full"
               style={{
                 width: 30,
                 height: 30,

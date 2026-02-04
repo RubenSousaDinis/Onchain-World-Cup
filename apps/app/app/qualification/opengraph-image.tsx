@@ -65,7 +65,7 @@ export default async function Image() {
           {/* Header */}
           <div tw="flex flex-col items-center z-10" style={{ marginBottom: 40 }}>
             <div
-              tw="font-bold uppercase tracking-wide"
+              tw="flex font-bold uppercase tracking-wide"
               style={{
                 fontSize: 64,
                 marginBottom: 10,
@@ -77,7 +77,7 @@ export default async function Image() {
               🏆 QUALIFICATION LEADERBOARD
             </div>
             <div
-              tw="uppercase"
+              tw="flex uppercase"
               style={{
                 fontSize: 28,
                 color: '#a8b3cf',
@@ -103,7 +103,7 @@ export default async function Image() {
                 {/* Rank */}
                 <div tw="flex items-center" style={{ gap: 20 }}>
                   <div
-                    tw="font-bold text-center"
+                    tw="flex font-bold text-center"
                     style={{
                       fontSize: 48,
                       width: 60,
@@ -126,7 +126,7 @@ export default async function Image() {
 
                   {/* Country Name */}
                   <div
-                    tw="font-bold"
+                    tw="flex font-bold"
                     style={{
                       fontSize: 40,
                       minWidth: 250,
@@ -140,7 +140,7 @@ export default async function Image() {
                 {/* Stats */}
                 <div tw="flex flex-col items-end">
                   <div
-                    tw="font-bold"
+                    tw="flex font-bold"
                     style={{
                       fontSize: 36,
                       color: '#00ff88',
@@ -150,6 +150,7 @@ export default async function Image() {
                     {country.votes.toLocaleString()} votes
                   </div>
                   <div
+                    tw="flex"
                     style={{
                       fontSize: 24,
                       color: '#a8b3cf',
@@ -166,7 +167,7 @@ export default async function Image() {
           {/* Footer */}
           <div tw="flex flex-col items-center z-10" style={{ marginTop: 40, gap: 15 }}>
             <div
-              tw="font-bold uppercase"
+              tw="flex font-bold uppercase"
               style={{
                 fontSize: 32,
                 color: '#00ff88',
@@ -175,7 +176,7 @@ export default async function Image() {
             >
               Onchain World Cup 2026
             </div>
-            <div style={{ fontSize: 24, color: '#a8b3cf' }}>
+            <div tw="flex" style={{ fontSize: 24, color: '#a8b3cf' }}>
               Vote Now • Top 48 Qualify
             </div>
           </div>
@@ -193,14 +194,14 @@ export default async function Image() {
             }}
           >
             <div
-              tw="rounded-full"
+              tw="flex rounded-full"
               style={{
                 width: 30,
                 height: 30,
                 backgroundColor: '#0052FF',
               }}
             />
-            <div tw="font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
+            <div tw="flex font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
               Base Network
             </div>
           </div>
