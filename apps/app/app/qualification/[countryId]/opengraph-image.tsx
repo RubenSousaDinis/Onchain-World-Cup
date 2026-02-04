@@ -42,7 +42,8 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               backgroundColor: '#0a0f1a',
             }}
           >
-            <div style={{ fontSize: 48, color: '#00ff88' }}>Country Not Found</div>
+            <div style={{
+                display: 'flex', fontSize: 48, color: '#00ff88' }}>Country Not Found</div>
           </div>
         ),
         { ...size }
@@ -263,7 +264,8 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div style={{ fontSize: 48, color: '#00ff88' }}>Error Generating Image</div>
+          <div style={{
+                display: 'flex', fontSize: 48, color: '#00ff88' }}>Error Generating Image</div>
         </div>
       ),
       { ...size }

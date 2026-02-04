@@ -26,7 +26,8 @@ export default async function Image() {
         }}
       >
         {/* Trophy icon */}
-        <div style={{ fontSize: 100, marginBottom: 30 }}>🏆</div>
+        <div style={{
+                display: 'flex', fontSize: 100, marginBottom: 30 }}>🏆</div>
 
         {/* Main title */}
         <div
