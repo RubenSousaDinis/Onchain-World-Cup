@@ -3,13 +3,14 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { Trophy, Medal, TrendingUp, Zap, Target, Clock } from "lucide-react"
+import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { InlineLoader, NoLeaderboardData, NoSearchResults } from "@/components/states"
 import { type LeaderboardEntry } from "@/lib/mock-data/leaderboard-data"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
+import { ShareModal } from "@/components/share-modal"
 
 type LeaderboardCategory = "successful" | "largest" | "active" | "early"
 
@@ -22,6 +23,7 @@ export default function LeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const isFetchingRef = useRef(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Fetch leaderboard data from API
   useEffect(() => {
@@ -108,12 +110,26 @@ export default function LeaderboardPage() {
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-6 lg:mb-8">
           <div className="soccer-field-bg p-4 lg:p-6">
-            <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-              <span className="cm-highlight">Leaderboards</span>
-            </h1>
-            <p className="text-sm lg:text-base text-foreground/80">
-              Top performers ranked across different categories • Base Network
-            </p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+                  <span className="cm-highlight">Leaderboards</span>
+                </h1>
+                <p className="text-sm lg:text-base text-foreground/80">
+                  Top performers ranked across different categories • Base Network
+                </p>
+              </div>
+              {activeCategory === "largest" && (
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="cm-nav-tab flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0"
+                  aria-label="Share leaderboard"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -321,6 +337,21 @@ export default function LeaderboardPage() {
         </div>
         )}
       </main>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        type="leaderboard"
+        data={{
+          topCountries: leaderboardData.slice(0, 5).map((entry, index) => ({
+            rank: index + 1,
+            name: entry.team || entry.matchName || "Unknown",
+            flag: entry.team ? getCountryFlag(entry.address.slice(0, 2).toUpperCase()) : "🏳️",
+            votes: entry.value || 0,
+          })),
+        }}
+      />
     </div>
   )
 }

@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap } from "lucide-react"
+import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap, TrendingUp } from "lucide-react"
 import { useNotifications } from "@/components/notifications"
 
 interface ShareModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "vote" | "result" | "milestone"
+  type: "vote" | "result" | "milestone" | "country" | "leaderboard" | "user-stats" | "prize-pool"
   data: {
     team?: string
     teamFlag?: string
@@ -22,6 +22,35 @@ interface ShareModalProps {
       title: string
       description: string
       icon: string
+    }
+    country?: string
+    countryCode?: string
+    countryFlag?: string
+    topCountries?: Array<{
+      rank: number
+      name: string
+      flag: string
+      votes: number
+    }>
+    userStats?: {
+      ethSpent: string
+      currentEarnings: string
+      favoriteCountry: string
+      favoriteCountryFlag: string
+      totalVotes: number
+      rank?: number
+    }
+    prizePool?: {
+      totalPool: string
+      team1Name: string
+      team1Flag: string
+      team1Pool: string
+      team1Votes: number
+      team2Name: string
+      team2Flag: string
+      team2Pool: string
+      team2Votes: number
+      matchId?: string
     }
   }
 }
@@ -44,6 +73,57 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
   const getShareText = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+
+    if (type === "prize-pool") {
+      const pool = data.prizePool
+      return {
+        title: "Match Prize Pool",
+        text: `🏆 ${pool?.team1Flag} ${pool?.team1Name} vs ${pool?.team2Flag} ${pool?.team2Name}\n\n💰 Prize Pool: ${pool?.totalPool} ETH\n\n${pool?.team1Flag} ${pool?.team1Name}: ${pool?.team1Pool} ETH (${pool?.team1Votes} votes)\n${pool?.team2Flag} ${pool?.team2Name}: ${pool?.team2Pool} ETH (${pool?.team2Votes} votes)\n\nWinner takes 90% of the pool! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: pool?.matchId ? `${baseUrl}/matches/${pool.matchId}` : baseUrl,
+        ogImage: `${baseUrl}/api/og/prize-pool?totalPool=${pool?.totalPool}&team1Name=${encodeURIComponent(pool?.team1Name || "")}&team1Flag=${encodeURIComponent(pool?.team1Flag || "")}&team1Pool=${pool?.team1Pool}&team1Votes=${pool?.team1Votes}&team2Name=${encodeURIComponent(pool?.team2Name || "")}&team2Flag=${encodeURIComponent(pool?.team2Flag || "")}&team2Pool=${pool?.team2Pool}&team2Votes=${pool?.team2Votes}`,
+      }
+    }
+
+    if (type === "user-stats") {
+      const stats = data.userStats
+      return {
+        title: "My Crypto World Cup Stats",
+        text: `My Crypto World Cup 2026 Stats:\n\n💰 Spent: ${stats?.ethSpent} ETH\n🏆 Earnings: ${stats?.currentEarnings} ETH\n⚽ Favorite: ${stats?.favoriteCountryFlag} ${stats?.favoriteCountry}\n📊 Total Votes: ${stats?.totalVotes}${stats?.rank ? `\n🎯 Rank: #${stats.rank}` : ''}\n\nJoin the action and vote for your favorite teams!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: baseUrl,
+        ogImage: `${baseUrl}/api/og/user-stats?ethSpent=${stats?.ethSpent}&earnings=${stats?.currentEarnings}&country=${encodeURIComponent(stats?.favoriteCountry || "")}&countryFlag=${encodeURIComponent(stats?.favoriteCountryFlag || "")}&votes=${stats?.totalVotes}&rank=${stats?.rank || 0}`,
+      }
+    }
+
+    if (type === "leaderboard") {
+      const top3 = data.topCountries?.slice(0, 3) || []
+      const top3Text = top3.map((c, i) => `${i + 1}. ${c.flag} ${c.name} - ${c.votes.toLocaleString()} votes`).join('\n')
+
+      // Format countries for OG image URL: Name1,Flag1,Votes1,ETH1|Name2,Flag2,Votes2,ETH2|...
+      const top5 = data.topCountries?.slice(0, 5) || []
+      const countriesParam = top5
+        .map((c) => {
+          // Calculate ETH from votes (approximate - you might want to pass actual ETH data)
+          const eth = (c.votes * 0.001).toFixed(4) // Placeholder calculation
+          return `${encodeURIComponent(c.name)},${encodeURIComponent(c.flag)},${c.votes},${eth}`
+        })
+        .join('|')
+
+      return {
+        title: "Qualification Leaderboard",
+        text: `🏆 Current Qualification Leaderboard:\n\n${top3Text}\n\nTop 48 countries qualify! Vote for your country now! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: `${baseUrl}/qualification`,
+        ogImage: `${baseUrl}/api/og/leaderboard?countries=${countriesParam}`,
+      }
+    }
+
+    if (type === "country") {
+      return {
+        title: "I just voted for my country!",
+        text: `I just backed ${data.countryFlag} ${data.country} with ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} to qualify for the World Cup 2026!\n\nVote early = better prices. Help your country qualify! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: `${baseUrl}/qualification/${data.countryCode}`,
+        ogImage: `${baseUrl}/api/og/country-vote?country=${encodeURIComponent(data.country || "")}&countryCode=${data.countryCode}&votes=${data.votes}&amount=${data.amount}`,
+      }
+    }
 
     if (type === "vote") {
       return {
@@ -123,14 +203,22 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
         {/* Header */}
         <div className="soccer-field-bg p-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
+            {type === "leaderboard" && <Trophy className="w-6 h-6 text-accent" />}
+            {type === "country" && <Zap className="w-6 h-6 text-accent" />}
             {type === "vote" && <Zap className="w-6 h-6 text-accent" />}
             {type === "result" && <Trophy className="w-6 h-6 text-accent" />}
             {type === "milestone" && <Flame className="w-6 h-6 text-accent" />}
+            {type === "user-stats" && <TrendingUp className="w-6 h-6 text-accent" />}
+            {type === "prize-pool" && <Trophy className="w-6 h-6 text-accent" />}
             <div>
               <div className="text-lg font-bold cm-highlight">
+                {type === "leaderboard" && "Share Leaderboard"}
+                {type === "country" && "Country Vote Placed!"}
                 {type === "vote" && "Vote Placed!"}
                 {type === "result" && (data.result === "won" || data.result === "earned" ? "You Won!" : "Match Ended")}
                 {type === "milestone" && "Achievement Unlocked!"}
+                {type === "user-stats" && "Share Your Stats"}
+                {type === "prize-pool" && "Share Prize Pool"}
               </div>
               <div className="text-xs text-foreground/80">Share with your friends</div>
             </div>
@@ -142,6 +230,39 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
         {/* Content Preview */}
         <div className="p-4 bg-card/50">
+          {type === "leaderboard" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <div className="text-xl font-bold cm-highlight mb-3">Qualification Leaderboard</div>
+              <div className="space-y-2 text-left max-w-sm mx-auto">
+                {data.topCountries?.slice(0, 5).map((country) => (
+                  <div key={country.rank} className="flex items-center justify-between bg-secondary/20 border border-border rounded px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold text-sm ${country.rank === 1 ? 'text-yellow-400' : country.rank === 2 ? 'text-gray-300' : country.rank === 3 ? 'text-orange-400' : 'text-muted-foreground'}`}>
+                        #{country.rank}
+                      </span>
+                      <span className="text-xl">{country.flag}</span>
+                      <span className="text-sm font-bold">{country.name}</span>
+                    </div>
+                    <span className="text-xs font-mono text-accent">{country.votes.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {type === "country" && (
+            <div className="text-center">
+              <div className="text-6xl mb-3">{data.countryFlag}</div>
+              <div className="text-2xl font-bold text-foreground mb-2">{data.country}</div>
+              <div className="text-sm text-muted-foreground mb-3">Qualification Vote</div>
+              <div className="inline-block bg-primary/20 border border-primary px-4 py-2 rounded-sm">
+                <span className="text-lg font-bold cm-highlight">{data.votes} Votes</span>
+                <span className="text-sm text-muted-foreground ml-2">({data.amount} ETH)</span>
+              </div>
+            </div>
+          )}
+
           {type === "vote" && (
             <div className="text-center">
               <div className="text-4xl mb-2">{data.teamFlag}</div>
@@ -178,6 +299,72 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
               <div className="text-5xl mb-3">{data.milestone?.icon}</div>
               <div className="text-xl font-bold cm-highlight mb-2">{data.milestone?.title}</div>
               <div className="text-sm text-foreground/80">{data.milestone?.description}</div>
+            </div>
+          )}
+
+          {type === "user-stats" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">📊</div>
+              <div className="text-xl font-bold cm-highlight mb-4">My Crypto World Cup Stats</div>
+              <div className="space-y-3 max-w-sm mx-auto">
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Total Spent</div>
+                  <div className="text-lg font-bold text-foreground font-mono">{data.userStats?.ethSpent} ETH</div>
+                </div>
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Current Earnings</div>
+                  <div className="text-lg font-bold text-accent font-mono">{data.userStats?.currentEarnings} ETH</div>
+                </div>
+                <div className="bg-secondary/20 border border-border rounded px-4 py-3">
+                  <div className="text-xs text-muted-foreground mb-1">Favorite Country</div>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl">{data.userStats?.favoriteCountryFlag}</span>
+                    <span className="text-lg font-bold">{data.userStats?.favoriteCountry}</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
+                    <div className="text-xs text-muted-foreground mb-1">Votes</div>
+                    <div className="text-sm font-bold cm-highlight font-mono">{data.userStats?.totalVotes}</div>
+                  </div>
+                  {data.userStats?.rank && (
+                    <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
+                      <div className="text-xs text-muted-foreground mb-1">Rank</div>
+                      <div className="text-sm font-bold text-accent font-mono">#{data.userStats.rank}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {type === "prize-pool" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <div className="text-xl font-bold cm-highlight mb-4">Prize Pool</div>
+
+              {/* Total Pool */}
+              <div className="bg-primary/20 border border-primary rounded px-4 py-3 mb-4 max-w-sm mx-auto">
+                <div className="text-xs text-muted-foreground mb-1">Total Prize Pool</div>
+                <div className="text-2xl font-bold cm-highlight font-mono">{data.prizePool?.totalPool} ETH</div>
+                <div className="text-xs text-accent mt-1">Winner takes 90%</div>
+              </div>
+
+              {/* Teams */}
+              <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+                <div className="bg-secondary/20 border-l-4 border-primary rounded px-3 py-3">
+                  <div className="text-2xl mb-2">{data.prizePool?.team1Flag}</div>
+                  <div className="text-sm font-bold mb-2">{data.prizePool?.team1Name}</div>
+                  <div className="text-lg font-bold cm-highlight font-mono mb-1">{data.prizePool?.team1Pool} ETH</div>
+                  <div className="text-xs text-muted-foreground">{data.prizePool?.team1Votes} votes</div>
+                </div>
+                <div className="bg-secondary/20 border-r-4 border-accent rounded px-3 py-3">
+                  <div className="text-2xl mb-2">{data.prizePool?.team2Flag}</div>
+                  <div className="text-sm font-bold mb-2">{data.prizePool?.team2Name}</div>
+                  <div className="text-lg font-bold cm-highlight font-mono mb-1">{data.prizePool?.team2Pool} ETH</div>
+                  <div className="text-xs text-muted-foreground">{data.prizePool?.team2Votes} votes</div>
+                </div>
+              </div>
             </div>
           )}
         </div>

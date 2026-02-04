@@ -9,6 +9,7 @@ import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
+import { ShareModal } from "@/components/share-modal"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -30,6 +31,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const processedTxRef = useRef<string | null>(null) // Track which tx we're currently processing
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareData, setShareData] = useState<{votes: number, amount: string} | null>(null)
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -269,6 +272,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             // Note: We DON'T clear processedTxRef here - wagmi will clear hash on next transaction
 
             console.log("[Vote Modal] Ready for next vote - button should be enabled now")
+
+            // Show share modal after successful vote
+            setShareData({
+              votes: votes,
+              amount: formatETH(parseFloat(cost))
+            })
+            setTimeout(() => setShowShareModal(true), 300)
           }).catch((err) => {
             console.error("[Vote Modal] Error refetching data:", err)
             // Re-enable anyway even if refetch fails
@@ -410,10 +420,22 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     }
   }
 
+  const handleShareClose = () => {
+    setShowShareModal(false)
+    setShareData(null)
+  }
+
+  const handleShareAndClose = () => {
+    setShowShareModal(false)
+    setShareData(null)
+    onClose()
+  }
+
   if (!isOpen || !country) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="relative w-full max-w-lg cm-panel rounded-sm border-2 border-accent/30 overflow-hidden">
         {/* Header */}
         <div className="bg-secondary/40 p-4 border-b-2 border-accent/30 flex items-center justify-between">
@@ -610,6 +632,23 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Share Modal - shows after successful vote */}
+      {shareData && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={handleShareAndClose}
+          type="country"
+          data={{
+            country: country.name,
+            countryCode: country.code.toLowerCase(),
+            countryFlag: country.flag,
+            votes: shareData.votes,
+            amount: shareData.amount,
+          }}
+        />
+      )}
+    </>
   )
 }
