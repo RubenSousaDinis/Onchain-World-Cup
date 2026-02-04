@@ -323,8 +323,15 @@ export default async function Image({ params }: { params: Promise<{ address: str
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div style={{
-                display: 'flex', fontSize: 48, color: '#00ff88' }}>Error Generating Image</div>
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 48,
+              color: '#00ff88',
+            }}
+          >
+            Error Generating Image
+          </div>
         </div>
       ),
       { ...size }
