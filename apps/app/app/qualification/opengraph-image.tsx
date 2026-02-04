@@ -46,10 +46,11 @@ export default async function Image() {
     return new ImageResponse(
       (
         <div
-          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden p-[60px]"
+          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
           style={{
             backgroundColor: '#0a0f1a',
             backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
+            padding: '60px',
           }}
         >
           {/* Soccer field pattern background */}
@@ -62,10 +63,12 @@ export default async function Image() {
           />
 
           {/* Header */}
-          <div tw="flex flex-col items-center mb-10 z-10">
+          <div tw="flex flex-col items-center z-10" style={{ marginBottom: 40 }}>
             <div
-              tw="text-[64px] font-bold mb-[10px] uppercase tracking-wide"
+              tw="flex font-bold uppercase tracking-wide"
               style={{
+                fontSize: 64,
+                marginBottom: 10,
                 color: '#00ff88',
                 letterSpacing: '0.05em',
                 textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
@@ -74,8 +77,9 @@ export default async function Image() {
               🏆 QUALIFICATION LEADERBOARD
             </div>
             <div
-              tw="text-[28px] uppercase"
+              tw="flex uppercase"
               style={{
+                fontSize: 28,
                 color: '#a8b3cf',
                 letterSpacing: '0.1em',
               }}
@@ -85,7 +89,7 @@ export default async function Image() {
           </div>
 
           {/* Leaderboard */}
-          <div tw="flex flex-col w-full max-w-[900px] gap-[15px] z-10">
+          <div tw="flex flex-col w-full z-10" style={{ maxWidth: 900, gap: 15 }}>
             {topCountries.map((country) => (
               <div
                 key={country.rank}
@@ -97,10 +101,12 @@ export default async function Image() {
                 }}
               >
                 {/* Rank */}
-                <div tw="flex items-center gap-5">
+                <div tw="flex items-center" style={{ gap: 20 }}>
                   <div
-                    tw="text-[48px] font-bold w-[60px] text-center"
+                    tw="flex font-bold text-center"
                     style={{
+                      fontSize: 48,
+                      width: 60,
                       color: country.rank === 1 ? '#FFD700' : country.rank === 2 ? '#C0C0C0' : country.rank === 3 ? '#CD7F32' : '#00ff88',
                       fontFamily: 'monospace',
                     }}
@@ -110,8 +116,8 @@ export default async function Image() {
 
                   {/* Flag */}
                   <div
-                    tw="text-[56px]"
                     style={{
+                      fontSize: 56,
                       filter: country.rank <= 3 ? 'drop-shadow(0 5px 15px rgba(0, 255, 136, 0.3))' : 'none',
                     }}
                   >
@@ -120,8 +126,10 @@ export default async function Image() {
 
                   {/* Country Name */}
                   <div
-                    tw="text-[40px] font-bold min-w-[250px]"
+                    tw="flex font-bold"
                     style={{
+                      fontSize: 40,
+                      minWidth: 250,
                       color: country.rank <= 3 ? '#00ff88' : '#ffffff',
                     }}
                   >
@@ -132,8 +140,9 @@ export default async function Image() {
                 {/* Stats */}
                 <div tw="flex flex-col items-end">
                   <div
-                    tw="text-[36px] font-bold"
+                    tw="flex font-bold"
                     style={{
+                      fontSize: 36,
                       color: '#00ff88',
                       fontFamily: 'monospace',
                     }}
@@ -141,8 +150,9 @@ export default async function Image() {
                     {country.votes.toLocaleString()} votes
                   </div>
                   <div
-                    tw="text-[24px]"
+                    tw="flex"
                     style={{
+                      fontSize: 24,
                       color: '#a8b3cf',
                       fontFamily: 'monospace',
                     }}
@@ -155,37 +165,43 @@ export default async function Image() {
           </div>
 
           {/* Footer */}
-          <div tw="flex flex-col items-center mt-10 gap-[15px] z-10">
+          <div tw="flex flex-col items-center z-10" style={{ marginTop: 40, gap: 15 }}>
             <div
-              tw="text-[32px] font-bold uppercase"
+              tw="flex font-bold uppercase"
               style={{
+                fontSize: 32,
                 color: '#00ff88',
                 letterSpacing: '0.05em',
               }}
             >
               Onchain World Cup 2026
             </div>
-            <div tw="text-[24px]" style={{ color: '#a8b3cf' }}>
+            <div tw="flex" style={{ fontSize: 24, color: '#a8b3cf' }}>
               Vote Now • Top 48 Qualify
             </div>
           </div>
 
           {/* Base Network Badge */}
           <div
-            tw="absolute bottom-[30px] right-[30px] flex items-center gap-[10px] rounded-lg"
+            tw="absolute flex items-center rounded-lg"
             style={{
+              bottom: 30,
+              right: 30,
+              gap: 10,
               backgroundColor: 'rgba(0, 82, 255, 0.2)',
               border: '2px solid #0052FF',
               padding: '15px 25px',
             }}
           >
             <div
-              tw="w-[30px] h-[30px] rounded-full"
+              tw="flex rounded-full"
               style={{
+                width: 30,
+                height: 30,
                 backgroundColor: '#0052FF',
               }}
             />
-            <div tw="text-[24px] font-bold" style={{ color: '#0052FF' }}>
+            <div tw="flex font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
               Base Network
             </div>
           </div>
@@ -204,7 +220,7 @@ export default async function Image() {
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
             Error Generating Image
           </div>
         </div>
