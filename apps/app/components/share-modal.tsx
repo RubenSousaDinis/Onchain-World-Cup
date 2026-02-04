@@ -98,11 +98,21 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
       const top3 = data.topCountries?.slice(0, 3) || []
       const top3Text = top3.map((c, i) => `${i + 1}. ${c.flag} ${c.name} - ${c.votes.toLocaleString()} votes`).join('\n')
 
+      // Format countries for OG image URL: Name1,Flag1,Votes1,ETH1|Name2,Flag2,Votes2,ETH2|...
+      const top5 = data.topCountries?.slice(0, 5) || []
+      const countriesParam = top5
+        .map((c) => {
+          // Calculate ETH from votes (approximate - you might want to pass actual ETH data)
+          const eth = (c.votes * 0.001).toFixed(4) // Placeholder calculation
+          return `${encodeURIComponent(c.name)},${encodeURIComponent(c.flag)},${c.votes},${eth}`
+        })
+        .join('|')
+
       return {
         title: "Qualification Leaderboard",
         text: `🏆 Current Qualification Leaderboard:\n\n${top3Text}\n\nTop 48 countries qualify! Vote for your country now! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
         url: `${baseUrl}/qualification`,
-        ogImage: `${baseUrl}/api/og/leaderboard`,
+        ogImage: `${baseUrl}/api/og/leaderboard?countries=${countriesParam}`,
       }
     }
 

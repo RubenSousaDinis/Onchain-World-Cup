@@ -1,58 +1,44 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
 
 export const runtime = 'edge'
 
 // Cache configuration - shorter cache for leaderboard since data changes frequently
 export const revalidate = 1800 // Cache for 30 minutes (ISR)
 
-// Function to get country flag emoji from code
-function getCountryFlag(countryCode: string): string {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt(0))
-  return String.fromCodePoint(...codePoints)
-}
-
-// Function to get country name from code
-function getCountryName(countryCode: string): string {
-  // Map of common country codes to names
-  const countryNames: Record<string, string> = {
-    'AR': 'Argentina', 'BR': 'Brazil', 'FR': 'France', 'DE': 'Germany', 'ES': 'Spain',
-    'IT': 'Italy', 'GB-ENG': 'England', 'PT': 'Portugal', 'BE': 'Belgium', 'NL': 'Netherlands',
-    'CO': 'Colombia', 'UY': 'Uruguay', 'MX': 'Mexico', 'CR': 'Costa Rica', 'US': 'USA',
-    'CA': 'Canada', 'JP': 'Japan', 'KR': 'South Korea', 'AU': 'Australia', 'SA': 'Saudi Arabia',
-  }
-
-  return countryNames[countryCode.toUpperCase()] || countryCode
-}
-
 export async function GET(request: NextRequest) {
   try {
-    // Fetch top 5 countries from database
-    const topCountries = await prisma.countryStats.findMany({
-      orderBy: {
-        totalVotes: 'desc',
-      },
-      take: 5,
-      select: {
-        countryCode: true,
-        totalVotes: true,
-        totalEth: true,
-      },
-    })
+    const { searchParams } = new URL(request.url)
 
-    // Transform data for display
-    const leaderboardData = topCountries.map((country, index) => ({
-      rank: index + 1,
-      countryCode: country.countryCode,
-      countryName: getCountryName(country.countryCode),
-      flag: getCountryFlag(country.countryCode),
-      votes: country.totalVotes,
-      eth: parseFloat(country.totalEth).toFixed(4),
-    }))
+    // Parse leaderboard data from URL parameters
+    // Format: countries=Name1,Flag1,Votes1,ETH1|Name2,Flag2,Votes2,ETH2|...
+    const countriesParam = searchParams.get('countries') || ''
+
+    const leaderboardData = countriesParam
+      .split('|')
+      .filter(Boolean)
+      .slice(0, 5) // Only take top 5
+      .map((countryData, index) => {
+        const [name, flag, votes, eth] = countryData.split(',')
+        return {
+          rank: index + 1,
+          countryName: name || 'Unknown',
+          flag: flag || '🏳️',
+          votes: parseInt(votes || '0'),
+          eth: eth || '0.0000',
+        }
+      })
+
+    // If no data provided, show placeholder
+    if (leaderboardData.length === 0) {
+      leaderboardData.push({
+        rank: 1,
+        countryName: 'No Data',
+        flag: '🏳️',
+        votes: 0,
+        eth: '0.0000',
+      })
+    }
 
     const imageResponse = new ImageResponse(
       (
