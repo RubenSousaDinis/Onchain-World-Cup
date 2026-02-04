@@ -33,22 +33,12 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
       return new ImageResponse(
         (
           <div
+            tw="w-full h-full flex items-center justify-center"
             style={{
-              height: '100%',
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               backgroundColor: '#0a0f1a',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                fontSize: 48,
-                color: '#00ff88',
-              }}
-            >
+            <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
               Country Not Found
             </div>
           </div>
@@ -83,45 +73,27 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
             backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
-            position: 'relative',
-            overflow: 'hidden',
           }}
         >
           {/* Soccer field pattern background */}
           <div
+            tw="absolute inset-0"
             style={{
-              position: 'absolute',
-              inset: 0,
               opacity: 0.1,
               backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
             }}
           />
 
           {/* Content */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px',
-              zIndex: 1,
-            }}
-          >
+          <div tw="flex flex-col items-center justify-center p-[60px] z-10">
             {/* Flag */}
             <div
+              tw="text-[180px] mb-10"
               style={{
-                fontSize: 180,
-                marginBottom: 40,
                 filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
               }}
             >
@@ -130,13 +102,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Country Name */}
             <div
+              tw="text-[72px] font-bold mb-5 text-center uppercase"
               style={{
-                fontSize: 72,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                marginBottom: 20,
-                textAlign: 'center',
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
               }}
@@ -146,11 +114,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Subtitle */}
             <div
+              tw="text-[32px] mb-[50px] uppercase"
               style={{
-                fontSize: 32,
                 color: '#a8b3cf',
-                marginBottom: 50,
-                textTransform: 'uppercase',
                 letterSpacing: '0.1em',
               }}
             >
@@ -159,31 +125,25 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Vote Box */}
             <div
+              tw="flex flex-col items-center rounded-xl mb-[50px]"
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
                 backgroundColor: 'rgba(0, 255, 136, 0.1)',
                 border: '3px solid #00ff88',
-                borderRadius: 12,
                 padding: '30px 60px',
-                marginBottom: 50,
               }}
             >
               <div
+                tw="text-[56px] font-bold mb-[10px]"
                 style={{
-                  fontSize: 56,
-                  fontWeight: 'bold',
                   color: '#00ff88',
-                  marginBottom: 10,
                   fontFamily: 'monospace',
                 }}
               >
                 {votes} VOTES
               </div>
               <div
+                tw="text-[28px]"
                 style={{
-                  fontSize: 28,
                   color: '#a8b3cf',
                   fontFamily: 'monospace',
                 }}
@@ -194,13 +154,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* CTA */}
             <div
+              tw="flex text-[32px] text-center mb-[15px] font-bold"
               style={{
-                display: 'flex',
-                fontSize: 32,
                 color: '#ffffff',
-                textAlign: 'center',
-                marginBottom: 15,
-                fontWeight: 'bold',
               }}
             >
               🔥 Vote Early = Better Prices!
@@ -208,12 +164,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
             {/* Branding */}
             <div
+              tw="flex text-[36px] font-bold uppercase"
               style={{
-                display: 'flex',
-                fontSize: 36,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
               }}
             >
@@ -223,34 +176,20 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
           {/* Base Network Badge */}
           <div
+            tw="absolute bottom-[30px] right-[30px] flex items-center gap-[10px] rounded-lg"
             style={{
-              position: 'absolute',
-              bottom: 30,
-              right: 30,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
               backgroundColor: 'rgba(0, 82, 255, 0.2)',
               border: '2px solid #0052FF',
-              borderRadius: 8,
               padding: '15px 25px',
             }}
           >
             <div
+              tw="w-[30px] h-[30px] rounded-full"
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: '50%',
                 backgroundColor: '#0052FF',
               }}
             />
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: '#0052FF',
-              }}
-            >
+            <div tw="text-[24px] font-bold" style={{ color: '#0052FF' }}>
               Base Network
             </div>
           </div>
@@ -264,22 +203,12 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex items-center justify-center"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 48,
-              color: '#00ff88',
-            }}
-          >
+          <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
             Error Generating Image
           </div>
         </div>
