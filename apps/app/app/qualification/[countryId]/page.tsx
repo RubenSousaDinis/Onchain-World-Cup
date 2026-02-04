@@ -362,14 +362,13 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
       <ShareModal
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        type="vote"
+        type="country"
         data={{
-          team: country.name,
-          teamFlag: country.flag,
-          opponent: "Qualification",
-          opponentFlag: "🌍",
-          votes: 1,
-          matchId: country.id,
+          country: country.name,
+          countryCode: country.code.toLowerCase(),
+          countryFlag: country.flag,
+          votes: displayVotes,
+          amount: countryStats?.totalEth || '0',
         }}
       />
     </div>
