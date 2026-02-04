@@ -46,53 +46,30 @@ export default async function Image({ params }: { params: Promise<{ address: str
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden p-[60px]"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
             backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
-            position: 'relative',
-            overflow: 'hidden',
-            padding: '60px',
           }}
         >
           {/* Soccer field pattern background */}
           <div
+            tw="absolute inset-0"
             style={{
-              position: 'absolute',
-              inset: 0,
               opacity: 0.1,
               backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
             }}
           />
 
           {/* Content */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1,
-              width: '100%',
-              maxWidth: 1000,
-            }}
-          >
+          <div tw="flex flex-col items-center justify-center z-10 w-full max-w-[1000px]">
             {/* Header */}
             <div
+              tw="text-[64px] font-bold mb-5 uppercase text-center"
               style={{
-                fontSize: 64,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                marginBottom: 20,
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
-                textAlign: 'center',
               }}
             >
               📊 PLAYER STATS
@@ -100,10 +77,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
             {/* Address */}
             <div
+              tw="text-[32px] mb-[50px]"
               style={{
-                fontSize: 32,
                 color: '#a8b3cf',
-                marginBottom: 50,
                 fontFamily: 'monospace',
               }}
             >
@@ -111,42 +87,27 @@ export default async function Image({ params }: { params: Promise<{ address: str
             </div>
 
             {/* Stats Grid */}
-            <div
-              style={{
-                display: 'flex',
-                width: '100%',
-                gap: 20,
-                marginBottom: 40,
-              }}
-            >
+            <div tw="flex w-full gap-5 mb-10">
               {/* ETH Spent */}
               <div
+                tw="flex-1 flex flex-col items-center rounded-xl p-[30px]"
                 style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
                   backgroundColor: 'rgba(0, 255, 136, 0.1)',
                   border: '3px solid #00ff88',
-                  borderRadius: 12,
-                  padding: '30px',
                 }}
               >
                 <div
+                  tw="text-[24px] mb-[15px] uppercase"
                   style={{
-                    fontSize: 24,
                     color: '#a8b3cf',
-                    marginBottom: 15,
-                    textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                   }}
                 >
                   💰 Total Spent
                 </div>
                 <div
+                  tw="text-[48px] font-bold"
                   style={{
-                    fontSize: 48,
-                    fontWeight: 'bold',
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -157,32 +118,24 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
               {/* Current Earnings */}
               <div
+                tw="flex-1 flex flex-col items-center rounded-xl p-[30px]"
                 style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
                   backgroundColor: 'rgba(0, 255, 136, 0.1)',
                   border: '3px solid #00ff88',
-                  borderRadius: 12,
-                  padding: '30px',
                 }}
               >
                 <div
+                  tw="text-[24px] mb-[15px] uppercase"
                   style={{
-                    fontSize: 24,
                     color: '#a8b3cf',
-                    marginBottom: 15,
-                    textTransform: 'uppercase',
                     letterSpacing: '0.1em',
                   }}
                 >
                   🏆 Earnings
                 </div>
                 <div
+                  tw="text-[48px] font-bold"
                   style={{
-                    fontSize: 48,
-                    fontWeight: 'bold',
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -193,32 +146,14 @@ export default async function Image({ params }: { params: Promise<{ address: str
             </div>
 
             {/* Bottom Stats */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 40,
-                alignItems: 'center',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 15,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 32,
-                    color: '#a8b3cf',
-                  }}
-                >
+            <div tw="flex gap-10 items-center">
+              <div tw="flex items-center gap-[15px]">
+                <div tw="text-[32px]" style={{ color: '#a8b3cf' }}>
                   📊 Total Votes:
                 </div>
                 <div
+                  tw="text-[40px] font-bold"
                   style={{
-                    fontSize: 40,
-                    fontWeight: 'bold',
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -227,25 +162,13 @@ export default async function Image({ params }: { params: Promise<{ address: str
                 </div>
               </div>
               {userStats.rank > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 15,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 32,
-                      color: '#a8b3cf',
-                    }}
-                  >
+                <div tw="flex items-center gap-[15px]">
+                  <div tw="text-[32px]" style={{ color: '#a8b3cf' }}>
                     🎯 Rank:
                   </div>
                   <div
+                    tw="text-[40px] font-bold"
                     style={{
-                      fontSize: 40,
-                      fontWeight: 'bold',
                       color: '#FFD700',
                       fontFamily: 'monospace',
                     }}
@@ -258,13 +181,10 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
             {/* Branding */}
             <div
+              tw="text-[36px] font-bold uppercase mt-[50px]"
               style={{
-                fontSize: 36,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
-                marginTop: 50,
               }}
             >
               Onchain World Cup 2026
@@ -273,34 +193,20 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
           {/* Base Network Badge */}
           <div
+            tw="absolute bottom-[30px] right-[30px] flex items-center gap-[10px] rounded-lg"
             style={{
-              position: 'absolute',
-              bottom: 30,
-              right: 30,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
               backgroundColor: 'rgba(0, 82, 255, 0.2)',
               border: '2px solid #0052FF',
-              borderRadius: 8,
               padding: '15px 25px',
             }}
           >
             <div
+              tw="w-[30px] h-[30px] rounded-full"
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: '50%',
                 backgroundColor: '#0052FF',
               }}
             />
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: '#0052FF',
-              }}
-            >
+            <div tw="text-[24px] font-bold" style={{ color: '#0052FF' }}>
               Base Network
             </div>
           </div>
@@ -314,22 +220,12 @@ export default async function Image({ params }: { params: Promise<{ address: str
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex items-center justify-center"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 48,
-              color: '#00ff88',
-            }}
-          >
+          <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
             Error Generating Image
           </div>
         </div>

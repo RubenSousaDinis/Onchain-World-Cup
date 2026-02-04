@@ -56,47 +56,28 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden p-[60px]"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
             backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
-            position: 'relative',
-            overflow: 'hidden',
-            padding: '60px',
           }}
         >
           {/* Soccer field pattern background */}
           <div
+            tw="absolute inset-0"
             style={{
-              position: 'absolute',
-              inset: 0,
               opacity: 0.1,
               backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
             }}
           />
 
           {/* Content */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              zIndex: 1,
-            }}
-          >
+          <div tw="flex flex-col items-center z-10">
             {/* Title */}
             <div
+              tw="text-[48px] font-bold mb-[50px] uppercase"
               style={{
-                fontSize: 48,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                marginBottom: 50,
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
               }}
@@ -105,116 +86,71 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
             </div>
 
             {/* Teams */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 60,
-                marginBottom: 50,
-              }}
-            >
+            <div tw="flex items-center justify-center gap-[60px] mb-[50px]">
               {/* Team 1 */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
+              <div tw="flex flex-col items-center">
                 <div
+                  tw="text-[120px] mb-5"
                   style={{
-                    fontSize: 120,
-                    marginBottom: 20,
                     filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
                   }}
                 >
                   {match.team1Flag}
                 </div>
                 <div
-                  style={{
-                    fontSize: 48,
-                    fontWeight: 'bold',
-                    color: '#00ff88',
-                    marginBottom: 15,
-                  }}
+                  tw="text-[48px] font-bold mb-[15px]"
+                  style={{ color: '#00ff88' }}
                 >
                   {match.team1Name}
                 </div>
                 <div
+                  tw="text-[56px] font-bold"
                   style={{
-                    fontSize: 56,
-                    fontWeight: 'bold',
                     color: '#ffffff',
                     fontFamily: 'monospace',
                   }}
                 >
                   {match.team1Votes}
                 </div>
-                <div
-                  style={{
-                    fontSize: 24,
-                    color: '#a8b3cf',
-                  }}
-                >
+                <div tw="text-[24px]" style={{ color: '#a8b3cf' }}>
                   votes ({team1Percentage}%)
                 </div>
               </div>
 
               {/* VS */}
               <div
-                style={{
-                  fontSize: 64,
-                  fontWeight: 'bold',
-                  color: '#a8b3cf',
-                }}
+                tw="text-[64px] font-bold"
+                style={{ color: '#a8b3cf' }}
               >
                 VS
               </div>
 
               {/* Team 2 */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
+              <div tw="flex flex-col items-center">
                 <div
+                  tw="text-[120px] mb-5"
                   style={{
-                    fontSize: 120,
-                    marginBottom: 20,
                     filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
                   }}
                 >
                   {match.team2Flag}
                 </div>
                 <div
-                  style={{
-                    fontSize: 48,
-                    fontWeight: 'bold',
-                    color: '#00ff88',
-                    marginBottom: 15,
-                  }}
+                  tw="text-[48px] font-bold mb-[15px]"
+                  style={{ color: '#00ff88' }}
                 >
                   {match.team2Name}
                 </div>
                 <div
+                  tw="text-[56px] font-bold"
                   style={{
-                    fontSize: 56,
-                    fontWeight: 'bold',
                     color: '#ffffff',
                     fontFamily: 'monospace',
                   }}
                 >
                   {match.team2Votes}
                 </div>
-                <div
-                  style={{
-                    fontSize: 24,
-                    color: '#a8b3cf',
-                  }}
-                >
+                <div tw="text-[24px]" style={{ color: '#a8b3cf' }}>
                   votes ({team2Percentage}%)
                 </div>
               </div>
@@ -222,31 +158,22 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
 
             {/* Prize Pool */}
             <div
+              tw="flex flex-col items-center rounded-xl mb-10"
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
                 backgroundColor: 'rgba(0, 255, 136, 0.1)',
                 border: '3px solid #00ff88',
-                borderRadius: 12,
                 padding: '30px 80px',
-                marginBottom: 40,
               }}
             >
               <div
-                style={{
-                  fontSize: 28,
-                  color: '#a8b3cf',
-                  marginBottom: 10,
-                  textTransform: 'uppercase',
-                }}
+                tw="text-[28px] mb-[10px] uppercase"
+                style={{ color: '#a8b3cf' }}
               >
                 🏆 Prize Pool
               </div>
               <div
+                tw="text-[64px] font-bold"
                 style={{
-                  fontSize: 64,
-                  fontWeight: 'bold',
                   color: '#00ff88',
                   fontFamily: 'monospace',
                 }}
@@ -257,11 +184,9 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
 
             {/* Branding */}
             <div
+              tw="text-[36px] font-bold uppercase"
               style={{
-                fontSize: 36,
-                fontWeight: 'bold',
                 color: '#00ff88',
-                textTransform: 'uppercase',
                 letterSpacing: '0.05em',
               }}
             >
@@ -271,34 +196,20 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
 
           {/* Base Network Badge */}
           <div
+            tw="absolute bottom-[30px] right-[30px] flex items-center gap-[10px] rounded-lg"
             style={{
-              position: 'absolute',
-              bottom: 30,
-              right: 30,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
               backgroundColor: 'rgba(0, 82, 255, 0.2)',
               border: '2px solid #0052FF',
-              borderRadius: 8,
               padding: '15px 25px',
             }}
           >
             <div
+              tw="w-[30px] h-[30px] rounded-full"
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: '50%',
                 backgroundColor: '#0052FF',
               }}
             />
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: '#0052FF',
-              }}
-            >
+            <div tw="text-[24px] font-bold" style={{ color: '#0052FF' }}>
               Base Network
             </div>
           </div>
@@ -312,22 +223,12 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
     return new ImageResponse(
       (
         <div
+          tw="w-full h-full flex items-center justify-center"
           style={{
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 48,
-              color: '#00ff88',
-            }}
-          >
+          <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
             Error Generating Image
           </div>
         </div>

@@ -12,66 +12,33 @@ export default async function Image() {
   return new ImageResponse(
     (
       <div
+        tw="w-full h-full flex flex-col items-center justify-center relative"
         style={{
-          fontSize: 60,
           background: '#0a0f1e',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           fontFamily: 'monospace',
-          position: 'relative',
         }}
       >
         {/* Trophy icon */}
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 100,
-            marginBottom: 30,
-          }}
-        >
+        <div tw="flex text-[100px] mb-[30px]">
           🏆
         </div>
 
         {/* Main title */}
-        <div
-          style={{
-            display: 'flex',
-            color: '#d4ff00',
-            fontWeight: 'bold',
-            fontSize: 72,
-            marginBottom: 20,
-          }}
-        >
+        <div tw="flex text-[72px] font-bold mb-5" style={{ color: '#d4ff00' }}>
           ONCHAIN WORLD CUP 2026
         </div>
 
         {/* Subtitle */}
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 42,
-            color: '#ffffff',
-            marginBottom: 15,
-            fontWeight: 'bold',
-          }}
-        >
+        <div tw="flex text-[42px] font-bold mb-[15px]" style={{ color: '#ffffff' }}>
           Vote with ETH on Base Network
         </div>
 
         {/* Description */}
         <div
+          tw="flex text-[28px] text-center max-w-[900px] mb-10"
           style={{
-            display: 'flex',
-            fontSize: 28,
             color: '#8b9dc3',
-            textAlign: 'center',
-            maxWidth: '900px',
             lineHeight: 1.4,
-            marginBottom: 40,
           }}
         >
           Support your country • Early voters get better prices • Top 48 qualify
@@ -79,14 +46,11 @@ export default async function Image() {
 
         {/* CTA Badge */}
         <div
+          tw="flex rounded-lg text-[36px] font-bold"
           style={{
-            display: 'flex',
             backgroundColor: '#d4ff00',
             color: '#0a0f1e',
             padding: '20px 50px',
-            borderRadius: 8,
-            fontSize: 36,
-            fontWeight: 'bold',
           }}
         >
           🔥 VOTE NOW
