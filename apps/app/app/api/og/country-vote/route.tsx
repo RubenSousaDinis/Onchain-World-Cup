@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
           {/* Soccer field pattern background */}
           <div
             style={{
+              display: 'flex',
               position: 'absolute',
               inset: 0,
               opacity: 0.1,
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
             {/* Flag */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 180,
                 marginBottom: 40,
                 filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
@@ -69,6 +71,7 @@ export async function GET(request: NextRequest) {
             {/* Country Name */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 72,
                 fontWeight: 'bold',
                 color: '#00ff88',
@@ -85,6 +88,7 @@ export async function GET(request: NextRequest) {
             {/* Subtitle */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 32,
                 color: '#a8b3cf',
                 marginBottom: 50,
@@ -110,6 +114,7 @@ export async function GET(request: NextRequest) {
             >
               <div
                 style={{
+                  display: 'flex',
                   fontSize: 56,
                   fontWeight: 'bold',
                   color: '#00ff88',
@@ -121,6 +126,7 @@ export async function GET(request: NextRequest) {
               </div>
               <div
                 style={{
+                  display: 'flex',
                   fontSize: 28,
                   color: '#a8b3cf',
                   fontFamily: 'monospace',
@@ -133,6 +139,7 @@ export async function GET(request: NextRequest) {
             {/* CTA */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 32,
                 color: '#ffffff',
                 textAlign: 'center',
@@ -146,6 +153,7 @@ export async function GET(request: NextRequest) {
             {/* Branding */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 36,
                 fontWeight: 'bold',
                 color: '#00ff88',
@@ -174,6 +182,7 @@ export async function GET(request: NextRequest) {
           >
             <div
               style={{
+                display: 'flex',
                 width: 30,
                 height: 30,
                 borderRadius: '50%',
@@ -182,6 +191,7 @@ export async function GET(request: NextRequest) {
             />
             <div
               style={{
+                display: 'flex',
                 fontSize: 24,
                 fontWeight: 'bold',
                 color: '#0052FF',

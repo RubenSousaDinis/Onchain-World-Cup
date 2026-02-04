@@ -123,11 +123,13 @@ export async function GET(request: NextRequest) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div>Winner:</div>
-                  <div style={{ color: '#00ff88', fontWeight: 'bold' }}>{winnerPool} ETH (90%)</div>
+                  <div style={{
+                display: 'flex', color: '#00ff88', fontWeight: 'bold' }}>{winnerPool} ETH (90%)</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div>Platform:</div>
-                  <div style={{ color: '#ffffff', fontWeight: 'bold' }}>{platformFee} ETH (10%)</div>
+                  <div style={{
+                display: 'flex', color: '#ffffff', fontWeight: 'bold' }}>{platformFee} ETH (10%)</div>
                 </div>
               </div>
             </div>
