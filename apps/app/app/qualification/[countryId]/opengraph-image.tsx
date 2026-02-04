@@ -21,11 +21,11 @@ function getCountryFlag(countryCode: string): string {
 export default async function Image({ params }: { params: Promise<{ countryId: string }> }) {
   try {
     const { countryId } = await params
-    const countryCode = countryId.toUpperCase()
+    const countryIdUpper = countryId.toUpperCase()
 
-    // Find country data from JSON
+    // Find country data from JSON - support both country code (PT) and name (PORTUGAL)
     const country = countriesData.find(
-      (c) => c.code.toUpperCase() === countryCode
+      (c) => c.code.toUpperCase() === countryIdUpper || c.name.toUpperCase() === countryIdUpper
     )
 
     if (!country) {
@@ -49,13 +49,13 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
       )
     }
 
-    // Fetch country stats from API
+    // Fetch country stats from API using the country code (not full name)
     let votes = '0'
     let amount = '0.000'
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/qualification/countries/${countryCode.toLowerCase()}`,
+        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/qualification/countries/${country.code.toLowerCase()}`,
         { next: { revalidate: 300 } } // Cache for 5 minutes
       )
 
@@ -69,7 +69,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
       // Use default values if API fails
     }
 
-    const countryFlag = country.flagEmoji || getCountryFlag(countryCode)
+    const countryFlag = country.flagEmoji || getCountryFlag(country.code)
     const countryName = country.name
 
     return new ImageResponse(
