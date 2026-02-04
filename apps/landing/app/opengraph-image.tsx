@@ -26,11 +26,12 @@ export default async function Image() {
         }}
       >
         {/* Trophy icon */}
-        <div style={{ fontSize: 100, marginBottom: 30 }}>🏆</div>
+        <div style={{ display: 'flex', fontSize: 100, marginBottom: 30 }}>🏆</div>
 
         {/* Main title */}
         <div
           style={{
+            display: 'flex',
             color: '#d4ff00',
             fontWeight: 'bold',
             fontSize: 72,
@@ -44,6 +45,7 @@ export default async function Image() {
         {/* Subtitle */}
         <div
           style={{
+            display: 'flex',
             fontSize: 40,
             color: '#8b9dc3',
             marginBottom: 30,
@@ -56,6 +58,7 @@ export default async function Image() {
         {/* ETH Prize Pool badge */}
         <div
           style={{
+            display: 'flex',
             backgroundColor: '#d4ff00',
             color: '#0a0f1e',
             padding: '15px 40px',
@@ -71,6 +74,7 @@ export default async function Image() {
         {/* Description */}
         <div
           style={{
+            display: 'flex',
             fontSize: 26,
             color: '#8b9dc3',
             textAlign: 'center',
