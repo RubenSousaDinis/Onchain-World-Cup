@@ -7,63 +7,76 @@ import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info 
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
+import countriesData from "@/data/countries.json"
 
-const mockCountries = {
-  brazil: {
-    id: "brazil",
-    name: "Brazil",
-    flag: "🇧🇷",
-    rank: 1,
-    totalVotes: 2450,
-    contractAddress: "0x1234567890123456789012345678901234567890" as `0x${string}`,
-  },
-  france: {
-    id: "france",
-    name: "France",
-    flag: "🇫🇷",
-    rank: 2,
-    totalVotes: 2380,
-    contractAddress: "0x2345678901234567890123456789012345678901" as `0x${string}`,
-  },
-  argentina: {
-    id: "argentina",
-    name: "Argentina",
-    flag: "🇦🇷",
-    rank: 3,
-    totalVotes: 2310,
-    contractAddress: "0x3456789012345678901234567890123456789012" as `0x${string}`,
-  },
-  panama: {
-    id: "panama",
-    name: "Panama",
-    flag: "🇵🇦",
-    rank: 48,
-    totalVotes: 840,
-    contractAddress: "0x4567890123456789012345678901234567890123" as `0x${string}`,
-  },
-  honduras: {
-    id: "honduras",
-    name: "Honduras",
-    flag: "🇭🇳",
-    rank: 49,
-    totalVotes: 810,
-    contractAddress: "0x5678901234567890123456789012345678901234" as `0x${string}`,
-  },
+interface CountryData {
+  code: string
+  name: string
+  flagEmoji: string
 }
 
 export default function CountryDetailPage({ params }: { params: Promise<{ countryId: string }> }) {
   // Unwrap params immediately to prevent React DevTools serialization issues
   const { countryId } = use(params)
-  const country = mockCountries[countryId as keyof typeof mockCountries]
+  const countryIdUpper = countryId.toUpperCase()
+
+  // Find country by code or name
+  const countryMatch = countriesData.find(
+    (c: CountryData) => c.code.toUpperCase() === countryIdUpper || c.name.toUpperCase() === countryIdUpper
+  )
+
+  // Convert to the format the component expects
+  const country = countryMatch ? {
+    id: countryMatch.code.toLowerCase(),
+    name: countryMatch.name,
+    flag: countryMatch.flagEmoji,
+    code: countryMatch.code,
+    rank: 0, // Will be loaded from API
+    totalVotes: 0, // Will be loaded from API
+    change: 0, // Will be loaded from API
+    momentum: "stable" as const,
+    contractAddress: process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA as `0x${string}` || "0x0000000000000000000000000000000000000000" as `0x${string}`,
+  } : null
 
   const [voteModalOpen, setVoteModalOpen] = useState(false)
   const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [countryStats, setCountryStats] = useState<{
+    totalVotes: number
+    totalEth: string
+    rank: number
+  } | null>(null)
   const [timeRemaining, setTimeRemaining] = useState({
     days: 14,
     hours: 7,
     minutes: 32,
     seconds: 45,
   })
+
+  // Fetch country stats from API
+  useEffect(() => {
+    if (!country) return
+
+    const fetchCountryStats = async () => {
+      try {
+        const response = await fetch(`/api/qualification/countries/${country.code.toLowerCase()}`)
+        if (response.ok) {
+          const data = await response.json()
+          setCountryStats({
+            totalVotes: data.data.total_votes || 0,
+            totalEth: data.data.total_eth || '0',
+            rank: data.data.rank || 0,
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch country stats:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCountryStats()
+  }, [country])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -105,29 +118,23 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
     )
   }
 
+  // Use real data if available, otherwise show 0
+  const displayRank = countryStats?.rank || 0
+  const displayVotes = countryStats?.totalVotes || 0
+
   const getQualificationStatus = () => {
-    if (country.rank <= 45) {
+    if (displayRank === 0) {
+      return { label: "LOADING", color: "gray", bgColor: "bg-gray-500/10", borderColor: "border-gray-500/30" }
+    }
+    if (displayRank <= 48) {
       return { label: "QUALIFIED", color: "green", bgColor: "bg-green-500/10", borderColor: "border-green-500/30" }
     }
-    if (country.rank <= 50) {
-      return { label: "AT RISK", color: "yellow", bgColor: "bg-yellow-500/10", borderColor: "border-yellow-500/30" }
-    }
-    return { label: "ELIMINATED", color: "red", bgColor: "bg-red-500/10", borderColor: "border-red-500/30" }
+    return { label: "NOT QUALIFIED", color: "red", bgColor: "bg-red-500/10", borderColor: "border-red-500/30" }
   }
 
   const getMomentumIcon = () => {
-    switch (country.momentum) {
-      case "up":
-        return <TrendingUp className="w-5 h-5 text-green-500" />
-      case "down":
-        return <TrendingDown className="w-5 h-5 text-red-500" />
-      case "critical-up":
-        return <TrendingUp className="w-5 h-5 text-green-500 animate-pulse" />
-      case "critical-down":
-        return <TrendingDown className="w-5 h-5 text-red-500 animate-pulse" />
-      default:
-        return <Minus className="w-5 h-5 text-muted-foreground" />
-    }
+    // Momentum not available from API yet, show neutral
+    return <Minus className="w-5 h-5 text-muted-foreground" />
   }
 
   const status = getQualificationStatus()
@@ -163,7 +170,7 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
               <h1 className="text-4xl lg:text-6xl font-bold cm-highlight mb-3">{country.name}</h1>
               <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
                 <span className="text-lg lg:text-xl text-muted-foreground">
-                  Rank <span className="cm-highlight font-bold text-2xl lg:text-3xl">#{country.rank}</span>
+                  Rank <span className="cm-highlight font-bold text-2xl lg:text-3xl">#{displayRank > 0 ? displayRank : '—'}</span>
                 </span>
                 <span className="text-muted-foreground">/</span>
                 <span className="text-muted-foreground text-lg lg:text-xl">64 countries</span>
@@ -233,10 +240,18 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
             <div className="p-6">
               <div className="text-center mb-6">
                 <div className="text-5xl lg:text-6xl font-bold cm-highlight font-mono mb-2">
-                  {country.totalVotes.toLocaleString("en-US")}
+                  {loading ? '...' : displayVotes.toLocaleString("en-US")}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Votes</div>
               </div>
+              {countryStats && (
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-accent font-mono">
+                    {parseFloat(countryStats.totalEth).toFixed(4)} ETH
+                  </div>
+                  <div className="text-xs text-muted-foreground">Total Staked</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -254,12 +269,14 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
                 <div className={`text-3xl font-bold text-${status.color}-400 uppercase tracking-wider`}>
                   {status.label}
                 </div>
-                {status.label === "AT RISK" && (
-                  <div className="text-xs lg:text-sm text-muted-foreground mt-2">Close to cutoff - needs more support!</div>
-                )}
-                {status.label === "ELIMINATED" && (
+                {status.label === "NOT QUALIFIED" && (
                   <div className="text-xs lg:text-sm text-muted-foreground mt-2">
-                    Below rank 48 - needs significant support to qualify
+                    Below rank 48 - needs more support to qualify
+                  </div>
+                )}
+                {status.label === "LOADING" && (
+                  <div className="text-xs lg:text-sm text-muted-foreground mt-2">
+                    Fetching qualification data...
                   </div>
                 )}
               </div>
@@ -271,40 +288,30 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
                   {getMomentumIcon()}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span
-                    className={`text-3xl font-bold font-mono ${
-                      country.change > 0
-                        ? "text-green-400"
-                        : country.change < 0
-                          ? "text-red-400"
-                          : "text-muted-foreground"
-                    }`}
-                  >
-                    {country.change > 0 ? "+" : ""}
-                    {country.change}
+                  <span className="text-3xl font-bold font-mono text-muted-foreground">
+                    —
                   </span>
                   <span className="text-sm text-muted-foreground">votes in last 24h</span>
+                </div>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Momentum data coming soon
                 </div>
               </div>
 
               {/* Distance from Cutoff */}
               <div className="mt-4 cm-panel p-4 rounded-sm">
-                <div className="text-sm font-bold text-foreground mb-2">Distance from Cutoff</div>
-                {country.rank <= 48 ? (
+                <div className="text-sm font-bold text-foreground mb-2">Qualification Status</div>
+                {displayRank === 0 ? (
+                  <div className="text-sm text-muted-foreground">
+                    Loading qualification data...
+                  </div>
+                ) : displayRank <= 48 ? (
                   <div className="text-sm text-green-400">
-                    Safe by{" "}
-                    <span className="font-bold text-lg">
-                      {Math.abs(country.totalVotes - mockCountries.panama.totalVotes)}
-                    </span>{" "}
-                    votes
+                    ✓ Currently qualified (Rank #{displayRank}/48)
                   </div>
                 ) : (
                   <div className="text-sm text-red-400">
-                    Need{" "}
-                    <span className="font-bold text-lg">
-                      {Math.abs(country.totalVotes - mockCountries.panama.totalVotes)}
-                    </span>{" "}
-                    more votes to qualify
+                    ✗ Currently not qualified (Rank #{displayRank})
                   </div>
                 )}
               </div>
