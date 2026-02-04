@@ -19,28 +19,29 @@ export default async function Image() {
         }}
       >
         {/* Trophy icon */}
-        <div tw="flex text-[100px] mb-[30px]">🏆</div>
+        <div tw="flex" style={{ fontSize: 100, marginBottom: 30 }}>🏆</div>
 
         {/* Main title */}
         <div
-          tw="flex text-[72px] font-bold mb-5 text-center"
-          style={{ color: '#d4ff00' }}
+          tw="flex font-bold mb-5 text-center"
+          style={{ fontSize: 72, color: '#d4ff00' }}
         >
           ONCHAIN WORLD CUP
         </div>
 
         {/* Subtitle */}
         <div
-          tw="flex text-[40px] mb-[30px] text-center"
-          style={{ color: '#8b9dc3' }}
+          tw="flex text-center"
+          style={{ fontSize: 40, marginBottom: 30, color: '#8b9dc3' }}
         >
           Qualification Opens Mid-February
         </div>
 
         {/* ETH Prize Pool badge */}
         <div
-          tw="flex rounded-lg text-[32px] font-bold mb-5"
+          tw="flex rounded-lg font-bold mb-5"
           style={{
+            fontSize: 32,
             backgroundColor: '#d4ff00',
             color: '#0a0f1e',
             padding: '15px 40px',
@@ -51,8 +52,10 @@ export default async function Image() {
 
         {/* Description */}
         <div
-          tw="flex text-[26px] text-center max-w-[900px]"
+          tw="flex text-center"
           style={{
+            fontSize: 26,
+            maxWidth: 900,
             color: '#8b9dc3',
             lineHeight: 1.4,
           }}

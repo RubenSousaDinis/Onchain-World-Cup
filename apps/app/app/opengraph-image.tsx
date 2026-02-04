@@ -19,26 +19,29 @@ export default async function Image() {
         }}
       >
         {/* Trophy icon */}
-        <div tw="flex text-[100px] mb-[30px]">
+        <div tw="flex" style={{ fontSize: 100, marginBottom: 30 }}>
           🏆
         </div>
 
         {/* Main title */}
-        <div tw="flex text-[72px] font-bold mb-5" style={{ color: '#d4ff00' }}>
+        <div tw="flex font-bold" style={{ fontSize: 72, marginBottom: 20, color: '#d4ff00' }}>
           ONCHAIN WORLD CUP 2026
         </div>
 
         {/* Subtitle */}
-        <div tw="flex text-[42px] font-bold mb-[15px]" style={{ color: '#ffffff' }}>
+        <div tw="flex font-bold" style={{ fontSize: 42, marginBottom: 15, color: '#ffffff' }}>
           Vote with ETH on Base Network
         </div>
 
         {/* Description */}
         <div
-          tw="flex text-[28px] text-center max-w-[900px] mb-10"
+          tw="flex text-center"
           style={{
+            fontSize: 28,
             color: '#8b9dc3',
             lineHeight: 1.4,
+            maxWidth: '900px',
+            marginBottom: 40,
           }}
         >
           Support your country • Early voters get better prices • Top 48 qualify
@@ -46,8 +49,9 @@ export default async function Image() {
 
         {/* CTA Badge */}
         <div
-          tw="flex rounded-lg text-[36px] font-bold"
+          tw="flex rounded-lg font-bold"
           style={{
+            fontSize: 36,
             backgroundColor: '#d4ff00',
             color: '#0a0f1e',
             padding: '20px 50px',

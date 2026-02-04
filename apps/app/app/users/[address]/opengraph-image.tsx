@@ -46,8 +46,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
     return new ImageResponse(
       (
         <div
-          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden p-[60px]"
+          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
           style={{
+            padding: 60,
             backgroundColor: '#0a0f1a',
             backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
           }}
@@ -62,11 +63,12 @@ export default async function Image({ params }: { params: Promise<{ address: str
           />
 
           {/* Content */}
-          <div tw="flex flex-col items-center justify-center z-10 w-full max-w-[1000px]">
+          <div tw="flex flex-col items-center justify-center z-10 w-full" style={{ maxWidth: 1000 }}>
             {/* Header */}
             <div
-              tw="text-[64px] font-bold mb-5 uppercase text-center"
+              tw="font-bold mb-5 uppercase text-center"
               style={{
+                fontSize: 64,
                 color: '#00ff88',
                 letterSpacing: '0.05em',
                 textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
@@ -77,8 +79,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
             {/* Address */}
             <div
-              tw="text-[32px] mb-[50px]"
               style={{
+                fontSize: 32,
+                marginBottom: 50,
                 color: '#a8b3cf',
                 fontFamily: 'monospace',
               }}
@@ -90,15 +93,18 @@ export default async function Image({ params }: { params: Promise<{ address: str
             <div tw="flex w-full gap-5 mb-10">
               {/* ETH Spent */}
               <div
-                tw="flex-1 flex flex-col items-center rounded-xl p-[30px]"
+                tw="flex-1 flex flex-col items-center rounded-xl"
                 style={{
+                  padding: 30,
                   backgroundColor: 'rgba(0, 255, 136, 0.1)',
                   border: '3px solid #00ff88',
                 }}
               >
                 <div
-                  tw="text-[24px] mb-[15px] uppercase"
+                  tw="uppercase"
                   style={{
+                    fontSize: 24,
+                    marginBottom: 15,
                     color: '#a8b3cf',
                     letterSpacing: '0.1em',
                   }}
@@ -106,8 +112,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
                   💰 Total Spent
                 </div>
                 <div
-                  tw="text-[48px] font-bold"
+                  tw="font-bold"
                   style={{
+                    fontSize: 48,
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -118,15 +125,18 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
               {/* Current Earnings */}
               <div
-                tw="flex-1 flex flex-col items-center rounded-xl p-[30px]"
+                tw="flex-1 flex flex-col items-center rounded-xl"
                 style={{
+                  padding: 30,
                   backgroundColor: 'rgba(0, 255, 136, 0.1)',
                   border: '3px solid #00ff88',
                 }}
               >
                 <div
-                  tw="text-[24px] mb-[15px] uppercase"
+                  tw="uppercase"
                   style={{
+                    fontSize: 24,
+                    marginBottom: 15,
                     color: '#a8b3cf',
                     letterSpacing: '0.1em',
                   }}
@@ -134,8 +144,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
                   🏆 Earnings
                 </div>
                 <div
-                  tw="text-[48px] font-bold"
+                  tw="font-bold"
                   style={{
+                    fontSize: 48,
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -147,13 +158,14 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
             {/* Bottom Stats */}
             <div tw="flex gap-10 items-center">
-              <div tw="flex items-center gap-[15px]">
-                <div tw="text-[32px]" style={{ color: '#a8b3cf' }}>
+              <div tw="flex items-center" style={{ gap: 15 }}>
+                <div style={{ fontSize: 32, color: '#a8b3cf' }}>
                   📊 Total Votes:
                 </div>
                 <div
-                  tw="text-[40px] font-bold"
+                  tw="font-bold"
                   style={{
+                    fontSize: 40,
                     color: '#00ff88',
                     fontFamily: 'monospace',
                   }}
@@ -162,13 +174,14 @@ export default async function Image({ params }: { params: Promise<{ address: str
                 </div>
               </div>
               {userStats.rank > 0 && (
-                <div tw="flex items-center gap-[15px]">
-                  <div tw="text-[32px]" style={{ color: '#a8b3cf' }}>
+                <div tw="flex items-center" style={{ gap: 15 }}>
+                  <div style={{ fontSize: 32, color: '#a8b3cf' }}>
                     🎯 Rank:
                   </div>
                   <div
-                    tw="text-[40px] font-bold"
+                    tw="font-bold"
                     style={{
+                      fontSize: 40,
                       color: '#FFD700',
                       fontFamily: 'monospace',
                     }}
@@ -181,8 +194,10 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
             {/* Branding */}
             <div
-              tw="text-[36px] font-bold uppercase mt-[50px]"
+              tw="font-bold uppercase"
               style={{
+                fontSize: 36,
+                marginTop: 50,
                 color: '#00ff88',
                 letterSpacing: '0.05em',
               }}
@@ -193,20 +208,25 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
           {/* Base Network Badge */}
           <div
-            tw="absolute bottom-[30px] right-[30px] flex items-center gap-[10px] rounded-lg"
+            tw="absolute flex items-center rounded-lg"
             style={{
+              bottom: 30,
+              right: 30,
+              gap: 10,
               backgroundColor: 'rgba(0, 82, 255, 0.2)',
               border: '2px solid #0052FF',
               padding: '15px 25px',
             }}
           >
             <div
-              tw="w-[30px] h-[30px] rounded-full"
+              tw="rounded-full"
               style={{
+                width: 30,
+                height: 30,
                 backgroundColor: '#0052FF',
               }}
             />
-            <div tw="text-[24px] font-bold" style={{ color: '#0052FF' }}>
+            <div tw="font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
               Base Network
             </div>
           </div>
@@ -225,7 +245,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
             backgroundColor: '#0a0f1a',
           }}
         >
-          <div tw="flex text-[48px]" style={{ color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
             Error Generating Image
           </div>
         </div>
