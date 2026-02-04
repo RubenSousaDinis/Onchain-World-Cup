@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Onchain World Cup - Qualification Opens Soon'
+export const alt = 'Onchain World Cup 2026 - Vote with ETH on Base Network. Support your country in qualification voting.'
 export const size = {
   width: 1200,
   height: 630,
@@ -32,53 +32,57 @@ export default async function Image() {
         {/* Main title */}
         <div
           style={{
+            display: 'flex',
             color: '#d4ff00',
             fontWeight: 'bold',
             fontSize: 72,
             marginBottom: 20,
           }}
         >
-          ONCHAIN WORLD CUP
+          ONCHAIN WORLD CUP 2026
         </div>
 
         {/* Subtitle */}
         <div
           style={{
-            fontSize: 40,
-            color: '#8b9dc3',
-            marginBottom: 30,
+            display: 'flex',
+            fontSize: 42,
+            color: '#ffffff',
+            marginBottom: 15,
+            fontWeight: 'bold',
           }}
         >
-          Qualification Opens Soon
+          Vote with ETH on Base Network
         </div>
 
         {/* Description */}
         <div
           style={{
+            display: 'flex',
             fontSize: 28,
             color: '#8b9dc3',
             textAlign: 'center',
             maxWidth: '900px',
             lineHeight: 1.4,
+            marginBottom: 40,
           }}
         >
-          Back your country with ETH • Top 48 qualify • Prize pool shared among winners
+          Support your country • Early voters get better prices • Top 48 qualify
         </div>
 
-        {/* Footer badge */}
+        {/* CTA Badge */}
         <div
           style={{
-            position: 'absolute',
-            bottom: 40,
+            display: 'flex',
             backgroundColor: '#d4ff00',
             color: '#0a0f1e',
-            padding: '15px 30px',
+            padding: '20px 50px',
             borderRadius: 8,
-            fontSize: 24,
+            fontSize: 36,
             fontWeight: 'bold',
           }}
         >
-          EARLY SUPPORTERS SHAPE THE TOURNAMENT
+          🔥 VOTE NOW
         </div>
       </div>
     ),

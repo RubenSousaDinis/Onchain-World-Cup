@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'User Profile - Onchain World Cup 2026'
+export const alt = 'User voting stats - Onchain World Cup 2026. Track your ETH spent, earnings, votes and rank.'
 export const size = {
   width: 1200,
   height: 630,

@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
 
 export const runtime = 'edge'
-export const alt = 'Country Qualification Vote'
+export const alt = 'Vote for your country in World Cup 2026 qualification. Support with ETH on Base Network.'
 export const size = {
   width: 1200,
   height: 630,
@@ -188,6 +188,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             {/* CTA */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 32,
                 color: '#ffffff',
                 textAlign: 'center',
@@ -201,6 +202,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             {/* Branding */}
             <div
               style={{
+                display: 'flex',
                 fontSize: 36,
                 fontWeight: 'bold',
                 color: '#00ff88',

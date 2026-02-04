@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Qualification Leaderboard - Onchain World Cup 2026'
+export const alt = 'World Cup 2026 Qualification Leaderboard - Top 5 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
 export const size = {
   width: 1200,
   height: 630,
