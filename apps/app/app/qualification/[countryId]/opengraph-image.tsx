@@ -73,140 +73,152 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
     return new ImageResponse(
       (
         <div
-          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
+          tw="w-full h-full flex relative"
           style={{
-            backgroundColor: '#0a0f1a',
-            backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
+            background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
+            fontFamily: 'system-ui, sans-serif',
           }}
         >
-          {/* Soccer field pattern background */}
+          {/* Grid pattern overlay */}
           <div
-            tw="flex absolute inset-0"
+            tw="absolute inset-0 flex"
             style={{
-              opacity: 0.1,
-              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
+              backgroundImage: 'linear-gradient(rgba(212, 255, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 255, 0, 0.03) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
             }}
           />
 
-          {/* Content */}
-          <div tw="flex flex-col items-center justify-center z-10" style={{ padding: 60 }}>
-            {/* Flag */}
-            <div
-              tw="flex mb-10"
-              style={{
-                fontSize: 180,
-                filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
-              }}
-            >
-              {countryFlag}
-            </div>
+          {/* Main content */}
+          <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '60px' }}>
+            {/* Header with logo */}
+            <div tw="flex items-center justify-between w-full">
+              <div tw="flex items-center" style={{ gap: 20 }}>
+                {/* Logo/Trophy */}
+                <div
+                  tw="flex items-center justify-center"
+                  style={{
+                    width: 80,
+                    height: 80,
+                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
+                    borderRadius: 12,
+                    fontSize: 48,
+                  }}
+                >
+                  ⚽
+                </div>
+                <div tw="flex flex-col">
+                  <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
+                    ONCHAIN WORLD CUP
+                  </div>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
+                    2026 QUALIFICATION
+                  </div>
+                </div>
+              </div>
 
-            {/* Country Name */}
-            <div
-              tw="flex font-bold mb-5 text-center uppercase"
-              style={{
-                fontSize: 72,
-                color: '#00ff88',
-                letterSpacing: '0.05em',
-                textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
-              }}
-            >
-              {countryName}
-            </div>
-
-            {/* Subtitle */}
-            <div
-              tw="flex uppercase"
-              style={{
-                fontSize: 32,
-                marginBottom: 50,
-                color: '#a8b3cf',
-                letterSpacing: '0.1em',
-              }}
-            >
-              Qualification Vote
-            </div>
-
-            {/* Vote Box */}
-            <div
-              tw="flex flex-col items-center rounded-xl"
-              style={{
-                marginBottom: 50,
-                backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                border: '3px solid #00ff88',
-                padding: '30px 60px',
-              }}
-            >
+              {/* Base badge */}
               <div
-                tw="flex font-bold"
+                tw="flex items-center"
                 style={{
-                  fontSize: 56,
-                  marginBottom: 10,
-                  color: '#00ff88',
-                  fontFamily: 'monospace',
+                  gap: 10,
+                  background: 'rgba(0, 82, 255, 0.15)',
+                  border: '2px solid #0052FF',
+                  borderRadius: 8,
+                  padding: '12px 20px',
                 }}
               >
-                {votes} VOTES
+                <div
+                  tw="flex rounded-full"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    background: '#0052FF',
+                  }}
+                />
+                <div tw="flex font-bold" style={{ fontSize: 16, color: '#0052FF' }}>
+                  BASE
+                </div>
               </div>
+            </div>
+
+            {/* Country Content */}
+            <div tw="flex flex-col items-center" style={{ gap: 30 }}>
+              {/* Flag */}
               <div
                 tw="flex"
                 style={{
-                  fontSize: 28,
-                  color: '#a8b3cf',
-                  fontFamily: 'monospace',
+                  fontSize: 140,
+                  marginTop: 30,
+                  filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
                 }}
               >
-                {amount} ETH
+                {countryFlag}
+              </div>
+
+              {/* Country Name */}
+              <div
+                tw="flex font-bold text-center uppercase"
+                style={{
+                  fontSize: 64,
+                  color: '#ffffff',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {countryName}
+              </div>
+
+              {/* Stats Box */}
+              <div
+                tw="flex flex-col items-center"
+                style={{
+                  background: 'rgba(212, 255, 0, 0.1)',
+                  border: '2px solid rgba(212, 255, 0, 0.3)',
+                  borderRadius: 12,
+                  padding: '30px 60px',
+                }}
+              >
+                <div
+                  tw="flex font-bold"
+                  style={{
+                    fontSize: 48,
+                    color: '#d4ff00',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {votes} VOTES
+                </div>
+                <div
+                  tw="flex"
+                  style={{
+                    fontSize: 24,
+                    color: '#a0a0a0',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {amount} ETH
+                </div>
               </div>
             </div>
 
             {/* CTA */}
-            <div
-              tw="flex text-center font-bold"
-              style={{
-                fontSize: 32,
-                marginBottom: 15,
-                color: '#ffffff',
-              }}
-            >
-              🔥 Vote Early = Better Prices!
-            </div>
+            <div tw="flex items-center justify-between">
+              <div
+                tw="flex items-center justify-center font-bold"
+                style={{
+                  background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
+                  color: '#0a0f1a',
+                  padding: '20px 50px',
+                  borderRadius: 8,
+                  fontSize: 32,
+                  boxShadow: '0 8px 32px rgba(212, 255, 0, 0.3)',
+                }}
+              >
+                🔥 VOTE NOW
+              </div>
 
-            {/* Branding */}
-            <div
-              tw="flex font-bold uppercase"
-              style={{
-                fontSize: 36,
-                color: '#00ff88',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Onchain World Cup 2026
-            </div>
-          </div>
-
-          {/* Base Network Badge */}
-          <div
-            tw="absolute flex items-center rounded-lg"
-            style={{
-              bottom: 30,
-              right: 30,
-              gap: 10,
-              backgroundColor: 'rgba(0, 82, 255, 0.2)',
-              border: '2px solid #0052FF',
-              padding: '15px 25px',
-            }}
-          >
-            <div
-              tw="flex rounded-full"
-              style={{
-                width: 30,
-                height: 30,
-                backgroundColor: '#0052FF',
-              }}
-            />
-            <div tw="font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
-              Base Network
+              <div tw="flex" style={{ fontSize: 20, color: '#666', fontFamily: 'monospace' }}>
+                app.onchainworldcup.xyz
+              </div>
             </div>
           </div>
         </div>
