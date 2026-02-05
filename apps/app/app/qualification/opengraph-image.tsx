@@ -9,11 +9,6 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image() {
-  // Fetch Barlow Condensed font
-  const fontData = await fetch(
-    new URL('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap')
-  ).then((res) => res.arrayBuffer())
-
   const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
 
   try {
@@ -63,7 +58,7 @@ export default async function Image() {
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'Barlow Condensed, sans-serif',
+            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
           }}
         >
           {/* Grid pattern overlay */}
@@ -223,14 +218,6 @@ export default async function Image() {
       ),
       {
         ...size,
-        fonts: [
-          {
-            name: 'Barlow Condensed',
-            data: fontData,
-            weight: 700,
-            style: 'normal',
-          },
-        ],
       }
     )
   } catch (error) {
@@ -242,7 +229,7 @@ export default async function Image() {
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
-            fontFamily: 'Barlow Condensed, sans-serif',
+            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
           }}
         >
           <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
@@ -252,14 +239,6 @@ export default async function Image() {
       ),
       {
         ...size,
-        fonts: [
-          {
-            name: 'Barlow Condensed',
-            data: fontData,
-            weight: 700,
-            style: 'normal',
-          },
-        ],
       }
     )
   }
