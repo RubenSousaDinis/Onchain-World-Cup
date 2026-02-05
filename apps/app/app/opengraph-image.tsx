@@ -33,18 +33,12 @@ export default async function Image() {
           <div tw="flex items-center justify-between w-full">
             <div tw="flex items-center" style={{ gap: 20 }}>
               {/* Logo */}
-              <div
-                tw="flex items-center justify-center"
-                style={{
-                  width: 70,
-                  height: 70,
-                  background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                  borderRadius: '50%',
-                  fontSize: 40,
-                }}
-              >
-                ⚽
-              </div>
+              <img
+                src="https://app.onchainworldcup.xyz/logo.png"
+                width="70"
+                height="65"
+                style={{ objectFit: 'contain' }}
+              />
               <div tw="flex flex-col">
                 <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                   ONCHAIN WORLD CUP

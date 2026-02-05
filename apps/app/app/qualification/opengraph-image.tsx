@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'World Cup 2026 Qualification Leaderboard - Top 5 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
+export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
 export const size = {
   width: 1200,
   height: 630,
@@ -10,7 +10,7 @@ export const contentType = 'image/png'
 
 export default async function Image() {
   try {
-    // ALWAYS use placeholder data to ensure 5 countries are shown
+    // ALWAYS use placeholder data to ensure TOP 3 countries are shown
     const topCountries: Array<{
       rank: number
       name: string
@@ -21,8 +21,6 @@ export default async function Image() {
       { rank: 1, name: 'Brazil', flag: '🇧🇷', votes: 0, eth: '0.0000' },
       { rank: 2, name: 'Argentina', flag: '🇦🇷', votes: 0, eth: '0.0000' },
       { rank: 3, name: 'Germany', flag: '🇩🇪', votes: 0, eth: '0.0000' },
-      { rank: 4, name: 'France', flag: '🇫🇷', votes: 0, eth: '0.0000' },
-      { rank: 5, name: 'Spain', flag: '🇪🇸', votes: 0, eth: '0.0000' },
     ]
 
     return new ImageResponse(
@@ -49,18 +47,12 @@ export default async function Image() {
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
-                <div
-                  tw="flex items-center justify-center"
-                  style={{
-                    width: 70,
-                    height: 70,
-                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                    borderRadius: '50%',
-                    fontSize: 40,
-                  }}
-                >
-                  ⚽
-                </div>
+                <img
+                  src="https://app.onchainworldcup.xyz/logo.png"
+                  width="70"
+                  height="65"
+                  style={{ objectFit: 'contain' }}
+                />
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
@@ -97,7 +89,7 @@ export default async function Image() {
             </div>
 
             {/* Leaderboard */}
-            <div tw="flex flex-col" style={{ gap: 10 }}>
+            <div tw="flex flex-col" style={{ gap: 15 }}>
               {topCountries.map((country) => (
                 <div
                   key={country.rank}
@@ -106,16 +98,16 @@ export default async function Image() {
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(212, 255, 0, 0.2)',
                     borderRadius: 8,
-                    padding: '14px 24px',
+                    padding: '20px 30px',
                   }}
                 >
                   {/* Rank & Country */}
-                  <div tw="flex items-center" style={{ gap: 20 }}>
+                  <div tw="flex items-center" style={{ gap: 25 }}>
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 30,
-                        width: 40,
+                        fontSize: 36,
+                        width: 50,
                         color: country.rank === 1 ? '#FFD700' : country.rank === 2 ? '#C0C0C0' : country.rank === 3 ? '#CD7F32' : '#d4ff00',
                         fontFamily: 'monospace',
                       }}
@@ -127,7 +119,7 @@ export default async function Image() {
                     <div
                       tw="flex"
                       style={{
-                        fontSize: 40,
+                        fontSize: 50,
                       }}
                     >
                       {country.flag}
@@ -137,7 +129,7 @@ export default async function Image() {
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 26,
+                        fontSize: 32,
                         color: '#ffffff',
                       }}
                     >
@@ -150,7 +142,7 @@ export default async function Image() {
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 22,
+                        fontSize: 28,
                         color: '#d4ff00',
                         fontFamily: 'monospace',
                       }}
@@ -160,7 +152,7 @@ export default async function Image() {
                     <div
                       tw="flex"
                       style={{
-                        fontSize: 16,
+                        fontSize: 20,
                         color: '#a0a0a0',
                         fontFamily: 'monospace',
                       }}
