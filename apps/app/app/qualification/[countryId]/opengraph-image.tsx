@@ -19,6 +19,13 @@ function getCountryFlag(countryCode: string): string {
 }
 
 export default async function Image({ params }: { params: Promise<{ countryId: string }> }) {
+  // Fetch Barlow Condensed font
+  const fontData = await fetch(
+    new URL('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap')
+  ).then((res) => res.arrayBuffer())
+
+  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
+
   try {
     const { countryId } = await params
     const countryIdUpper = countryId.toUpperCase()
@@ -36,20 +43,32 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             tw="w-full h-full flex items-center justify-center"
             style={{
               backgroundColor: '#0a0f1a',
+              fontFamily: 'Barlow Condensed, sans-serif',
             }}
           >
-            <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
+            <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
               Country Not Found
             </div>
           </div>
         ),
-        { ...size }
+        {
+          ...size,
+          fonts: [
+            {
+              name: 'Barlow Condensed',
+              data: fontData,
+              weight: 700,
+              style: 'normal',
+            },
+          ],
+        }
       )
     }
 
     // Fetch country stats from API using the country code (not full name)
-    let votes = '0'
+    let votes = 0
     let amount = '0.000'
+    let rank = 0
 
     try {
       const response = await fetch(
@@ -59,8 +78,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
 
       if (response.ok) {
         const data = await response.json()
-        votes = data.data.total_votes?.toString() || '0'
+        votes = data.data.total_votes || 0
         amount = parseFloat(data.data.total_eth || '0').toFixed(3)
+        rank = data.data.rank || 0
       }
     } catch (error) {
       console.error('Failed to fetch country stats:', error)
@@ -76,7 +96,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'system-ui, sans-serif',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
           {/* Grid pattern overlay */}
@@ -93,19 +113,13 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             {/* Header with logo */}
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
-                {/* Logo/Trophy */}
-                <div
-                  tw="flex items-center justify-center"
-                  style={{
-                    width: 80,
-                    height: 80,
-                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                    borderRadius: 12,
-                    fontSize: 48,
-                  }}
-                >
-                  ⚽
-                </div>
+                {/* Logo */}
+                <img
+                  src={logoUrl}
+                  width="70"
+                  height="70"
+                  alt="Logo"
+                />
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
@@ -142,13 +156,14 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             </div>
 
             {/* Country Content */}
-            <div tw="flex flex-col items-center" style={{ gap: 30 }}>
+            <div tw="flex flex-col items-center" style={{ gap: 25 }}>
               {/* Flag */}
               <div
                 tw="flex"
                 style={{
-                  fontSize: 140,
-                  marginTop: 30,
+                  fontSize: 120,
+                  marginTop: 20,
+                  marginBottom: 20,
                   filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
                 }}
               >
@@ -159,7 +174,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               <div
                 tw="flex font-bold text-center uppercase"
                 style={{
-                  fontSize: 64,
+                  fontSize: 56,
                   color: '#ffffff',
                   letterSpacing: '0.05em',
                 }}
@@ -167,41 +182,89 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
                 {countryName}
               </div>
 
-              {/* Stats Box */}
-              <div
-                tw="flex flex-col items-center"
-                style={{
-                  background: 'rgba(212, 255, 0, 0.1)',
-                  border: '2px solid rgba(212, 255, 0, 0.3)',
-                  borderRadius: 12,
-                  padding: '30px 60px',
-                }}
-              >
+              {/* Stats Grid */}
+              <div tw="flex items-center" style={{ gap: 30 }}>
+                {/* Rank */}
+                {rank > 0 && (
+                  <div
+                    tw="flex flex-col items-center"
+                    style={{
+                      background: 'rgba(255, 215, 0, 0.1)',
+                      border: '2px solid rgba(255, 215, 0, 0.3)',
+                      borderRadius: 12,
+                      padding: '20px 30px',
+                    }}
+                  >
+                    <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0', marginBottom: 8 }}>
+                      Rank
+                    </div>
+                    <div
+                      tw="flex font-bold"
+                      style={{
+                        fontSize: 40,
+                        color: '#FFD700',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      #{rank}
+                    </div>
+                  </div>
+                )}
+
+                {/* Votes */}
                 <div
-                  tw="flex font-bold"
+                  tw="flex flex-col items-center"
                   style={{
-                    fontSize: 48,
-                    color: '#d4ff00',
-                    fontFamily: 'monospace',
+                    background: 'rgba(212, 255, 0, 0.1)',
+                    border: '2px solid rgba(212, 255, 0, 0.3)',
+                    borderRadius: 12,
+                    padding: '20px 30px',
                   }}
                 >
-                  {votes} VOTES
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0', marginBottom: 8 }}>
+                    Total Votes
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{
+                      fontSize: 40,
+                      color: '#d4ff00',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {votes.toLocaleString()}
+                  </div>
                 </div>
+
+                {/* ETH */}
                 <div
-                  tw="flex"
+                  tw="flex flex-col items-center"
                   style={{
-                    fontSize: 24,
-                    color: '#a0a0a0',
-                    fontFamily: 'monospace',
+                    background: 'rgba(212, 255, 0, 0.1)',
+                    border: '2px solid rgba(212, 255, 0, 0.3)',
+                    borderRadius: 12,
+                    padding: '20px 30px',
                   }}
                 >
-                  {amount} ETH
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0', marginBottom: 8 }}>
+                    Total ETH
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{
+                      fontSize: 40,
+                      color: '#d4ff00',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {amount}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* CTA */}
-            <div tw="flex items-center justify-between">
+            <div tw="flex items-center justify-between" style={{ marginTop: 20 }}>
               <div
                 tw="flex items-center justify-center font-bold"
                 style={{
@@ -213,7 +276,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
                   boxShadow: '0 8px 32px rgba(212, 255, 0, 0.3)',
                 }}
               >
-                🔥 VOTE NOW
+                VOTE NOW
               </div>
 
               <div tw="flex" style={{ fontSize: 20, color: '#666', fontFamily: 'monospace' }}>
@@ -223,7 +286,17 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   } catch (error) {
     console.error('OG Image generation error:', error)
@@ -234,14 +307,25 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
-          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
             Error Generating Image
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   }
 }

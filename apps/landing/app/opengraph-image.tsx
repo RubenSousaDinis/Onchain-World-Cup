@@ -9,13 +9,20 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image() {
+  // Fetch Barlow Condensed font
+  const fontData = await fetch(
+    new URL('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap')
+  ).then((res) => res.arrayBuffer())
+
+  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
+
   return new ImageResponse(
     (
       <div
         tw="w-full h-full flex relative"
         style={{
           background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-          fontFamily: 'system-ui, sans-serif',
+          fontFamily: 'Barlow Condensed, sans-serif',
         }}
       >
         {/* Grid pattern overlay */}
@@ -32,19 +39,13 @@ export default async function Image() {
           {/* Header with logo */}
           <div tw="flex items-center justify-between w-full">
             <div tw="flex items-center" style={{ gap: 20 }}>
-              {/* Logo/Trophy */}
-              <div
-                tw="flex items-center justify-center"
-                style={{
-                  width: 80,
-                  height: 80,
-                  background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                  borderRadius: 12,
-                  fontSize: 48,
-                }}
-              >
-                ⚽
-              </div>
+              {/* Logo */}
+              <img
+                src={logoUrl}
+                width="70"
+                height="70"
+                alt="Logo"
+              />
               <div tw="flex flex-col">
                 <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                   ONCHAIN WORLD CUP
@@ -109,7 +110,7 @@ export default async function Image() {
                 boxShadow: '0 8px 32px rgba(212, 255, 0, 0.3)',
               }}
             >
-              🔥 VOTE NOW
+              VOTE NOW
             </div>
 
             <div tw="flex" style={{ fontSize: 20, color: '#666', fontFamily: 'monospace' }}>
@@ -121,6 +122,14 @@ export default async function Image() {
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Barlow Condensed',
+          data: fontData,
+          weight: 700,
+          style: 'normal',
+        },
+      ],
     }
   )
 }

@@ -9,6 +9,13 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: Promise<{ matchId: string }> }) {
+  // Fetch Barlow Condensed font
+  const fontData = await fetch(
+    new URL('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap')
+  ).then((res) => res.arrayBuffer())
+
+  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
+
   try {
     const { matchId } = await params
 
@@ -59,7 +66,7 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'system-ui, sans-serif',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
           {/* Grid pattern overlay */}
@@ -76,25 +83,19 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
             {/* Header with logo */}
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
-                {/* Logo/Trophy */}
-                <div
-                  tw="flex items-center justify-center"
-                  style={{
-                    width: 80,
-                    height: 80,
-                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                    borderRadius: 12,
-                    fontSize: 48,
-                  }}
-                >
-                  ⚽
-                </div>
+                {/* Logo */}
+                <img
+                  src={logoUrl}
+                  width="70"
+                  height="70"
+                  alt="Logo"
+                />
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
                   </div>
                   <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
-                    2026 QUALIFICATION
+                    MATCH VOTING
                   </div>
                 </div>
               </div>
@@ -125,17 +126,16 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
             </div>
 
             {/* Match Content */}
-            <div tw="flex flex-col items-center" style={{ gap: 35 }}>
+            <div tw="flex flex-col items-center" style={{ gap: 30 }}>
               {/* Teams */}
-              <div tw="flex items-center justify-center" style={{ gap: 60 }}>
+              <div tw="flex items-center justify-center" style={{ gap: 50 }}>
                 {/* Team 1 */}
                 <div tw="flex flex-col items-center">
                   <div
                     tw="flex"
                     style={{
-                      fontSize: 100,
-                      marginTop: 25,
-                      marginBottom: 20,
+                      fontSize: 90,
+                      marginBottom: 18,
                       filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
                     }}
                   >
@@ -143,21 +143,21 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
                   </div>
                   <div
                     tw="flex font-bold"
-                    style={{ fontSize: 36, marginBottom: 15, color: '#ffffff' }}
+                    style={{ fontSize: 32, marginBottom: 12, color: '#ffffff' }}
                   >
                     {match.team1Name}
                   </div>
                   <div
                     tw="flex font-bold"
                     style={{
-                      fontSize: 44,
+                      fontSize: 40,
                       color: '#d4ff00',
                       fontFamily: 'monospace',
                     }}
                   >
-                    {match.team1Votes}
+                    {match.team1Votes.toLocaleString()}
                   </div>
-                  <div tw="flex" style={{ fontSize: 20, color: '#a0a0a0' }}>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
                     votes ({team1Percentage}%)
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
                 {/* VS */}
                 <div
                   tw="flex font-bold"
-                  style={{ fontSize: 48, color: '#a0a0a0' }}
+                  style={{ fontSize: 44, color: '#a0a0a0' }}
                 >
                   VS
                 </div>
@@ -175,9 +175,8 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
                   <div
                     tw="flex"
                     style={{
-                      fontSize: 100,
-                      marginTop: 25,
-                      marginBottom: 20,
+                      fontSize: 90,
+                      marginBottom: 18,
                       filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
                     }}
                   >
@@ -185,21 +184,21 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
                   </div>
                   <div
                     tw="flex font-bold"
-                    style={{ fontSize: 36, marginBottom: 15, color: '#ffffff' }}
+                    style={{ fontSize: 32, marginBottom: 12, color: '#ffffff' }}
                   >
                     {match.team2Name}
                   </div>
                   <div
                     tw="flex font-bold"
                     style={{
-                      fontSize: 44,
+                      fontSize: 40,
                       color: '#d4ff00',
                       fontFamily: 'monospace',
                     }}
                   >
-                    {match.team2Votes}
+                    {match.team2Votes.toLocaleString()}
                   </div>
-                  <div tw="flex" style={{ fontSize: 20, color: '#a0a0a0' }}>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
                     votes ({team2Percentage}%)
                   </div>
                 </div>
@@ -212,16 +211,16 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
                   background: 'rgba(212, 255, 0, 0.1)',
                   border: '2px solid rgba(212, 255, 0, 0.3)',
                   borderRadius: 12,
-                  padding: '24px 60px',
+                  padding: '22px 55px',
                 }}
               >
-                <div tw="flex" style={{ fontSize: 20, marginBottom: 10, color: '#a0a0a0' }}>
+                <div tw="flex" style={{ fontSize: 18, marginBottom: 8, color: '#a0a0a0' }}>
                   Prize Pool
                 </div>
                 <div
                   tw="flex font-bold"
                   style={{
-                    fontSize: 48,
+                    fontSize: 44,
                     color: '#d4ff00',
                     fontFamily: 'monospace',
                   }}
@@ -254,7 +253,17 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   } catch (error) {
     console.error('OG Image generation error:', error)
@@ -265,14 +274,25 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
-          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
             Error Generating Image
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   }
 }

@@ -9,6 +9,13 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: Promise<{ address: string }> }) {
+  // Fetch Barlow Condensed font
+  const fontData = await fetch(
+    new URL('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap')
+  ).then((res) => res.arrayBuffer())
+
+  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
+
   try {
     const { address } = await params
 
@@ -49,7 +56,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'system-ui, sans-serif',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
           {/* Grid pattern overlay */}
@@ -66,25 +73,19 @@ export default async function Image({ params }: { params: Promise<{ address: str
             {/* Header with logo */}
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
-                {/* Logo/Trophy */}
-                <div
-                  tw="flex items-center justify-center"
-                  style={{
-                    width: 80,
-                    height: 80,
-                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
-                    borderRadius: 12,
-                    fontSize: 48,
-                  }}
-                >
-                  ⚽
-                </div>
+                {/* Logo */}
+                <img
+                  src={logoUrl}
+                  width="70"
+                  height="70"
+                  alt="Logo"
+                />
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
                   </div>
                   <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
-                    2026 QUALIFICATION
+                    PLAYER STATISTICS
                   </div>
                 </div>
               </div>
@@ -115,13 +116,13 @@ export default async function Image({ params }: { params: Promise<{ address: str
             </div>
 
             {/* User Stats Content */}
-            <div tw="flex flex-col" style={{ gap: 30 }}>
+            <div tw="flex flex-col" style={{ gap: 25 }}>
               {/* Title */}
               <div tw="flex flex-col" style={{ gap: 10 }}>
-                <div tw="flex font-bold" style={{ fontSize: 48, color: '#ffffff' }}>
+                <div tw="flex font-bold" style={{ fontSize: 44, color: '#ffffff' }}>
                   Player Stats
                 </div>
-                <div tw="flex" style={{ fontSize: 24, color: '#a0a0a0', fontFamily: 'monospace' }}>
+                <div tw="flex" style={{ fontSize: 22, color: '#a0a0a0', fontFamily: 'monospace' }}>
                   {shortAddress}
                 </div>
               </div>
@@ -144,7 +145,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
                   <div
                     tw="flex font-bold"
                     style={{
-                      fontSize: 36,
+                      fontSize: 34,
                       color: '#d4ff00',
                       fontFamily: 'monospace',
                     }}
@@ -164,12 +165,12 @@ export default async function Image({ params }: { params: Promise<{ address: str
                   }}
                 >
                   <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0', marginBottom: 10 }}>
-                    Earnings
+                    Total Earnings
                   </div>
                   <div
                     tw="flex font-bold"
                     style={{
-                      fontSize: 36,
+                      fontSize: 34,
                       color: '#d4ff00',
                       fontFamily: 'monospace',
                     }}
@@ -181,12 +182,38 @@ export default async function Image({ params }: { params: Promise<{ address: str
 
               {/* Bottom Stats */}
               <div tw="flex items-center" style={{ gap: 40 }}>
-                <div tw="flex" style={{ fontSize: 24, color: '#a0a0a0' }}>
-                  Total Votes: <span style={{ color: '#d4ff00', fontFamily: 'monospace', marginLeft: 10 }}>{userStats.totalVotes}</span>
+                <div
+                  tw="flex flex-col"
+                  style={{
+                    background: 'rgba(212, 255, 0, 0.1)',
+                    border: '2px solid rgba(212, 255, 0, 0.3)',
+                    borderRadius: 12,
+                    padding: '20px 30px',
+                  }}
+                >
+                  <div tw="flex" style={{ fontSize: 16, color: '#a0a0a0', marginBottom: 8 }}>
+                    Total Votes
+                  </div>
+                  <div tw="flex font-bold" style={{ fontSize: 32, color: '#d4ff00', fontFamily: 'monospace' }}>
+                    {userStats.totalVotes.toLocaleString()}
+                  </div>
                 </div>
                 {userStats.rank > 0 && (
-                  <div tw="flex" style={{ fontSize: 24, color: '#a0a0a0' }}>
-                    Rank: <span style={{ color: '#FFD700', fontFamily: 'monospace', marginLeft: 10 }}>#{userStats.rank}</span>
+                  <div
+                    tw="flex flex-col"
+                    style={{
+                      background: 'rgba(255, 215, 0, 0.1)',
+                      border: '2px solid rgba(255, 215, 0, 0.3)',
+                      borderRadius: 12,
+                      padding: '20px 30px',
+                    }}
+                  >
+                    <div tw="flex" style={{ fontSize: 16, color: '#a0a0a0', marginBottom: 8 }}>
+                      Global Rank
+                    </div>
+                    <div tw="flex font-bold" style={{ fontSize: 32, color: '#FFD700', fontFamily: 'monospace' }}>
+                      #{userStats.rank}
+                    </div>
                   </div>
                 )}
               </div>
@@ -215,7 +242,17 @@ export default async function Image({ params }: { params: Promise<{ address: str
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   } catch (error) {
     console.error('OG Image generation error:', error)
@@ -226,14 +263,25 @@ export default async function Image({ params }: { params: Promise<{ address: str
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
+            fontFamily: 'Barlow Condensed, sans-serif',
           }}
         >
-          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
             Error Generating Image
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+        fonts: [
+          {
+            name: 'Barlow Condensed',
+            data: fontData,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      }
     )
   }
 }
