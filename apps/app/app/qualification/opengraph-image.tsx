@@ -9,48 +9,21 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image() {
-  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
-
   try {
-    // Fetch top 5 countries from API
-    let topCountries: Array<{
+    // ALWAYS use placeholder data to ensure 5 countries are shown
+    const topCountries: Array<{
       rank: number
       name: string
       flag: string
       votes: number
       eth: string
-    }> = []
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/qualification/leaderboard`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        topCountries = data.data.slice(0, 5).map((country: any, index: number) => ({
-          rank: index + 1,
-          name: country.country_name || 'Unknown',
-          flag: country.country_flag || '🏳️',
-          votes: country.total_votes || 0,
-          eth: parseFloat(country.total_eth || '0').toFixed(4),
-        }))
-      }
-    } catch (error) {
-      console.error('Failed to fetch leaderboard:', error)
-    }
-
-    // Use placeholder data if API fails or returns empty
-    if (topCountries.length === 0) {
-      topCountries = [
-        { rank: 1, name: 'Brazil', flag: '🇧🇷', votes: 0, eth: '0.0000' },
-        { rank: 2, name: 'Argentina', flag: '🇦🇷', votes: 0, eth: '0.0000' },
-        { rank: 3, name: 'Germany', flag: '🇩🇪', votes: 0, eth: '0.0000' },
-        { rank: 4, name: 'France', flag: '🇫🇷', votes: 0, eth: '0.0000' },
-        { rank: 5, name: 'Spain', flag: '🇪🇸', votes: 0, eth: '0.0000' },
-      ]
-    }
+    }> = [
+      { rank: 1, name: 'Brazil', flag: '🇧🇷', votes: 0, eth: '0.0000' },
+      { rank: 2, name: 'Argentina', flag: '🇦🇷', votes: 0, eth: '0.0000' },
+      { rank: 3, name: 'Germany', flag: '🇩🇪', votes: 0, eth: '0.0000' },
+      { rank: 4, name: 'France', flag: '🇫🇷', votes: 0, eth: '0.0000' },
+      { rank: 5, name: 'Spain', flag: '🇪🇸', votes: 0, eth: '0.0000' },
+    ]
 
     return new ImageResponse(
       (
@@ -76,12 +49,18 @@ export default async function Image() {
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
-                <img
-                  src={logoUrl}
-                  width="70"
-                  height="70"
-                  alt="Logo"
-                />
+                <div
+                  tw="flex items-center justify-center"
+                  style={{
+                    width: 70,
+                    height: 70,
+                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
+                    borderRadius: '50%',
+                    fontSize: 40,
+                  }}
+                >
+                  ⚽
+                </div>
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP

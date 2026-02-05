@@ -9,8 +9,6 @@ export const size = {
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: Promise<{ matchId: string }> }) {
-  const logoUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`
-
   try {
     const { matchId } = await params
 
@@ -79,12 +77,18 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
-                <img
-                  src={logoUrl}
-                  width="70"
-                  height="70"
-                  alt="Logo"
-                />
+                <div
+                  tw="flex items-center justify-center"
+                  style={{
+                    width: 70,
+                    height: 70,
+                    background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
+                    borderRadius: '50%',
+                    fontSize: 40,
+                  }}
+                >
+                  ⚽
+                </div>
                 <div tw="flex flex-col">
                   <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
