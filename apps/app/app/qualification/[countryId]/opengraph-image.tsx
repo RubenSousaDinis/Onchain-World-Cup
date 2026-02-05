@@ -94,7 +94,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           />
 
           {/* Main content */}
-          <div tw="flex flex-col items-center justify-between" style={{ height: '100%', padding: '60px' }}>
+          <div tw="flex flex-col items-center justify-between w-full" style={{ height: '100%', padding: '60px' }}>
             {/* Header with logo */}
             <div tw="flex items-center justify-between w-full">
               <div tw="flex items-center" style={{ gap: 20 }}>

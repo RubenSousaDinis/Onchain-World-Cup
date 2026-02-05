@@ -89,7 +89,7 @@ export default async function Image() {
             </div>
 
             {/* Leaderboard */}
-            <div tw="flex flex-col" style={{ gap: 15 }}>
+            <div tw="flex flex-col" style={{ gap: 15, marginTop: 40, marginBottom: 40 }}>
               {topCountries.map((country) => (
                 <div
                   key={country.rank}
