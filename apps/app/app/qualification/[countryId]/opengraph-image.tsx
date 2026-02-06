@@ -3,13 +3,12 @@ import countriesData from '@/data/countries.json'
 import { getBaseUrl, createOgImageSupabaseClient, getCountryFlagEmoji } from '@/lib/utils/og-image'
 import {
   OG_IMAGE_SIZE,
-  OG_IMAGE_RUNTIME,
   OG_IMAGE_CONTENT_TYPE,
   OG_IMAGE_FONT_FAMILY,
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = OG_IMAGE_RUNTIME
+export const runtime = 'edge'
 export const alt = 'Vote for your country in World Cup 2026 qualification. Support with ETH on Base Network.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

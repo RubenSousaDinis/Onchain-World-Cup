@@ -2,13 +2,12 @@ import { ImageResponse } from 'next/og'
 import { getBaseUrl } from '@/lib/utils/og-image'
 import {
   OG_IMAGE_SIZE,
-  OG_IMAGE_RUNTIME,
   OG_IMAGE_CONTENT_TYPE,
   OG_IMAGE_FONT_FAMILY,
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = OG_IMAGE_RUNTIME
+export const runtime = 'edge'
 export const alt = 'Onchain World Cup 2026 - Vote with ETH on Base Network. Support your country in qualification voting.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

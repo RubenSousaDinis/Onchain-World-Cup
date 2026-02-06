@@ -3,13 +3,12 @@ import countriesData from '@/data/countries.json'
 import { getBaseUrl, createOgImageSupabaseClient } from '@/lib/utils/og-image'
 import {
   OG_IMAGE_SIZE,
-  OG_IMAGE_RUNTIME,
   OG_IMAGE_CONTENT_TYPE,
   OG_IMAGE_FONT_FAMILY,
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = OG_IMAGE_RUNTIME
+export const runtime = 'edge'
 export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

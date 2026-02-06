@@ -17,7 +17,9 @@ export const OG_IMAGE_SIZE = {
   height: 630,
 } as const
 
-export const OG_IMAGE_RUNTIME = 'edge' as const
+// NOTE: Do not use OG_IMAGE_RUNTIME in opengraph-image.tsx files
+// Next.js requires `export const runtime = 'edge'` to be a literal string
+// for static analysis at build time. Import constants cannot be used.
 export const OG_IMAGE_CONTENT_TYPE = 'image/png' as const
 
 /**
