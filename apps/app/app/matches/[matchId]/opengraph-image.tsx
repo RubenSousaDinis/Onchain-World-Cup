@@ -56,180 +56,199 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
     return new ImageResponse(
       (
         <div
-          tw="w-full h-full flex flex-col items-center justify-center relative overflow-hidden"
+          tw="w-full h-full flex relative"
           style={{
-            padding: 60,
-            backgroundColor: '#0a0f1a',
-            backgroundImage: 'linear-gradient(135deg, #0a0f1a 0%, #1a2332 100%)',
+            background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
+            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
           }}
         >
-          {/* Soccer field pattern background */}
+          {/* Grid pattern overlay */}
           <div
-            tw="flex absolute inset-0"
+            tw="absolute inset-0 flex"
             style={{
-              opacity: 0.1,
-              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px), repeating-linear-gradient(90deg, transparent, transparent 50px, #00ff88 50px, #00ff88 51px)`,
+              backgroundImage: 'linear-gradient(rgba(212, 255, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 255, 0, 0.03) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
             }}
           />
 
-          {/* Content */}
-          <div tw="flex flex-col items-center z-10">
-            {/* Title */}
-            <div
-              tw="flex font-bold uppercase"
-              style={{
-                fontSize: 48,
-                marginBottom: 50,
-                color: '#00ff88',
-                letterSpacing: '0.05em',
-                textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
-              }}
-            >
-              ⚽ MATCH PREVIEW
-            </div>
-
-            {/* Teams */}
-            <div tw="flex items-center justify-center" style={{ gap: 60, marginBottom: 50 }}>
-              {/* Team 1 */}
-              <div tw="flex flex-col items-center">
-                <div
-                  tw="flex mb-5"
-                  style={{
-                    fontSize: 120,
-                    filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
-                  }}
-                >
-                  {match.team1Flag}
-                </div>
-                <div
-                  tw="flex font-bold"
-                  style={{ fontSize: 48, marginBottom: 15, color: '#00ff88' }}
-                >
-                  {match.team1Name}
-                </div>
-                <div
-                  tw="flex font-bold"
-                  style={{
-                    fontSize: 56,
-                    color: '#ffffff',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {match.team1Votes}
-                </div>
-                <div tw="flex" style={{ fontSize: 24, color: '#a8b3cf' }}>
-                  votes ({team1Percentage}%)
+          {/* Main content */}
+          <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '60px' }}>
+            {/* Header with logo */}
+            <div tw="flex items-center justify-between w-full">
+              <div tw="flex items-center" style={{ gap: 20 }}>
+                {/* Logo */}
+                <img
+                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
+                  width="70"
+                  height="65"
+                  style={{ objectFit: 'contain' }}
+                />
+                <div tw="flex flex-col">
+                  <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
+                    ONCHAIN WORLD CUP
+                  </div>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
+                    MATCH VOTING
+                  </div>
                 </div>
               </div>
 
-              {/* VS */}
+              {/* Base badge */}
               <div
-                tw="flex font-bold"
-                style={{ fontSize: 64, color: '#a8b3cf' }}
-              >
-                VS
-              </div>
-
-              {/* Team 2 */}
-              <div tw="flex flex-col items-center">
-                <div
-                  tw="flex mb-5"
-                  style={{
-                    fontSize: 120,
-                    filter: 'drop-shadow(0 10px 30px rgba(0, 255, 136, 0.3))',
-                  }}
-                >
-                  {match.team2Flag}
-                </div>
-                <div
-                  tw="flex font-bold"
-                  style={{ fontSize: 48, marginBottom: 15, color: '#00ff88' }}
-                >
-                  {match.team2Name}
-                </div>
-                <div
-                  tw="flex font-bold"
-                  style={{
-                    fontSize: 56,
-                    color: '#ffffff',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {match.team2Votes}
-                </div>
-                <div tw="flex" style={{ fontSize: 24, color: '#a8b3cf' }}>
-                  votes ({team2Percentage}%)
-                </div>
-              </div>
-            </div>
-
-            {/* Prize Pool */}
-            <div
-              tw="flex flex-col items-center rounded-xl mb-10"
-              style={{
-                backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                border: '3px solid #00ff88',
-                padding: '30px 80px',
-              }}
-            >
-              <div
-                tw="flex uppercase"
-                style={{ fontSize: 28, marginBottom: 10, color: '#a8b3cf' }}
-              >
-                🏆 Prize Pool
-              </div>
-              <div
-                tw="flex font-bold"
+                tw="flex items-center"
                 style={{
-                  fontSize: 64,
-                  color: '#00ff88',
-                  fontFamily: 'monospace',
+                  gap: 10,
+                  background: 'rgba(0, 82, 255, 0.15)',
+                  border: '2px solid #0052FF',
+                  borderRadius: 8,
+                  padding: '12px 20px',
                 }}
               >
-                {match.totalPool} ETH
+                <div
+                  tw="flex rounded-full"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    background: '#0052FF',
+                  }}
+                />
+                <div tw="flex font-bold" style={{ fontSize: 16, color: '#0052FF' }}>
+                  BASE
+                </div>
               </div>
             </div>
 
-            {/* Branding */}
-            <div
-              tw="flex font-bold uppercase"
-              style={{
-                fontSize: 36,
-                color: '#00ff88',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Onchain World Cup 2026
-            </div>
-          </div>
+            {/* Match Content */}
+            <div tw="flex flex-col items-center" style={{ gap: 30 }}>
+              {/* Teams */}
+              <div tw="flex items-center justify-center" style={{ gap: 50 }}>
+                {/* Team 1 */}
+                <div tw="flex flex-col items-center">
+                  <div
+                    tw="flex"
+                    style={{
+                      fontSize: 90,
+                      marginBottom: 18,
+                      filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
+                    }}
+                  >
+                    {match.team1Flag}
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{ fontSize: 32, marginBottom: 12, color: '#ffffff' }}
+                  >
+                    {match.team1Name}
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{
+                      fontSize: 40,
+                      color: '#d4ff00',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {match.team1Votes.toLocaleString()}
+                  </div>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
+                    votes ({team1Percentage}%)
+                  </div>
+                </div>
 
-          {/* Base Network Badge */}
-          <div
-            tw="absolute flex items-center rounded-lg"
-            style={{
-              bottom: 30,
-              right: 30,
-              gap: 10,
-              backgroundColor: 'rgba(0, 82, 255, 0.2)',
-              border: '2px solid #0052FF',
-              padding: '15px 25px',
-            }}
-          >
-            <div
-              tw="flex rounded-full"
-              style={{
-                width: 30,
-                height: 30,
-                backgroundColor: '#0052FF',
-              }}
-            />
-            <div tw="font-bold" style={{ fontSize: 24, color: '#0052FF' }}>
-              Base Network
+                {/* VS */}
+                <div
+                  tw="flex font-bold"
+                  style={{ fontSize: 44, color: '#a0a0a0' }}
+                >
+                  VS
+                </div>
+
+                {/* Team 2 */}
+                <div tw="flex flex-col items-center">
+                  <div
+                    tw="flex"
+                    style={{
+                      fontSize: 90,
+                      marginBottom: 18,
+                      filter: 'drop-shadow(0 10px 30px rgba(212, 255, 0, 0.3))',
+                    }}
+                  >
+                    {match.team2Flag}
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{ fontSize: 32, marginBottom: 12, color: '#ffffff' }}
+                  >
+                    {match.team2Name}
+                  </div>
+                  <div
+                    tw="flex font-bold"
+                    style={{
+                      fontSize: 40,
+                      color: '#d4ff00',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {match.team2Votes.toLocaleString()}
+                  </div>
+                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
+                    votes ({team2Percentage}%)
+                  </div>
+                </div>
+              </div>
+
+              {/* Prize Pool */}
+              <div
+                tw="flex flex-col items-center"
+                style={{
+                  background: 'rgba(212, 255, 0, 0.1)',
+                  border: '2px solid rgba(212, 255, 0, 0.3)',
+                  borderRadius: 12,
+                  padding: '22px 55px',
+                }}
+              >
+                <div tw="flex" style={{ fontSize: 18, marginBottom: 8, color: '#a0a0a0' }}>
+                  Prize Pool
+                </div>
+                <div
+                  tw="flex font-bold"
+                  style={{
+                    fontSize: 44,
+                    color: '#d4ff00',
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {match.totalPool} ETH
+                </div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div tw="flex items-center justify-between">
+              <div
+                tw="flex items-center justify-center font-bold"
+                style={{
+                  background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
+                  color: '#0a0f1a',
+                  padding: '20px 50px',
+                  borderRadius: 8,
+                  fontSize: 32,
+                  boxShadow: '0 8px 32px rgba(212, 255, 0, 0.3)',
+                }}
+              >
+                SEE RESULTS
+              </div>
+
+              <div tw="flex" style={{ fontSize: 20, color: '#666', fontFamily: 'monospace' }}>
+                app.onchainworldcup.xyz
+              </div>
             </div>
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+      }
     )
   } catch (error) {
     console.error('OG Image generation error:', error)
@@ -240,14 +259,17 @@ export default async function Image({ params }: { params: Promise<{ matchId: str
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
+            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
           }}
         >
-          <div tw="flex" style={{ fontSize: 48, color: '#00ff88' }}>
+          <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
             Error Generating Image
           </div>
         </div>
       ),
-      { ...size }
+      {
+        ...size,
+      }
     )
   }
 }

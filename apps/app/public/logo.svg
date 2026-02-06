@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="256" cy="256" r="256"/>
+    </clipPath>
+  </defs>
+
+  <!-- Optional background (remove if you want full transparency) -->
+  <circle cx="256" cy="256" r="256" fill="#0B1C2D"/>
+
+  <!-- Logo image clipped into perfect circle -->
+  <image 
+    href="logo.png"
+    x="0"
+    y="0"
+    width="512"
+    height="512"
+    clip-path="url(#circleClip)"
+    preserveAspectRatio="xMidYMid meet"
+  />
+</svg>
