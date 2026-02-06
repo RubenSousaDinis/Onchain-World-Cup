@@ -1,7 +1,3 @@
-// Prisma Schema for Onchain World Cup
-// Simplified schema for qualification phase only
-// Database: PostgreSQL (via Supabase)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,32 +8,28 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Aggregated voting statistics per country (static country data comes from lib/countries.ts)
 model CountryStats {
-  countryCode  String   @id @map("country_code") // Two-letter country code (e.g., "BR", "AR")
-  totalVotes   Int      @default(0) @map("total_votes") // Total votes received
-  totalEth     String   @default("0") @map("total_eth") // Total ETH backing this country
-  qualified    Boolean  @default(false) // Whether country qualified (top 48)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  countryCode String   @id @map("country_code")
+  totalVotes  Int      @default(0) @map("total_votes")
+  totalEth    String   @default("0") @map("total_eth")
+  qualified   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([totalVotes])
   @@index([qualified])
   @@map("country_stats")
 }
 
-// Individual votes placed by users for countries to qualify
 model QualificationVote {
-  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  countryCode  String   @map("country_code") // Two-letter country code
-  voterAddress String   @map("voter_address")
-  voteCount    Int      @map("vote_count") // Number of votes purchased
-  totalCostEth String   @map("total_cost_eth") // ETH spent on these votes
-  txHash       String   @unique @map("tx_hash")
-  blockNumber  BigInt   @map("block_number")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  // Foreign key to indexed_transactions (enforces referential integrity)
+  id           String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  countryCode  String             @map("country_code")
+  voterAddress String             @map("voter_address")
+  voteCount    Int                @map("vote_count")
+  totalCostEth String             @map("total_cost_eth")
+  txHash       String             @unique @map("tx_hash")
+  blockNumber  BigInt             @map("block_number")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   transaction  IndexedTransaction @relation(fields: [txHash], references: [txHash], onDelete: Cascade)
 
   @@index([countryCode])
@@ -47,30 +39,22 @@ model QualificationVote {
   @@map("qualification_votes")
 }
 
-// User statistics and rankings
 model UserStat {
-  id                       String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  walletAddress            String    @unique @map("wallet_address")
-
-  // Qualification phase stats
-  qualificationVotes       Int       @default(0) @map("qualification_votes") // Total votes placed in qualification
-  qualificationSpentEth    String    @default("0") @map("qualification_spent_eth") // ETH spent in qualification
-  qualificationWonEth      String    @default("0") @map("qualification_won_eth") // ETH won from qualification
-  countriesVotedFor        Int       @default(0) @map("countries_voted_for") // Number of different countries voted for
-
-  // Overall stats (will be used for future tournament phases)
-  totalVotes               Int       @default(0) @map("total_votes")
-  totalSpentEth            String    @default("0") @map("total_spent_eth")
-  totalWonEth              String    @default("0") @map("total_won_eth")
-
-  rank                     Int?
-  onboardingCompletedAt    DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
-  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  // Optional link to authenticated User (for next-auth integration)
-  userId                   String?   @unique @map("user_id") @db.Uuid
-  user                     User?     @relation(fields: [userId], references: [id])
+  id                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  walletAddress         String    @unique @map("wallet_address")
+  totalVotes            Int       @default(0) @map("total_votes")
+  totalSpentEth         String    @default("0") @map("total_spent_eth")
+  totalWonEth           String    @default("0") @map("total_won_eth")
+  rank                  Int?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  onboardingCompletedAt DateTime? @map("onboarding_completed_at") @db.Timestamptz(6)
+  countriesVotedFor     Int       @default(0) @map("countries_voted_for")
+  qualificationSpentEth String    @default("0") @map("qualification_spent_eth")
+  qualificationVotes    Int       @default(0) @map("qualification_votes")
+  qualificationWonEth   String    @default("0") @map("qualification_won_eth")
+  userId                String?   @unique @map("user_id") @db.Uuid
+  user                  User?     @relation(fields: [userId], references: [id])
 
   @@index([walletAddress])
   @@index([rank])
@@ -78,54 +62,49 @@ model UserStat {
   @@map("user_stats")
 }
 
-// Farcaster notification tokens for Mini App users
 model FarcasterNotificationToken {
-  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  fid              Int       // Farcaster ID
-  walletAddress    String?   @map("wallet_address") // Optional wallet address if linked
-  notificationUrl  String    @map("notification_url") // URL to POST notifications
-  token            String    // Authentication token
-  enabled          Boolean   @default(true) // Whether notifications are enabled
-  miniappAddedAt   DateTime  @map("miniapp_added_at") @db.Timestamptz(6) // When user added the Mini App
-  lastNotifiedAt   DateTime? @map("last_notified_at") @db.Timestamptz(6) // Last notification sent
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  fid             Int
+  walletAddress   String?   @map("wallet_address")
+  notificationUrl String    @map("notification_url")
+  token           String
+  enabled         Boolean   @default(true)
+  miniappAddedAt  DateTime  @map("miniapp_added_at") @db.Timestamptz(6)
+  lastNotifiedAt  DateTime? @map("last_notified_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@unique([fid, token]) // Each FID can have multiple tokens from different clients
+  @@unique([fid, token])
   @@index([fid])
   @@index([enabled])
   @@map("farcaster_notification_tokens")
 }
 
-// Indexer state tracking for blockchain event synchronization
 model IndexerState {
-  chainId          Int      @id @map("chain_id") // 84532 (Base Sepolia) or 8453 (Base Mainnet)
-  lastIndexedBlock BigInt   @map("last_indexed_block") // Last block number indexed
-  lastIndexedAt    DateTime @map("last_indexed_at") @db.Timestamptz(6) // Timestamp of last indexing
+  chainId          Int      @id @map("chain_id")
+  lastIndexedBlock BigInt   @map("last_indexed_block")
+  lastIndexedAt    DateTime @map("last_indexed_at") @db.Timestamptz(6)
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@map("indexer_state")
 }
 
-// Transaction indexing tracking (for both immediate and cron-based indexing)
 model IndexedTransaction {
-  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  txHash          String    @unique @map("tx_hash")
-  contractAddress String    @map("contract_address")
-  walletAddress   String    @map("wallet_address")
-  chainId         Int       @map("chain_id")
-  syncType        String    @map("sync_type") // "immediate" | "cron"
-  status          String    // "pending" | "confirmed" | "failed" | "replaced"
-  blockNumber     BigInt?   @map("block_number")
-  eventType       String    @map("event_type") // "vote" | "claim" | "qualification"
-  metadata        Json?     // Flexible field for vote data, error messages, etc.
-  indexedAt       DateTime  @default(now()) @map("indexed_at") @db.Timestamptz(6)
-  confirmedAt     DateTime? @map("confirmed_at") @db.Timestamptz(6)
-  errorMessage    String?   @map("error_message")
-
-  // Relationship: One transaction can have one vote
-  vote QualificationVote?
+  id              String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  txHash          String             @unique @map("tx_hash")
+  contractAddress String             @map("contract_address")
+  walletAddress   String             @map("wallet_address")
+  chainId         Int                @map("chain_id")
+  syncType        String             @map("sync_type")
+  status          String
+  blockNumber     BigInt?            @map("block_number")
+  eventType       String             @map("event_type")
+  metadata        Json?
+  indexedAt       DateTime           @default(now()) @map("indexed_at") @db.Timestamptz(6)
+  confirmedAt     DateTime?          @map("confirmed_at") @db.Timestamptz(6)
+  errorMessage    String?            @map("error_message")
+  vote            QualificationVote?
 
   @@index([txHash])
   @@index([walletAddress])
@@ -136,7 +115,6 @@ model IndexedTransaction {
   @@map("indexed_transactions")
 }
 
-// Next-Auth User model for SIWE authentication
 model User {
   id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   walletAddress String    @unique @map("wallet_address")
@@ -146,38 +124,34 @@ model User {
   image         String?
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  accounts Account[]
-  sessions Session[]
-  stats    UserStat?
+  accounts      Account[]
+  sessions      Session[]
+  stats         UserStat?
 
   @@index([walletAddress])
   @@map("users")
 }
 
-// Next-Auth Account model
 model Account {
   id                String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   userId            String  @map("user_id") @db.Uuid
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
   @@map("accounts")
 }
 
-// Next-Auth Session model
 model Session {
   id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   sessionToken String   @unique @map("session_token")
@@ -189,7 +163,6 @@ model Session {
   @@map("sessions")
 }
 
-// Next-Auth VerificationToken model
 model VerificationToken {
   identifier String
   token      String   @unique

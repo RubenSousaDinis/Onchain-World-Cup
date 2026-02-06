@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
 export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
@@ -9,8 +10,24 @@ export const size = {
 }
 export const contentType = 'image/png'
 
+// Helper to get the base URL for assets
+function getBaseUrl() {
+  // Prefer NEXT_PUBLIC_APP_URL if set
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+  // On Vercel, use VERCEL_URL with https
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  // Fallback to production URL
+  return 'https://app.onchainworldcup.xyz'
+}
+
 export default async function Image() {
   try {
+    const baseUrl = getBaseUrl()
+
     let topCountries: Array<{
       rank: number
       name: string
@@ -19,29 +36,43 @@ export default async function Image() {
       eth: string
     }> = []
 
-    // Fetch real leaderboard data from API with caching
+    // Fetch real leaderboard data directly from Supabase
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/qualification/countries?sort=votes&order=desc&limit=3`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-      if (response.ok) {
-        const data = await response.json()
-        topCountries = data.data.slice(0, 3).map((country: any, index: number) => {
-          // Find country info from countries.json
-          const countryInfo = countriesData.find(
-            (c) => c.code.toUpperCase() === country.country_code.toUpperCase()
-          )
-
-          return {
-            rank: index + 1,
-            name: countryInfo?.name || country.country_code,
-            flag: countryInfo?.flagEmoji || '🏳️',
-            votes: country.total_votes || 0,
-            eth: parseFloat(country.total_eth || '0').toFixed(4),
-          }
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
         })
+
+        const { data, error } = await supabase
+          .from('country_stats')
+          .select('country_code, total_votes, total_eth')
+          .order('total_votes', { ascending: false })
+          .limit(3)
+
+        if (!error && data) {
+          topCountries = data.map((country: any, index: number) => {
+            // Find country info from countries.json
+            const countryInfo = countriesData.find(
+              (c) => c.code.toUpperCase() === country.country_code.toUpperCase()
+            )
+
+            return {
+              rank: index + 1,
+              name: countryInfo?.name || country.country_code,
+              flag: countryInfo?.flagEmoji || '🏳️',
+              votes: country.total_votes || 0,
+              eth: parseFloat(country.total_eth || '0').toFixed(4),
+            }
+          })
+        } else if (error) {
+          console.error('Failed to fetch leaderboard:', error)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)
@@ -81,7 +112,7 @@ export default async function Image() {
               <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
+                  src={`${baseUrl}/logo.svg`}
                   width="56"
                   height="52"
                   style={{ objectFit: 'contain' }}

@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
 export const alt = 'Vote for your country in World Cup 2026 qualification. Support with ETH on Base Network.'
@@ -8,6 +9,17 @@ export const size = {
   height: 630,
 }
 export const contentType = 'image/png'
+
+// Helper to get the base URL for assets
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  return 'https://app.onchainworldcup.xyz'
+}
 
 // Helper to get country flag emoji from code
 function getCountryFlag(countryCode: string): string {
@@ -20,6 +32,7 @@ function getCountryFlag(countryCode: string): string {
 
 export default async function Image({ params }: { params: Promise<{ countryId: string }> }) {
   try {
+    const baseUrl = getBaseUrl()
     const { countryId } = await params
     const countryIdUpper = countryId.toUpperCase()
 
@@ -50,22 +63,42 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
       )
     }
 
-    // Fetch country stats from API using the country code (not full name)
+    // Fetch country stats directly from Supabase
     let votes = 0
     let amount = '0.000'
     let rank = 0
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/qualification/countries/${country.code.toLowerCase()}`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-      if (response.ok) {
-        const data = await response.json()
-        votes = data.data.total_votes || 0
-        amount = parseFloat(data.data.total_eth || '0').toFixed(3)
-        rank = data.data.rank || 0
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        })
+
+        // Fetch the specific country's stats
+        const { data: countryStats, error } = await supabase
+          .from('country_stats')
+          .select('total_votes, total_eth')
+          .eq('country_code', country.code.toUpperCase())
+          .single()
+
+        if (!error && countryStats) {
+          votes = countryStats.total_votes || 0
+          amount = parseFloat(countryStats.total_eth || '0').toFixed(3)
+        }
+
+        // Calculate rank by counting countries with more votes
+        const { count } = await supabase
+          .from('country_stats')
+          .select('*', { count: 'exact', head: true })
+          .gt('total_votes', votes)
+
+        rank = (count || 0) + 1
       }
     } catch (error) {
       console.error('Failed to fetch country stats:', error)
@@ -100,7 +133,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
+                  src={`${baseUrl}/logo.svg`}
                   width="70"
                   height="65"
                   style={{ objectFit: 'contain' }}

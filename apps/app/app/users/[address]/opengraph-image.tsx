@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
 export const alt = 'User voting stats - Onchain World Cup 2026. Track your ETH spent, favorite country, votes and rank.'
@@ -9,11 +10,24 @@ export const size = {
 }
 export const contentType = 'image/png'
 
+// Helper to get the base URL for assets
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  return 'https://app.onchainworldcup.xyz'
+}
+
 export default async function Image({ params }: { params: Promise<{ address: string }> }) {
   try {
+    const baseUrl = getBaseUrl()
     const { address } = await params
+    const normalizedAddress = address.toLowerCase()
 
-    // Fetch user stats and profile from API
+    // Fetch user stats and profile directly from Supabase
     let userStats = {
       totalSpent: '0.000',
       totalVotes: 0,
@@ -24,30 +38,59 @@ export default async function Image({ params }: { params: Promise<{ address: str
     let imageUrl: string | null = null
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/users/${address}`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-      if (response.ok) {
-        const data = await response.json()
-        userStats.totalSpent = parseFloat(data.data.qualification_spent_eth || '0').toFixed(3)
-        userStats.totalVotes = data.data.qualification_votes || 0
-        userStats.rank = data.data.rank || 0
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        })
 
-        if (data.data.name && String(data.data.name).trim()) {
-          displayName = String(data.data.name).trim()
+        // Fetch user stats
+        const { data: stats } = await supabase
+          .from('user_stats')
+          .select('qualification_votes, qualification_spent_eth, rank')
+          .eq('wallet_address', normalizedAddress)
+          .single()
+
+        if (stats) {
+          userStats.totalSpent = parseFloat(stats.qualification_spent_eth || '0').toFixed(3)
+          userStats.totalVotes = stats.qualification_votes || 0
+          userStats.rank = stats.rank || 0
         }
-        if (data.data.image && String(data.data.image).trim()) {
-          imageUrl = String(data.data.image).trim()
+
+        // Fetch user profile (name, image) if available
+        const { data: user } = await supabase
+          .from('users')
+          .select('name, image')
+          .eq('wallet_address', normalizedAddress)
+          .single()
+
+        if (user) {
+          if (user.name && String(user.name).trim()) {
+            displayName = String(user.name).trim()
+          }
+          if (user.image && String(user.image).trim()) {
+            imageUrl = String(user.image).trim()
+          }
         }
 
         // Calculate favorite country from votes
-        if (data.data.votes && Array.isArray(data.data.votes) && data.data.votes.length > 0) {
+        const { data: votes } = await supabase
+          .from('qualification_votes')
+          .select('country_code, vote_count')
+          .eq('voter_address', normalizedAddress)
+          .order('created_at', { ascending: false })
+          .limit(50)
+
+        if (votes && votes.length > 0) {
           const countryVotes: Record<string, number> = {}
 
           // Count votes per country
-          data.data.votes.forEach((vote: any) => {
+          votes.forEach((vote) => {
             const code = vote.country_code
             countryVotes[code] = (countryVotes[code] || 0) + (vote.vote_count || 1)
           })
@@ -103,7 +146,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
               <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
+                  src={`${baseUrl}/logo.svg`}
                   width="56"
                   height="52"
                   style={{ objectFit: 'contain' }}

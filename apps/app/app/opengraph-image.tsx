@@ -8,7 +8,20 @@ export const size = {
 }
 export const contentType = 'image/png'
 
+// Helper to get the base URL for assets
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  return 'https://app.onchainworldcup.xyz'
+}
+
 export default async function Image() {
+  const baseUrl = getBaseUrl()
+
   return new ImageResponse(
     (
       <div
@@ -34,7 +47,7 @@ export default async function Image() {
             <div tw="flex items-center" style={{ gap: 20 }}>
               {/* Logo */}
               <img
-                src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
+                src={`${baseUrl}/logo.svg`}
                 width="70"
                 height="65"
                 style={{ objectFit: 'contain' }}
