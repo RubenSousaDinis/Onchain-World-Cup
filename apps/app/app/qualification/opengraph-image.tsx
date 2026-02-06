@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import countriesData from '@/data/countries.json'
 
 export const runtime = 'edge'
 export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
@@ -21,19 +22,26 @@ export default async function Image() {
     // Fetch real leaderboard data from API with caching
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/qualification/leaderboard`,
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/qualification/countries?sort=votes&order=desc&limit=3`,
         { next: { revalidate: 300 } } // Cache for 5 minutes
       )
 
       if (response.ok) {
         const data = await response.json()
-        topCountries = data.data.slice(0, 3).map((country: any, index: number) => ({
-          rank: index + 1,
-          name: country.country_name || 'Unknown',
-          flag: country.country_flag || '🏳️',
-          votes: country.total_votes || 0,
-          eth: parseFloat(country.total_eth || '0').toFixed(4),
-        }))
+        topCountries = data.data.slice(0, 3).map((country: any, index: number) => {
+          // Find country info from countries.json
+          const countryInfo = countriesData.find(
+            (c) => c.code.toUpperCase() === country.country_code.toUpperCase()
+          )
+
+          return {
+            rank: index + 1,
+            name: countryInfo?.name || country.country_code,
+            flag: countryInfo?.flagEmoji || '🏳️',
+            votes: country.total_votes || 0,
+            eth: parseFloat(country.total_eth || '0').toFixed(4),
+          }
+        })
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)
