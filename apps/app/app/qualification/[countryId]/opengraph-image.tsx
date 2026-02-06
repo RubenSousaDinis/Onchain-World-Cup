@@ -100,7 +100,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`}
+                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
                   width="70"
                   height="65"
                   style={{ objectFit: 'contain' }}
