@@ -48,7 +48,7 @@ export default async function Image() {
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
                 <img
-                  src="https://app.onchainworldcup.xyz/logo.svg"
+                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.png`}
                   width="70"
                   height="65"
                   style={{ objectFit: 'contain' }}
