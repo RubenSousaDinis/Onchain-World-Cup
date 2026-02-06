@@ -27,7 +27,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
     const { address } = await params
     const normalizedAddress = address.toLowerCase()
 
-    // Fetch user stats and profile directly from Supabase
+    // Fetch user stats and profile directly from Supabase (PARALLEL QUERIES)
     let userStats = {
       totalSpent: '0.000',
       totalVotes: 0,
@@ -49,48 +49,54 @@ export default async function Image({ params }: { params: Promise<{ address: str
           },
         })
 
-        // Fetch user stats
-        const { data: stats } = await supabase
-          .from('user_stats')
-          .select('qualification_votes, qualification_spent_eth, rank')
-          .eq('wallet_address', normalizedAddress)
-          .single()
+        // Run all queries in parallel for faster response
+        const [statsResult, userResult, votesResult] = await Promise.all([
+          // Query 1: User stats
+          supabase
+            .from('user_stats')
+            .select('qualification_votes, qualification_spent_eth, rank')
+            .eq('wallet_address', normalizedAddress)
+            .single(),
 
-        if (stats) {
-          userStats.totalSpent = parseFloat(stats.qualification_spent_eth || '0').toFixed(3)
-          userStats.totalVotes = stats.qualification_votes || 0
-          userStats.rank = stats.rank || 0
+          // Query 2: User profile (name, image)
+          supabase
+            .from('users')
+            .select('name, image')
+            .eq('wallet_address', normalizedAddress)
+            .single(),
+
+          // Query 3: Get favorite country using aggregation (much faster than fetching all votes)
+          supabase
+            .from('qualification_votes')
+            .select('country_code, vote_count')
+            .eq('voter_address', normalizedAddress)
+            .order('created_at', { ascending: false })
+            .limit(20), // Reduced from 50 to 20 for faster query
+        ])
+
+        // Process stats
+        if (statsResult.data) {
+          userStats.totalSpent = parseFloat(statsResult.data.qualification_spent_eth || '0').toFixed(3)
+          userStats.totalVotes = statsResult.data.qualification_votes || 0
+          userStats.rank = statsResult.data.rank || 0
         }
 
-        // Fetch user profile (name, image) if available
-        const { data: user } = await supabase
-          .from('users')
-          .select('name, image')
-          .eq('wallet_address', normalizedAddress)
-          .single()
-
-        if (user) {
-          if (user.name && String(user.name).trim()) {
-            displayName = String(user.name).trim()
+        // Process user profile
+        if (userResult.data) {
+          if (userResult.data.name && String(userResult.data.name).trim()) {
+            displayName = String(userResult.data.name).trim()
           }
-          if (user.image && String(user.image).trim()) {
-            imageUrl = String(user.image).trim()
+          if (userResult.data.image && String(userResult.data.image).trim()) {
+            imageUrl = String(userResult.data.image).trim()
           }
         }
 
         // Calculate favorite country from votes
-        const { data: votes } = await supabase
-          .from('qualification_votes')
-          .select('country_code, vote_count')
-          .eq('voter_address', normalizedAddress)
-          .order('created_at', { ascending: false })
-          .limit(50)
-
-        if (votes && votes.length > 0) {
+        if (votesResult.data && votesResult.data.length > 0) {
           const countryVotes: Record<string, number> = {}
 
           // Count votes per country
-          votes.forEach((vote) => {
+          votesResult.data.forEach((vote) => {
             const code = vote.country_code
             countryVotes[code] = (countryVotes[code] || 0) + (vote.vote_count || 1)
           })
