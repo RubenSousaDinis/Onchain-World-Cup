@@ -1,25 +1,21 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { getBaseUrl, createOgImageSupabaseClient, getCountryFlagEmoji } from '@/lib/utils/og-image'
+import {
+  OG_IMAGE_SIZE,
+  OG_IMAGE_CONTENT_TYPE,
+  OG_IMAGE_FONT_FAMILY,
+  OG_IMAGE_LOGO,
+} from '@/lib/constants'
 
 export const runtime = 'edge'
 export const alt = 'Vote for your country in World Cup 2026 qualification. Support with ETH on Base Network.'
-export const size = {
-  width: 1200,
-  height: 630,
-}
-export const contentType = 'image/png'
-
-// Helper to get country flag emoji from code
-function getCountryFlag(countryCode: string): string {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt(0))
-  return String.fromCodePoint(...codePoints)
-}
+export const size = OG_IMAGE_SIZE
+export const contentType = OG_IMAGE_CONTENT_TYPE
 
 export default async function Image({ params }: { params: Promise<{ countryId: string }> }) {
   try {
+    const baseUrl = getBaseUrl()
     const { countryId } = await params
     const countryIdUpper = countryId.toUpperCase()
 
@@ -36,7 +32,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
             tw="w-full h-full flex items-center justify-center"
             style={{
               backgroundColor: '#0a0f1a',
-              fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+              fontFamily: OG_IMAGE_FONT_FAMILY,
             }}
           >
             <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
@@ -50,29 +46,39 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
       )
     }
 
-    // Fetch country stats from API using the country code (not full name)
+    // Fetch country stats directly from Supabase
     let votes = 0
     let amount = '0.000'
     let rank = 0
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/qualification/countries/${country.code.toLowerCase()}`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabase = createOgImageSupabaseClient()
 
-      if (response.ok) {
-        const data = await response.json()
-        votes = data.data.total_votes || 0
-        amount = parseFloat(data.data.total_eth || '0').toFixed(3)
-        rank = data.data.rank || 0
+      // Fetch the specific country's stats
+      const { data: countryStats, error } = await supabase
+        .from('country_stats')
+        .select('total_votes, total_eth')
+        .eq('country_code', country.code.toUpperCase())
+        .single()
+
+      if (!error && countryStats) {
+        votes = countryStats.total_votes || 0
+        amount = parseFloat(countryStats.total_eth || '0').toFixed(3)
       }
+
+      // Calculate rank by counting countries with more votes
+      const { count } = await supabase
+        .from('country_stats')
+        .select('*', { count: 'exact', head: true })
+        .gt('total_votes', votes)
+
+      rank = (count || 0) + 1
     } catch (error) {
       console.error('Failed to fetch country stats:', error)
       // Use default values if API fails
     }
 
-    const countryFlag = country.flagEmoji || getCountryFlag(country.code)
+    const countryFlag = country.flagEmoji || getCountryFlagEmoji(country.code)
     const countryName = country.name
 
     return new ImageResponse(
@@ -81,7 +87,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           {/* Grid pattern overlay */}
@@ -100,9 +106,9 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
-                  width="70"
-                  height="65"
+                  src={`${baseUrl}/logo.svg`}
+                  width={OG_IMAGE_LOGO.LARGE.width}
+                  height={OG_IMAGE_LOGO.LARGE.height}
                   style={{ objectFit: 'contain' }}
                 />
                 <div tw="flex flex-col">
@@ -282,7 +288,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>

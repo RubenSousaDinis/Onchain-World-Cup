@@ -1,16 +1,22 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { getBaseUrl, createOgImageSupabaseClient } from '@/lib/utils/og-image'
+import {
+  OG_IMAGE_SIZE,
+  OG_IMAGE_CONTENT_TYPE,
+  OG_IMAGE_FONT_FAMILY,
+  OG_IMAGE_LOGO,
+} from '@/lib/constants'
 
 export const runtime = 'edge'
 export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
-export const size = {
-  width: 1200,
-  height: 630,
-}
-export const contentType = 'image/png'
+export const size = OG_IMAGE_SIZE
+export const contentType = OG_IMAGE_CONTENT_TYPE
 
 export default async function Image() {
   try {
+    const baseUrl = getBaseUrl()
+
     let topCountries: Array<{
       rank: number
       name: string
@@ -19,16 +25,18 @@ export default async function Image() {
       eth: string
     }> = []
 
-    // Fetch real leaderboard data from API with caching
+    // Fetch real leaderboard data directly from Supabase
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/qualification/countries?sort=votes&order=desc&limit=3`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabase = createOgImageSupabaseClient()
 
-      if (response.ok) {
-        const data = await response.json()
-        topCountries = data.data.slice(0, 3).map((country: any, index: number) => {
+      const { data, error } = await supabase
+        .from('country_stats')
+        .select('country_code, total_votes, total_eth')
+        .order('total_votes', { ascending: false })
+        .limit(3)
+
+      if (!error && data) {
+        topCountries = data.map((country: any, index: number) => {
           // Find country info from countries.json
           const countryInfo = countriesData.find(
             (c) => c.code.toUpperCase() === country.country_code.toUpperCase()
@@ -42,6 +50,8 @@ export default async function Image() {
             eth: parseFloat(country.total_eth || '0').toFixed(4),
           }
         })
+      } else if (error) {
+        console.error('Failed to fetch leaderboard:', error)
       }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error)
@@ -62,7 +72,7 @@ export default async function Image() {
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           {/* Grid pattern overlay */}
@@ -81,9 +91,9 @@ export default async function Image() {
               <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
-                  width="56"
-                  height="52"
+                  src={`${baseUrl}/logo.svg`}
+                  width={OG_IMAGE_LOGO.SMALL.width}
+                  height={OG_IMAGE_LOGO.SMALL.height}
                   style={{ objectFit: 'contain' }}
                 />
                 <div tw="flex flex-col">
@@ -233,7 +243,7 @@ export default async function Image() {
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>

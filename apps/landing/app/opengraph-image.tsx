@@ -1,21 +1,27 @@
 import { ImageResponse } from 'next/og'
+import {
+  getBaseUrl,
+  OG_IMAGE_SIZE,
+  OG_IMAGE_CONTENT_TYPE,
+  OG_IMAGE_FONT_FAMILY,
+  OG_IMAGE_LOGO,
+} from '@/lib/utils/og-image'
 
 export const runtime = 'edge'
 export const alt = 'Onchain World Cup 2026 - Vote with ETH on Base Network. Support your country in qualification voting.'
-export const size = {
-  width: 1200,
-  height: 630,
-}
-export const contentType = 'image/png'
+export const size = OG_IMAGE_SIZE
+export const contentType = OG_IMAGE_CONTENT_TYPE
 
 export default async function Image() {
+  const baseUrl = getBaseUrl()
+
   return new ImageResponse(
     (
       <div
         tw="w-full h-full flex relative"
         style={{
           background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-          fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+          fontFamily: OG_IMAGE_FONT_FAMILY,
         }}
       >
         {/* Grid pattern overlay */}
@@ -34,9 +40,9 @@ export default async function Image() {
             <div tw="flex items-center" style={{ gap: 20 }}>
               {/* Logo */}
               <img
-                src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
-                width="70"
-                height="65"
+                src={`${baseUrl}/logo.svg`}
+                width={OG_IMAGE_LOGO.LARGE.width}
+                height={OG_IMAGE_LOGO.LARGE.height}
                 style={{ objectFit: 'contain' }}
               />
               <div tw="flex flex-col">

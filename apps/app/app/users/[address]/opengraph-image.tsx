@@ -1,19 +1,25 @@
 import { ImageResponse } from 'next/og'
 import countriesData from '@/data/countries.json'
+import { getBaseUrl, createOgImageSupabaseClient } from '@/lib/utils/og-image'
+import {
+  OG_IMAGE_SIZE,
+  OG_IMAGE_CONTENT_TYPE,
+  OG_IMAGE_FONT_FAMILY,
+  OG_IMAGE_LOGO,
+} from '@/lib/constants'
 
 export const runtime = 'edge'
 export const alt = 'User voting stats - Onchain World Cup 2026. Track your ETH spent, favorite country, votes and rank.'
-export const size = {
-  width: 1200,
-  height: 630,
-}
-export const contentType = 'image/png'
+export const size = OG_IMAGE_SIZE
+export const contentType = OG_IMAGE_CONTENT_TYPE
 
 export default async function Image({ params }: { params: Promise<{ address: string }> }) {
   try {
+    const baseUrl = getBaseUrl()
     const { address } = await params
+    const normalizedAddress = address.toLowerCase()
 
-    // Fetch user stats and profile from API
+    // Fetch user stats and profile directly from Supabase (PARALLEL QUERIES)
     let userStats = {
       totalSpent: '0.000',
       totalVotes: 0,
@@ -24,49 +30,74 @@ export default async function Image({ params }: { params: Promise<{ address: str
     let imageUrl: string | null = null
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.onchainworldcup.xyz'}/api/users/${address}`,
-        { next: { revalidate: 300 } } // Cache for 5 minutes
-      )
+      const supabase = createOgImageSupabaseClient()
 
-      if (response.ok) {
-        const data = await response.json()
-        userStats.totalSpent = parseFloat(data.data.qualification_spent_eth || '0').toFixed(3)
-        userStats.totalVotes = data.data.qualification_votes || 0
-        userStats.rank = data.data.rank || 0
+      // Run all queries in parallel for faster response
+      const [statsResult, userResult, votesResult] = await Promise.all([
+        // Query 1: User stats
+        supabase
+          .from('user_stats')
+          .select('qualification_votes, qualification_spent_eth, rank')
+          .eq('wallet_address', normalizedAddress)
+          .single(),
 
-        if (data.data.name && String(data.data.name).trim()) {
-          displayName = String(data.data.name).trim()
+        // Query 2: User profile (name, image)
+        supabase
+          .from('users')
+          .select('name, image')
+          .eq('wallet_address', normalizedAddress)
+          .single(),
+
+        // Query 3: Get favorite country using aggregation (much faster than fetching all votes)
+        supabase
+          .from('qualification_votes')
+          .select('country_code, vote_count')
+          .eq('voter_address', normalizedAddress)
+          .order('created_at', { ascending: false })
+          .limit(20), // Reduced from 50 to 20 for faster query
+      ])
+
+      // Process stats
+      if (statsResult.data) {
+        userStats.totalSpent = parseFloat(statsResult.data.qualification_spent_eth || '0').toFixed(3)
+        userStats.totalVotes = statsResult.data.qualification_votes || 0
+        userStats.rank = statsResult.data.rank || 0
+      }
+
+      // Process user profile
+      if (userResult.data) {
+        if (userResult.data.name && String(userResult.data.name).trim()) {
+          displayName = String(userResult.data.name).trim()
         }
-        if (data.data.image && String(data.data.image).trim()) {
-          imageUrl = String(data.data.image).trim()
+        if (userResult.data.image && String(userResult.data.image).trim()) {
+          imageUrl = String(userResult.data.image).trim()
         }
+      }
 
-        // Calculate favorite country from votes
-        if (data.data.votes && Array.isArray(data.data.votes) && data.data.votes.length > 0) {
-          const countryVotes: Record<string, number> = {}
+      // Calculate favorite country from votes
+      if (votesResult.data && votesResult.data.length > 0) {
+        const countryVotes: Record<string, number> = {}
 
-          // Count votes per country
-          data.data.votes.forEach((vote: any) => {
-            const code = vote.country_code
-            countryVotes[code] = (countryVotes[code] || 0) + (vote.vote_count || 1)
-          })
+        // Count votes per country
+        votesResult.data.forEach((vote) => {
+          const code = vote.country_code
+          countryVotes[code] = (countryVotes[code] || 0) + (vote.vote_count || 1)
+        })
 
-          // Find country with most votes
-          const favoriteCode = Object.entries(countryVotes).reduce((a, b) =>
-            b[1] > a[1] ? b : a
-          )[0]
+        // Find country with most votes
+        const favoriteCode = Object.entries(countryVotes).reduce((a, b) =>
+          b[1] > a[1] ? b : a
+        )[0]
 
-          // Look up country info
-          const countryInfo = countriesData.find(
-            (c) => c.code.toUpperCase() === favoriteCode.toUpperCase()
-          )
+        // Look up country info
+        const countryInfo = countriesData.find(
+          (c) => c.code.toUpperCase() === favoriteCode.toUpperCase()
+        )
 
-          if (countryInfo) {
-            userStats.favoriteCountry = {
-              name: countryInfo.name,
-              flag: countryInfo.flagEmoji,
-            }
+        if (countryInfo) {
+          userStats.favoriteCountry = {
+            name: countryInfo.name,
+            flag: countryInfo.flagEmoji,
           }
         }
       }
@@ -84,7 +115,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
           tw="w-full h-full flex relative"
           style={{
             background: 'linear-gradient(135deg, #0a0f1a 0%, #1a1f3e 50%, #0a0f1a 100%)',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           {/* Grid pattern overlay */}
@@ -103,9 +134,9 @@ export default async function Image({ params }: { params: Promise<{ address: str
               <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
-                  src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
-                  width="56"
-                  height="52"
+                  src={`${baseUrl}/logo.svg`}
+                  width={OG_IMAGE_LOGO.SMALL.width}
+                  height={OG_IMAGE_LOGO.SMALL.height}
                   style={{ objectFit: 'contain' }}
                 />
                 <div tw="flex flex-col">
@@ -304,7 +335,7 @@ export default async function Image({ params }: { params: Promise<{ address: str
           tw="w-full h-full flex items-center justify-center"
           style={{
             backgroundColor: '#0a0f1a',
-            fontFamily: 'Arial Narrow, Helvetica Condensed, Arial, sans-serif',
+            fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
           <div tw="flex" style={{ fontSize: 48, color: '#d4ff00' }}>
