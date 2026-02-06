@@ -10,18 +10,43 @@ export const contentType = 'image/png'
 
 export default async function Image() {
   try {
-    // ALWAYS use placeholder data to ensure TOP 3 countries are shown
-    const topCountries: Array<{
+    let topCountries: Array<{
       rank: number
       name: string
       flag: string
       votes: number
       eth: string
-    }> = [
-      { rank: 1, name: 'Brazil', flag: '🇧🇷', votes: 0, eth: '0.0000' },
-      { rank: 2, name: 'Argentina', flag: '🇦🇷', votes: 0, eth: '0.0000' },
-      { rank: 3, name: 'Germany', flag: '🇩🇪', votes: 0, eth: '0.0000' },
-    ]
+    }> = []
+
+    // Fetch real leaderboard data from API with caching
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/qualification/leaderboard`,
+        { next: { revalidate: 300 } } // Cache for 5 minutes
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        topCountries = data.data.slice(0, 3).map((country: any, index: number) => ({
+          rank: index + 1,
+          name: country.country_name || 'Unknown',
+          flag: country.country_flag || '🏳️',
+          votes: country.total_votes || 0,
+          eth: parseFloat(country.total_eth || '0').toFixed(4),
+        }))
+      }
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error)
+    }
+
+    // Fallback to placeholder if no data
+    if (topCountries.length === 0) {
+      topCountries = [
+        { rank: 1, name: 'Brazil', flag: '🇧🇷', votes: 0, eth: '0.0000' },
+        { rank: 2, name: 'Argentina', flag: '🇦🇷', votes: 0, eth: '0.0000' },
+        { rank: 3, name: 'Germany', flag: '🇩🇪', votes: 0, eth: '0.0000' },
+      ]
+    }
 
     return new ImageResponse(
       (
@@ -41,23 +66,23 @@ export default async function Image() {
             }}
           />
 
-          {/* Main content */}
-          <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '60px' }}>
+          {/* Main content - compact padding so CTA is never cropped */}
+          <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '36px 48px 40px' }}>
             {/* Header with logo */}
-            <div tw="flex items-center justify-between w-full">
-              <div tw="flex items-center" style={{ gap: 20 }}>
+            <div tw="flex items-center justify-between w-full flex-shrink-0">
+              <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
                   src={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/logo.svg`}
-                  width="70"
-                  height="65"
+                  width="56"
+                  height="52"
                   style={{ objectFit: 'contain' }}
                 />
                 <div tw="flex flex-col">
-                  <div tw="flex font-bold" style={{ fontSize: 28, color: '#d4ff00', letterSpacing: '0.05em' }}>
+                  <div tw="flex font-bold" style={{ fontSize: 24, color: '#d4ff00', letterSpacing: '0.05em' }}>
                     ONCHAIN WORLD CUP
                   </div>
-                  <div tw="flex" style={{ fontSize: 18, color: '#a0a0a0' }}>
+                  <div tw="flex" style={{ fontSize: 15, color: '#a0a0a0' }}>
                     QUALIFICATION LEADERBOARD
                   </div>
                 </div>
@@ -88,8 +113,8 @@ export default async function Image() {
               </div>
             </div>
 
-            {/* Leaderboard */}
-            <div tw="flex flex-col" style={{ gap: 15, marginTop: 40, marginBottom: 40 }}>
+            {/* Leaderboard - compact so CTA fits */}
+            <div tw="flex flex-col flex-1 min-h-0" style={{ gap: 10, marginTop: 20, marginBottom: 20 }}>
               {topCountries.map((country) => (
                 <div
                   key={country.rank}
@@ -98,16 +123,16 @@ export default async function Image() {
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(212, 255, 0, 0.2)',
                     borderRadius: 8,
-                    padding: '20px 30px',
+                    padding: '14px 24px',
                   }}
                 >
                   {/* Rank & Country */}
-                  <div tw="flex items-center" style={{ gap: 25 }}>
+                  <div tw="flex items-center" style={{ gap: 20 }}>
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 36,
-                        width: 50,
+                        fontSize: 28,
+                        width: 40,
                         color: country.rank === 1 ? '#FFD700' : country.rank === 2 ? '#C0C0C0' : country.rank === 3 ? '#CD7F32' : '#d4ff00',
                         fontFamily: 'monospace',
                       }}
@@ -119,7 +144,7 @@ export default async function Image() {
                     <div
                       tw="flex"
                       style={{
-                        fontSize: 50,
+                        fontSize: 40,
                       }}
                     >
                       {country.flag}
@@ -129,7 +154,7 @@ export default async function Image() {
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 32,
+                        fontSize: 26,
                         color: '#ffffff',
                       }}
                     >
@@ -142,7 +167,7 @@ export default async function Image() {
                     <div
                       tw="flex font-bold"
                       style={{
-                        fontSize: 28,
+                        fontSize: 22,
                         color: '#d4ff00',
                         fontFamily: 'monospace',
                       }}
@@ -152,7 +177,7 @@ export default async function Image() {
                     <div
                       tw="flex"
                       style={{
-                        fontSize: 20,
+                        fontSize: 16,
                         color: '#a0a0a0',
                         fontFamily: 'monospace',
                       }}
@@ -164,16 +189,16 @@ export default async function Image() {
               ))}
             </div>
 
-            {/* CTA */}
-            <div tw="flex items-center justify-between">
+            {/* CTA - flex-shrink-0 so it's never cropped */}
+            <div tw="flex items-center justify-between flex-shrink-0">
               <div
                 tw="flex items-center justify-center font-bold"
                 style={{
                   background: 'linear-gradient(135deg, #d4ff00 0%, #c6ff00 100%)',
                   color: '#0a0f1a',
-                  padding: '20px 50px',
+                  padding: '16px 40px',
                   borderRadius: 8,
-                  fontSize: 32,
+                  fontSize: 28,
                   boxShadow: '0 8px 32px rgba(212, 255, 0, 0.3)',
                 }}
               >
