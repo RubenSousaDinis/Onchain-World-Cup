@@ -1,351 +1,279 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
+import { Trophy, Clock, RefreshCw, Loader2 } from "lucide-react"
+import { InlineLoader } from "@/components/states"
 
-const _tabs = [
-  { label: "Summary", value: "summary" },
-  { label: "Standings", value: "standings" },
-  { label: "Schedule", value: "schedule" },
-  { label: "Results", value: "results" },
-  { label: "Most Votes", value: "top-teams" },
-]
+type Team = {
+  countryCode: string
+  countryName: string
+  flagEmoji: string
+  qualRank: number
+  position: number
+  matchesPlayed: number
+  wins: number
+  draws: number
+  losses: number
+  points: number
+}
 
-const mockStandings = [
-  {
-    pos: 1,
-    team: "Brazil",
-    flag: "🇧🇷",
-    played: 3,
-    won: 3,
-    drawn: 0,
-    lost: 0,
-    gf: 8,
-    ga: 2,
-    gd: 6,
-    pts: 9,
-    votes: 1250,
-  },
-  {
-    pos: 2,
-    team: "France",
-    flag: "🇫🇷",
-    played: 3,
-    won: 2,
-    drawn: 1,
-    lost: 0,
-    gf: 7,
-    ga: 3,
-    gd: 4,
-    pts: 7,
-    votes: 1120,
-  },
-  {
-    pos: 3,
-    team: "Argentina",
-    flag: "🇦🇷",
-    played: 3,
-    won: 2,
-    drawn: 0,
-    lost: 1,
-    gf: 6,
-    ga: 4,
-    gd: 2,
-    pts: 6,
-    votes: 1050,
-  },
-  {
-    pos: 4,
-    team: "England",
-    flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    played: 3,
-    won: 2,
-    drawn: 0,
-    lost: 1,
-    gf: 5,
-    ga: 3,
-    gd: 2,
-    pts: 6,
-    votes: 980,
-  },
-  { pos: 5, team: "Spain", flag: "🇪🇸", played: 3, won: 1, drawn: 2, lost: 0, gf: 5, ga: 3, gd: 2, pts: 5, votes: 890 },
-  {
-    pos: 6,
-    team: "Germany",
-    flag: "🇩🇪",
-    played: 3,
-    won: 1,
-    drawn: 1,
-    lost: 1,
-    gf: 4,
-    ga: 4,
-    gd: 0,
-    pts: 4,
-    votes: 850,
-  },
-]
-
-const allSchedule = [
-  {
-    date: "June 11, 2026",
-    matches: [
-      {
-        time: "11:00 AM",
-        team1: "USA",
-        team2: "Wales",
-        team1Flag: "🇺🇸",
-        team2Flag: "🏴",
-        stadium: "Rose Bowl, LA",
-        group: "A",
-      },
-      {
-        time: "2:00 PM",
-        team1: "Senegal",
-        team2: "Netherlands",
-        team1Flag: "🇸🇳",
-        team2Flag: "🇳🇱",
-        stadium: "MetLife Stadium, NY",
-        group: "A",
-      },
-    ],
-  },
-  {
-    date: "June 12, 2026",
-    matches: [
-      {
-        time: "11:00 AM",
-        team1: "Argentina",
-        team2: "Saudi Arabia",
-        team1Flag: "🇦🇷",
-        team2Flag: "🇸🇦",
-        stadium: "AT&T Stadium, Dallas",
-        group: "C",
-      },
-      {
-        time: "2:00 PM",
-        team1: "Mexico",
-        team2: "Poland",
-        team1Flag: "🇲🇽",
-        team2Flag: "🇵🇱",
-        stadium: "Arrowhead Stadium, KC",
-        group: "C",
-      },
-    ],
-  },
-]
-
-const results = [
-  {
-    id: "101",
-    date: "June 10",
-    team1: "Brazil",
-    team2: "Serbia",
-    team1Flag: "🇧🇷",
-    team2Flag: "🇷🇸",
-    score1: 2,
-    score2: 0,
-    votes1: "450",
-    votes2: "180",
-    winner: 1,
-    stadium: "MetLife Stadium, NY",
-    matchDate: "June 10, 2026",
-    contractAddress: "0x1234567890123456789012345678901234567890",
-  },
-  {
-    id: "102",
-    date: "June 10",
-    team1: "France",
-    team2: "Australia",
-    team1Flag: "🇫🇷",
-    team2Flag: "🇦🇺",
-    score1: 4,
-    score2: 1,
-    votes1: "520",
-    votes2: "210",
-    winner: 1,
-    stadium: "Rose Bowl, LA",
-    matchDate: "June 10, 2026",
-    contractAddress: "0x2345678901234567890123456789012345678901",
-  },
-  {
-    id: "103",
-    date: "June 9",
-    team1: "Argentina",
-    team2: "Mexico",
-    team1Flag: "🇦🇷",
-    team2Flag: "🇲🇽",
-    score1: 2,
-    score2: 0,
-    votes1: "410",
-    votes2: "340",
-    winner: 1,
-    stadium: "SoFi Stadium, LA",
-    matchDate: "June 9, 2026",
-    contractAddress: "0x3456789012345678901234567890123456789012",
-  },
-]
-
-const topTeamsByVotes = [
-  { pos: 1, team: "Brazil", flag: "🇧🇷", totalVotes: 1250, totalETH: 12.5, voters: 340 },
-  { pos: 2, team: "France", flag: "🇫🇷", totalVotes: 1120, totalETH: 11.2, voters: 310 },
-  { pos: 3, team: "Argentina", flag: "🇦🇷", totalVotes: 1050, totalETH: 10.5, voters: 290 },
-  { pos: 4, team: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", totalVotes: 980, totalETH: 9.8, voters: 270 },
-  { pos: 5, team: "Spain", flag: "🇪🇸", totalVotes: 890, totalETH: 8.9, voters: 245 },
-]
-
-type Match = {
+type Group = {
   id: string
-  date: string
-  team1: string
-  team2: string
-  team1Flag: string
-  team2Flag: string
-  score1?: number
-  score2?: number
-  votes1?: string
-  votes2?: string
-  winner?: number
-  stadium: string
-  matchDate: string
-  contractAddress: string
+  name: string
+  displayName: string
+  maxTeams: number
+  teams: Team[]
+}
+
+type GroupsResponse = {
+  data: Group[]
+  cached: boolean
+  lastCalculated: string
+  nextUpdate: string
 }
 
 export default function TournamentPage() {
-  const [_activeTab, _setActiveTab] = useState("summary")
-  const [_voteModalOpen, _setVoteModalOpen] = useState(false)
-  const [_selectedMatch, _setSelectedMatch] = useState<Match | null>(null)
+  const [groups, setGroups] = useState<Group[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [lastCalculated, setLastCalculated] = useState<string>("")
+  const [nextUpdate, setNextUpdate] = useState<string>("")
+  const [timeUntilUpdate, setTimeUntilUpdate] = useState("")
 
-  const [displayedStandings, setDisplayedStandings] = useState(6)
-  const [displayedResults, setDisplayedResults] = useState(3)
-  const [displayedTopTeams, setDisplayedTopTeams] = useState(5)
-  const [displayedSchedule, setDisplayedSchedule] = useState(2)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const fetchGroups = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true)
+      } else {
+        setIsLoading(true)
+      }
 
-  // Infinite scroll for standings
-  const { sentinelRef: _standingsSentinel, shouldLoadMore: shouldLoadStandings } = useInfiniteScroll({
-    hasMore: displayedStandings < mockStandings.length,
-    isLoading: isLoadingMore,
-  })
-
-  // Infinite scroll for results
-  const { sentinelRef: _resultsSentinel, shouldLoadMore: shouldLoadResults } = useInfiniteScroll({
-    hasMore: displayedResults < results.length,
-    isLoading: isLoadingMore,
-  })
-
-  // Infinite scroll for top teams
-  const { sentinelRef: _topTeamsSentinel, shouldLoadMore: shouldLoadTopTeams } = useInfiniteScroll({
-    hasMore: displayedTopTeams < topTeamsByVotes.length,
-    isLoading: isLoadingMore,
-  })
-
-  // Infinite scroll for schedule
-  const { sentinelRef: _scheduleSentinel, shouldLoadMore: shouldLoadSchedule } = useInfiniteScroll({
-    hasMore: displayedSchedule < allSchedule.length,
-    isLoading: isLoadingMore,
-  })
+      const res = await fetch("/api/tournament/groups")
+      if (res.ok) {
+        const data: GroupsResponse = await res.json()
+        setGroups(data.data)
+        setLastCalculated(data.lastCalculated)
+        setNextUpdate(data.nextUpdate)
+      }
+    } catch (error) {
+      console.error("Failed to fetch tournament groups:", error)
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    if (shouldLoadStandings) {
-      setIsLoadingMore(true)
-      setTimeout(() => {
-        setDisplayedStandings((prev) => Math.min(prev + 6, mockStandings.length))
-        setIsLoadingMore(false)
-      }, 300)
-    }
-  }, [shouldLoadStandings])
+    fetchGroups()
 
+    // Auto-refresh every 5 minutes
+    const interval = setInterval(() => fetchGroups(true), 5 * 60 * 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Calculate time until next update
   useEffect(() => {
-    if (shouldLoadResults) {
-      setIsLoadingMore(true)
-      setTimeout(() => {
-        setDisplayedResults((prev) => Math.min(prev + 3, results.length))
-        setIsLoadingMore(false)
-      }, 300)
-    }
-  }, [shouldLoadResults])
+    if (!nextUpdate) return
 
-  useEffect(() => {
-    if (shouldLoadTopTeams) {
-      setIsLoadingMore(true)
-      setTimeout(() => {
-        setDisplayedTopTeams((prev) => Math.min(prev + 5, topTeamsByVotes.length))
-        setIsLoadingMore(false)
-      }, 300)
-    }
-  }, [shouldLoadTopTeams])
+    const timer = setInterval(() => {
+      const now = new Date().getTime()
+      const next = new Date(nextUpdate).getTime()
+      const diff = next - now
 
-  useEffect(() => {
-    if (shouldLoadSchedule) {
-      setIsLoadingMore(true)
-      setTimeout(() => {
-        setDisplayedSchedule((prev) => Math.min(prev + 2, allSchedule.length))
-        setIsLoadingMore(false)
-      }, 300)
-    }
-  }, [shouldLoadSchedule])
+      if (diff > 0) {
+        const minutes = Math.floor(diff / (60 * 1000))
+        const seconds = Math.floor((diff % (60 * 1000)) / 1000)
+        setTimeUntilUpdate(`${minutes}m ${seconds}s`)
+      } else {
+        setTimeUntilUpdate("Now")
+      }
+    }, 1000)
 
-  const _handleVoteClick = (_match: Match, _teamIndex: number) => {
-    // Future implementation - tournament phase not active yet
+    return () => clearInterval(timer)
+  }, [nextUpdate])
+
+  const getRankColor = (rank: number): string => {
+    if (rank <= 12) return "text-yellow-500" // Pot 1
+    if (rank <= 24) return "text-gray-400" // Pot 2
+    if (rank <= 36) return "text-orange-500" // Pot 3
+    return "text-red-500" // Pot 4
   }
 
   return (
-    <div className="min-h-screen flex">
-      <RetroSidebar />
-      <MobileNav />
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-1">
+        <RetroSidebar />
+        <MobileNav />
 
-      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
-        <div className="cm-panel rounded-sm overflow-hidden mb-6">
-          <div className="soccer-field-bg p-8 lg:p-16">
-            <h1 className="text-3xl lg:text-5xl font-bold mb-4">
-              <span className="cm-highlight">Tournament Coming Soon</span>
-            </h1>
-            <p className="text-base lg:text-xl text-white">
-              We're currently in the <span className="cm-highlight font-bold">Qualification Phase</span>
-            </p>
-          </div>
-
-          <div className="bg-secondary/30 p-6 lg:p-8">
-            <p className="text-sm lg:text-base text-gray-300 mb-6 max-w-3xl">
-              The tournament brackets haven't been set yet. Right now, the global community is voting to decide which 48
-              countries will qualify for the Onchain World Cup 2026. Help your nation secure their spot!
-            </p>
-            <div>
-              <Link
-                href="/qualification"
-                className="inline-block cm-nav-tab px-8 py-4 text-base lg:text-lg font-bold uppercase"
-              >
-                Go to Qualification →
-              </Link>
+        <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+          {/* Header */}
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+            <div className="soccer-field-bg p-4 lg:p-6">
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div className="flex-1">
+                  <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+                    <span className="cm-highlight">Tournament Groups</span>
+                  </h1>
+                  <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">World Cup 2026</h2>
+                </div>
+                <button
+                  onClick={() => fetchGroups(true)}
+                  disabled={isRefreshing}
+                  className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0 disabled:opacity-50"
+                  aria-label="Refresh groups"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+              </div>
+              <p className="text-sm lg:text-base text-foreground/80 mb-2">
+                Groups are dynamically calculated based on current qualification standings
+              </p>
+              <p className="text-sm lg:text-base text-foreground/70">
+                12 groups of 4 teams • Snake draft seeding • Updates hourly
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="cm-panel rounded-sm p-4 bg-secondary/20">
-            <h3 className="text-lg font-bold cm-highlight mb-2">How It Works</h3>
-            <p className="text-xs text-gray-300">
-              Vote for countries during qualification. Top 48 by vote count advance to the tournament bracket.
-            </p>
+          {/* Refreshing Indicator */}
+          {isRefreshing && (
+            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+              <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
+                <div className="px-6 py-3 flex items-center gap-3">
+                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                  <span className="text-sm lg:text-base font-bold text-accent">Updating groups...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cache Status */}
+          {lastCalculated && (
+            <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border border-accent/30">
+              <div className="bg-secondary/40 p-3 lg:p-4">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-accent" />
+                    <span className="text-sm lg:text-base font-bold text-foreground">
+                      Last Updated: {new Date(lastCalculated).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm lg:text-base text-muted-foreground">
+                      Next update in: <span className="font-bold cm-highlight">{timeUntilUpdate}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Seeding Legend */}
+          <div className="mb-4 lg:mb-6 grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-yellow-500/5 border border-yellow-500/20">
+              <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">POT 1</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 1-12</div>
+            </div>
+            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-gray-400/5 border border-gray-400/20">
+              <div className="text-xs lg:text-sm font-bold text-gray-400 mb-1">POT 2</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 13-24</div>
+            </div>
+            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-orange-500/5 border border-orange-500/20">
+              <div className="text-xs lg:text-sm font-bold text-orange-500 mb-1">POT 3</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 25-36</div>
+            </div>
+            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-red-500/5 border border-red-500/20">
+              <div className="text-xs lg:text-sm font-bold text-red-500 mb-1">POT 4</div>
+              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 37-48</div>
+            </div>
           </div>
-          <div className="cm-panel rounded-sm p-4 bg-secondary/20">
-            <h3 className="text-lg font-bold cm-highlight mb-2">Current Status</h3>
-            <p className="text-xs text-gray-300">
-              Qualification phase active. Tournament brackets will be revealed once all 48 teams are decided.
-            </p>
-          </div>
-          <div className="cm-panel rounded-sm p-4 bg-secondary/20">
-            <h3 className="text-lg font-bold cm-highlight mb-2">Get Involved</h3>
-            <p className="text-xs text-gray-300">
-              Every vote matters. Support your nation now and earn rewards when they qualify!
-            </p>
-          </div>
-        </div>
-      </main>
+
+          {/* Groups Grid */}
+          {isLoading ? (
+            <div className="cm-panel rounded-sm border border-border overflow-hidden p-12 text-center">
+              <InlineLoader text="Loading tournament groups..." />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {groups.map((group) => (
+                <div
+                  key={group.id}
+                  className="cm-panel rounded-sm border-2 border-accent/30 overflow-hidden hover:border-accent/60 transition-colors"
+                >
+                  {/* Group Header */}
+                  <div className="bg-accent/20 border-b-2 border-accent/30 p-3 lg:p-4">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-accent" />
+                      <h3 className="text-xl lg:text-2xl font-bold cm-highlight">
+                        {group.displayName}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Teams List */}
+                  <div className="p-3 lg:p-4 space-y-2">
+                    {group.teams.map((team) => {
+                      const isTBD = team.countryCode.startsWith("TBD")
+
+                      return (
+                        <div
+                          key={team.countryCode}
+                          className={`flex items-center justify-between p-2 lg:p-3 rounded-sm ${
+                            isTBD ? "bg-secondary/20 opacity-50" : "bg-secondary/40"
+                          } hover:bg-accent/10 transition-colors`}
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="text-xl lg:text-2xl flex-shrink-0">{team.flagEmoji}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-sm lg:text-base truncate">
+                                {team.countryName}
+                              </div>
+                              {!isTBD && (
+                                <div className={`text-xs lg:text-sm font-bold ${getRankColor(team.qualRank)}`}>
+                                  Rank #{team.qualRank}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          {!isTBD && (
+                            <div className="text-xs lg:text-sm font-bold text-muted-foreground flex-shrink-0 ml-2">
+                              {team.points} PTS
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Info Footer */}
+          {!isLoading && groups.length > 0 && (
+            <div className="mt-6 lg:mt-8 cm-panel rounded-sm p-4 lg:p-6 bg-secondary/40 border border-accent/20">
+              <div className="flex items-start gap-3">
+                <Trophy className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base text-foreground/80 space-y-2">
+                  <p>
+                    <span className="font-bold cm-highlight">Snake Draft Seeding:</span> Groups are balanced using a snake draft pattern to ensure competitive fairness.
+                  </p>
+                  <p>
+                    <span className="font-bold cm-highlight">Dynamic Updates:</span> As qualification voting continues, groups will be recalculated hourly to reflect the latest standings.
+                  </p>
+                  <p>
+                    <span className="font-bold cm-highlight">TBD Teams:</span> Placeholder teams will be replaced as countries secure their qualification through voting.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
