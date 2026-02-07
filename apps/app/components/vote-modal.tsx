@@ -41,12 +41,12 @@ export function VoteModal({
   const [isDemoVote, setIsDemoVote] = useState(false)
 
   const { address: _address, isConnected } = useAccount()
-  const { connect: _connect, connectors: _connectors } = useConnect()
+  const { connect, connectors } = useConnect()
   const { data: hash, writeContract, isPending, error: writeError } = useWriteContract()
   const { isLoading: isConfirming, isSuccess, isError: isConfirmError } = useWaitForTransactionReceipt({
     hash,
   })
-  const { isFrameContext: _isFrameContext, isAutoConnecting } = useFarcaster()
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
   const { success, error, info } = useNotifications()
 
   const basePrice = 0.001 // Starting price in ETH
@@ -110,6 +110,28 @@ export function VoteModal({
     if (voteCount < 1) return
 
     if (!isConnected) {
+      // In Farcaster, wallet should auto-connect. If still connecting, wait.
+      if (isFrameContext) {
+        if (isAutoConnecting) {
+          info("Connecting Wallet", "Wallet is connecting automatically...")
+          return
+        }
+        // Try to connect with Farcaster's injected wallet
+        const injectedConnector = connectors.find((c) => c.type === "injected")
+        if (injectedConnector) {
+          try {
+            info("Connecting Wallet", "Connecting via Farcaster wallet...")
+            await connect({ connector: injectedConnector })
+            return // Will vote on next click after connection settles
+          } catch (err) {
+            console.error("Failed to connect Farcaster wallet:", err)
+            error("Connection Failed", "Unable to connect wallet. Please try again.")
+            return
+          }
+        }
+      }
+
+      // Desktop: demo mode
       setIsDemoVote(true)
       info("Demo Vote Placed", "Connect your wallet to place real votes on-chain")
       return
@@ -168,7 +190,7 @@ export function VoteModal({
             </button>
           </div>
 
-          {!isConnected && (
+          {!isConnected && !isFrameContext && (
             <div className="p-3 bg-purple-900/30 border-b border-purple-500/30">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-purple-400" />
@@ -354,10 +376,12 @@ export function VoteModal({
               {isPending || isConfirming
                 ? "Voting..."
                 : isAutoConnecting
-                  ? "Connecting..."
+                  ? "Connecting Wallet..."
                   : isConnected
                     ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${totalCost.toFixed(3)} ETH`
-                    : `Try Demo Vote (${voteCount} vote${voteCount !== 1 ? "s" : ""})`}
+                    : isFrameContext
+                      ? "Connect Wallet"
+                      : `Try Demo Vote (${voteCount} vote${voteCount !== 1 ? "s" : ""})`}
             </button>
           </div>
         </div>

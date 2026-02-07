@@ -1,6 +1,7 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react"
+import { useConnect, useAccount } from "wagmi"
 
 // Debug logging - only enable in development
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
@@ -38,6 +39,10 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     sdkReady: false,
     isLoading: true,
   })
+
+  const { connect, connectors } = useConnect()
+  const { isConnected } = useAccount()
+  const autoConnectAttempted = useRef(false)
 
   useEffect(() => {
     // Check if we're in a Farcaster Mini App context
@@ -96,12 +101,12 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
               username,
               displayName,
               pfpUrl,
-              isAutoConnecting: false,
+              isAutoConnecting: true,
               sdkReady: true,
               isLoading: false,
             })
 
-            console.log("[FarcasterProvider] Farcaster setup complete. Wallet will connect when user clicks connect button.")
+            console.log("[FarcasterProvider] Farcaster setup complete. Auto-connecting wallet...")
           } catch (walletError) {
             console.error("[FarcasterProvider] Error in Farcaster initialization:", walletError)
             setContext({
@@ -141,6 +146,47 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
 
     checkFarcasterContext()
   }, []) // Run once on mount
+
+  // Auto-connect wallet when in Farcaster context
+  useEffect(() => {
+    if (
+      context.isFrameContext &&
+      context.sdkReady &&
+      !isConnected &&
+      !autoConnectAttempted.current
+    ) {
+      autoConnectAttempted.current = true
+      console.log("[FarcasterProvider] Auto-connecting wallet via injected connector...")
+
+      const connector = connectors.find((c) => c.type === "injected")
+      if (connector) {
+        connect(
+          { connector },
+          {
+            onSuccess: () => {
+              console.log("[FarcasterProvider] Wallet auto-connected successfully!")
+              setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+            },
+            onError: (err) => {
+              console.error("[FarcasterProvider] Wallet auto-connect failed:", err)
+              setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+            },
+          }
+        )
+      } else {
+        console.warn("[FarcasterProvider] No injected connector found for auto-connect")
+        setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+      }
+    }
+  }, [context.isFrameContext, context.sdkReady, isConnected, connect, connectors])
+
+  // Clear isAutoConnecting when wallet connects
+  useEffect(() => {
+    if (isConnected && context.isAutoConnecting) {
+      console.log("[FarcasterProvider] Wallet connected - clearing auto-connecting state")
+      setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+    }
+  }, [isConnected, context.isAutoConnecting])
 
   return <FarcasterContext.Provider value={context}>{children}</FarcasterContext.Provider>
 }
