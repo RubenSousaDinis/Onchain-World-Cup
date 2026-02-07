@@ -7,7 +7,7 @@ import { useNotifications } from "@/components/notifications"
 interface ShareModalProps {
   isOpen: boolean
   onClose: () => void
-  type: "vote" | "result" | "milestone" | "country" | "leaderboard" | "user-stats" | "prize-pool"
+  type: "vote" | "result" | "milestone" | "country" | "leaderboard" | "user-stats" | "prize-pool" | "group"
   data: {
     team?: string
     teamFlag?: string
@@ -52,6 +52,15 @@ interface ShareModalProps {
       team2Votes: number
       matchId?: string
     }
+    group?: {
+      name: string
+      teams: Array<{
+        name: string
+        flag: string
+        rank: number
+        points: number
+      }>
+    }
   }
 }
 
@@ -73,6 +82,20 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
   const getShareText = () => {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
+
+    if (type === "group") {
+      const group = data.group
+      const teamsText = group?.teams
+        .slice(0, 4)
+        .map((team, i) => `${i + 1}. ${team.flag} ${team.name} (Rank #${team.rank})`)
+        .join('\n')
+
+      return {
+        title: `World Cup 2026 - ${group?.name}`,
+        text: `⚽ World Cup 2026 - ${group?.name}\n\n${teamsText}\n\nDynamically updated based on qualification voting!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        url: `${baseUrl}/tournament`,
+      }
+    }
 
     if (type === "prize-pool") {
       const pool = data.prizePool
@@ -210,6 +233,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             {type === "milestone" && <Flame className="w-6 h-6 text-accent" />}
             {type === "user-stats" && <TrendingUp className="w-6 h-6 text-accent" />}
             {type === "prize-pool" && <Trophy className="w-6 h-6 text-accent" />}
+            {type === "group" && <Trophy className="w-6 h-6 text-accent" />}
             <div>
               <div className="text-lg font-bold cm-highlight">
                 {type === "leaderboard" && "Share Leaderboard"}
@@ -219,6 +243,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
                 {type === "milestone" && "Achievement Unlocked!"}
                 {type === "user-stats" && "Share Your Stats"}
                 {type === "prize-pool" && "Share Prize Pool"}
+                {type === "group" && `Share ${data.group?.name}`}
               </div>
               <div className="text-xs text-foreground/80">Share with your friends</div>
             </div>
@@ -365,6 +390,38 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
                   <div className="text-xs text-muted-foreground">{data.prizePool?.team2Votes} votes</div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {type === "group" && (
+            <div className="text-center">
+              <div className="text-4xl mb-3">🏆</div>
+              <div className="text-xl font-bold cm-highlight mb-4">{data.group?.name}</div>
+
+              {/* Teams List */}
+              <div className="space-y-2 max-w-sm mx-auto">
+                {data.group?.teams.map((team, index) => (
+                  <div
+                    key={`${team.name}-${team.rank}`}
+                    className="flex items-center justify-between bg-secondary/20 border border-border rounded px-3 py-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{team.flag}</span>
+                      <div className="text-left">
+                        <div className="text-sm font-bold">{team.name}</div>
+                        <div className="text-xs text-muted-foreground">Rank #{team.rank}</div>
+                      </div>
+                    </div>
+                    <div className="text-sm font-bold text-accent">{team.points} PTS</div>
+                  </div>
+                ))}
+              </div>
+
+              {data.group && data.group.teams.length < 4 && (
+                <div className="mt-3 text-xs text-muted-foreground">
+                  {4 - data.group.teams.length} team{4 - data.group.teams.length > 1 ? 's' : ''} TBD
+                </div>
+              )}
             </div>
           )}
         </div>

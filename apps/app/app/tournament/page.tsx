@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, RefreshCw, Loader2 } from "lucide-react"
+import { Trophy, Clock, RefreshCw, Loader2, Share2 } from "lucide-react"
 import { InlineLoader } from "@/components/states"
+import { ShareModal } from "@/components/share-modal"
 
 type Team = {
   countryCode: string
@@ -41,6 +42,8 @@ export default function TournamentPage() {
   const [lastCalculated, setLastCalculated] = useState<string>("")
   const [nextUpdate, setNextUpdate] = useState<string>("")
   const [timeUntilUpdate, setTimeUntilUpdate] = useState("")
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
 
   const fetchGroups = async (isRefresh = false) => {
     try {
@@ -100,6 +103,11 @@ export default function TournamentPage() {
     if (rank <= 24) return "text-gray-400" // Pot 2
     if (rank <= 36) return "text-orange-500" // Pot 3
     return "text-red-500" // Pot 4
+  }
+
+  const handleShareGroup = (group: Group) => {
+    setSelectedGroup(group)
+    setShareModalOpen(true)
   }
 
   return (
@@ -206,11 +214,23 @@ export default function TournamentPage() {
                 >
                   {/* Group Header */}
                   <div className="bg-accent/20 border-b-2 border-accent/30 p-3 lg:p-4">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-accent" />
-                      <h3 className="text-xl lg:text-2xl font-bold cm-highlight">
-                        {group.displayName}
-                      </h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-accent" />
+                        <h3 className="text-xl lg:text-2xl font-bold cm-highlight">
+                          {group.displayName}
+                        </h3>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleShareGroup(group)
+                        }}
+                        className="flex items-center justify-center w-8 h-8 rounded-sm hover:bg-accent/20 transition-colors"
+                        aria-label={`Share ${group.displayName}`}
+                      >
+                        <Share2 className="w-4 h-4 text-accent" />
+                      </button>
                     </div>
                   </div>
 
@@ -274,6 +294,31 @@ export default function TournamentPage() {
           )}
         </main>
       </div>
+
+      {/* Share Modal */}
+      {selectedGroup && (
+        <ShareModal
+          isOpen={shareModalOpen}
+          onClose={() => {
+            setShareModalOpen(false)
+            setSelectedGroup(null)
+          }}
+          type="group"
+          data={{
+            group: {
+              name: selectedGroup.displayName,
+              teams: selectedGroup.teams
+                .filter((team) => !team.countryCode.startsWith("TBD"))
+                .map((team) => ({
+                  name: team.countryName,
+                  flag: team.flagEmoji,
+                  rank: team.qualRank,
+                  points: team.points,
+                })),
+            },
+          }}
+        />
+      )}
     </div>
   )
 }
