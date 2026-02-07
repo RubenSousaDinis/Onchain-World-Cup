@@ -171,3 +171,81 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
+
+model Tournament {
+  id             String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name           String
+  year           Int
+  hostCountries  String[]          @map("host_countries")
+  totalTeams     Int               @map("total_teams")
+  startDate      DateTime          @map("start_date") @db.Timestamptz(6)
+  endDate        DateTime          @map("end_date") @db.Timestamptz(6)
+  status         String
+  currentPhase   String?           @map("current_phase")
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  phases         TournamentPhase[]
+  groups         Group[]
+
+  @@map("tournaments")
+}
+
+model TournamentPhase {
+  id           String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tournamentId String     @map("tournament_id") @db.Uuid
+  name         String
+  displayName  String     @map("display_name")
+  phaseOrder   Int        @map("phase_order")
+  startDate    DateTime?  @map("start_date") @db.Timestamptz(6)
+  endDate      DateTime?  @map("end_date") @db.Timestamptz(6)
+  status       String
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentId])
+  @@index([status])
+  @@map("tournament_phases")
+}
+
+model Group {
+  id             String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tournamentId   String           @map("tournament_id") @db.Uuid
+  name           String
+  displayName    String           @map("display_name")
+  maxTeams       Int              @map("max_teams")
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  tournament     Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  standings      GroupStanding[]
+  lastCalculated DateTime?        @map("last_calculated") @db.Timestamptz(6)
+
+  @@unique([tournamentId, name])
+  @@index([tournamentId])
+  @@map("groups")
+}
+
+model GroupStanding {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  groupId        String   @map("group_id") @db.Uuid
+  countryCode    String   @map("country_code")
+  qualRank       Int      @map("qual_rank")
+  position       Int?
+  matchesPlayed  Int      @default(0) @map("matches_played")
+  wins           Int      @default(0)
+  draws          Int      @default(0)
+  losses         Int      @default(0)
+  votesFor       Int      @default(0) @map("votes_for")
+  votesAgainst   Int      @default(0) @map("votes_against")
+  voteDifference Int      @default(0) @map("vote_difference")
+  points         Int      @default(0)
+  qualified      Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, countryCode])
+  @@index([groupId])
+  @@index([countryCode])
+  @@index([qualRank])
+  @@map("group_standings")
+}
