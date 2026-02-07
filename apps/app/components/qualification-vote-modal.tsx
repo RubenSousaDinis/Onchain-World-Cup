@@ -7,6 +7,7 @@ import { parseEther, formatEther } from "viem"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
+import { useFarcaster } from "@/lib/farcaster-provider"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 import { ShareModal } from "@/components/share-modal"
@@ -38,6 +39,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { connect, connectors } = useConnect()
   const { success, error, info } = useNotifications()
   const { isAuthenticated, login } = useSIWEAuth()
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   // Contract interaction hooks
   const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContract()
@@ -338,6 +340,28 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
     // Step 1: Check wallet connection
     if (!isConnected) {
+      // In Farcaster, wallet should auto-connect. If still connecting, wait.
+      if (isFrameContext) {
+        if (isAutoConnecting) {
+          info("Connecting Wallet", "Wallet is connecting automatically...")
+          return
+        }
+        // Farcaster: use injected connector (Farcaster SDK wallet)
+        const injectedConnector = connectors.find((c) => c.type === "injected")
+        if (injectedConnector) {
+          try {
+            info("Connecting Wallet", "Connecting via Farcaster wallet...")
+            await connect({ connector: injectedConnector })
+            info("Wallet Connected", "Authentication prompt will appear shortly...")
+          } catch (err) {
+            console.error("Failed to connect Farcaster wallet:", err)
+            error("Connection Failed", "Unable to connect wallet. Please try again.")
+          }
+        }
+        return
+      }
+
+      // Desktop: use Coinbase Wallet connector
       const coinbaseConnector = connectors.find((c) => c.name === "Coinbase Wallet")
       if (coinbaseConnector) {
         try {
@@ -614,13 +638,15 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             </button>
             <button
               onClick={handleVote}
-              disabled={isPending || isProcessing || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
+              disabled={isPending || isProcessing || isAutoConnecting || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
               className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending
                 ? "Confirming..."
                 : isProcessing
                 ? isIndexing ? "Indexing..." : "Processing..."
+                : isAutoConnecting
+                ? "Connecting Wallet..."
                 : !isConnected
                 ? "Connect Wallet"
                 : !isAuthenticated
