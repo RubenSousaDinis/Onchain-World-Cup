@@ -8,6 +8,7 @@ import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useFarcaster } from "@/lib/farcaster-provider"
+import { modal } from "@/lib/reown-config"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 import { ShareModal } from "@/components/share-modal"
@@ -361,18 +362,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         return
       }
 
-      // Desktop: use Coinbase Wallet connector
-      const coinbaseConnector = connectors.find((c) => c.name === "Coinbase Wallet")
-      if (coinbaseConnector) {
-        try {
-          info("Connecting Wallet", "Please approve the connection request...")
-          await connect({ connector: coinbaseConnector })
-          // AutoAuthProvider will automatically trigger authentication after connection
-          info("Wallet Connected", "Authentication prompt will appear shortly...")
-        } catch (err) {
-          console.error("Failed to connect wallet:", err)
-          error("Connection Failed", "Unable to connect wallet. Please try again.")
-        }
+      // Desktop: open wallet connection modal (supports all wallets)
+      try {
+        await modal.open()
+      } catch (err) {
+        console.error("Failed to open wallet modal:", err)
       }
       return
     }

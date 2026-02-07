@@ -175,7 +175,25 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        // Use 'none' in production to support Farcaster Mini App iframe context
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },

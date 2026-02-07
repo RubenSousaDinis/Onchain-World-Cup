@@ -20,7 +20,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected, isReconnecting, status } = useAccount()
   const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet } = useSIWEAuth()
   const { info, success, error } = useNotifications()
-  const { isFarcasterMiniApp } = useFarcaster()
+  const { isFarcasterMiniApp, isLoading: isFarcasterLoading } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
 
   // Sign out when wallet disconnects (but not during reconnection/connection)
@@ -85,6 +85,12 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     // Wait for session to load before making decisions
     if (isLoading) {
       console.log("[AutoAuth] Skipping - session is still loading")
+      return
+    }
+
+    // Wait for Farcaster context detection to complete before choosing auth method
+    if (isFarcasterLoading) {
+      console.log("[AutoAuth] Skipping - Farcaster context is still loading")
       return
     }
 
@@ -164,7 +170,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }, 1000) // 1 second delay to let wallet connection settle
 
     return () => clearTimeout(timer)
-  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, login, info, success, error, isFarcasterMiniApp])
+  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, isFarcasterLoading, login, info, success, error, isFarcasterMiniApp])
 
   // This provider doesn't render anything, just manages authentication
   return <>{children}</>
