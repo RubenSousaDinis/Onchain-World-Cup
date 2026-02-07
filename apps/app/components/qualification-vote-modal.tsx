@@ -347,12 +347,12 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           info("Connecting Wallet", "Wallet is connecting automatically...")
           return
         }
-        // Farcaster: use injected connector (Farcaster SDK wallet)
-        const injectedConnector = connectors.find((c) => c.type === "injected")
-        if (injectedConnector) {
+        // Farcaster: use the Farcaster wagmi connector (wraps sdk.wallet.ethProvider)
+        const farcasterConnector = connectors.find((c) => c.id === "farcaster")
+        if (farcasterConnector) {
           try {
             info("Connecting Wallet", "Connecting via Farcaster wallet...")
-            await connect({ connector: injectedConnector })
+            await connect({ connector: farcasterConnector })
             info("Wallet Connected", "Authentication prompt will appear shortly...")
           } catch (err) {
             console.error("Failed to connect Farcaster wallet:", err)
