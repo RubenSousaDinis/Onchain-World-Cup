@@ -1,18 +1,15 @@
 /**
- * DESKTOP WALLET CONFIGURATION
+ * WALLET CONFIGURATION
  *
- * This configuration is used when the app runs in a standard web browser (desktop/mobile web).
- * Supports multiple wallet options through Reown AppKit:
- * - MetaMask
- * - Coinbase Wallet
- * - WalletConnect
- * - Rainbow Wallet
- * - And 300+ more wallets
+ * Supports both Farcaster Mini App and desktop/mobile web contexts:
+ * - Farcaster: Uses @farcaster/miniapp-wagmi-connector (wraps SDK's ethProvider)
+ * - Desktop: Reown AppKit with MetaMask, Coinbase Wallet, WalletConnect, etc.
  */
 
 import { createAppKit } from "@reown/appkit/react"
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi"
 import { base, baseSepolia } from "@reown/appkit/networks"
+import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
 
 // Environment configuration
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
@@ -23,16 +20,17 @@ if (!projectId) {
   console.warn("[Desktop Wallet] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set")
 }
 
-console.log("[Desktop Wallet] Initializing desktop wallet configuration")
+console.log("[Wallet Config] Initializing wallet configuration")
 
 /**
  * Wagmi adapter for Reown AppKit
- * Handles wallet connection and blockchain interactions
+ * Includes Farcaster Mini App connector for in-app wallet access
  */
 export const wagmiAdapter = new WagmiAdapter({
   networks: [base, baseSepolia],
   projectId,
   ssr: true,
+  connectors: [farcasterMiniApp()],
 })
 
 /**
@@ -69,4 +67,4 @@ export const desktopWalletModal = createAppKit({
  */
 export const wagmiConfig = wagmiAdapter.wagmiConfig
 
-console.log("[Desktop Wallet] Desktop wallet configuration initialized")
+console.log("[Wallet Config] Wallet configuration initialized")

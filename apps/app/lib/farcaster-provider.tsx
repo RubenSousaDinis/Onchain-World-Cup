@@ -147,7 +147,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     checkFarcasterContext()
   }, []) // Run once on mount
 
-  // Auto-connect wallet when in Farcaster context
+  // Auto-connect wallet when in Farcaster context using the SDK's ethProvider
   useEffect(() => {
     if (
       context.isFrameContext &&
@@ -156,15 +156,16 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
       !autoConnectAttempted.current
     ) {
       autoConnectAttempted.current = true
-      console.log("[FarcasterProvider] Auto-connecting wallet via injected connector...")
 
-      const connector = connectors.find((c) => c.type === "injected")
+      // Use the official Farcaster wagmi connector (wraps sdk.wallet.ethProvider)
+      const connector = connectors.find((c) => c.id === "farcaster")
       if (connector) {
+        console.log("[FarcasterProvider] Auto-connecting wallet via Farcaster connector...")
         connect(
           { connector },
           {
             onSuccess: () => {
-              console.log("[FarcasterProvider] Wallet auto-connected successfully!")
+              console.log("[FarcasterProvider] Wallet auto-connected via Farcaster connector!")
               setContext((prev) => ({ ...prev, isAutoConnecting: false }))
             },
             onError: (err) => {
@@ -174,7 +175,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
           }
         )
       } else {
-        console.warn("[FarcasterProvider] No injected connector found for auto-connect")
+        console.warn("[FarcasterProvider] No Farcaster connector found - available connectors:", connectors.map(c => `${c.name}(${c.id})`))
         setContext((prev) => ({ ...prev, isAutoConnecting: false }))
       }
     }

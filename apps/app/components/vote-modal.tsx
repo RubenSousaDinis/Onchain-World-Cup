@@ -117,12 +117,12 @@ export function VoteModal({
           info("Connecting Wallet", "Wallet is connecting automatically...")
           return
         }
-        // Try to connect with Farcaster's injected wallet
-        const injectedConnector = connectors.find((c) => c.type === "injected")
-        if (injectedConnector) {
+        // Connect via the Farcaster wagmi connector (uses sdk.wallet.ethProvider)
+        const farcasterConnector = connectors.find((c) => c.id === "farcaster")
+        if (farcasterConnector) {
           try {
             info("Connecting Wallet", "Connecting via Farcaster wallet...")
-            await connect({ connector: injectedConnector })
+            await connect({ connector: farcasterConnector })
             return // Will vote on next click after connection settles
           } catch (err) {
             console.error("Failed to connect Farcaster wallet:", err)
