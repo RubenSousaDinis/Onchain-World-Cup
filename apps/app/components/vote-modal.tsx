@@ -5,6 +5,7 @@ import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info } from "luc
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi"
 import { parseEther } from "viem"
 import { useFarcaster } from "@/lib/farcaster-provider"
+import { modal } from "@/lib/reown-config"
 import { ShareModal } from "./share-modal"
 import { useNotifications } from "@/components/notifications"
 
@@ -131,9 +132,12 @@ export function VoteModal({
         }
       }
 
-      // Desktop: demo mode
-      setIsDemoVote(true)
-      info("Demo Vote Placed", "Connect your wallet to place real votes on-chain")
+      // Desktop: open wallet connection modal
+      try {
+        await modal.open()
+      } catch (err) {
+        console.error("Failed to open wallet modal:", err)
+      }
       return
     }
 
@@ -189,18 +193,6 @@ export function VoteModal({
               <X className="w-5 h-5" />
             </button>
           </div>
-
-          {!isConnected && !isFrameContext && (
-            <div className="p-3 bg-purple-900/30 border-b border-purple-500/30">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-purple-400" />
-                <span className="text-xs lg:text-sm font-bold text-purple-400 uppercase">Demo Mode</span>
-              </div>
-              <p className="text-xs lg:text-sm text-foreground/70 mt-1">
-                Try voting without connecting! Share feature will still work.
-              </p>
-            </div>
-          )}
 
           {/* FOMO Banner */}
           <div
@@ -379,9 +371,7 @@ export function VoteModal({
                   ? "Connecting Wallet..."
                   : isConnected
                     ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${totalCost.toFixed(3)} ETH`
-                    : isFrameContext
-                      ? "Connect Wallet"
-                      : `Try Demo Vote (${voteCount} vote${voteCount !== 1 ? "s" : ""})`}
+                    : "Connect Wallet"}
             </button>
           </div>
         </div>
