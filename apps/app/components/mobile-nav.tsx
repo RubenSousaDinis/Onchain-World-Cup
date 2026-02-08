@@ -10,6 +10,7 @@ import { useFarcaster } from "@/lib/farcaster-provider"
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
   { icon: Trophy, label: "Qualification", href: "/qualification" },
+  { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Wallet, label: "My Votes", href: "/my-bets" },
 ]

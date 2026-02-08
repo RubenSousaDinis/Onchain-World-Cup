@@ -42,7 +42,14 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   }, [isConnected, isReconnecting, status, isAuthenticated, logout])
 
   // Sign out when wallet address changes (user switched wallets)
+  // IMPORTANT: Skip this check in Farcaster context - embedded wallet addresses can differ
   useEffect(() => {
+    // Don't check wallet mismatch in Farcaster - the SDK manages wallet state
+    if (isFarcasterMiniApp) {
+      console.log("[AutoAuth] Skipping wallet mismatch check - Farcaster context")
+      return
+    }
+
     if (isConnected && address && isAuthenticated && sessionWallet) {
       const normalizedAddress = address.toLowerCase()
       const normalizedSessionWallet = sessionWallet.toLowerCase()
@@ -55,7 +62,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         hasTriggeredAuth.current = false
       }
     }
-  }, [address, isConnected, isAuthenticated, sessionWallet, logout])
+  }, [address, isConnected, isAuthenticated, sessionWallet, logout, isFarcasterMiniApp])
 
   // Trigger authentication when wallet connects
   useEffect(() => {
@@ -96,6 +103,12 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
 
     // If authenticated and session wallet matches connected wallet, we're good
     if (isAuthenticated && sessionWallet) {
+      // In Farcaster, don't check wallet match - just trust the session
+      if (isFarcasterMiniApp) {
+        console.log("[AutoAuth] Already authenticated in Farcaster - skipping auth")
+        return
+      }
+
       const normalizedAddress = address.toLowerCase()
       const normalizedSessionWallet = sessionWallet.toLowerCase()
 
