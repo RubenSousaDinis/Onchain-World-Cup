@@ -31,7 +31,7 @@ type Country = {
 }
 
 export default function QualificationPage() {
-  const [displayedCountries, setDisplayedCountries] = useState(20)
+  const [displayedCountries, setDisplayedCountries] = useState(54)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [voteModalOpen, setVoteModalOpen] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
@@ -257,7 +257,7 @@ export default function QualificationPage() {
     if (shouldLoadMore) {
       setIsLoadingMore(true)
       setTimeout(() => {
-        setDisplayedCountries((prev) => Math.min(prev + 20, countriesData.length))
+        setDisplayedCountries((prev) => Math.min(prev + 54, countriesData.length))
         setIsLoadingMore(false)
       }, 300)
     }
@@ -326,7 +326,7 @@ export default function QualificationPage() {
   )
 
   useEffect(() => {
-    setDisplayedCountries(20)
+    setDisplayedCountries(54)
   }, [searchQuery])
 
   return (
@@ -335,7 +335,7 @@ export default function QualificationPage() {
         <RetroSidebar />
         <MobileNav />
 
-        <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+        <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full">
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-4 lg:p-6">
