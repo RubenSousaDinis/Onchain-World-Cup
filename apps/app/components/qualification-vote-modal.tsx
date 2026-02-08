@@ -400,10 +400,10 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             chainId: `0x${defaultChainId.toString(16)}`,
           })
 
-          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+          success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
 
-          // Wait a moment for the chain to update
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Return so user can click vote button again after chain updates
+          return
         } catch (err) {
           console.error("[Vote Modal] Failed to switch chain in Farcaster:", err)
           error(
@@ -417,10 +417,10 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         try {
           info("Switching Network", `Switching to ${defaultChain.name}...`)
           await switchChain({ chainId: defaultChainId })
-          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+          success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
 
-          // Wait a moment for the chain to update
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Return so user can click vote button again after chain updates
+          return
         } catch (err) {
           console.error("[Vote Modal] Failed to switch chain:", err)
           error(
