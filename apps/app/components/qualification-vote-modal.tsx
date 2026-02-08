@@ -39,7 +39,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
   const { success, error, info } = useNotifications()
-  const { isAuthenticated, login } = useSIWEAuth()
+  const { isAuthenticated, login, defaultChainId, defaultChain, switchChain } = useSIWEAuth()
   const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   // Contract interaction hooks
@@ -383,6 +383,53 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         console.error("Manual authentication failed:", err)
       }
       return
+    }
+
+    // Step 2.5: Check if user is on the correct chain
+    if (chain?.id !== defaultChainId) {
+      console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
+
+      // In Farcaster, use the SDK to switch chain
+      if (isFrameContext) {
+        try {
+          info("Switching Network", `Switching to ${defaultChain.name}...`)
+          const { sdk } = await import("@farcaster/miniapp-sdk")
+
+          // Request chain switch via Farcaster SDK
+          await sdk.wallet.switchEthereumChain({
+            chainId: `0x${defaultChainId.toString(16)}`,
+          })
+
+          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+
+          // Wait a moment for the chain to update
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        } catch (err) {
+          console.error("[Vote Modal] Failed to switch chain in Farcaster:", err)
+          error(
+            "Network Switch Failed",
+            `Please switch to ${defaultChain.name} in your Farcaster wallet to continue`
+          )
+          return
+        }
+      } else {
+        // Desktop: use wagmi switchChain
+        try {
+          info("Switching Network", `Switching to ${defaultChain.name}...`)
+          await switchChain({ chainId: defaultChainId })
+          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+
+          // Wait a moment for the chain to update
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        } catch (err) {
+          console.error("[Vote Modal] Failed to switch chain:", err)
+          error(
+            "Network Switch Required",
+            `Please switch your wallet to ${defaultChain.name} to continue`
+          )
+          return
+        }
+      }
     }
 
     // Step 3: Validate contract address

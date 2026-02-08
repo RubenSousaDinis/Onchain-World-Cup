@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Fragment, useRef } from "react"
+import { useState, useEffect, Fragment, useRef, useMemo } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
@@ -57,8 +57,54 @@ export default function QualificationPage() {
     ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
     : process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET) as `0x${string}` | undefined
 
+  // Calculate average votes for momentum calculation
+  const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
+  const averageVotes = countryStats.length > 0 ? totalVotes / countryStats.length : 0
+
+  // Merge country data with stats from API (moved before hook)
+  const allCountries = useMemo(() => {
+    return countriesData.map((country) => {
+      const stats = countryStats.find((s) => s.country_code === country.code)
+      const votes = stats?.total_votes || 0
+
+      // Calculate momentum based on votes relative to average
+      let momentum = "stable"
+      if (votes === 0) {
+        momentum = "stable"
+      } else if (votes > averageVotes * 2) {
+        momentum = "critical-up" // More than 2x average
+      } else if (votes > averageVotes * 1.2) {
+        momentum = "up" // Above average
+      } else if (votes < averageVotes * 0.5 && averageVotes > 0) {
+        momentum = "critical-down" // Less than half average
+      } else if (votes < averageVotes * 0.8 && averageVotes > 0) {
+        momentum = "down" // Below average
+      }
+
+      return {
+        rank: 0, // Will be set after sorting
+        name: country.name,
+        flag: country.flagEmoji,
+        code: country.code,
+        votes,
+        momentum,
+      }
+    })
+      .sort((a, b) => b.votes - a.votes) // Sort by votes desc
+      .map((country, index) => ({
+        ...country,
+        rank: index + 1,
+      }))
+  }, [countryStats, averageVotes])
+
+  const filteredCountries = useMemo(() => {
+    return allCountries.filter(
+      (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
+    )
+  }, [allCountries, searchQuery])
+
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
-    hasMore: displayedCountries < countriesData.length,
+    hasMore: displayedCountries < filteredCountries.length,
     isLoading: isLoadingMore,
   })
 
@@ -282,48 +328,6 @@ export default function QualificationPage() {
         return <Minus className="w-4 h-4 text-muted-foreground" />
     }
   }
-
-  // Calculate average votes for momentum calculation
-  const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
-  const averageVotes = countryStats.length > 0 ? totalVotes / countryStats.length : 0
-
-  // Merge country data with stats from API
-  const allCountries = countriesData.map((country) => {
-    const stats = countryStats.find((s) => s.country_code === country.code)
-    const votes = stats?.total_votes || 0
-
-    // Calculate momentum based on votes relative to average
-    let momentum = "stable"
-    if (votes === 0) {
-      momentum = "stable"
-    } else if (votes > averageVotes * 2) {
-      momentum = "critical-up" // More than 2x average
-    } else if (votes > averageVotes * 1.2) {
-      momentum = "up" // Above average
-    } else if (votes < averageVotes * 0.5 && averageVotes > 0) {
-      momentum = "critical-down" // Less than half average
-    } else if (votes < averageVotes * 0.8 && averageVotes > 0) {
-      momentum = "down" // Below average
-    }
-
-    return {
-      rank: 0, // Will be set after sorting
-      name: country.name,
-      flag: country.flagEmoji,
-      code: country.code,
-      votes,
-      momentum,
-    }
-  })
-    .sort((a, b) => b.votes - a.votes) // Sort by votes desc
-    .map((country, index) => ({
-      ...country,
-      rank: index + 1,
-    }))
-
-  const filteredCountries = allCountries.filter(
-    (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
-  )
 
   useEffect(() => {
     setDisplayedCountries(54)
