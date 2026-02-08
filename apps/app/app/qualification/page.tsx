@@ -303,11 +303,11 @@ export default function QualificationPage() {
     if (shouldLoadMore) {
       setIsLoadingMore(true)
       setTimeout(() => {
-        setDisplayedCountries((prev) => Math.min(prev + 54, countriesData.length))
+        setDisplayedCountries((prev) => Math.min(prev + 54, filteredCountries.length))
         setIsLoadingMore(false)
       }, 300)
     }
-  }, [shouldLoadMore])
+  }, [shouldLoadMore, filteredCountries.length])
 
   const handleVote = (country: Country) => {
     setSelectedCountry(country)
