@@ -23,9 +23,15 @@ export interface FrameManifest {
   webhookUrl?: string
 }
 
+export interface MiniAppManifest {
+  requiredChains?: string[] // Array of CAIP-2 identifiers (e.g., ["eip155:84532", "eip155:8453"])
+  requiredCapabilities?: string[] // Array of SDK method paths (e.g., ["wallet.switchEthereumChain"])
+}
+
 export interface FarcasterManifest {
   accountAssociation: AccountAssociation
   frame: FrameManifest
+  miniapp?: MiniAppManifest
 }
 
 export interface ManifestConfig {
@@ -85,6 +91,12 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
+    },
+    miniapp: {
+      // Base Sepolia (testnet) is required for the app
+      requiredChains: ["eip155:84532"],
+      // Wallet chain switching capability is required
+      requiredCapabilities: ["wallet.switchEthereumChain", "wallet.getEthereumProvider"],
     },
   }
 }
