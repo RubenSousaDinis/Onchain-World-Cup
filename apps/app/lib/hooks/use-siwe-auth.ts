@@ -27,7 +27,7 @@ export function useSIWEAuth() {
   const { signMessageAsync } = useSignMessage()
   const { switchChain } = useSwitchChain()
   const { data: session, status } = useSession()
-  const { isFarcasterMiniApp, fid } = useFarcaster()
+  const { isFarcasterMiniApp, fid, displayName, pfpUrl } = useFarcaster()
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   const defaultChainId = getDefaultChainId()
@@ -69,6 +69,8 @@ export function useSIWEAuth() {
         signature,
         authType: "farcaster",
         fid: fid?.toString(),
+        farcasterDisplayName: displayName || undefined,
+        farcasterPfpUrl: pfpUrl || undefined,
         redirect: false,
       })
 
