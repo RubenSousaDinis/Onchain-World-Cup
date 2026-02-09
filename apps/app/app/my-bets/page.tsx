@@ -110,7 +110,7 @@ export default function MyBetsPage() {
       <RetroSidebar />
       <MobileNav />
 
-      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8">
+      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 min-w-0">
         <div className="cm-panel rounded-sm overflow-hidden mb-6 lg:mb-8">
           <div className="soccer-field-bg p-4 lg:p-6">
             <h1 className="text-2xl lg:text-4xl font-bold mb-2">
@@ -190,9 +190,9 @@ export default function MyBetsPage() {
               </div>
 
               {userVotes.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-bold mb-2">No Votes Yet</h3>
+                <div className="p-6 sm:p-8 text-center">
+                  <Trophy className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-base sm:text-lg font-bold mb-2">No Votes Yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Start voting for countries to help them qualify for the tournament!
                   </p>
@@ -204,80 +204,123 @@ export default function MyBetsPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-secondary/30 border-b-2 border-border">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase">
-                          Country
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
-                          Votes
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
-                          ETH Spent
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
-                          Date
-                        </th>
-                        <th className="px-4 py-3 text-center text-xs lg:text-sm font-bold cm-highlight uppercase">
-                          Transaction
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userVotes.map((vote, index) => {
-                        const countryName = getCountryName(vote.country_code)
-                        const countryFlag = getCountryFlag(vote.country_code)
-                        const date = new Date(vote.created_at)
-
-                        return (
-                          <tr
-                            key={vote.id}
-                            className={`border-b border-border hover:bg-secondary/20 transition-colors ${
-                              index % 2 === 0 ? 'bg-card/30' : 'bg-card/10'
-                            }`}
+                <>
+                  {/* Mobile: card list */}
+                  <div className="lg:hidden divide-y divide-border">
+                    {userVotes.map((vote) => {
+                      const countryName = getCountryName(vote.country_code)
+                      const countryFlag = getCountryFlag(vote.country_code)
+                      const date = new Date(vote.created_at)
+                      return (
+                        <div
+                          key={vote.id}
+                          className="p-4 flex flex-col gap-2 bg-card/20 hover:bg-secondary/20 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xl shrink-0">{countryFlag}</span>
+                              <span className="text-sm font-bold truncate">{countryName}</span>
+                            </div>
+                            <span className="text-sm font-mono font-bold cm-highlight shrink-0">
+                              {vote.vote_count} vote{vote.vote_count !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span className="font-mono text-accent font-bold">
+                              {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                            </span>
+                            <span>
+                              {date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <a
+                            href={getExplorerUrl(vote.tx_hash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-accent hover:text-accent/80 font-mono truncate"
                           >
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-2xl">{countryFlag}</span>
-                                <span className="text-sm lg:text-base font-bold">{countryName}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="text-sm lg:text-base font-mono font-bold cm-highlight">
-                                {vote.vote_count}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="text-sm lg:text-base font-mono text-accent font-bold">
-                                {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="text-sm lg:text-base text-muted-foreground">
-                                {date.toLocaleDateString()}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {date.toLocaleTimeString()}
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <a
-                                href={getExplorerUrl(vote.tx_hash)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs lg:text-sm text-accent hover:text-accent/80 font-mono"
-                              >
-                                {vote.tx_hash.slice(0, 6)}...{vote.tx_hash.slice(-4)}
-                              </a>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            {vote.tx_hash.slice(0, 8)}...{vote.tx_hash.slice(-6)}
+                          </a>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {/* Desktop: table */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-secondary/30 border-b-2 border-border">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase">
+                            Country
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                            Votes
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                            ETH Spent
+                          </th>
+                          <th className="px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase">
+                            Date
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs lg:text-sm font-bold cm-highlight uppercase">
+                            Transaction
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userVotes.map((vote, index) => {
+                          const countryName = getCountryName(vote.country_code)
+                          const countryFlag = getCountryFlag(vote.country_code)
+                          const date = new Date(vote.created_at)
+
+                          return (
+                            <tr
+                              key={vote.id}
+                              className={`border-b border-border hover:bg-secondary/20 transition-colors ${
+                                index % 2 === 0 ? "bg-card/30" : "bg-card/10"
+                              }`}
+                            >
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl">{countryFlag}</span>
+                                  <span className="text-sm lg:text-base font-bold">{countryName}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className="text-sm lg:text-base font-mono font-bold cm-highlight">
+                                  {vote.vote_count}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className="text-sm lg:text-base font-mono text-accent font-bold">
+                                  {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="text-sm lg:text-base text-muted-foreground">
+                                  {date.toLocaleDateString()}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {date.toLocaleTimeString()}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <a
+                                  href={getExplorerUrl(vote.tx_hash)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs lg:text-sm text-accent hover:text-accent/80 font-mono"
+                                >
+                                  {vote.tx_hash.slice(0, 6)}...{vote.tx_hash.slice(-4)}
+                                </a>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           </>

@@ -434,7 +434,7 @@ a:active {
 /* Safe area insets for notched devices */
 @supports (padding: env(safe-area-inset-bottom)) {
   .mobile-nav-safe {
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
   }
 
   .mobile-nav-safe-full {
