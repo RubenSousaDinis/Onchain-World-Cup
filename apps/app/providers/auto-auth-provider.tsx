@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useAccount } from "wagmi"
+import { useAccount, useSwitchChain } from "wagmi"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useNotifications } from "@/components/notifications"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -17,8 +17,9 @@ import { useFarcaster } from "@/lib/farcaster-provider"
  * This ensures the authenticated session always matches the connected wallet.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
-  const { address, isConnected, isReconnecting, status } = useAccount()
-  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet } = useSIWEAuth()
+  const { address, isConnected, isReconnecting, status, chain } = useAccount()
+  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet, defaultChainId, defaultChain } = useSIWEAuth()
+  const { switchChain } = useSwitchChain()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp, isLoading: isFarcasterLoading } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
@@ -63,6 +64,51 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [address, isConnected, isAuthenticated, sessionWallet, logout, isFarcasterMiniApp])
+
+  // Auto-switch chain when authenticated and on wrong chain
+  useEffect(() => {
+    // Wait for all states to be ready
+    if (!isAuthenticated || !chain || !defaultChainId || isLoading || isFarcasterLoading) {
+      return
+    }
+
+    // Skip during connection states
+    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+      return
+    }
+
+    // Only proceed if wallet is fully connected
+    if (!isConnected || status !== 'connected') {
+      return
+    }
+
+    // If on wrong chain, switch automatically
+    if (chain.id !== defaultChainId) {
+      console.log(`[AutoAuth] Authenticated but on wrong chain (${chain.id}), switching to ${defaultChainId}`)
+
+      // Use a small delay to avoid conflicting with the auth flow
+      const switchTimer = setTimeout(async () => {
+        try {
+          console.log(`[AutoAuth] Switching to ${defaultChain.name}...`)
+          await switchChain({ chainId: defaultChainId })
+          console.log("[AutoAuth] Chain switched successfully")
+        } catch (switchErr) {
+          console.error("[AutoAuth] Failed to auto-switch chain:", switchErr)
+          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
+
+          // Only show error if it's not a user rejection
+          if (!switchErrorMessage.includes("rejected") && !switchErrorMessage.includes("denied")) {
+            info(
+              "Network Switch Required",
+              `Please switch to ${defaultChain.name} to place votes`
+            )
+          }
+        }
+      }, 500)
+
+      return () => clearTimeout(switchTimer)
+    }
+  }, [isAuthenticated, chain, defaultChainId, defaultChain, isLoading, isFarcasterLoading, isReconnecting, status, isConnected, switchChain, info])
 
   // Trigger authentication when wallet connects
   useEffect(() => {
@@ -160,6 +206,36 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           success("Authenticated", "You can now place votes!")
         } else {
           success("Authenticated Successfully", "You're now signed in and can place votes")
+        }
+
+        // Check if user is on the correct chain and switch if needed
+        if (chain?.id !== defaultChainId) {
+          console.log(`[AutoAuth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}`)
+
+          try {
+            info("Switching Network", `Switching to ${defaultChain.name}...`)
+            await switchChain({ chainId: defaultChainId })
+            success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+            console.log("[AutoAuth] Chain switched successfully")
+          } catch (switchErr) {
+            console.error("[AutoAuth] Failed to switch chain:", switchErr)
+            const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
+
+            // User rejected the switch request
+            if (switchErrorMessage.includes("rejected") || switchErrorMessage.includes("denied")) {
+              info(
+                "Network Switch Required",
+                `Please switch your wallet to ${defaultChain.name} to place votes`
+              )
+            } else {
+              error(
+                "Network Switch Failed",
+                `Unable to switch to ${defaultChain.name}. ${switchErrorMessage}`
+              )
+            }
+          }
+        } else {
+          console.log(`[AutoAuth] Already on correct chain (${chain?.id})`)
         }
       } catch (err) {
         console.error("[AutoAuth] Authentication failed:", err)
