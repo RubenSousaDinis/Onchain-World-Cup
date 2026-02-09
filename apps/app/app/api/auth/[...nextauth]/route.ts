@@ -122,18 +122,34 @@ export const authOptions: NextAuthOptions = {
 
           // Set Farcaster profile data if available
           if (authType === "farcaster") {
-            if (credentials.farcasterDisplayName) {
+            console.log("[Auth] Processing Farcaster profile data...")
+            console.log("[Auth] farcasterDisplayName:", credentials.farcasterDisplayName)
+            console.log("[Auth] farcasterPfpUrl:", credentials.farcasterPfpUrl)
+            console.log("[Auth] fid:", credentials.fid)
+
+            if (credentials.farcasterDisplayName && credentials.farcasterDisplayName !== 'undefined') {
               userData.name = credentials.farcasterDisplayName
-              console.log("[Auth] Setting display name:", credentials.farcasterDisplayName)
-            } else if (credentials.fid) {
+              console.log("[Auth] ✅ Setting display name:", credentials.farcasterDisplayName)
+            } else if (credentials.fid && credentials.fid !== 'undefined') {
               userData.name = `FID:${credentials.fid}`
+              console.log("[Auth] ✅ Setting fallback name (FID):", `FID:${credentials.fid}`)
+            } else {
+              console.warn("[Auth] ⚠️ No displayName or FID available!")
             }
 
-            if (credentials.farcasterPfpUrl) {
+            if (credentials.farcasterPfpUrl && credentials.farcasterPfpUrl !== 'undefined') {
               userData.image = credentials.farcasterPfpUrl
-              console.log("[Auth] Setting profile picture:", credentials.farcasterPfpUrl)
+              console.log("[Auth] ✅ Setting profile picture:", credentials.farcasterPfpUrl.substring(0, 50) + '...')
+            } else {
+              console.warn("[Auth] ⚠️ No pfpUrl available!")
             }
           }
+
+          console.log("[Auth] Final userData to upsert:", {
+            walletAddress: userData.walletAddress,
+            name: userData.name,
+            image: userData.image ? userData.image.substring(0, 50) + '...' : undefined,
+          })
 
           // Upsert User record - always update profile data on sign in
           console.log("[Auth] Upserting user with data:", userData)
