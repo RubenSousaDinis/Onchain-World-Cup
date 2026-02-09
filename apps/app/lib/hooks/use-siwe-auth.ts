@@ -61,18 +61,44 @@ export function useSIWEAuth() {
 
       console.log("[Farcaster Auth] Signature received:", signature.slice(0, 20) + "...")
       console.log("[Farcaster Auth] Message:", message)
+      console.log("[Farcaster Auth] Profile data from context:", {
+        displayName,
+        pfpUrl: pfpUrl ? pfpUrl.substring(0, 50) + '...' : undefined,
+        fid
+      })
       console.log("[Farcaster Auth] Calling signIn with credentials...")
 
       // Authenticate with next-auth using Farcaster credentials
-      const result = await signIn("credentials", {
+      // Only include fields that have actual values (not undefined) to avoid NextAuth serialization issues
+      const credentials: Record<string, any> = {
         message,
         signature,
         authType: "farcaster",
-        fid: fid?.toString(),
-        farcasterDisplayName: displayName || undefined,
-        farcasterPfpUrl: pfpUrl || undefined,
         redirect: false,
+      }
+
+      if (fid) {
+        credentials.fid = fid.toString()
+      }
+
+      if (displayName) {
+        credentials.farcasterDisplayName = displayName
+      }
+
+      if (pfpUrl) {
+        credentials.farcasterPfpUrl = pfpUrl
+      }
+
+      console.log("[Farcaster Auth] Credentials to send:", {
+        authType: credentials.authType,
+        fid: credentials.fid,
+        farcasterDisplayName: credentials.farcasterDisplayName,
+        farcasterPfpUrl: credentials.farcasterPfpUrl ? credentials.farcasterPfpUrl.substring(0, 50) + '...' : undefined,
+        hasDisplayName: !!credentials.farcasterDisplayName,
+        hasPfpUrl: !!credentials.farcasterPfpUrl,
       })
+
+      const result = await signIn("credentials", credentials)
 
       console.log("[Farcaster Auth] signIn result:", result)
 

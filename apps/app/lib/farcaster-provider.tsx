@@ -88,7 +88,15 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
             const displayName = userInfo?.displayName
             const pfpUrl = userInfo?.pfpUrl
 
+            console.log("[FarcasterProvider] Raw SDK context user:", sdkContext?.user)
             console.log("[FarcasterProvider] User info extracted:", { fid, username, displayName, pfpUrl })
+
+            if (!displayName) {
+              console.warn("[FarcasterProvider] ⚠️ No displayName found in SDK context!")
+            }
+            if (!pfpUrl) {
+              console.warn("[FarcasterProvider] ⚠️ No pfpUrl found in SDK context!")
+            }
 
             if (DEBUG) {
               console.log("[Farcaster] User info:", { fid, username, displayName, pfpUrl })
