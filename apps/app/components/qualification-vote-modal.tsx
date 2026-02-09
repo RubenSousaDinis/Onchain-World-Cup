@@ -245,6 +245,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         countryCode: country.code,
         voteCount: votes,
         totalCostEth: cost,
+        isFarcasterContext: isFrameContext, // Pass Farcaster context to skip session wallet check
       }),
     })
       .then((res) => {
