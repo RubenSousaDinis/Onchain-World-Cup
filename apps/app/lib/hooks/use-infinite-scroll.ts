@@ -10,8 +10,14 @@ interface UseInfiniteScrollOptions {
 
 export function useInfiniteScroll({ hasMore, isLoading, threshold = 0.8 }: UseInfiniteScrollOptions) {
   const [shouldLoadMore, setShouldLoadMore] = useState(false)
+  const [sentinelElement, setSentinelElement] = useState<HTMLDivElement | null>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Callback ref to track when sentinel is mounted
+  const sentinelRefCallback = useCallback((node: HTMLDivElement | null) => {
+    console.log("[useInfiniteScroll] Sentinel ref callback:", node ? "Element attached" : "Element detached")
+    setSentinelElement(node)
+  }, [])
 
   const loadMore = useCallback(() => {
     if (!isLoading && hasMore) {
@@ -26,12 +32,22 @@ export function useInfiniteScroll({ hasMore, isLoading, threshold = 0.8 }: UseIn
   }, [shouldLoadMore])
 
   useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return
+    if (!sentinelElement) {
+      console.log("[useInfiniteScroll] No sentinel element found")
+      return
+    }
+
+    console.log("[useInfiniteScroll] Setting up IntersectionObserver", { hasMore, isLoading })
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const first = entries[0]
+        console.log("[useInfiniteScroll] Intersection event:", {
+          isIntersecting: first.isIntersecting,
+          hasMore,
+          isLoading,
+          willLoadMore: first.isIntersecting && hasMore && !isLoading,
+        })
         if (first.isIntersecting && hasMore && !isLoading) {
           loadMore()
         }
@@ -39,14 +55,14 @@ export function useInfiniteScroll({ hasMore, isLoading, threshold = 0.8 }: UseIn
       { threshold },
     )
 
-    observerRef.current.observe(sentinel)
+    observerRef.current.observe(sentinelElement)
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect()
       }
     }
-  }, [hasMore, isLoading, loadMore, threshold])
+  }, [sentinelElement, hasMore, isLoading, loadMore, threshold])
 
-  return { sentinelRef, shouldLoadMore }
+  return { sentinelRef: sentinelRefCallback, shouldLoadMore }
 }
