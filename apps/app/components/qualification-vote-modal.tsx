@@ -389,69 +389,14 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (chain?.id !== defaultChainId) {
       console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
 
-      // In Farcaster, check capabilities before attempting switch
+      // In Farcaster, most clients don't support automatic chain switching
+      // User must manually switch network in their Farcaster wallet
       if (isFrameContext) {
-        try {
-          console.log("[Vote Modal] Importing Farcaster SDK...")
-          const { sdk } = await import("@farcaster/miniapp-sdk")
-          console.log("[Vote Modal] SDK imported successfully")
-
-          // Check if host supports chain switching
-          console.log("[Vote Modal] Checking capabilities...")
-          const capabilities = await sdk.getCapabilities()
-          console.log("[Vote Modal] Capabilities:", capabilities)
-          const supportsSwitchChain = capabilities.includes('wallet.switchEthereumChain')
-          console.log("[Vote Modal] Supports chain switching:", supportsSwitchChain)
-
-          if (!supportsSwitchChain) {
-            console.log("[Vote Modal] Chain switching not supported by host")
-            error(
-              "Wrong Network",
-              `This app requires ${defaultChain.name}. Please switch networks in Farcaster and try again.`
-            )
-            return
-          }
-
-          // Check if Base Sepolia is supported
-          console.log("[Vote Modal] Checking supported chains...")
-          const supportedChains = await sdk.getChains()
-          console.log("[Vote Modal] Supported chains:", supportedChains)
-          const targetChainCaip = `eip155:${defaultChainId}` // e.g., "eip155:84532"
-          const isChainSupported = supportedChains.includes(targetChainCaip)
-          console.log(`[Vote Modal] Is ${targetChainCaip} supported:`, isChainSupported)
-
-          if (!isChainSupported) {
-            console.log("[Vote Modal] Target chain not supported by host")
-            error(
-              "Chain Not Supported",
-              `${defaultChain.name} is not supported in this Farcaster client.`
-            )
-            return
-          }
-
-          // Attempt chain switch
-          console.log("[Vote Modal] Attempting chain switch...")
-          info("Switching Network", `Switching to ${defaultChain.name}...`)
-
-          await sdk.wallet.switchEthereumChain({
-            chainId: `0x${defaultChainId.toString(16)}`,
-          })
-
-          console.log("[Vote Modal] Chain switch successful")
-          success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
-
-          // Return so user can click vote button again after chain updates
-          return
-        } catch (err) {
-          console.error("[Vote Modal] Error during chain switch process:", err)
-          console.error("[Vote Modal] Error name:", err instanceof Error ? err.name : "Unknown")
-          console.error("[Vote Modal] Error message:", err instanceof Error ? err.message : "Unknown")
-          error(
-            "Network Switch Failed",
-            `Unable to switch to ${defaultChain.name}. Please switch manually in Farcaster.`
-          )
-          return
-        }
+        error(
+          "Switch to Base Sepolia",
+          "Please switch your wallet to Base Sepolia network in Farcaster settings, then try again."
+        )
+        return
       } else {
         // Desktop: use wagmi switchChain
         try {
