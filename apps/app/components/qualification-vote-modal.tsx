@@ -389,13 +389,39 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (chain?.id !== defaultChainId) {
       console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
 
-      // In Farcaster, use the SDK to switch chain
+      // In Farcaster, check capabilities before attempting switch
       if (isFrameContext) {
         try {
-          info("Switching Network", `Switching to ${defaultChain.name}...`)
           const { sdk } = await import("@farcaster/miniapp-sdk")
 
-          // Request chain switch via Farcaster SDK
+          // Check if host supports chain switching
+          const capabilities = await sdk.getCapabilities()
+          const supportsSwitchChain = capabilities.includes('wallet.switchEthereumChain')
+
+          if (!supportsSwitchChain) {
+            error(
+              "Wrong Network",
+              `This app requires ${defaultChain.name}. Please switch networks in Farcaster and try again.`
+            )
+            return
+          }
+
+          // Check if Base Sepolia is supported
+          const supportedChains = await sdk.getChains()
+          const targetChainCaip = `eip155:${defaultChainId}` // e.g., "eip155:84532"
+          const isChainSupported = supportedChains.includes(targetChainCaip)
+
+          if (!isChainSupported) {
+            error(
+              "Chain Not Supported",
+              `${defaultChain.name} is not supported in this Farcaster client.`
+            )
+            return
+          }
+
+          // Attempt chain switch
+          info("Switching Network", `Switching to ${defaultChain.name}...`)
+
           await sdk.wallet.switchEthereumChain({
             chainId: `0x${defaultChainId.toString(16)}`,
           })
@@ -408,7 +434,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           console.error("[Vote Modal] Failed to switch chain in Farcaster:", err)
           error(
             "Network Switch Failed",
-            `Please switch to ${defaultChain.name} in your Farcaster wallet to continue`
+            `Unable to switch to ${defaultChain.name}. Please switch manually in Farcaster.`
           )
           return
         }

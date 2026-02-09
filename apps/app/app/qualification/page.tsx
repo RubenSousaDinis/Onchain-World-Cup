@@ -98,15 +98,32 @@ export default function QualificationPage() {
   }, [countryStats, averageVotes])
 
   const filteredCountries = useMemo(() => {
-    return allCountries.filter(
+    const filtered = allCountries.filter(
       (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
     )
-  }, [allCountries, searchQuery])
+    console.log("[QualificationPage] filteredCountries computed:", {
+      total: filtered.length,
+      displayed: displayedCountries,
+      hasMore: displayedCountries < filtered.length,
+    })
+    return filtered
+  }, [allCountries, searchQuery, displayedCountries])
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
     hasMore: displayedCountries < filteredCountries.length,
     isLoading: isLoadingMore,
   })
+
+  // Debug: Log whenever sentinel should be visible
+  useEffect(() => {
+    const shouldShowSentinel = displayedCountries < filteredCountries.length
+    console.log("[QualificationPage] Sentinel visibility:", {
+      shouldShow: shouldShowSentinel,
+      displayed: displayedCountries,
+      total: filteredCountries.length,
+      difference: filteredCountries.length - displayedCountries,
+    })
+  }, [displayedCountries, filteredCountries.length])
 
   // Fetch qualification summary and countries (NOT dependent on address)
   useEffect(() => {
@@ -301,13 +318,22 @@ export default function QualificationPage() {
 
   useEffect(() => {
     if (shouldLoadMore) {
+      console.log("[QualificationPage] Loading more countries...", {
+        current: displayedCountries,
+        total: filteredCountries.length,
+        willLoad: Math.min(displayedCountries + 54, filteredCountries.length),
+      })
       setIsLoadingMore(true)
       setTimeout(() => {
-        setDisplayedCountries((prev) => Math.min(prev + 54, filteredCountries.length))
+        setDisplayedCountries((prev) => {
+          const newCount = Math.min(prev + 54, filteredCountries.length)
+          console.log("[QualificationPage] Updated displayedCountries:", prev, "->", newCount)
+          return newCount
+        })
         setIsLoadingMore(false)
       }, 300)
     }
-  }, [shouldLoadMore, filteredCountries.length])
+  }, [shouldLoadMore, filteredCountries.length, displayedCountries])
 
   const handleVote = (country: Country) => {
     setSelectedCountry(country)
