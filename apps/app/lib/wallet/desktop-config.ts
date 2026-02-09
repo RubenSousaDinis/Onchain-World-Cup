@@ -10,27 +10,41 @@ import { createAppKit } from "@reown/appkit/react"
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi"
 import { base, baseSepolia } from "@reown/appkit/networks"
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
+import { http } from "wagmi"
 
 // Environment configuration
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
 const isProduction = process.env.NODE_ENV === "production"
 const defaultChain = isProduction ? base : baseSepolia
 
+// Custom RPC URLs from environment
+const baseSepoliaRpcUrl = process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org"
+const baseMainnetRpcUrl = process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL || "https://mainnet.base.org"
+
 if (!projectId) {
   console.warn("[Desktop Wallet] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set")
 }
 
 console.log("[Wallet Config] Initializing wallet configuration")
+console.log("[Wallet Config] RPC URLs:", {
+  baseSepolia: baseSepoliaRpcUrl,
+  baseMainnet: baseMainnetRpcUrl,
+})
 
 /**
  * Wagmi adapter for Reown AppKit
  * Includes Farcaster Mini App connector for in-app wallet access
+ * Uses custom RPC transports to avoid WalletConnect RPC CORS issues
  */
 export const wagmiAdapter = new WagmiAdapter({
   networks: [base, baseSepolia],
   projectId,
   ssr: true,
   connectors: [farcasterMiniApp()],
+  transports: {
+    [base.id]: http(baseMainnetRpcUrl),
+    [baseSepolia.id]: http(baseSepoliaRpcUrl),
+  },
 })
 
 /**

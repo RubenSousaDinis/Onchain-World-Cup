@@ -389,29 +389,14 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (chain?.id !== defaultChainId) {
       console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
 
-      // In Farcaster, use the SDK to switch chain
+      // In Farcaster, we cannot programmatically switch chains
+      // Show error and ask user to manually switch in Farcaster wallet settings
       if (isFrameContext) {
-        try {
-          info("Switching Network", `Switching to ${defaultChain.name}...`)
-          const { sdk } = await import("@farcaster/miniapp-sdk")
-
-          // Request chain switch via Farcaster SDK
-          await sdk.wallet.switchEthereumChain({
-            chainId: `0x${defaultChainId.toString(16)}`,
-          })
-
-          success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
-
-          // Return so user can click vote button again after chain updates
-          return
-        } catch (err) {
-          console.error("[Vote Modal] Failed to switch chain in Farcaster:", err)
-          error(
-            "Network Switch Failed",
-            `Please switch to ${defaultChain.name} in your Farcaster wallet to continue`
-          )
-          return
-        }
+        error(
+          "Wrong Network",
+          `This app requires ${defaultChain.name}. Please switch networks in Farcaster and try again.`
+        )
+        return
       } else {
         // Desktop: use wagmi switchChain
         try {
