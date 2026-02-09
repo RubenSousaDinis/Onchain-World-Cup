@@ -392,13 +392,19 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       // In Farcaster, check capabilities before attempting switch
       if (isFrameContext) {
         try {
+          console.log("[Vote Modal] Importing Farcaster SDK...")
           const { sdk } = await import("@farcaster/miniapp-sdk")
+          console.log("[Vote Modal] SDK imported successfully")
 
           // Check if host supports chain switching
+          console.log("[Vote Modal] Checking capabilities...")
           const capabilities = await sdk.getCapabilities()
+          console.log("[Vote Modal] Capabilities:", capabilities)
           const supportsSwitchChain = capabilities.includes('wallet.switchEthereumChain')
+          console.log("[Vote Modal] Supports chain switching:", supportsSwitchChain)
 
           if (!supportsSwitchChain) {
+            console.log("[Vote Modal] Chain switching not supported by host")
             error(
               "Wrong Network",
               `This app requires ${defaultChain.name}. Please switch networks in Farcaster and try again.`
@@ -407,11 +413,15 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           }
 
           // Check if Base Sepolia is supported
+          console.log("[Vote Modal] Checking supported chains...")
           const supportedChains = await sdk.getChains()
+          console.log("[Vote Modal] Supported chains:", supportedChains)
           const targetChainCaip = `eip155:${defaultChainId}` // e.g., "eip155:84532"
           const isChainSupported = supportedChains.includes(targetChainCaip)
+          console.log(`[Vote Modal] Is ${targetChainCaip} supported:`, isChainSupported)
 
           if (!isChainSupported) {
+            console.log("[Vote Modal] Target chain not supported by host")
             error(
               "Chain Not Supported",
               `${defaultChain.name} is not supported in this Farcaster client.`
@@ -420,18 +430,22 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           }
 
           // Attempt chain switch
+          console.log("[Vote Modal] Attempting chain switch...")
           info("Switching Network", `Switching to ${defaultChain.name}...`)
 
           await sdk.wallet.switchEthereumChain({
             chainId: `0x${defaultChainId.toString(16)}`,
           })
 
+          console.log("[Vote Modal] Chain switch successful")
           success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
 
           // Return so user can click vote button again after chain updates
           return
         } catch (err) {
-          console.error("[Vote Modal] Failed to switch chain in Farcaster:", err)
+          console.error("[Vote Modal] Error during chain switch process:", err)
+          console.error("[Vote Modal] Error name:", err instanceof Error ? err.name : "Unknown")
+          console.error("[Vote Modal] Error message:", err instanceof Error ? err.message : "Unknown")
           error(
             "Network Switch Failed",
             `Unable to switch to ${defaultChain.name}. Please switch manually in Farcaster.`
