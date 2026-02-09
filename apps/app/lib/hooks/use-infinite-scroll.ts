@@ -15,7 +15,6 @@ export function useInfiniteScroll({ hasMore, isLoading, threshold = 0.8 }: UseIn
 
   // Callback ref to track when sentinel is mounted
   const sentinelRefCallback = useCallback((node: HTMLDivElement | null) => {
-    console.log("[useInfiniteScroll] Sentinel ref callback:", node ? "Element attached" : "Element detached")
     setSentinelElement(node)
   }, [])
 
@@ -32,22 +31,11 @@ export function useInfiniteScroll({ hasMore, isLoading, threshold = 0.8 }: UseIn
   }, [shouldLoadMore])
 
   useEffect(() => {
-    if (!sentinelElement) {
-      console.log("[useInfiniteScroll] No sentinel element found")
-      return
-    }
-
-    console.log("[useInfiniteScroll] Setting up IntersectionObserver", { hasMore, isLoading })
+    if (!sentinelElement) return
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const first = entries[0]
-        console.log("[useInfiniteScroll] Intersection event:", {
-          isIntersecting: first.isIntersecting,
-          hasMore,
-          isLoading,
-          willLoadMore: first.isIntersecting && hasMore && !isLoading,
-        })
         if (first.isIntersecting && hasMore && !isLoading) {
           loadMore()
         }
