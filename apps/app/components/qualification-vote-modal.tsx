@@ -389,31 +389,32 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (chain?.id !== defaultChainId) {
       console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
 
-      // In Farcaster, most clients don't support automatic chain switching
-      // User must manually switch network in their Farcaster wallet
-      if (isFrameContext) {
-        error(
-          "Switch to Base Sepolia",
-          "Please switch your wallet to Base Sepolia network in Farcaster settings, then try again."
-        )
-        return
-      } else {
-        // Desktop: use wagmi switchChain
-        try {
-          info("Switching Network", `Switching to ${defaultChain.name}...`)
-          await switchChain({ chainId: defaultChainId })
-          success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
+      // Use wagmi switchChain for both Farcaster and desktop
+      // In Farcaster, this triggers the wallet to switch networks via viem
+      try {
+        info("Switching Network", `Switching to ${defaultChain.name}...`)
+        await switchChain({ chainId: defaultChainId })
+        success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
 
-          // Return so user can click vote button again after chain updates
-          return
-        } catch (err) {
-          console.error("[Vote Modal] Failed to switch chain:", err)
+        // Return so user can click vote button again after chain updates
+        return
+      } catch (err) {
+        console.error("[Vote Modal] Failed to switch chain:", err)
+        const errorMessage = err instanceof Error ? err.message : "Unknown error"
+
+        // User rejected the switch request
+        if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
           error(
             "Network Switch Required",
             `Please switch your wallet to ${defaultChain.name} to continue`
           )
-          return
+        } else {
+          error(
+            "Network Switch Failed",
+            `Unable to switch to ${defaultChain.name}. ${errorMessage}`
+          )
         }
+        return
       }
     }
 

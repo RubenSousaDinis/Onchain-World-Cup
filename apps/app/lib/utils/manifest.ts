@@ -95,7 +95,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     miniapp: {
       // Base Sepolia (testnet) is required for the app
       requiredChains: ["eip155:84532"],
-      // Only require Ethereum provider - not all hosts support chain switching
+      // Require Ethereum provider for wallet interactions
       requiredCapabilities: ["wallet.getEthereumProvider"],
     },
   }
