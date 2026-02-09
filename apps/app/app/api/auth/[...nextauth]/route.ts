@@ -50,6 +50,8 @@ export const authOptions: NextAuthOptions = {
         signature: { label: "Signature", type: "text", placeholder: "0x0" },
         authType: { label: "Auth Type", type: "text" },
         fid: { label: "Farcaster ID", type: "text" },
+        farcasterDisplayName: { label: "Farcaster Display Name", type: "text" },
+        farcasterPfpUrl: { label: "Farcaster Profile Picture", type: "text" },
       },
       async authorize(credentials) {
         console.log("[NextAuth] authorize() called with authType:", credentials?.authType)
@@ -117,7 +119,14 @@ export const authOptions: NextAuthOptions = {
             user = await prisma.user.create({
               data: {
                 walletAddress,
-                name: authType === "farcaster" && credentials.fid ? `FID:${credentials.fid}` : undefined,
+                name: authType === "farcaster" && credentials.farcasterDisplayName
+                  ? credentials.farcasterDisplayName
+                  : authType === "farcaster" && credentials.fid
+                    ? `FID:${credentials.fid}`
+                    : undefined,
+                image: authType === "farcaster" && credentials.farcasterPfpUrl
+                  ? credentials.farcasterPfpUrl
+                  : undefined,
               },
             })
 
@@ -131,6 +140,28 @@ export const authOptions: NextAuthOptions = {
               },
             })
           } else {
+            // Update Farcaster profile data if provided (user may have updated their profile)
+            if (authType === "farcaster") {
+              const updateData: { name?: string; image?: string } = {}
+
+              if (credentials.farcasterDisplayName) {
+                updateData.name = credentials.farcasterDisplayName
+              }
+
+              if (credentials.farcasterPfpUrl) {
+                updateData.image = credentials.farcasterPfpUrl
+              }
+
+              // Only update if we have new data
+              if (Object.keys(updateData).length > 0) {
+                console.log("[Auth] Updating Farcaster profile data for:", walletAddress, updateData)
+                user = await prisma.user.update({
+                  where: { walletAddress },
+                  data: updateData,
+                })
+              }
+            }
+
             // Link existing UserStat if not already linked
             const existingStat = await prisma.userStat.findUnique({
               where: { walletAddress },

@@ -53,6 +53,12 @@ export async function GET(request: NextRequest) {
                   qualificationSpentEth: true,
                   countriesVotedFor: true,
                   createdAt: true,
+                  user: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
                 },
                 orderBy: {
                   qualificationSpentEth: 'desc',
@@ -76,8 +82,8 @@ export async function GET(request: NextRequest) {
               totalWinnings: user.qualificationSpentEth, // Using spent as proxy during qualification
               totalBets: user.countriesVotedFor,
               winRate: 0, // No winnings yet in qualification phase
-              farcasterName: null,
-              farcasterAvatar: null,
+              farcasterName: user.user?.name || null,
+              farcasterAvatar: user.user?.image || null,
             }))
 
             return { data: rankedData, count, category: validatedCategory }
@@ -112,19 +118,46 @@ export async function GET(request: NextRequest) {
               .sort((a, b) => parseFloat(b.totalCostEth) - parseFloat(a.totalCostEth))
               .slice(offset, offset + limit)
 
-            const rankedData = uniqueVotes.map((vote, index) => ({
-              rank: offset + index + 1,
-              address: vote.voterAddress,
-              largestVote: vote.totalCostEth,
-              matchName: `${vote.countryCode} Qualification`,
-              team: vote.countryCode,
-              totalVotes: vote.voteCount,
-              totalWinnings: '0',
-              totalBets: 0,
-              winRate: 0,
-              farcasterName: null,
-              farcasterAvatar: null,
-            }))
+            // Fetch user profile data for each voter
+            const voterAddresses = uniqueVotes.map(v => v.voterAddress)
+            const userProfiles = await prisma.userStat.findMany({
+              where: {
+                walletAddress: {
+                  in: voterAddresses,
+                },
+              },
+              select: {
+                walletAddress: true,
+                user: {
+                  select: {
+                    name: true,
+                    image: true,
+                  },
+                },
+              },
+            })
+
+            // Create a map for quick lookup
+            const profileMap = new Map(
+              userProfiles.map(u => [u.walletAddress, u.user])
+            )
+
+            const rankedData = uniqueVotes.map((vote, index) => {
+              const profile = profileMap.get(vote.voterAddress)
+              return {
+                rank: offset + index + 1,
+                address: vote.voterAddress,
+                largestVote: vote.totalCostEth,
+                matchName: `${vote.countryCode} Qualification`,
+                team: vote.countryCode,
+                totalVotes: vote.voteCount,
+                totalWinnings: '0',
+                totalBets: 0,
+                winRate: 0,
+                farcasterName: profile?.name || null,
+                farcasterAvatar: profile?.image || null,
+              }
+            })
 
             return { data: rankedData, count: userMaxVotes.size, category: validatedCategory }
           }
@@ -143,6 +176,12 @@ export async function GET(request: NextRequest) {
                   qualificationVotes: true,
                   qualificationSpentEth: true,
                   countriesVotedFor: true,
+                  user: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
                 },
                 orderBy: {
                   qualificationVotes: 'desc',
@@ -166,8 +205,8 @@ export async function GET(request: NextRequest) {
               totalBets: user.countriesVotedFor,
               totalWinnings: user.qualificationSpentEth,
               winRate: 0,
-              farcasterName: null,
-              farcasterAvatar: null,
+              farcasterName: user.user?.name || null,
+              farcasterAvatar: user.user?.image || null,
             }))
 
             return { data: rankedData, count, category: validatedCategory }
@@ -187,6 +226,12 @@ export async function GET(request: NextRequest) {
                   qualificationVotes: true,
                   qualificationSpentEth: true,
                   createdAt: true,
+                  user: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
                 },
                 orderBy: {
                   createdAt: 'asc',
@@ -211,8 +256,8 @@ export async function GET(request: NextRequest) {
               totalWinnings: user.qualificationSpentEth,
               totalBets: 0,
               winRate: 0,
-              farcasterName: null,
-              farcasterAvatar: null,
+              farcasterName: user.user?.name || null,
+              farcasterAvatar: user.user?.image || null,
             }))
 
             return { data: rankedData, count, category: validatedCategory }
