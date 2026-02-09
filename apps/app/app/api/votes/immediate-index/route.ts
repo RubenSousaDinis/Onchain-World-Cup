@@ -27,6 +27,7 @@ import { prisma } from "@/lib/server/prisma"
  *   - countryCode: string (e.g., "BR", "AR")
  *   - voteCount: number
  *   - totalCostEth: string
+ *   - isFarcasterContext?: boolean (optional, for Farcaster Mini App context)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate request body
     const body = await request.json()
-    const { txHash, contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth } = body
+    const { txHash, contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth, isFarcasterContext } = body
 
     if (!txHash || !contractAddress || !walletAddress || !chainId || !countryCode || !voteCount || !totalCostEth) {
       console.error("[Immediate Index] Missing required fields")
@@ -50,12 +51,18 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Verify wallet address matches authenticated session
-    if (walletAddress.toLowerCase() !== session.user.walletAddress.toLowerCase()) {
-      console.error("[Immediate Index] Wallet address mismatch")
-      return NextResponse.json(
-        { error: "Wallet address mismatch - you can only index your own transactions" },
-        { status: 403 }
-      )
+    // IMPORTANT: Skip this check in Farcaster context - embedded wallet addresses can differ
+    // In Farcaster, we'll verify against the transaction's from address after fetching it
+    if (!isFarcasterContext) {
+      if (walletAddress.toLowerCase() !== session.user.walletAddress.toLowerCase()) {
+        console.error("[Immediate Index] Wallet address mismatch")
+        return NextResponse.json(
+          { error: "Wallet address mismatch - you can only index your own transactions" },
+          { status: 403 }
+        )
+      }
+    } else {
+      console.log("[Immediate Index] Farcaster context - will verify wallet address against transaction.from")
     }
 
     // 4. Validate chain ID
@@ -106,6 +113,23 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("[Immediate Index] Error fetching transaction from blockchain:", error)
       return NextResponse.json({ error: "Failed to verify transaction on blockchain" }, { status: 500 })
+    }
+
+    // 6.5. In Farcaster context, verify wallet address matches transaction.from (on-chain verification)
+    if (isFarcasterContext) {
+      const transactionFrom = transaction.from?.toLowerCase()
+      const requestWallet = walletAddress.toLowerCase()
+
+      if (transactionFrom !== requestWallet) {
+        console.error("[Immediate Index] Farcaster wallet mismatch - transaction.from does not match request wallet")
+        console.error("[Immediate Index] Transaction from:", transactionFrom)
+        console.error("[Immediate Index] Request wallet:", requestWallet)
+        return NextResponse.json(
+          { error: "Transaction wallet mismatch - the transaction was not sent from the specified wallet address" },
+          { status: 403 }
+        )
+      }
+      console.log("[Immediate Index] Farcaster wallet verified against transaction.from:", transactionFrom)
     }
 
     // 7. Verify transaction is to the correct contract
