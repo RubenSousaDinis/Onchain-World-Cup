@@ -1,6 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { SiweMessage } from "siwe"
+import { revalidateTag } from "next/cache"
 import { prisma } from "@/lib/server/prisma"
 
 declare module "next-auth" {
@@ -55,6 +56,11 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         console.log("[NextAuth] authorize() called with authType:", credentials?.authType)
+        console.log("[NextAuth] Farcaster credentials:", {
+          fid: credentials?.fid,
+          displayName: credentials?.farcasterDisplayName,
+          pfpUrl: credentials?.farcasterPfpUrl ? credentials.farcasterPfpUrl.substring(0, 50) + '...' : undefined,
+        })
         try {
           if (!credentials?.message || !credentials?.signature) {
             console.error("[Auth] Missing credentials")
@@ -109,70 +115,53 @@ export const authOptions: NextAuthOptions = {
             }
           }
 
-          // Check if user exists or create new user
-          let user = await prisma.user.findUnique({
+          // Prepare user data based on auth type
+          const userData: { walletAddress: string; name?: string; image?: string } = {
+            walletAddress,
+          }
+
+          // Set Farcaster profile data if available
+          if (authType === "farcaster") {
+            if (credentials.farcasterDisplayName) {
+              userData.name = credentials.farcasterDisplayName
+              console.log("[Auth] Setting display name:", credentials.farcasterDisplayName)
+            } else if (credentials.fid) {
+              userData.name = `FID:${credentials.fid}`
+            }
+
+            if (credentials.farcasterPfpUrl) {
+              userData.image = credentials.farcasterPfpUrl
+              console.log("[Auth] Setting profile picture:", credentials.farcasterPfpUrl)
+            }
+          }
+
+          // Upsert User record - always update profile data on sign in
+          console.log("[Auth] Upserting user with data:", userData)
+          const user = await prisma.user.upsert({
             where: { walletAddress },
+            update: userData, // Always update profile data (handles profile changes)
+            create: userData, // Create if doesn't exist
           })
 
-          if (!user) {
-            console.log("[Auth] Creating new user for address:", walletAddress)
-            user = await prisma.user.create({
-              data: {
-                walletAddress,
-                name: authType === "farcaster" && credentials.farcasterDisplayName
-                  ? credentials.farcasterDisplayName
-                  : authType === "farcaster" && credentials.fid
-                    ? `FID:${credentials.fid}`
-                    : undefined,
-                image: authType === "farcaster" && credentials.farcasterPfpUrl
-                  ? credentials.farcasterPfpUrl
-                  : undefined,
-              },
-            })
+          console.log("[Auth] User record upserted:", { id: user.id, walletAddress: user.walletAddress, name: user.name, image: user.image })
 
-            // Also create UserStat record for backwards compatibility
-            await prisma.userStat.upsert({
-              where: { walletAddress },
-              update: { userId: user.id },
-              create: {
-                walletAddress,
-                userId: user.id,
-              },
-            })
-          } else {
-            // Update Farcaster profile data if provided (user may have updated their profile)
-            if (authType === "farcaster") {
-              const updateData: { name?: string; image?: string } = {}
+          // Ensure UserStat is linked to User (handles case where vote was created before sign in)
+          console.log("[Auth] Upserting UserStat to link with User...")
+          await prisma.userStat.upsert({
+            where: { walletAddress },
+            update: { userId: user.id }, // Link existing UserStat to this User
+            create: {
+              walletAddress,
+              userId: user.id, // Create UserStat with link if doesn't exist
+            },
+          })
 
-              if (credentials.farcasterDisplayName) {
-                updateData.name = credentials.farcasterDisplayName
-              }
+          console.log("[Auth] UserStat linked to User successfully")
 
-              if (credentials.farcasterPfpUrl) {
-                updateData.image = credentials.farcasterPfpUrl
-              }
-
-              // Only update if we have new data
-              if (Object.keys(updateData).length > 0) {
-                console.log("[Auth] Updating Farcaster profile data for:", walletAddress, updateData)
-                user = await prisma.user.update({
-                  where: { walletAddress },
-                  data: updateData,
-                })
-              }
-            }
-
-            // Link existing UserStat if not already linked
-            const existingStat = await prisma.userStat.findUnique({
-              where: { walletAddress },
-            })
-
-            if (existingStat && !existingStat.userId) {
-              await prisma.userStat.update({
-                where: { walletAddress },
-                data: { userId: user.id },
-              })
-            }
+          // Invalidate leaderboard cache to show updated profile data immediately
+          if (authType === "farcaster") {
+            console.log("[Auth] Invalidating leaderboard cache to show updated profile...")
+            revalidateTag('leaderboard')
           }
 
           console.log(`[Auth] Authentication successful via ${authType} for:`, user.walletAddress)
