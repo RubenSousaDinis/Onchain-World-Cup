@@ -36,6 +36,19 @@ export function getQualificationAddress(chainId: number): Address {
 }
 
 /**
+ * Check if contract is deployed on the current chain
+ */
+export function isQualificationContractAvailable(chainId: number): boolean {
+  const address = chainId === 84532
+    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
+    : chainId === 8453
+    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
+    : null
+
+  return !!address
+}
+
+/**
  * Helper to convert country code string to bytes8
  * Supports both 2-character (e.g., "US") and longer codes (e.g., "GB-ENG")
  */
@@ -241,10 +254,25 @@ export function useTotalPrizePool(chainId: number) {
  * Calculate claimable winnings for a user
  */
 export function useClaimable(chainId: number, userAddress: Address | undefined) {
-  const address = getQualificationAddress(chainId)
+  let address: Address | null = null
+
+  try {
+    address = getQualificationAddress(chainId)
+  } catch (error) {
+    // Contract not deployed on this chain - return disabled query
+    return useReadContract({
+      address: '0x0000000000000000000000000000000000000000' as Address,
+      abi: WORLD_CUP_QUALIFICATION_ABI,
+      functionName: "claimable",
+      args: [userAddress!],
+      query: {
+        enabled: false, // Disable query if contract not available
+      },
+    })
+  }
 
   return useReadContract({
-    address,
+    address: address!,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "claimable",
     args: [userAddress!],

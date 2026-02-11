@@ -7,7 +7,7 @@ import { use, useState, useEffect } from "react"
 import { ShareModal } from "@/components/share-modal"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { InlineLoader } from "@/components/states"
-import { useClaimable } from "@/lib/contracts/qualification"
+import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useChainId } from "wagmi"
 import { formatEther } from "viem"
 
@@ -52,6 +52,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
 
   // Get current chain and fetch claimable earnings
   const chainId = useChainId()
+  const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei, isLoading: isLoadingClaimable } = useClaimable(
     chainId,
     address as `0x${string}`
@@ -265,14 +266,20 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
               <div className="text-xs lg:text-sm text-muted-foreground uppercase">Current Earnings</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
-              {isLoadingClaimable ? (
+              {!isContractAvailable ? (
+                <span className="text-base text-muted-foreground">N/A</span>
+              ) : isLoadingClaimable ? (
                 <span className="text-base">Loading...</span>
               ) : (
                 <>{currentEarnings.toFixed(4)} ETH</>
               )}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              {currentEarnings > 0 ? "Claimable winnings" : "No earnings yet"}
+              {!isContractAvailable
+                ? "Switch to Base Sepolia"
+                : currentEarnings > 0
+                ? "Claimable winnings"
+                : "No earnings yet"}
             </div>
           </div>
 

@@ -16,7 +16,7 @@ import {
   TopListItem,
   EmptyState,
 } from "@/components/dashboard"
-import { useClaimable } from "@/lib/contracts/qualification"
+import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useAccount, useChainId } from "wagmi"
 import { formatEther } from "viem"
 
@@ -51,6 +51,7 @@ export default function HomePage() {
   // Get current user's wallet and earnings
   const { address: userAddress } = useAccount()
   const chainId = useChainId()
+  const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei } = useClaimable(chainId, userAddress)
   const currentEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
 
@@ -199,8 +200,8 @@ export default function HomePage() {
           {/* Farcaster User Info */}
           <FarcasterUserInfo variant="compact" className="mb-4 lg:mb-6" />
 
-          {/* User Earnings Card - Show if connected and has earnings */}
-          {userAddress && currentEarnings > 0 && (
+          {/* User Earnings Card - Show if connected, contract available, and has earnings */}
+          {userAddress && isContractAvailable && currentEarnings > 0 && (
             <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-green-400/30">
               <div className="bg-green-400/10 p-4 lg:p-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
