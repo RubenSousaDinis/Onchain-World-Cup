@@ -3,6 +3,130 @@ import { prisma } from '@/lib/prisma'
 import { fetchFarcasterProfiles } from '@/lib/services/farcaster-profile'
 
 /**
+ * Helper function to sync users by FID map
+ */
+async function syncUsersByFidMap(fidMap: Map<number, string>) {
+  const fids = Array.from(fidMap.keys())
+  console.log(`[Farcaster Sync] Syncing ${fids.length} FIDs from User table`)
+
+  const profiles = await fetchFarcasterProfiles(fids)
+  console.log(`[Farcaster Sync] Fetched ${profiles.size} profiles from Farcaster`)
+
+  let syncedCount = 0
+  let skippedCount = 0
+  const errors: string[] = []
+
+  for (const [fid, profile] of profiles.entries()) {
+    try {
+      const walletAddress = fidMap.get(fid)
+      if (!walletAddress) {
+        skippedCount++
+        continue
+      }
+
+      // Update user record with profile data
+      await prisma.user.update({
+        where: { walletAddress },
+        data: {
+          name: profile.username,
+          image: profile.pfpUrl,
+        },
+      })
+
+      syncedCount++
+      console.log(`[Farcaster Sync] Updated FID ${fid} -> ${walletAddress} (@${profile.username})`)
+    } catch (error) {
+      console.error(`[Farcaster Sync] Error syncing FID ${fid}:`, error)
+      errors.push(`FID ${fid}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      skippedCount++
+    }
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: `Synced ${syncedCount} profiles, skipped ${skippedCount}`,
+    synced: syncedCount,
+    skipped: skippedCount,
+    total: fids.length,
+    errors: errors.length > 0 ? errors : undefined,
+  })
+}
+
+/**
+ * GET /api/farcaster/sync-profiles
+ *
+ * Check sync status and see how many users need syncing
+ */
+export async function GET() {
+  try {
+    const tokens = await prisma.farcasterNotificationToken.findMany({
+      select: {
+        fid: true,
+        walletAddress: true,
+        enabled: true,
+      },
+    })
+
+    const usersWithFid = await prisma.user.findMany({
+      where: {
+        name: {
+          startsWith: 'FID:',
+        },
+      },
+      select: {
+        walletAddress: true,
+        name: true,
+      },
+    })
+
+    const usersWithProfiles = await prisma.user.findMany({
+      where: {
+        name: {
+          not: null,
+          startsWith: 'FID:',
+        },
+        NOT: {
+          name: {
+            startsWith: 'FID:',
+          },
+        },
+      },
+      select: {
+        walletAddress: true,
+        name: true,
+        image: true,
+      },
+      take: 10,
+    })
+
+    return NextResponse.json({
+      totalTokens: tokens.length,
+      enabledTokens: tokens.filter((t) => t.enabled).length,
+      usersNeedingSync: usersWithFid.length,
+      usersWithProfiles: usersWithProfiles.length,
+      sampleUsersNeedingSync: usersWithFid.slice(0, 5).map((u) => ({
+        address: u.walletAddress,
+        name: u.name,
+      })),
+      sampleUsersWithProfiles: usersWithProfiles.slice(0, 5).map((u) => ({
+        address: u.walletAddress,
+        name: u.name,
+        hasImage: !!u.image,
+      })),
+    })
+  } catch (error) {
+    console.error('[Farcaster Sync] Error checking status:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to check status',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
  * POST /api/farcaster/sync-profiles
  *
  * Syncs Farcaster profile data for all users with FIDs
@@ -14,23 +138,57 @@ export async function POST() {
   try {
     console.log('[Farcaster Sync] Starting profile sync...')
 
-    // Get all notification tokens with FIDs
+    // Get all notification tokens with FIDs (including disabled ones)
     const tokens = await prisma.farcasterNotificationToken.findMany({
-      where: {
-        enabled: true,
-      },
       select: {
         fid: true,
         walletAddress: true,
+        enabled: true,
       },
     })
 
+    console.log(`[Farcaster Sync] Found ${tokens.length} total tokens`)
+
     if (tokens.length === 0) {
-      console.log('[Farcaster Sync] No tokens found')
+      // Also check if there are users with FID in their name
+      const usersWithFid = await prisma.user.findMany({
+        where: {
+          name: {
+            startsWith: 'FID:',
+          },
+        },
+        select: {
+          walletAddress: true,
+          name: true,
+        },
+      })
+
+      console.log(`[Farcaster Sync] Found ${usersWithFid.length} users with FID in name`)
+
+      if (usersWithFid.length > 0) {
+        // Extract FIDs from names and sync
+        const fidMap = new Map<number, string>()
+        for (const user of usersWithFid) {
+          const fidMatch = user.name?.match(/FID:(\d+)/)
+          if (fidMatch) {
+            const fid = parseInt(fidMatch[1])
+            fidMap.set(fid, user.walletAddress)
+          }
+        }
+
+        if (fidMap.size > 0) {
+          return await syncUsersByFidMap(fidMap)
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: 'No users to sync',
         synced: 0,
+        debug: {
+          tokensFound: tokens.length,
+          usersWithFidFound: usersWithFid.length,
+        },
       })
     }
 
