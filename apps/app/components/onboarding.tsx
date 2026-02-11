@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AddAppCTA } from "@/components/add-app-cta"
 
 interface OnboardingStep {
   title: string
@@ -18,6 +18,7 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ isOpen, onClose }: OnboardingProps) {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
+      router.push("/qualification")
       handleClose()
     }
   }
@@ -192,11 +194,6 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             <p className="text-sm text-foreground/80">
               <strong className="text-accent">Tip:</strong> Vote for multiple countries to increase your chances!
             </p>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-border">
-            <h3 className="text-sm font-bold mb-2 text-foreground">Stay Updated</h3>
-            <AddAppCTA />
           </div>
         </div>
       ),

@@ -113,22 +113,11 @@ export default function TournamentPage() {
           {/* Header */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
             <div className="soccer-field-bg p-4 lg:p-6">
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <div className="flex-1">
-                  <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-                    <span className="cm-highlight">Tournament Groups</span>
-                  </h1>
-                  <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">World Cup 2026</h2>
-                </div>
-                <button
-                  onClick={() => fetchGroups(true)}
-                  disabled={isRefreshing}
-                  className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0 disabled:opacity-50"
-                  aria-label="Refresh groups"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                  <span className="hidden sm:inline">Refresh</span>
-                </button>
+              <div className="mb-2">
+                <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+                  <span className="cm-highlight">Tournament Groups</span>
+                </h1>
+                <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">World Cup 2026</h2>
               </div>
               <p className="text-sm lg:text-base text-foreground/80 mb-2">
                 Groups are dynamically calculated based on current qualification standings
