@@ -59,8 +59,8 @@ export function useProjectedEarnings(userAddress: string | undefined) {
         const top48Countries: CountryStats[] = countriesData.data || []
         console.log('[ProjectedEarnings] Fetched top 48 countries:', top48Countries.length)
 
-        // Fetch user's votes
-        const userRes = await fetch(`/api/users/${userAddress}`)
+        // Fetch ALL user's votes (not just 20 most recent)
+        const userRes = await fetch(`/api/users/${userAddress}?limit=1000`)
         if (!userRes.ok) {
           console.error('[ProjectedEarnings] Failed to fetch user data:', userRes.status)
           setProjectedEarnings(0)
@@ -68,7 +68,11 @@ export function useProjectedEarnings(userAddress: string | undefined) {
         }
         const userData = await userRes.json()
         const userVotes: UserVote[] = userData.data?.votes || []
-        console.log('[ProjectedEarnings] User has', userVotes.length, 'votes')
+        console.log('[ProjectedEarnings] User has', userVotes.length, 'vote transactions')
+
+        // Calculate total votes across all transactions
+        const totalUserVotes = userVotes.reduce((sum, vote) => sum + vote.vote_count, 0)
+        console.log('[ProjectedEarnings] Total vote count:', totalUserVotes)
 
         // Create a Set of top 48 country codes for fast lookup
         const top48Codes = new Set(top48Countries.map(c => c.country_code.toLowerCase()))

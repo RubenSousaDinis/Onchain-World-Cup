@@ -46,7 +46,11 @@ export async function GET(
       })
     }
 
-    // Fetch user's recent qualification votes
+    // Fetch user's qualification votes
+    // Allow optional limit parameter (default 20 for display, but can be higher for calculations)
+    const limitParam = request.nextUrl.searchParams.get('limit')
+    const limit = limitParam ? parseInt(limitParam) : 20
+
     const votes = await prisma.qualificationVote.findMany({
       where: {
         voterAddress: normalizedAddress,
@@ -54,7 +58,7 @@ export async function GET(
       orderBy: {
         createdAt: 'desc',
       },
-      take: 20,
+      take: limit,
     })
 
     // Transform votes to match the expected format
