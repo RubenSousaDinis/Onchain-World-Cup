@@ -4,9 +4,6 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useTotalPrizePool, isQualificationContractAvailable } from '@/lib/contracts/qualification'
-import { useChainId } from 'wagmi'
-import { formatEther } from 'viem'
 
 type CountryStats = {
   country_code: string
@@ -25,10 +22,6 @@ type UserVote = {
  * Formula: (userVotesOnTop48 * totalPrizePool) / totalVotesOnTop48
  */
 export function useProjectedEarnings(userAddress: string | undefined) {
-  const chainId = useChainId()
-  const isContractAvailable = isQualificationContractAvailable(chainId)
-
-  const { data: prizePoolWei } = useTotalPrizePool(chainId)
   const [projectedEarnings, setProjectedEarnings] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -42,6 +35,17 @@ export function useProjectedEarnings(userAddress: string | undefined) {
 
       try {
         setIsLoading(true)
+
+        // Fetch summary data to get prize pool
+        const summaryRes = await fetch('/api/qualification/summary')
+        if (!summaryRes.ok) {
+          console.error('[ProjectedEarnings] Failed to fetch summary:', summaryRes.status)
+          setProjectedEarnings(0)
+          return
+        }
+        const summaryData = await summaryRes.json()
+        const prizePool = parseFloat(summaryData.data?.total_eth || '0')
+        console.log('[ProjectedEarnings] Prize pool from API:', prizePool, 'ETH')
 
         // Fetch top 48 countries
         const countriesRes = await fetch('/api/qualification/countries?limit=48')
@@ -85,13 +89,11 @@ export function useProjectedEarnings(userAddress: string | undefined) {
         console.log('[ProjectedEarnings] Calculation:', {
           userQualifiedVotes,
           totalQualifiedVotes,
-          prizePoolWei: prizePoolWei?.toString(),
-          prizePoolETH: prizePoolWei ? formatEther(prizePoolWei) : 'N/A',
+          prizePoolETH: prizePool,
         })
 
         // Calculate projected earnings
-        if (userQualifiedVotes > 0 && totalQualifiedVotes > 0 && prizePoolWei) {
-          const prizePool = parseFloat(formatEther(prizePoolWei))
+        if (userQualifiedVotes > 0 && totalQualifiedVotes > 0 && prizePool > 0) {
           const projected = (userQualifiedVotes / totalQualifiedVotes) * prizePool
           console.log('[ProjectedEarnings] Projected earnings:', projected, 'ETH')
           setProjectedEarnings(projected)
@@ -108,11 +110,10 @@ export function useProjectedEarnings(userAddress: string | undefined) {
     }
 
     calculateEarnings()
-  }, [userAddress, prizePoolWei, chainId, isContractAvailable])
+  }, [userAddress])
 
   return {
     projectedEarnings,
     isLoading,
-    isContractAvailable,
   }
 }
