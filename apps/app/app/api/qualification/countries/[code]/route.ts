@@ -46,13 +46,12 @@ export async function GET(
         })
         const rank = higherRankedCount + 1
 
-        // Fetch top voters for this country with ETH spent
+        // Fetch top voters for this country by vote count
         const topVotes = await prisma.qualificationVote.groupBy({
           by: ["voterAddress"],
           where: { countryCode },
           _sum: {
             voteCount: true,
-            totalCostEth: true,
           },
           orderBy: {
             _sum: {
@@ -62,8 +61,31 @@ export async function GET(
           take: 5,
         })
 
-        // Fetch Farcaster data for top voters
+        // Get voter addresses
         const voterAddresses = topVotes.map((v) => v.voterAddress)
+
+        // Fetch all votes for these top voters to calculate ETH spent
+        const voterVotes = await prisma.qualificationVote.findMany({
+          where: {
+            countryCode,
+            voterAddress: {
+              in: voterAddresses,
+            },
+          },
+          select: {
+            voterAddress: true,
+            totalCostEth: true,
+          },
+        })
+
+        // Calculate total ETH spent per voter
+        const ethSpentMap = new Map<string, number>()
+        voterVotes.forEach((vote) => {
+          const current = ethSpentMap.get(vote.voterAddress) || 0
+          ethSpentMap.set(vote.voterAddress, current + parseFloat(vote.totalCostEth))
+        })
+
+        // Fetch Farcaster data for top voters
         const userStats = await prisma.userStat.findMany({
           where: {
             walletAddress: {
@@ -81,10 +103,11 @@ export async function GET(
 
         const topVoters = topVotes.map((vote) => {
           const userStat = userStatsMap.get(vote.voterAddress.toLowerCase())
+          const totalEth = ethSpentMap.get(vote.voterAddress) || 0
           return {
             voter_address: vote.voterAddress,
             total_votes: vote._sum.voteCount || 0,
-            total_eth: vote._sum.totalCostEth || "0",
+            total_eth: totalEth.toString(),
             farcaster_fid: userStat?.user?.farcasterFid,
             farcaster_username: userStat?.user?.farcasterUsername,
             farcaster_pfp_url: userStat?.user?.farcasterPfpUrl,
