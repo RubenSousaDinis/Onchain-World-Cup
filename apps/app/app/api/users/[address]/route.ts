@@ -13,10 +13,18 @@ export async function GET(
     const { address } = await params
     const normalizedAddress = address.toLowerCase()
 
-    // Fetch user stats
+    // Fetch user stats with user relation
     const stats = await prisma.userStat.findUnique({
       where: {
         walletAddress: normalizedAddress,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
       },
     })
 
@@ -76,6 +84,10 @@ export async function GET(
       onboarding_completed_at: stats.onboardingCompletedAt?.toISOString() || null,
       created_at: stats.createdAt.toISOString(),
       updated_at: stats.updatedAt.toISOString(),
+      user: stats.user ? {
+        farcaster_username: stats.user.name,
+        farcaster_pfp_url: stats.user.image,
+      } : undefined,
     }
 
     return NextResponse.json({

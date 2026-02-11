@@ -55,6 +55,15 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
     }>
   } | null>(null)
   const [groupAssignment, setGroupAssignment] = useState<string | null>(null)
+  const [groupTeams, setGroupTeams] = useState<Array<{
+    countryCode: string
+    countryName: string
+    flagEmoji: string
+    qualRank: number
+    position: number
+    points: number
+  }>>([])
+
   const [timeRemaining, setTimeRemaining] = useState({
     days: 14,
     hours: 7,
@@ -93,6 +102,7 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
             )
             if (teamInGroup) {
               setGroupAssignment(group.displayName)
+              setGroupTeams(group.teams.filter((t: any) => !t.countryCode.startsWith('TBD')))
               break
             }
           }
@@ -354,6 +364,49 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
             </div>
           </div>
         </div>
+
+        {/* Current Group */}
+        {groupAssignment && groupTeams.length > 0 && (
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+            <div className="cm-section-header px-4 py-2 flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              <h3 className="text-sm font-bold">{groupAssignment.toUpperCase()} TEAMS</h3>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {groupTeams.map((team) => (
+                  <Link
+                    key={team.countryCode}
+                    href={`/qualification/${team.countryCode.toLowerCase()}`}
+                    className={`cm-hover-row p-3 rounded-sm flex items-center justify-between gap-2 ${
+                      team.countryCode.toLowerCase() === country.code.toLowerCase()
+                        ? 'border-2 border-accent bg-accent/10'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-2xl flex-shrink-0">{team.flagEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm lg:text-base truncate">{team.countryName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Rank #{team.qualRank}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-mono font-bold cm-highlight">
+                        {team.points} pts
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Pos #{team.position}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Top Voters */}
         {countryStats && countryStats.topVoters && countryStats.topVoters.length > 0 && (
