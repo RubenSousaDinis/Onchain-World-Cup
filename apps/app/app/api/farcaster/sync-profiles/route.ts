@@ -172,9 +172,12 @@ export async function POST() {
           const fidMatch = user.name?.match(/FID:(\d+)/)
           if (fidMatch) {
             const fid = parseInt(fidMatch[1])
+            console.log(`[Farcaster Sync] Extracted FID ${fid} from user ${user.walletAddress}`)
             fidMap.set(fid, user.walletAddress)
           }
         }
+
+        console.log(`[Farcaster Sync] Extracted ${fidMap.size} FIDs from user names`)
 
         if (fidMap.size > 0) {
           return await syncUsersByFidMap(fidMap)

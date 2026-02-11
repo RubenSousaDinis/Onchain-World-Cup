@@ -25,22 +25,28 @@ export type FarcasterProfile = {
  */
 export async function fetchFarcasterProfile(fid: number): Promise<FarcasterProfile | null> {
   try {
+    console.log(`[Farcaster Profile] Fetching profile for FID ${fid}...`)
+
     // Use Neynar's public API - no API key required for basic lookups
-    const response = await fetch(
-      `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`,
-      {
-        headers: {
-          'accept': 'application/json',
-        },
-      }
-    )
+    const url = `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`
+    console.log(`[Farcaster Profile] URL: ${url}`)
+
+    const response = await fetch(url, {
+      headers: {
+        'accept': 'application/json',
+      },
+    })
+
+    console.log(`[Farcaster Profile] Response status: ${response.status}`)
 
     if (!response.ok) {
-      console.error(`[Farcaster Profile] API error for FID ${fid}:`, response.status)
+      const errorText = await response.text()
+      console.error(`[Farcaster Profile] API error for FID ${fid}:`, response.status, errorText)
       return null
     }
 
     const data = await response.json()
+    console.log(`[Farcaster Profile] Response data:`, JSON.stringify(data, null, 2))
 
     if (!data.users || data.users.length === 0) {
       console.warn(`[Farcaster Profile] No user found for FID ${fid}`)
@@ -48,6 +54,12 @@ export async function fetchFarcasterProfile(fid: number): Promise<FarcasterProfi
     }
 
     const user = data.users[0]
+    console.log(`[Farcaster Profile] Found user:`, {
+      fid: user.fid,
+      username: user.username,
+      pfp: user.pfp_url,
+      verifiedAddresses: user.verified_addresses,
+    })
 
     // Extract verified Ethereum addresses
     const ethAddresses = user.verified_addresses?.eth_addresses || []
