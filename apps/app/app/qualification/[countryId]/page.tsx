@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
@@ -45,7 +45,25 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
     totalVotes: number
     totalEth: string
     rank: number
+    topVoters: Array<{
+      voter_address: string
+      total_votes: number
+      total_eth: string
+      farcaster_fid?: number
+      farcaster_username?: string
+      farcaster_pfp_url?: string
+    }>
   } | null>(null)
+  const [groupAssignment, setGroupAssignment] = useState<string | null>(null)
+  const [groupTeams, setGroupTeams] = useState<Array<{
+    countryCode: string
+    countryName: string
+    flagEmoji: string
+    qualRank: number
+    position: number
+    points: number
+  }>>([])
+
   const [timeRemaining, setTimeRemaining] = useState({
     days: 14,
     hours: 7,
@@ -53,30 +71,51 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
     seconds: 45,
   })
 
-  // Fetch country stats from API
+  // Fetch country stats and group assignment from API
   useEffect(() => {
     if (!country) return
 
-    const fetchCountryStats = async () => {
+    const fetchCountryData = async () => {
       try {
-        const response = await fetch(`/api/qualification/countries/${country.code.toLowerCase()}`)
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch country stats
+        const statsResponse = await fetch(`/api/qualification/countries/${country.code.toLowerCase()}`)
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
           setCountryStats({
-            totalVotes: data.data.total_votes || 0,
-            totalEth: data.data.total_eth || '0',
-            rank: data.data.rank || 0,
+            totalVotes: statsData.data.total_votes || 0,
+            totalEth: statsData.data.total_eth || '0',
+            rank: statsData.data.rank || 0,
+            topVoters: statsData.data.top_voters || [],
           })
         }
+
+        // Fetch tournament groups to find group assignment
+        const groupsResponse = await fetch("/api/tournament/groups")
+        if (groupsResponse.ok) {
+          const groupsData = await groupsResponse.json()
+          const groups = groupsData.data
+
+          // Find which group this country is in
+          for (const group of groups) {
+            const teamInGroup = group.teams.find(
+              (team: any) => team.countryCode.toLowerCase() === country.code.toLowerCase()
+            )
+            if (teamInGroup) {
+              setGroupAssignment(group.displayName)
+              setGroupTeams(group.teams.filter((t: any) => !t.countryCode.startsWith('TBD')))
+              break
+            }
+          }
+        }
       } catch (error) {
-        console.error('Failed to fetch country stats:', error)
+        console.error('Failed to fetch country data:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchCountryStats()
-  }, [country])
+    fetchCountryData()
+  }, [countryId])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -168,12 +207,19 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
             <div className="text-6xl lg:text-9xl">{country.flag}</div>
             <div className="text-center lg:text-left flex-1">
               <h1 className="text-4xl lg:text-6xl font-bold cm-highlight mb-3">{country.name}</h1>
-              <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
-                <span className="text-lg lg:text-xl text-muted-foreground">
-                  Rank <span className="cm-highlight font-bold text-2xl lg:text-3xl">#{displayRank > 0 ? displayRank : '—'}</span>
-                </span>
-                <span className="text-muted-foreground">/</span>
-                <span className="text-muted-foreground text-lg lg:text-xl">64 countries</span>
+              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-2 lg:gap-4 mb-3">
+                {groupAssignment && (
+                  <span className="text-base lg:text-lg text-muted-foreground font-bold">
+                    {groupAssignment}
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <span className="text-lg lg:text-xl text-muted-foreground">
+                    Rank <span className="cm-highlight font-bold text-2xl lg:text-3xl">#{displayRank > 0 ? displayRank : '—'}</span>
+                  </span>
+                  <span className="text-muted-foreground">/</span>
+                  <span className="text-muted-foreground text-lg lg:text-xl">64 countries</span>
+                </div>
               </div>
               <div className={`inline-block px-4 py-2 rounded-sm ${status.bgColor} border ${status.borderColor}`}>
                 <span className={`text-sm lg:text-base font-bold text-${status.color}-400 uppercase tracking-wider`}>
@@ -318,6 +364,102 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
             </div>
           </div>
         </div>
+
+        {/* Current Group */}
+        {groupAssignment && groupTeams.length > 0 && (
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+            <div className="cm-section-header px-4 py-2 flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              <h3 className="text-sm font-bold">{groupAssignment.toUpperCase()} TEAMS</h3>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {groupTeams.map((team) => (
+                  <Link
+                    key={team.countryCode}
+                    href={`/qualification/${team.countryCode.toLowerCase()}`}
+                    className={`cm-hover-row p-3 rounded-sm flex items-center justify-between gap-2 ${
+                      team.countryCode.toLowerCase() === country.code.toLowerCase()
+                        ? 'border-2 border-accent bg-accent/10'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-2xl flex-shrink-0">{team.flagEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm lg:text-base truncate">{team.countryName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Rank #{team.qualRank}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-mono font-bold cm-highlight">
+                        {team.points} pts
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Pos #{team.position}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Top Voters */}
+        {countryStats && countryStats.topVoters && countryStats.topVoters.length > 0 && (
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+            <div className="cm-section-header px-4 py-2 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <h3 className="text-sm font-bold">TOP SUPPORTERS</h3>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                {countryStats.topVoters.map((voter, idx) => (
+                  <Link
+                    key={voter.voter_address}
+                    href={`/users/${voter.voter_address}`}
+                    className="cm-hover-row p-3 rounded-sm flex items-center justify-between gap-2 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground text-sm flex-shrink-0">
+                        #{idx + 1}
+                      </div>
+                      {voter.farcaster_username ? (
+                        <>
+                          {voter.farcaster_pfp_url && (
+                            <img
+                              src={voter.farcaster_pfp_url}
+                              alt={voter.farcaster_username}
+                              className="w-8 h-8 rounded-full flex-shrink-0"
+                            />
+                          )}
+                          <span className="text-sm font-bold text-foreground truncate">
+                            @{voter.farcaster_username}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-mono text-foreground truncate">
+                          {voter.voter_address.slice(0, 8)}...{voter.voter_address.slice(-6)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-mono font-bold cm-highlight">
+                        {voter.total_votes.toLocaleString()} votes
+                      </div>
+                      <div className="text-xs font-mono text-accent">
+                        {parseFloat(voter.total_eth).toFixed(4)} ETH
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">

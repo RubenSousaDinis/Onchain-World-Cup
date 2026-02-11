@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { fetchFarcasterProfile } from "@/lib/services/farcaster-profile"
 import type {
   FarcasterWebhookRequest,
   FarcasterWebhookPayload,
@@ -42,7 +43,8 @@ export async function POST(request: NextRequest) {
       case "miniapp_added": {
         // User added the Mini App - store notification token
         if (payload.notificationDetails) {
-          await prisma.farcasterNotificationToken.upsert({
+          // Store notification token
+          const tokenRecord = await prisma.farcasterNotificationToken.upsert({
             where: {
               fid_token: {
                 fid: header.fid,
@@ -65,6 +67,43 @@ export async function POST(request: NextRequest) {
           })
 
           console.log("[Farcaster Webhook] Stored notification token for FID:", header.fid)
+
+          // Fetch and store Farcaster profile data
+          try {
+            const profile = await fetchFarcasterProfile(header.fid)
+
+            if (profile && profile.verifiedAddresses.eth.length > 0) {
+              // Use the first verified Ethereum address
+              const walletAddress = profile.verifiedAddresses.eth[0].toLowerCase()
+
+              // Update or create user record with Farcaster data
+              await prisma.user.upsert({
+                where: { walletAddress },
+                create: {
+                  walletAddress,
+                  name: profile.username,
+                  image: profile.pfpUrl,
+                },
+                update: {
+                  name: profile.username,
+                  image: profile.pfpUrl,
+                },
+              })
+
+              // Link the notification token to the wallet address
+              await prisma.farcasterNotificationToken.update({
+                where: { id: tokenRecord.id },
+                data: { walletAddress },
+              })
+
+              console.log("[Farcaster Webhook] Stored profile data for FID:", header.fid, "->", walletAddress)
+            } else {
+              console.warn("[Farcaster Webhook] No verified ETH addresses for FID:", header.fid)
+            }
+          } catch (profileError) {
+            // Log error but don't fail the webhook
+            console.error("[Farcaster Webhook] Error fetching profile:", profileError)
+          }
         }
 
         return NextResponse.json({ success: true }, { status: 200 })

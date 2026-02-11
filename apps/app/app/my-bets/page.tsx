@@ -2,7 +2,7 @@
 
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Clock, Eye, Trophy } from "lucide-react"
+import { Clock, Eye, Trophy, Wallet } from "lucide-react"
 import { useAccount, useChainId } from "wagmi"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
@@ -13,6 +13,9 @@ import { NoVotesEmpty, InlineLoader } from "@/components/states"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import Link from "next/link"
 import { base, baseSepolia } from "wagmi/chains"
+import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
+import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
+import { formatEther } from "viem"
 
 type UserVote = {
   id: string
@@ -100,6 +103,15 @@ export default function MyBetsPage() {
   const countriesVoted = userStats?.countries_voted_for || 0
   const totalEarnings = parseFloat(userStats?.total_won_eth || '0')
 
+  // Get current/projected earnings
+  const isContractAvailable = isQualificationContractAvailable(chainId)
+  const { data: claimableWei, isLoading: isLoadingClaimable } = useClaimable(chainId, address)
+  const { projectedEarnings, isLoading: isLoadingProjected } = useProjectedEarnings(address)
+
+  const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
+  const isProjected = actualEarnings === 0 && projectedEarnings > 0
+
   const _handleShareWin = (bet: any) => {
     setSelectedBet(bet)
     setShareModalOpen(true)
@@ -167,11 +179,31 @@ export default function MyBetsPage() {
                 <div className="text-xs lg:text-sm text-muted-foreground">countries voted</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-green-500">
-                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">Avg. Cost</div>
-                <div className="text-lg lg:text-2xl font-bold text-green-400 font-mono">
-                  {totalVotes > 0 ? (totalSpent / totalVotes).toFixed(6) : '0.000000'}
+                <div className="text-xs lg:text-xs text-foreground/70 mb-1 uppercase font-bold">
+                  {isProjected ? "Projected" : "Earnings"}
                 </div>
-                <div className="text-xs lg:text-sm text-muted-foreground">ETH per vote</div>
+                <div className="text-lg lg:text-2xl font-bold text-green-400 font-mono">
+                  {isLoadingClaimable || isLoadingProjected ? (
+                    <span className="text-sm">Loading...</span>
+                  ) : currentEarnings > 0 ? (
+                    currentEarnings.toFixed(4)
+                  ) : !isContractAvailable ? (
+                    <span className="text-sm">N/A</span>
+                  ) : (
+                    '0.0000'
+                  )}
+                </div>
+                <div className="text-xs lg:text-sm text-muted-foreground">
+                  {isLoadingClaimable || isLoadingProjected
+                    ? "calculating..."
+                    : currentEarnings > 0
+                    ? isProjected
+                      ? "top 48"
+                      : "claimable"
+                    : !isContractAvailable
+                    ? "switch chain"
+                    : "no earnings"}
+                </div>
               </div>
             </div>
 
@@ -217,10 +249,13 @@ export default function MyBetsPage() {
                           className="p-4 flex flex-col gap-2 bg-card/20 hover:bg-secondary/20 transition-colors"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
+                            <Link
+                              href={`/qualification/${vote.country_code.toLowerCase()}`}
+                              className="flex items-center gap-2 min-w-0 hover:text-accent transition-colors"
+                            >
                               <span className="text-xl shrink-0">{countryFlag}</span>
                               <span className="text-sm font-bold truncate">{countryName}</span>
-                            </div>
+                            </Link>
                             <span className="text-sm font-mono font-bold cm-highlight shrink-0">
                               {vote.vote_count} vote{vote.vote_count !== 1 ? "s" : ""}
                             </span>
@@ -281,10 +316,13 @@ export default function MyBetsPage() {
                               }`}
                             >
                               <td className="px-4 py-3">
-                                <div className="flex items-center gap-2">
+                                <Link
+                                  href={`/qualification/${vote.country_code.toLowerCase()}`}
+                                  className="flex items-center gap-2 hover:text-accent transition-colors"
+                                >
                                   <span className="text-2xl">{countryFlag}</span>
                                   <span className="text-sm lg:text-base font-bold">{countryName}</span>
-                                </div>
+                                </Link>
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <span className="text-sm lg:text-base font-mono font-bold cm-highlight">

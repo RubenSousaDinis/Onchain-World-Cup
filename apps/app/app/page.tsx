@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { FarcasterUserInfo } from "@/components/farcaster-user-info"
-import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2 } from "lucide-react"
+import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesDataStatic } from "@/lib/countries"
 import {
@@ -16,6 +16,10 @@ import {
   TopListItem,
   EmptyState,
 } from "@/components/dashboard"
+import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
+import { useAccount, useChainId } from "wagmi"
+import { formatEther } from "viem"
+import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
 type CountryStats = {
   country_code: string
@@ -44,6 +48,18 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isFetchingRef = useRef(false)
+
+  // Get current user's wallet and earnings
+  const { address: userAddress } = useAccount()
+  const chainId = useChainId()
+  const isContractAvailable = isQualificationContractAvailable(chainId)
+  const { data: claimableWei } = useClaimable(chainId, userAddress)
+  const { projectedEarnings } = useProjectedEarnings(userAddress)
+
+  // Use actual earnings if available, otherwise show projected
+  const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
+  const isProjected = actualEarnings === 0 && projectedEarnings > 0
 
   // Fetch real data from API
   useEffect(() => {
@@ -189,6 +205,39 @@ export default function HomePage() {
 
           {/* Farcaster User Info */}
           <FarcasterUserInfo variant="compact" className="mb-4 lg:mb-6" />
+
+          {/* User Earnings Card - Show if connected, contract available, and has earnings */}
+          {userAddress && isContractAvailable && currentEarnings > 0 && (
+            <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-green-400/30">
+              <div className="bg-green-400/10 p-4 lg:p-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <Wallet className="w-6 h-6 lg:w-8 lg:h-8 text-green-400" aria-hidden="true" />
+                    <div>
+                      <div className="text-xs lg:text-sm text-green-400 font-bold uppercase mb-1">
+                        {isProjected ? "Projected Earnings" : "Your Earnings"}
+                      </div>
+                      <h2 className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
+                        {currentEarnings.toFixed(4)} ETH
+                      </h2>
+                      <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+                        {isProjected
+                          ? "Based on current top 48 standings"
+                          : "Claimable winnings from qualification phase"}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/users/${userAddress}`}
+                    className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform"
+                  >
+                    View Profile
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Current Phase Banner */}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
