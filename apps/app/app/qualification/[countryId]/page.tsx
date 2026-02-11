@@ -76,7 +76,7 @@ export default function CountryDetailPage({ params }: { params: Promise<{ countr
     }
 
     fetchCountryStats()
-  }, [country])
+  }, [countryId])
 
   useEffect(() => {
     const timer = setInterval(() => {
