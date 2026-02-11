@@ -72,14 +72,25 @@ export function useProjectedEarnings(userAddress: string | undefined) {
 
         // Create a Set of top 48 country codes for fast lookup
         const top48Codes = new Set(top48Countries.map(c => c.country_code.toLowerCase()))
+        console.log('[ProjectedEarnings] Top 48 country codes:', Array.from(top48Codes))
 
         // Calculate user's votes on top 48 countries
         let userQualifiedVotes = 0
+        const matchedVotes: string[] = []
+        const unmatchedVotes: string[] = []
+
         for (const vote of userVotes) {
-          if (top48Codes.has(vote.country_code.toLowerCase())) {
+          const countryCode = vote.country_code.toLowerCase()
+          if (top48Codes.has(countryCode)) {
             userQualifiedVotes += vote.vote_count
+            matchedVotes.push(`${vote.country_code}: ${vote.vote_count}`)
+          } else {
+            unmatchedVotes.push(`${vote.country_code}: ${vote.vote_count}`)
           }
         }
+
+        console.log('[ProjectedEarnings] Matched votes (counted):', matchedVotes)
+        console.log('[ProjectedEarnings] Unmatched votes (NOT counted):', unmatchedVotes)
 
         // Calculate total votes on top 48 countries
         let totalQualifiedVotes = 0
