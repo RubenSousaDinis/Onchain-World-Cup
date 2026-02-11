@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Clock, RefreshCw, Loader2 } from "lucide-react"
@@ -218,14 +219,8 @@ export default function TournamentPage() {
                   <div className="p-3 lg:p-4 space-y-2">
                     {group.teams.map((team) => {
                       const isTBD = team.countryCode.startsWith("TBD")
-
-                      return (
-                        <div
-                          key={team.countryCode}
-                          className={`flex items-center justify-between p-2 lg:p-3 rounded-sm ${
-                            isTBD ? "bg-secondary/20 opacity-50" : "bg-secondary/40"
-                          } hover:bg-accent/10 transition-colors`}
-                        >
+                      const teamContent = (
+                        <>
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <span className="text-xl lg:text-2xl flex-shrink-0">{team.flagEmoji}</span>
                             <div className="flex-1 min-w-0">
@@ -244,7 +239,28 @@ export default function TournamentPage() {
                               {team.points} PTS
                             </div>
                           )}
-                        </div>
+                        </>
+                      )
+
+                      if (isTBD) {
+                        return (
+                          <div
+                            key={team.countryCode}
+                            className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/20 opacity-50"
+                          >
+                            {teamContent}
+                          </div>
+                        )
+                      }
+
+                      return (
+                        <Link
+                          key={team.countryCode}
+                          href={`/qualification/${team.countryCode.toLowerCase()}`}
+                          className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/40 hover:bg-accent/10 transition-colors"
+                        >
+                          {teamContent}
+                        </Link>
                       )
                     })}
                   </div>

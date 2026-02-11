@@ -217,10 +217,13 @@ export default function MyBetsPage() {
                           className="p-4 flex flex-col gap-2 bg-card/20 hover:bg-secondary/20 transition-colors"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
+                            <Link
+                              href={`/qualification/${vote.country_code.toLowerCase()}`}
+                              className="flex items-center gap-2 min-w-0 hover:text-accent transition-colors"
+                            >
                               <span className="text-xl shrink-0">{countryFlag}</span>
                               <span className="text-sm font-bold truncate">{countryName}</span>
-                            </div>
+                            </Link>
                             <span className="text-sm font-mono font-bold cm-highlight shrink-0">
                               {vote.vote_count} vote{vote.vote_count !== 1 ? "s" : ""}
                             </span>
@@ -281,10 +284,13 @@ export default function MyBetsPage() {
                               }`}
                             >
                               <td className="px-4 py-3">
-                                <div className="flex items-center gap-2">
+                                <Link
+                                  href={`/qualification/${vote.country_code.toLowerCase()}`}
+                                  className="flex items-center gap-2 hover:text-accent transition-colors"
+                                >
                                   <span className="text-2xl">{countryFlag}</span>
                                   <span className="text-sm lg:text-base font-bold">{countryName}</span>
-                                </div>
+                                </Link>
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <span className="text-sm lg:text-base font-mono font-bold cm-highlight">
