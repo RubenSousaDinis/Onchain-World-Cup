@@ -27,8 +27,8 @@ export async function fetchFarcasterProfile(fid: number): Promise<FarcasterProfi
   try {
     console.log(`[Farcaster Profile] Fetching profile for FID ${fid}...`)
 
-    // Use Neynar's public API - no API key required for basic lookups
-    const url = `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`
+    // Use Warpcast API - free and no authentication required
+    const url = `https://client.warpcast.com/v2/user-by-fid?fid=${fid}`
     console.log(`[Farcaster Profile] URL: ${url}`)
 
     const response = await fetch(url, {
@@ -48,27 +48,29 @@ export async function fetchFarcasterProfile(fid: number): Promise<FarcasterProfi
     const data = await response.json()
     console.log(`[Farcaster Profile] Response data:`, JSON.stringify(data, null, 2))
 
-    if (!data.users || data.users.length === 0) {
+    if (!data.result || !data.result.user) {
       console.warn(`[Farcaster Profile] No user found for FID ${fid}`)
       return null
     }
 
-    const user = data.users[0]
+    const user = data.result.user
     console.log(`[Farcaster Profile] Found user:`, {
       fid: user.fid,
       username: user.username,
-      pfp: user.pfp_url,
-      verifiedAddresses: user.verified_addresses,
+      pfp: user.pfp?.url,
+      verifiedAddresses: user.verifiedAddresses,
     })
 
     // Extract verified Ethereum addresses
-    const ethAddresses = user.verified_addresses?.eth_addresses || []
+    const ethAddresses = user.verifiedAddresses?.eth_addresses ||
+                         user.verifiedAddresses?.ethAddresses ||
+                         []
 
     return {
       fid: user.fid,
       username: user.username,
-      displayName: user.display_name || user.username,
-      pfpUrl: user.pfp_url || '',
+      displayName: user.displayName || user.username,
+      pfpUrl: user.pfp?.url || '',
       bio: user.profile?.bio?.text,
       verifiedAddresses: {
         eth: ethAddresses,
@@ -82,9 +84,9 @@ export async function fetchFarcasterProfile(fid: number): Promise<FarcasterProfi
 
 /**
  * Fetch multiple Farcaster profiles by FIDs
- * More efficient than fetching one by one
+ * Fetches profiles in parallel using Warpcast API
  *
- * @param fids - Array of Farcaster IDs (max 100)
+ * @param fids - Array of Farcaster IDs
  * @returns Map of FID to profile data
  */
 export async function fetchFarcasterProfiles(
@@ -96,50 +98,32 @@ export async function fetchFarcasterProfiles(
     return profiles
   }
 
-  // Neynar API supports up to 100 FIDs per request
-  const chunks = []
-  for (let i = 0; i < fids.length; i += 100) {
-    chunks.push(fids.slice(i, i + 100))
-  }
+  console.log(`[Farcaster Profile] Fetching ${fids.length} profiles in parallel...`)
 
-  for (const chunk of chunks) {
+  // Fetch all profiles in parallel using Warpcast API (free, no auth required)
+  const fetchPromises = fids.map(async (fid) => {
     try {
-      const response = await fetch(
-        `https://api.neynar.com/v2/farcaster/user/bulk?fids=${chunk.join(',')}`,
-        {
-          headers: {
-            'accept': 'application/json',
-          },
-        }
-      )
-
-      if (!response.ok) {
-        console.error('[Farcaster Profile] API error:', response.status)
-        continue
+      const profile = await fetchFarcasterProfile(fid)
+      if (profile) {
+        return { fid, profile }
       }
-
-      const data = await response.json()
-
-      if (data.users) {
-        for (const user of data.users) {
-          const ethAddresses = user.verified_addresses?.eth_addresses || []
-
-          profiles.set(user.fid, {
-            fid: user.fid,
-            username: user.username,
-            displayName: user.display_name || user.username,
-            pfpUrl: user.pfp_url || '',
-            bio: user.profile?.bio?.text,
-            verifiedAddresses: {
-              eth: ethAddresses,
-            },
-          })
-        }
-      }
+      return null
     } catch (error) {
-      console.error('[Farcaster Profile] Error fetching profiles:', error)
+      console.error(`[Farcaster Profile] Error fetching FID ${fid}:`, error)
+      return null
+    }
+  })
+
+  const results = await Promise.all(fetchPromises)
+
+  // Build map from successful results
+  for (const result of results) {
+    if (result) {
+      profiles.set(result.fid, result.profile)
     }
   }
+
+  console.log(`[Farcaster Profile] Successfully fetched ${profiles.size}/${fids.length} profiles`)
 
   return profiles
 }
