@@ -442,6 +442,12 @@ a:active {
   }
 }
 
+/* TanStack React Query Devtools: ensure panel and close button are above app UI */
+.tsqd-parent-container {
+  position: relative;
+  z-index: 2147483647;
+}
+
 /* ============================================
    RESPONSIVE TEXT SCALING
    ============================================ */
