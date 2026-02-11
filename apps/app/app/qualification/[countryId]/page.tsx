@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
