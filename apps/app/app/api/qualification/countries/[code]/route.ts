@@ -46,12 +46,13 @@ export async function GET(
         })
         const rank = higherRankedCount + 1
 
-        // Fetch top voters for this country
+        // Fetch top voters for this country with ETH spent
         const topVotes = await prisma.qualificationVote.groupBy({
           by: ["voterAddress"],
           where: { countryCode },
           _sum: {
             voteCount: true,
+            totalCostEth: true,
           },
           orderBy: {
             _sum: {
@@ -61,10 +62,34 @@ export async function GET(
           take: 5,
         })
 
-        const topVoters = topVotes.map((vote) => ({
-          voter_address: vote.voterAddress,
-          total_votes: vote._sum.voteCount || 0,
-        }))
+        // Fetch Farcaster data for top voters
+        const voterAddresses = topVotes.map((v) => v.voterAddress)
+        const userStats = await prisma.userStat.findMany({
+          where: {
+            walletAddress: {
+              in: voterAddresses,
+            },
+          },
+          include: {
+            user: true,
+          },
+        })
+
+        const userStatsMap = new Map(
+          userStats.map((stat) => [stat.walletAddress.toLowerCase(), stat])
+        )
+
+        const topVoters = topVotes.map((vote) => {
+          const userStat = userStatsMap.get(vote.voterAddress.toLowerCase())
+          return {
+            voter_address: vote.voterAddress,
+            total_votes: vote._sum.voteCount || 0,
+            total_eth: vote._sum.totalCostEth || "0",
+            farcaster_fid: userStat?.user?.farcasterFid,
+            farcaster_username: userStat?.user?.farcasterUsername,
+            farcaster_pfp_url: userStat?.user?.farcasterPfpUrl,
+          }
+        })
 
         // Format response
         return {
