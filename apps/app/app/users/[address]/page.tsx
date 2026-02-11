@@ -411,11 +411,11 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
         data={{
           userStats: {
             ethSpent: totalSpent.toFixed(3),
-            currentEarnings: totalWon.toFixed(3) + " ETH",
+            currentEarnings: currentEarnings.toFixed(4),
             favoriteCountry: favoriteTeam.countryName,
             favoriteCountryFlag: favoriteTeam.flagEmoji,
             totalVotes: totalVotes,
-            rank: rank || 0,
+            rank: rank ?? undefined,
           },
         }}
       />

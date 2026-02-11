@@ -313,7 +313,11 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
                 </div>
                 <div className="bg-secondary/20 border border-border rounded px-4 py-3">
                   <div className="text-xs text-muted-foreground mb-1">Current Earnings</div>
-                  <div className="text-lg font-bold text-accent font-mono">{data.userStats?.currentEarnings} ETH</div>
+                  <div className="text-lg font-bold text-accent font-mono">
+                    {typeof data.userStats?.currentEarnings === "string" && data.userStats.currentEarnings.endsWith(" ETH")
+                      ? data.userStats.currentEarnings
+                      : `${data.userStats?.currentEarnings ?? "0"} ETH`}
+                  </div>
                 </div>
                 <div className="bg-secondary/20 border border-border rounded px-4 py-3">
                   <div className="text-xs text-muted-foreground mb-1">Favorite Country</div>
@@ -325,9 +329,9 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
                 <div className="flex gap-3">
                   <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
                     <div className="text-xs text-muted-foreground mb-1">Votes</div>
-                    <div className="text-sm font-bold cm-highlight font-mono">{data.userStats?.totalVotes}</div>
+                    <div className="text-sm font-bold cm-highlight font-mono">{data.userStats?.totalVotes ?? 0}</div>
                   </div>
-                  {data.userStats?.rank && (
+                  {data.userStats?.rank != null && data.userStats.rank > 0 && (
                     <div className="flex-1 bg-secondary/20 border border-border rounded px-3 py-2">
                       <div className="text-xs text-muted-foreground mb-1">Rank</div>
                       <div className="text-sm font-bold text-accent font-mono">#{data.userStats.rank}</div>
