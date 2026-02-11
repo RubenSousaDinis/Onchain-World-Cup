@@ -34,7 +34,7 @@ export function useProjectedEarnings(userAddress: string | undefined) {
 
   useEffect(() => {
     async function calculateEarnings() {
-      if (!userAddress || !isContractAvailable) {
+      if (!userAddress) {
         setProjectedEarnings(0)
         setIsLoading(false)
         return
@@ -46,22 +46,24 @@ export function useProjectedEarnings(userAddress: string | undefined) {
         // Fetch top 48 countries
         const countriesRes = await fetch('/api/qualification/countries?limit=48')
         if (!countriesRes.ok) {
-          console.error('Failed to fetch countries')
+          console.error('[ProjectedEarnings] Failed to fetch countries:', countriesRes.status)
           setProjectedEarnings(0)
           return
         }
         const countriesData = await countriesRes.json()
         const top48Countries: CountryStats[] = countriesData.data || []
+        console.log('[ProjectedEarnings] Fetched top 48 countries:', top48Countries.length)
 
         // Fetch user's votes
         const userRes = await fetch(`/api/users/${userAddress}`)
         if (!userRes.ok) {
-          console.error('Failed to fetch user data')
+          console.error('[ProjectedEarnings] Failed to fetch user data:', userRes.status)
           setProjectedEarnings(0)
           return
         }
         const userData = await userRes.json()
         const userVotes: UserVote[] = userData.data?.votes || []
+        console.log('[ProjectedEarnings] User has', userVotes.length, 'votes')
 
         // Create a Set of top 48 country codes for fast lookup
         const top48Codes = new Set(top48Countries.map(c => c.country_code.toLowerCase()))
@@ -80,12 +82,21 @@ export function useProjectedEarnings(userAddress: string | undefined) {
           totalQualifiedVotes += country.total_votes
         }
 
+        console.log('[ProjectedEarnings] Calculation:', {
+          userQualifiedVotes,
+          totalQualifiedVotes,
+          prizePoolWei: prizePoolWei?.toString(),
+          prizePoolETH: prizePoolWei ? formatEther(prizePoolWei) : 'N/A',
+        })
+
         // Calculate projected earnings
         if (userQualifiedVotes > 0 && totalQualifiedVotes > 0 && prizePoolWei) {
           const prizePool = parseFloat(formatEther(prizePoolWei))
           const projected = (userQualifiedVotes / totalQualifiedVotes) * prizePool
+          console.log('[ProjectedEarnings] Projected earnings:', projected, 'ETH')
           setProjectedEarnings(projected)
         } else {
+          console.log('[ProjectedEarnings] No earnings - missing data or no qualified votes')
           setProjectedEarnings(0)
         }
       } catch (error) {

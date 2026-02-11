@@ -277,21 +277,25 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
               </div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
-              {!isContractAvailable ? (
-                <span className="text-base text-muted-foreground">N/A</span>
-              ) : isLoadingClaimable || isLoadingProjected ? (
+              {isLoadingClaimable || isLoadingProjected ? (
                 <span className="text-base">Loading...</span>
-              ) : (
+              ) : currentEarnings > 0 ? (
                 <>{currentEarnings.toFixed(4)} ETH</>
+              ) : !isContractAvailable ? (
+                <span className="text-base text-muted-foreground">N/A</span>
+              ) : (
+                <span className="text-base text-muted-foreground">0.0000 ETH</span>
               )}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              {!isContractAvailable
-                ? "Switch to Base Sepolia"
+              {isLoadingClaimable || isLoadingProjected
+                ? "Calculating..."
                 : currentEarnings > 0
                 ? isProjected
                   ? "Based on current top 48"
                   : "Claimable winnings"
+                : !isContractAvailable
+                ? "Switch to Base Sepolia"
                 : "No earnings yet"}
             </div>
           </div>
