@@ -10,6 +10,7 @@ import { InlineLoader } from "@/components/states"
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useChainId } from "wagmi"
 import { formatEther } from "viem"
+import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
 type UserVote = {
   id: string
@@ -57,6 +58,12 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
     chainId,
     address as `0x${string}`
   )
+
+  // Calculate projected earnings based on current top 48
+  const {
+    projectedEarnings,
+    isLoading: isLoadingProjected,
+  } = useProjectedEarnings(address)
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -147,8 +154,10 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
   const farcasterUsername = userData.user?.farcaster_username
   const farcasterPfp = userData.user?.farcaster_pfp_url
 
-  // Calculate current earnings from contract
-  const currentEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  // Calculate current earnings from contract (or use projected if not finalized)
+  const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
+  const isProjected = actualEarnings === 0 && projectedEarnings > 0
 
   // For share modal
   const favoriteTeam = favoriteCountries[0] || {
@@ -263,12 +272,14 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
               <Wallet className="w-5 h-5 text-green-400" />
-              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Current Earnings</div>
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">
+                {isProjected ? "Projected Earnings" : "Current Earnings"}
+              </div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
               {!isContractAvailable ? (
                 <span className="text-base text-muted-foreground">N/A</span>
-              ) : isLoadingClaimable ? (
+              ) : isLoadingClaimable || isLoadingProjected ? (
                 <span className="text-base">Loading...</span>
               ) : (
                 <>{currentEarnings.toFixed(4)} ETH</>
@@ -278,7 +289,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
               {!isContractAvailable
                 ? "Switch to Base Sepolia"
                 : currentEarnings > 0
-                ? "Claimable winnings"
+                ? isProjected
+                  ? "Based on current top 48"
+                  : "Claimable winnings"
                 : "No earnings yet"}
             </div>
           </div>

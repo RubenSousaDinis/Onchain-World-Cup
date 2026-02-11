@@ -241,10 +241,24 @@ export function useQualificationEndTime(chainId: number) {
  * Get total prize pool
  */
 export function useTotalPrizePool(chainId: number) {
-  const address = getQualificationAddress(chainId)
+  let address: Address | null = null
+
+  try {
+    address = getQualificationAddress(chainId)
+  } catch (error) {
+    // Contract not deployed - return disabled query
+    return useReadContract({
+      address: '0x0000000000000000000000000000000000000000' as Address,
+      abi: WORLD_CUP_QUALIFICATION_ABI,
+      functionName: "getTotalPrizePool",
+      query: {
+        enabled: false,
+      },
+    })
+  }
 
   return useReadContract({
-    address,
+    address: address!,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getTotalPrizePool",
   })

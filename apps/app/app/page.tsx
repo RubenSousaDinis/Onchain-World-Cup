@@ -19,6 +19,7 @@ import {
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useAccount, useChainId } from "wagmi"
 import { formatEther } from "viem"
+import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
 type CountryStats = {
   country_code: string
@@ -53,7 +54,12 @@ export default function HomePage() {
   const chainId = useChainId()
   const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei } = useClaimable(chainId, userAddress)
-  const currentEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  const { projectedEarnings } = useProjectedEarnings(userAddress)
+
+  // Use actual earnings if available, otherwise show projected
+  const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+  const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
+  const isProjected = actualEarnings === 0 && projectedEarnings > 0
 
   // Fetch real data from API
   useEffect(() => {
@@ -208,12 +214,16 @@ export default function HomePage() {
                   <div className="flex items-center gap-3">
                     <Wallet className="w-6 h-6 lg:w-8 lg:h-8 text-green-400" aria-hidden="true" />
                     <div>
-                      <div className="text-xs lg:text-sm text-green-400 font-bold uppercase mb-1">Your Earnings</div>
+                      <div className="text-xs lg:text-sm text-green-400 font-bold uppercase mb-1">
+                        {isProjected ? "Projected Earnings" : "Your Earnings"}
+                      </div>
                       <h2 className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
                         {currentEarnings.toFixed(4)} ETH
                       </h2>
                       <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-                        Claimable winnings from qualification phase
+                        {isProjected
+                          ? "Based on current top 48 standings"
+                          : "Claimable winnings from qualification phase"}
                       </p>
                     </div>
                   </div>
