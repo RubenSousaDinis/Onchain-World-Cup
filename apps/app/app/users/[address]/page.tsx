@@ -1,12 +1,15 @@
 "use client"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, Trophy, TrendingUp, DollarSign, Share2 } from "lucide-react"
+import { ArrowLeft, Trophy, TrendingUp, DollarSign, Share2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { use, useState, useEffect } from "react"
 import { ShareModal } from "@/components/share-modal"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { InlineLoader } from "@/components/states"
+import { useClaimable } from "@/lib/contracts/qualification"
+import { useChainId } from "wagmi"
+import { formatEther } from "viem"
 
 type UserVote = {
   id: string
@@ -46,6 +49,13 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showShareModal, setShowShareModal] = useState(false)
+
+  // Get current chain and fetch claimable earnings
+  const chainId = useChainId()
+  const { data: claimableWei, isLoading: isLoadingClaimable } = useClaimable(
+    chainId,
+    address as `0x${string}`
+  )
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -136,6 +146,9 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
   const farcasterUsername = userData.user?.farcaster_username
   const farcasterPfp = userData.user?.farcaster_pfp_url
 
+  // Calculate current earnings from contract
+  const currentEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
+
   // For share modal
   const favoriteTeam = favoriteCountries[0] || {
     countryName: "N/A",
@@ -219,7 +232,7 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-4 lg:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-4 lg:mb-6">
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
               <DollarSign className="w-5 h-5 text-primary" />
@@ -248,10 +261,27 @@ export default function UserProfilePage({ params }: { params: Promise<{ address:
 
           <div className="cm-panel rounded-sm p-4 lg:p-6">
             <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-5 h-5 text-green-400" />
-              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Avg. Cost</div>
+              <Wallet className="w-5 h-5 text-green-400" />
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Current Earnings</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
+              {isLoadingClaimable ? (
+                <span className="text-base">Loading...</span>
+              ) : (
+                <>{currentEarnings.toFixed(4)} ETH</>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {currentEarnings > 0 ? "Claimable winnings" : "No earnings yet"}
+            </div>
+          </div>
+
+          <div className="cm-panel rounded-sm p-4 lg:p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <TrendingUp className="w-5 h-5 text-accent" />
+              <div className="text-xs lg:text-sm text-muted-foreground uppercase">Avg. Cost</div>
+            </div>
+            <div className="text-2xl lg:text-3xl font-bold text-accent font-mono">
               {totalVotes > 0 ? (totalSpent / totalVotes).toFixed(6) : "0.000000"}
             </div>
             <div className="text-xs text-muted-foreground mt-1">ETH per vote</div>
