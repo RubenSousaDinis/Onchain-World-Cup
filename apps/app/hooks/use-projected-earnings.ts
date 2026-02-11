@@ -44,8 +44,9 @@ export function useProjectedEarnings(userAddress: string | undefined) {
           return
         }
         const summaryData = await summaryRes.json()
+        console.log('[ProjectedEarnings] Summary API response:', summaryData)
         const prizePool = parseFloat(summaryData.data?.total_eth || '0')
-        console.log('[ProjectedEarnings] Prize pool from API:', prizePool, 'ETH')
+        console.log('[ProjectedEarnings] Prize pool from API:', prizePool, 'ETH', 'Raw value:', summaryData.data?.total_eth)
 
         // Fetch top 48 countries
         const countriesRes = await fetch('/api/qualification/countries?limit=48')
