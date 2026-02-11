@@ -95,10 +95,10 @@ export default function TeamDetailPage({ params }: { params: Promise<{ teamId: s
       }
     }
 
-    if (countryCode) {
+    if (teamId) {
       fetchTeamData()
     }
-  }, [countryCode])
+  }, [teamId])
 
   if (isLoading) {
     return (
