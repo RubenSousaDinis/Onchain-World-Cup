@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface OnboardingStep {
@@ -193,6 +193,56 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
           <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
             <p className="text-sm text-foreground/80">
               <strong className="text-accent">Tip:</strong> Vote for multiple countries to increase your chances!
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Earn Levels & Achievements",
+      description: "Unlock milestones and climb the rankings",
+      icon: Award,
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-foreground/80">
+            Every action you take earns <strong>achievement points</strong>. Points unlock levels — from <strong>Youth Player</strong> all the way to <strong>World Class</strong>.
+          </p>
+
+          {/* Level ladder */}
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              { lv: 1, name: "Youth Player", pts: "0–49 pts",    border: "border-gray-500",   bg: "bg-gray-500/10",   text: "text-gray-400" },
+              { lv: 2, name: "Reserve",       pts: "50–149 pts",  border: "border-green-500",  bg: "bg-green-500/10",  text: "text-green-400" },
+              { lv: 3, name: "Regular",        pts: "150–299 pts", border: "border-blue-500",   bg: "bg-blue-500/10",   text: "text-blue-400" },
+              { lv: 4, name: "Key Player",     pts: "300–599 pts", border: "border-purple-500", bg: "bg-purple-500/10", text: "text-purple-400" },
+              { lv: 5, name: "Star Player",    pts: "600–999 pts", border: "border-orange-500", bg: "bg-orange-500/10", text: "text-orange-400" },
+              { lv: 6, name: "World Class",    pts: "1000+ pts",   border: "border-yellow-500", bg: "bg-yellow-500/10", text: "text-yellow-400" },
+            ].map(({ lv, name, pts, border, bg, text }) => (
+              <div key={lv} className={`flex items-center gap-2 rounded-sm border px-2 py-1.5 ${border} ${bg}`}>
+                <span className={`text-xs font-bold flex-shrink-0 ${text}`}>Lv.{lv}</span>
+                <div className="min-w-0">
+                  <div className={`text-xs font-bold truncate ${text}`}>{name}</div>
+                  <div className="text-xs text-muted-foreground">{pts}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Example achievements */}
+          <div className="bg-secondary/50 rounded-sm p-3 border border-border space-y-1">
+            <p className="text-xs font-bold text-muted-foreground uppercase mb-2">How to earn points</p>
+            <div className="grid grid-cols-1 gap-1 text-sm">
+              <span>⚽ First Vote <span className="text-accent font-bold">+10 pts</span></span>
+              <span>🔥 Vote Collector — 10 votes <span className="text-accent font-bold">+20 pts</span></span>
+              <span>🌍 Globetrotter — 5 countries <span className="text-accent font-bold">+50 pts</span></span>
+              <span>🐦 Early Bird — vote in week 1 <span className="text-accent font-bold">+75 pts</span></span>
+              <span>👑 Top 10 leaderboard <span className="text-accent font-bold">+200 pts</span></span>
+            </div>
+          </div>
+
+          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
+            <p className="text-sm text-foreground/80">
+              Your level badge appears on every leaderboard row and your public profile. Check the <strong className="text-accent">Achievements tab</strong> on the leaderboard to see the rankings.
             </p>
           </div>
         </div>

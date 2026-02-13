@@ -316,6 +316,40 @@ export async function processCountryAddedEvents(events: Log[]) {
 }
 
 /**
+ * Recomputes and persists the rank for every user with at least one vote.
+ * Rank is ordered by qualificationSpentEth DESC (mirrors the "successful" leaderboard).
+ * Safe to call multiple times — always reflects the current state of the DB.
+ */
+export async function syncRanks() {
+  console.log("[Processor] Syncing user ranks")
+
+  // Fetch all users that have voted, ordered by ETH spent descending
+  const users = await prisma.userStat.findMany({
+    where: { qualificationVotes: { gt: 0 } },
+    select: { walletAddress: true },
+    orderBy: { qualificationSpentEth: "desc" },
+  })
+
+  if (users.length === 0) {
+    console.log("[Processor] No users to rank")
+    return { updated: 0 }
+  }
+
+  // Batch update ranks in a single transaction
+  await prisma.$transaction(
+    users.map((user, index) =>
+      prisma.userStat.update({
+        where: { walletAddress: user.walletAddress },
+        data: { rank: index + 1 },
+      })
+    )
+  )
+
+  console.log(`[Processor] Ranks synced for ${users.length} users`)
+  return { updated: users.length }
+}
+
+/**
  * Main processor function - processes all events
  */
 export async function processEvents(eventsData: {

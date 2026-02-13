@@ -7,6 +7,8 @@ import { ArrowLeft, Minus, Clock, Users, Share2, Info, Trophy } from "lucide-rea
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
+import { LevelBadge } from "@/components/level-badge"
+import { computeLevel } from "@/lib/achievements"
 import countriesData from "@/data/countries.json"
 
 interface CountryData {
@@ -48,6 +50,7 @@ export function CountryDetailPageClient({ countryId }: { countryId: string }) {
       farcaster_fid?: number
       farcaster_username?: string
       farcaster_pfp_url?: string
+      achievement_points?: number
     }>
   } | null>(null)
   const [groupAssignment, setGroupAssignment] = useState<string | null>(null)
@@ -381,22 +384,27 @@ export function CountryDetailPageClient({ countryId }: { countryId: string }) {
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground text-sm flex-shrink-0">
                         #{idx + 1}
                       </div>
-                      {voter.farcaster_username ? (
-                        <>
-                          {voter.farcaster_pfp_url && (
-                            <img
-                              src={voter.farcaster_pfp_url}
-                              alt={voter.farcaster_username}
-                              className="w-8 h-8 rounded-full flex-shrink-0"
-                            />
-                          )}
-                          <span className="text-sm font-bold text-foreground truncate">@{voter.farcaster_username}</span>
-                        </>
+                      {voter.farcaster_pfp_url ? (
+                        <img
+                          src={voter.farcaster_pfp_url}
+                          alt={voter.farcaster_username || voter.voter_address}
+                          className="w-8 h-8 rounded-full flex-shrink-0 object-cover"
+                        />
                       ) : (
-                        <span className="text-sm font-mono text-foreground truncate">
-                          {voter.voter_address.slice(0, 8)}...{voter.voter_address.slice(-6)}
-                        </span>
+                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm font-bold flex-shrink-0">
+                          {(voter.farcaster_username || voter.voter_address).charAt(0).toUpperCase()}
+                        </div>
                       )}
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-sm font-bold text-foreground truncate">
+                            {voter.farcaster_username ? `@${voter.farcaster_username}` : `${voter.voter_address.slice(0, 8)}...${voter.voter_address.slice(-6)}`}
+                          </span>
+                          {voter.achievement_points !== undefined && (
+                            <LevelBadge level={computeLevel(voter.achievement_points)} points={voter.achievement_points} size="sm" />
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-sm font-mono font-bold cm-highlight">{voter.total_votes.toLocaleString()} votes</div>

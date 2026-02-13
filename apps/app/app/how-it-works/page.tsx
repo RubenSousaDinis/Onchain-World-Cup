@@ -111,6 +111,79 @@ export default function HowItWorksPage() {
             </div>
           </div>
 
+          {/* Achievements & Levels */}
+          <div className="cm-panel rounded-sm border border-border overflow-hidden">
+            <div className="soccer-field-bg px-4 py-6 border-b border-border">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
+                  <Award className="w-6 h-6 cm-highlight" />
+                </div>
+                <div>
+                  <div className="text-xs lg:text-sm text-accent font-bold uppercase">Across All Phases</div>
+                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Achievements & Levels</h2>
+                </div>
+              </div>
+              <p className="text-sm lg:text-base text-muted-foreground">
+                Earn points by participating. Your level reflects your overall contribution to the tournament.
+              </p>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Trophy className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Unlock Achievements, Earn Points</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    Hit milestones — cast your first vote, vote for 10 countries, spend 0.5 ETH, reach the top 10 — and unlock achievements worth 10–200 points each. Points are permanent and stack across all phases.
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs lg:text-sm font-bold text-muted-foreground uppercase mb-2 px-2">Level Progression</div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+                  {[
+                    { lv: 1, name: "Youth Player", pts: "0–49",    border: "border-gray-500",   bg: "bg-gray-500/10",   text: "text-gray-400" },
+                    { lv: 2, name: "Reserve",       pts: "50–149",  border: "border-green-500",  bg: "bg-green-500/10",  text: "text-green-400" },
+                    { lv: 3, name: "Regular",        pts: "150–299", border: "border-blue-500",   bg: "bg-blue-500/10",   text: "text-blue-400" },
+                    { lv: 4, name: "Key Player",     pts: "300–599", border: "border-purple-500", bg: "bg-purple-500/10", text: "text-purple-400" },
+                    { lv: 5, name: "Star Player",    pts: "600–999", border: "border-orange-500", bg: "bg-orange-500/10", text: "text-orange-400" },
+                    { lv: 6, name: "World Class",    pts: "1000+",   border: "border-yellow-500", bg: "bg-yellow-500/10", text: "text-yellow-400" },
+                  ].map(({ lv, name, pts, border, bg, text }) => (
+                    <div key={lv} className={`flex items-center gap-2 rounded-sm border px-3 py-2 ${border} ${bg}`}>
+                      <span className={`text-xs font-bold ${text}`}>Lv.{lv}</span>
+                      <div className="min-w-0">
+                        <div className={`text-xs font-bold truncate ${text}`}>{name}</div>
+                        <div className="text-xs text-muted-foreground">{pts} pts</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-accent/10 rounded-sm p-3 border border-accent/30">
+                <div className="text-xs lg:text-sm font-bold text-accent mb-2">Example Achievements</div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 text-xs lg:text-sm text-foreground/80">
+                  <span>⚽ First Vote — <span className="text-accent font-bold">10 pts</span></span>
+                  <span>🔥 Vote Collector (10 votes) — <span className="text-accent font-bold">20 pts</span></span>
+                  <span>⚡ Power Voter (50 votes) — <span className="text-accent font-bold">50 pts</span></span>
+                  <span>🌍 Globetrotter (5 countries) — <span className="text-accent font-bold">50 pts</span></span>
+                  <span>🐦 Early Bird (first week) — <span className="text-accent font-bold">75 pts</span></span>
+                  <span>👑 Top 10 on leaderboard — <span className="text-accent font-bold">200 pts</span></span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Target className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Achievements Leaderboard</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    A dedicated leaderboard ranks all players by total achievement points. Your level badge is visible on every leaderboard row and on your public profile.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="cm-panel rounded-sm border border-border overflow-hidden opacity-70">
             <div className="soccer-field-bg px-4 py-6 border-b border-border">
               <div className="flex items-center gap-3 mb-2">
