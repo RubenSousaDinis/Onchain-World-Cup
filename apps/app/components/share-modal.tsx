@@ -39,6 +39,9 @@ interface ShareModalProps {
       favoriteCountryFlag: string
       totalVotes: number
       rank?: number
+      levelNum?: number
+      levelName?: string
+      achievementPoints?: number
     }
     prizePool?: {
       totalPool: string
@@ -90,7 +93,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
         title: "My Crypto World Cup Stats",
         text: `My Crypto World Cup 2026 Stats:\n\n💰 Spent: ${stats?.ethSpent} ETH\n🏆 Earnings: ${stats?.currentEarnings} ETH\n⚽ Favorite: ${stats?.favoriteCountryFlag} ${stats?.favoriteCountry}\n📊 Total Votes: ${stats?.totalVotes}${stats?.rank ? `\n🎯 Rank: #${stats.rank}` : ''}\n\nJoin the action and vote for your favorite teams!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
         url: baseUrl,
-        ogImage: `${baseUrl}/api/og/user-stats?ethSpent=${stats?.ethSpent}&earnings=${stats?.currentEarnings}&country=${encodeURIComponent(stats?.favoriteCountry || "")}&countryFlag=${encodeURIComponent(stats?.favoriteCountryFlag || "")}&votes=${stats?.totalVotes}&rank=${stats?.rank || 0}`,
+        ogImage: `${baseUrl}/api/og/user-stats?ethSpent=${stats?.ethSpent}&earnings=${stats?.currentEarnings}&country=${encodeURIComponent(stats?.favoriteCountry || "")}&countryFlag=${encodeURIComponent(stats?.favoriteCountryFlag || "")}&votes=${stats?.totalVotes}&rank=${stats?.rank || 0}&levelNum=${stats?.levelNum || 1}&levelName=${encodeURIComponent(stats?.levelName || 'Youth Player')}&achievementPoints=${stats?.achievementPoints || 0}`,
       }
     }
 
@@ -305,7 +308,16 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
           {type === "user-stats" && (
             <div className="text-center">
               <div className="text-4xl mb-3">📊</div>
-              <div className="text-xl font-bold cm-highlight mb-4">My Crypto World Cup Stats</div>
+              <div className="text-xl font-bold cm-highlight mb-2">My Crypto World Cup Stats</div>
+              {data.userStats?.levelNum != null && (
+                <div className="inline-flex items-center gap-2 bg-secondary/30 border border-border rounded-sm px-3 py-1.5 mb-4 text-sm font-bold">
+                  <span className="text-muted-foreground">Lv.{data.userStats.levelNum}</span>
+                  <span className="cm-highlight">{data.userStats.levelName}</span>
+                  {data.userStats.achievementPoints != null && (
+                    <span className="text-muted-foreground">· {data.userStats.achievementPoints} pts</span>
+                  )}
+                </div>
+              )}
               <div className="space-y-3 max-w-sm mx-auto">
                 <div className="bg-secondary/20 border border-border rounded px-4 py-3">
                   <div className="text-xs text-muted-foreground mb-1">Total Spent</div>

@@ -3,7 +3,7 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2 } from "lucide-react"
+import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2, Award } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -11,8 +11,10 @@ import { InlineLoader, NoLeaderboardData, NoSearchResults } from "@/components/s
 import { type LeaderboardEntry } from "@/lib/mock-data/leaderboard-data"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { ShareModal } from "@/components/share-modal"
+import { LevelBadge } from "@/components/level-badge"
+import { computeLevel } from "@/lib/achievements"
 
-type LeaderboardCategory = "successful" | "largest" | "active" | "early"
+type LeaderboardCategory = "successful" | "largest" | "active" | "early" | "achievements"
 
 export default function LeaderboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -141,10 +143,10 @@ export default function LeaderboardPage() {
               className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
                 activeCategory === "successful" ? "active" : ""
               }`}
-              aria-label="View most successful voters by total winnings"
+              aria-label="View top spenders by total ETH spent in qualification"
             >
               <Trophy className="w-4 h-4" />
-              Most Successful
+              Top Spenders
             </button>
             <button
               onClick={() => setActiveCategory("largest")}
@@ -153,7 +155,7 @@ export default function LeaderboardPage() {
               }`}
             >
               <Target className="w-4 h-4" />
-              Largest Votes
+              Biggest Vote
             </button>
             <button
               onClick={() => setActiveCategory("active")}
@@ -162,7 +164,7 @@ export default function LeaderboardPage() {
               }`}
             >
               <Zap className="w-4 h-4" />
-              Most Active
+              Most Votes
             </button>
             <button
               onClick={() => setActiveCategory("early")}
@@ -172,6 +174,15 @@ export default function LeaderboardPage() {
             >
               <Clock className="w-4 h-4" />
               Early Birds
+            </button>
+            <button
+              onClick={() => setActiveCategory("achievements")}
+              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
+                activeCategory === "achievements" ? "active" : ""
+              }`}
+            >
+              <Award className="w-4 h-4" />
+              Achievements
             </button>
           </div>
         </div>
@@ -356,17 +367,23 @@ export default function LeaderboardPage() {
   )
 }
 
+// Format ETH values without trailing zeros (e.g. 0.0055 not 0.005500)
+const formatEth = (val: string | number | null | undefined): string =>
+  parseFloat(parseFloat(String(val || '0')).toFixed(6)).toString()
+
 // Helper function to get category description
 function getCategoryDescription(category: LeaderboardCategory): string {
   switch (category) {
     case "successful":
-      return "Top voters ranked by total ETH spent in qualification. Bigger spenders get more votes and better positions."
+      return "Ranked by total ETH spent on qualification votes. More ETH = more votes = better positions."
     case "largest":
-      return "Users with the biggest single vote transactions. Shows the largest individual votes placed on countries."
+      return "Users who placed the single biggest vote transaction, ranked by that one vote's ETH value."
     case "active":
-      return "Most engaged voters ranked by total number of votes cast. Consistent participation across different countries."
+      return "Ranked by total votes cast across all countries. Pure participation — every vote counts."
     case "early":
-      return "Early adopters who voted first. Being early means lower prices and more votes for less ETH."
+      return "Ranked by when they first voted. Early voters pay less per vote, so their average cost is lower."
+    case "achievements":
+      return "Users ranked by total achievement points. Earn points by hitting milestones — votes, countries, ETH spent, and more."
     default:
       return ""
   }
@@ -382,7 +399,7 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
     case "successful":
       return (
         <>
-          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalWinnings} ETH</div>
+          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{formatEth(entry.totalWinnings)} ETH</div>
           <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalVotes} Total Votes</div>
           <div className="text-sm lg:text-base text-muted-foreground">{entry.totalBets || 0} Countries</div>
         </>
@@ -390,7 +407,7 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
     case "largest":
       return (
         <>
-          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.largestVote} ETH</div>
+          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{formatEth(entry.largestVote)} ETH</div>
           <div className="text-sm lg:text-base text-accent font-bold mb-1 text-center">{entry.matchName}</div>
           <div className="text-sm lg:text-base text-muted-foreground">Voted: {entry.team}</div>
         </>
@@ -400,21 +417,32 @@ function renderCategorySpecificStat(entry: LeaderboardEntry, category: Leaderboa
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalVotes}</div>
           <div className="text-sm lg:text-base text-accent font-bold mb-1">{entry.totalBets || 0} Countries</div>
-          <div className="text-sm lg:text-base text-muted-foreground">{parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH</div>
+          <div className="text-sm lg:text-base text-muted-foreground">{formatEth(entry.totalWinnings)} ETH</div>
         </>
       )
     case "early":
       return (
         <>
           <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{entry.totalVotes}</div>
-          <div className="text-sm lg:text-base text-accent font-bold mb-1">{parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH</div>
+          <div className="text-sm lg:text-base text-accent font-bold mb-1">{formatEth(entry.totalWinnings)} ETH</div>
           <div className="text-sm lg:text-base text-muted-foreground">
             {entry.totalVotes > 0
-              ? `${(parseFloat(entry.totalWinnings || '0') / entry.totalVotes).toFixed(6)} ETH/vote`
+              ? `${formatEth(parseFloat(entry.totalWinnings || '0') / entry.totalVotes)} ETH/vote`
               : 'No votes yet'}
           </div>
         </>
       )
+    case "achievements": {
+      const pts = entry.achievementPoints ?? 0
+      const lvl = computeLevel(pts)
+      return (
+        <>
+          <div className={`${textSize} font-bold cm-highlight font-mono mb-1`}>{pts} pts</div>
+          <div className="mb-1"><LevelBadge level={lvl} points={pts} size="md" /></div>
+          <div className="text-sm lg:text-base text-muted-foreground">{entry.totalVotes} votes</div>
+        </>
+      )
+    }
   }
 }
 
@@ -488,6 +516,21 @@ function renderTableHeaders(category: LeaderboardCategory) {
           </th>
         </>
       )
+    case "achievements":
+      return (
+        <>
+          {baseHeaders}
+          <th className="px-3 lg:px-4 py-3 text-left text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
+            Level
+          </th>
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
+            Points
+          </th>
+          <th className="px-3 lg:px-4 py-3 text-right text-xs lg:text-sm font-bold cm-highlight uppercase whitespace-nowrap">
+            Votes
+          </th>
+        </>
+      )
   }
 }
 
@@ -519,14 +562,24 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           <div className="flex flex-col min-w-0">
             {entry.farcasterName ? (
               <>
-                <span className="text-sm lg:text-base font-bold truncate">{entry.farcasterName}</span>
+                <span className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-sm lg:text-base font-bold truncate">{entry.farcasterName}</span>
+                  {entry.achievementPoints !== undefined && (
+                    <LevelBadge level={computeLevel(entry.achievementPoints)} points={entry.achievementPoints} size="sm" />
+                  )}
+                </span>
                 <span className="text-sm lg:text-base text-muted-foreground font-mono">
                   {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
                 </span>
               </>
             ) : (
-              <span className="text-sm lg:text-base font-mono font-bold">
-                {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
+              <span className="flex items-center gap-1.5">
+                <span className="text-sm lg:text-base font-mono font-bold">
+                  {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
+                </span>
+                {entry.achievementPoints !== undefined && (
+                  <LevelBadge level={computeLevel(entry.achievementPoints)} points={entry.achievementPoints} size="sm" />
+                )}
               </span>
             )}
           </div>
@@ -547,7 +600,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
+              {formatEth(entry.totalWinnings)} ETH
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
@@ -563,7 +616,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           {userCell}
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {entry.largestVote} ETH
+              {formatEth(entry.largestVote)} ETH
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3">
@@ -590,7 +643,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
+              {formatEth(entry.totalWinnings)} ETH
             </span>
           </td>
         </>
@@ -606,17 +659,39 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-accent font-bold whitespace-nowrap">
-              {parseFloat(entry.totalWinnings || '0').toFixed(4)} ETH
+              {formatEth(entry.totalWinnings)} ETH
             </span>
           </td>
           <td className="px-3 lg:px-4 py-3 text-right">
             <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
               {entry.totalVotes > 0
-                ? (parseFloat(entry.totalWinnings || '0') / entry.totalVotes).toFixed(6)
+                ? formatEth(parseFloat(entry.totalWinnings || '0') / entry.totalVotes)
                 : '0.000000'} ETH
             </span>
           </td>
         </>
       )
+    case "achievements": {
+      const pts = entry.achievementPoints ?? 0
+      const lvl = computeLevel(pts)
+      return (
+        <>
+          {userCell}
+          <td className="px-3 lg:px-4 py-3">
+            <LevelBadge level={lvl} points={pts} />
+          </td>
+          <td className="px-3 lg:px-4 py-3 text-right">
+            <span className="text-sm lg:text-base font-mono font-bold cm-highlight whitespace-nowrap">
+              {pts}
+            </span>
+          </td>
+          <td className="px-3 lg:px-4 py-3 text-right">
+            <span className="text-sm lg:text-base font-mono text-muted-foreground font-bold whitespace-nowrap">
+              {entry.totalVotes}
+            </span>
+          </td>
+        </>
+      )
+    }
   }
 }

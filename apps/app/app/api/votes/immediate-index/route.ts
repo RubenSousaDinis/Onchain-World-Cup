@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { createPublicClient, http } from "viem"
+import { createPublicClient, http, parseEther, formatEther } from "viem"
 import { base, baseSepolia } from "viem/chains"
 import { revalidateTag } from "next/cache"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/server/prisma"
+import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
 
 /**
  * POST /api/votes/immediate-index
@@ -144,6 +145,11 @@ export async function POST(request: NextRequest) {
     // 8. Create indexed_transactions record FIRST, then vote record (foreign key relationship)
     console.log("[Immediate Index] Creating indexed_transactions and vote records for:", txHash)
 
+    // Snapshot current user stats before the transaction for achievement comparison
+    const existingUserStatBeforeUpdate = await prisma.userStat.findUnique({
+      where: { walletAddress: walletAddress.toLowerCase() },
+    })
+
     try {
       await prisma.$transaction(async (tx) => {
         // Double-check if transaction exists (race condition protection)
@@ -198,7 +204,7 @@ export async function POST(request: NextRequest) {
           where: { countryCode },
           data: {
             totalVotes: { increment: parseInt(voteCount.toString()) },
-            totalEth: (parseFloat(existingCountry.totalEth) + parseFloat(totalCostEth)).toString(),
+            totalEth: formatEther(parseEther(existingCountry.totalEth) + parseEther(totalCostEth)),
           },
         })
       } else {
@@ -229,9 +235,9 @@ export async function POST(request: NextRequest) {
           where: { walletAddress: walletAddress.toLowerCase() },
           data: {
             qualificationVotes: { increment: parseInt(voteCount.toString()) },
-            qualificationSpentEth: (parseFloat(existingStats.qualificationSpentEth) + parseFloat(totalCostEth)).toString(),
+            qualificationSpentEth: formatEther(parseEther(existingStats.qualificationSpentEth) + parseEther(totalCostEth)),
             totalVotes: { increment: parseInt(voteCount.toString()) },
-            totalSpentEth: (parseFloat(existingStats.totalSpentEth) + parseFloat(totalCostEth)).toString(),
+            totalSpentEth: formatEther(parseEther(existingStats.totalSpentEth) + parseEther(totalCostEth)),
             countriesVotedFor: uniqueCountries.length,
           },
         })
@@ -251,6 +257,18 @@ export async function POST(request: NextRequest) {
       }
       })
 
+      // Compute newly unlocked achievements to return to the client
+      const previousStats = computeAchievementStats(existingUserStatBeforeUpdate ?? {})
+      const updatedUserStat = await prisma.userStat.findUnique({
+        where: { walletAddress: walletAddress.toLowerCase() },
+      })
+      const updatedStats = computeAchievementStats(updatedUserStat ?? {})
+      const previousAchievements = computeAchievements(previousStats)
+      const updatedAchievements = computeAchievements(updatedStats)
+      const newlyUnlocked = updatedAchievements.filter(
+        (a) => a.unlocked && !previousAchievements.find((p) => p.id === a.id && p.unlocked)
+      )
+
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
 
       // Revalidate Next.js caches to show updated data immediately
@@ -264,6 +282,7 @@ export async function POST(request: NextRequest) {
           txHash,
           status: "pending",
           message: "Transaction indexed immediately - will be confirmed by daily cron job within 24 hours",
+          newAchievements: newlyUnlocked,
         },
         { status: 201 }
       )

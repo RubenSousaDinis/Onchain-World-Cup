@@ -11,6 +11,8 @@ import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/
 import { useChainId } from "wagmi"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
+import { useAchievements } from "@/hooks/use-achievements"
+import { LevelBadge } from "@/components/level-badge"
 
 type UserVote = {
   id: string
@@ -63,6 +65,9 @@ export function UserProfilePageClient({ address }: { address: string }) {
     projectedEarnings,
     isLoading: isLoadingProjected,
   } = useProjectedEarnings(address)
+
+  // Compute achievements and level for this user
+  const { level, totalPoints } = useAchievements(address)
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -226,6 +231,7 @@ export function UserProfilePageClient({ address }: { address: string }) {
                     <span className="text-muted-foreground">Countries:</span>
                     <span className="text-accent font-bold">{userData.countries_voted_for}</span>
                   </div>
+                  <LevelBadge level={level} points={totalPoints} showPoints />
                 </div>
               </div>
               <button
@@ -415,6 +421,9 @@ export function UserProfilePageClient({ address }: { address: string }) {
             favoriteCountryFlag: favoriteTeam.flagEmoji,
             totalVotes: totalVotes,
             rank: rank ?? undefined,
+            levelNum: level.level,
+            levelName: level.name,
+            achievementPoints: totalPoints,
           },
         }}
       />

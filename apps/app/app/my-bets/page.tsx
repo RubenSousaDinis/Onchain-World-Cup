@@ -209,7 +209,7 @@ export default function MyBetsPage() {
 
             {/* Milestones Section */}
             <div className="mb-6 lg:mb-8">
-              <UserMilestones />
+              <UserMilestones address={address} />
             </div>
 
             {/* Qualification Votes List */}

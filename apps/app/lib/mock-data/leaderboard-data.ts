@@ -14,6 +14,8 @@ export interface LeaderboardEntry {
   phase1Votes?: number
   matchName?: string
   team?: string
+  achievementPoints?: number
+  value?: number
 }
 
 // Most Successful Voters (by total winnings)

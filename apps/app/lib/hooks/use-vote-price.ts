@@ -36,7 +36,7 @@ export function useQualificationVotePrice({
   const countryCodeBytes = countryCode ? countryCodeToBytes8(countryCode) : "0x0000000000000000"
 
   // Get current vote count for the country
-  const { data: currentVotes, refetch: refetchVotes } = useReadContract({
+  const { data: currentVotes, isPending: isCurrentVotesPending, refetch: refetchVotes } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "countryVotes",
@@ -52,18 +52,20 @@ export function useQualificationVotePrice({
   // Calculate price for the specified number of votes
   // Cap at 100 votes to respect contract's MAX_VOTES_PER_TX limit
   const cappedVoteCount = Math.min(100, Math.max(1, voteCount))
-  const { data: votePrice, refetch: refetchPrice } = useReadContract({
+  const { data: votePrice, isPending: isPriceQueryLoading, isError: isPriceError, refetch: refetchPrice } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVoteCost",
     args: [countryCodeBytes, BigInt(cappedVoteCount)],
     query: {
       enabled: enabled && !!countryCode && cappedVoteCount > 0 && contractAddress !== "0x0000000000000000000000000000000000000000",
-      refetchInterval: false, // Don't poll - rely on event watching
-      refetchOnWindowFocus: false, // Don't refetch on window focus
-      staleTime: 30000, // Consider data fresh for 30 seconds
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+      staleTime: 30000,
+      retry: 2,
     },
   })
+
 
   // Get base price constant
   const { data: basePrice } = useReadContract({
@@ -106,14 +108,39 @@ export function useQualificationVotePrice({
     }
   }, [refetchTrigger, refetchVotes, refetchPrice])
 
+  // Fallback: compute cost client-side using known formula when calculateVoteCost is unavailable
+  // Formula: sum of (BASE_PRICE + (currentVotes + i) * PRICE_INCREMENT) for i in 0..N-1
+  const BASE_PRICE_ETH = 0.001
+  const PRICE_INCREMENT_ETH = 0.0005
+  const currentVotesNum = currentVotes ? Number(currentVotes) : 0
+  const computedTotalCost = (() => {
+    let total = 0
+    for (let i = 0; i < cappedVoteCount; i++) {
+      total += BASE_PRICE_ETH + (currentVotesNum + i) * PRICE_INCREMENT_ETH
+    }
+    return total
+  })()
+  const computedPricePerVote = BASE_PRICE_ETH + currentVotesNum * PRICE_INCREMENT_ETH
+
+  const effectiveVotePrice = votePrice
+    ? formatEther(votePrice)
+    : isPriceError
+    ? computedTotalCost.toFixed(6)
+    : "0"
+  const effectivePricePerVote = votePrice && cappedVoteCount > 0
+    ? formatEther(votePrice / BigInt(cappedVoteCount))
+    : isPriceError
+    ? computedPricePerVote.toFixed(6)
+    : "0"
+
   return {
-    currentVotes: currentVotes ? Number(currentVotes) : 0,
-    votePrice: votePrice ? formatEther(votePrice) : "0",
+    currentVotes: currentVotesNum,
+    votePrice: effectiveVotePrice,
     votePriceRaw: votePrice,
-    basePrice: basePrice ? formatEther(basePrice) : "0",
+    basePrice: basePrice ? formatEther(basePrice) : BASE_PRICE_ETH.toString(),
     basePriceRaw: basePrice,
-    pricePerVote: votePrice && cappedVoteCount > 0 ? formatEther(votePrice / BigInt(cappedVoteCount)) : "0",
-    isLoading: !votePrice && enabled && contractAddress !== "0x0000000000000000000000000000000000000000",
+    pricePerVote: effectivePricePerVote,
+    isLoading: isPriceError ? isCurrentVotesPending : isPriceQueryLoading,
     refetch: () => {
       refetchVotes()
       refetchPrice()
