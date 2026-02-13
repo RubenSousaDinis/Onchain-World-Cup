@@ -1,136 +1,14 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { Trophy, Flame, Zap, Crown, Target, Award, Rocket, Shield } from "lucide-react"
+import { Award, Shield } from "lucide-react"
 import { ShareModal } from "./share-modal"
 import { NFTMintModal } from "./nft-mint-modal"
 import { MilestoneNFTCard } from "./milestone-nft-card"
-
-interface Milestone {
-  id: string
-  title: string
-  description: string
-  icon: string
-  iconComponent: React.ReactNode
-  progress: number
-  total: number
-  unlocked: boolean
-  unlockedAt?: string
-  rarity: "common" | "rare" | "epic" | "legendary"
-  disabled?: boolean
-  disabledReason?: string
-}
-
-const milestones: Milestone[] = [
-  {
-    id: "first-vote-qual",
-    title: "First Vote",
-    description: "Cast your first qualification vote",
-    icon: "⚽",
-    iconComponent: <Zap className="w-6 h-6" />,
-    progress: 1,
-    total: 1,
-    unlocked: true,
-    unlockedAt: "Jan 5, 2026",
-    rarity: "common",
-  },
-  {
-    id: "ten-votes-qual",
-    title: "Qualification Supporter",
-    description: "Vote for 10 different countries",
-    icon: "🔥",
-    iconComponent: <Flame className="w-6 h-6" />,
-    progress: 10,
-    total: 10,
-    unlocked: true,
-    unlockedAt: "Jan 7, 2026",
-    rarity: "common",
-  },
-  {
-    id: "boost-voter",
-    title: "Boost Power",
-    description: "Use boost voting 5 times",
-    icon: "⚡",
-    iconComponent: <Zap className="w-6 h-6" />,
-    progress: 5,
-    total: 5,
-    unlocked: true,
-    unlockedAt: "Jan 8, 2026",
-    rarity: "rare",
-  },
-  {
-    id: "underdog-supporter",
-    title: "Underdog Hero",
-    description: "Support a country ranked below 50",
-    icon: "🦸",
-    iconComponent: <Shield className="w-6 h-6" />,
-    progress: 1,
-    total: 1,
-    unlocked: true,
-    unlockedAt: "Jan 6, 2026",
-    rarity: "rare",
-  },
-  {
-    id: "early-voter",
-    title: "Early Believer",
-    description: "Vote in the first week of qualification",
-    icon: "🐦",
-    iconComponent: <Rocket className="w-6 h-6" />,
-    progress: 1,
-    total: 1,
-    unlocked: true,
-    unlockedAt: "Jan 2, 2026",
-    rarity: "epic",
-  },
-  {
-    id: "heavy-voter",
-    title: "Vote Whale",
-    description: "Cast 100 total votes in qualification",
-    icon: "🐋",
-    iconComponent: <Crown className="w-6 h-6" />,
-    progress: 47,
-    total: 100,
-    unlocked: false,
-    rarity: "epic",
-  },
-  {
-    id: "diversified-qual",
-    title: "Global Voter",
-    description: "Vote for countries from all 6 confederations",
-    icon: "🌍",
-    iconComponent: <Target className="w-6 h-6" />,
-    progress: 4,
-    total: 6,
-    unlocked: false,
-    rarity: "rare",
-  },
-  {
-    id: "kingmaker",
-    title: "Kingmaker",
-    description: "Help push a country from rank 49+ into top 48",
-    icon: "👑",
-    iconComponent: <Crown className="w-6 h-6" />,
-    progress: 0,
-    total: 1,
-    unlocked: false,
-    rarity: "legendary",
-  },
-  {
-    id: "first-win",
-    title: "Winner!",
-    description: "Win your first bet",
-    icon: "🏆",
-    iconComponent: <Trophy className="w-6 h-6" />,
-    progress: 0,
-    total: 1,
-    unlocked: false,
-    rarity: "rare",
-    disabled: true,
-    disabledReason: "Available in Tournament Phase",
-  },
-]
+import { InlineLoader } from "./states"
+import { LevelBadge } from "./level-badge"
+import { useAchievements } from "@/hooks/use-achievements"
+import type { ComputedAchievement } from "@/lib/achievements"
 
 const rarityColors = {
   common: "border-gray-500 bg-gray-500/10",
@@ -146,20 +24,23 @@ const rarityTextColors = {
   legendary: "text-yellow-400",
 }
 
-export function UserMilestones() {
+interface UserMilestonesProps {
+  address?: string
+}
+
+export function UserMilestones({ address }: UserMilestonesProps) {
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [nftMintModalOpen, setNftMintModalOpen] = useState(false)
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null)
+  const [selectedMilestone, setSelectedMilestone] = useState<ComputedAchievement | null>(null)
 
-  const unlockedCount = milestones.filter((m) => m.unlocked).length
-  const totalCount = milestones.length
+  const { achievements, totalPoints, level, unlockedCount, totalCount, isLoading } = useAchievements(address)
 
-  const handleShare = (milestone: Milestone) => {
+  const handleShare = (milestone: ComputedAchievement) => {
     setSelectedMilestone(milestone)
     setShareModalOpen(true)
   }
 
-  const handleMintNFT = (milestone: Milestone) => {
+  const handleMintNFT = (milestone: ComputedAchievement) => {
     setSelectedMilestone(milestone)
     setNftMintModalOpen(true)
   }
@@ -176,11 +57,12 @@ export function UserMilestones() {
               </h3>
               <p className="text-xs lg:text-sm text-foreground/70 mt-1">Complete milestones to earn bragging rights</p>
             </div>
-            <div className="text-right">
+            <div className="text-right flex flex-col items-end gap-1">
               <div className="text-2xl font-bold cm-highlight">
                 {unlockedCount}/{totalCount}
               </div>
               <div className="text-xs lg:text-sm text-muted-foreground uppercase">Unlocked</div>
+              {address && !isLoading && <LevelBadge level={level} points={totalPoints} showPoints />}
             </div>
           </div>
 
@@ -189,91 +71,91 @@ export function UserMilestones() {
             <div className="h-2 bg-card/50 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
-                style={{ width: `${(unlockedCount / totalCount) * 100}%` }}
+                style={{ width: totalCount > 0 ? `${(unlockedCount / totalCount) * 100}%` : '0%' }}
               />
             </div>
           </div>
         </div>
 
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {milestones.map((milestone) => (
-            <div
-              key={milestone.id}
-              className={`relative rounded-sm border-2 p-4 transition-all ${
-                milestone.unlocked
-                  ? `${rarityColors[milestone.rarity]} hover:scale-[1.02] cursor-pointer`
-                  : "border-border bg-card/30 opacity-70"
-              }`}
-              onClick={() => milestone.unlocked && handleShare(milestone)}
-            >
-              {/* Rarity badge */}
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <InlineLoader text="Loading achievements..." />
+          </div>
+        ) : (
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {achievements.map((milestone) => (
               <div
-                className={`absolute top-2 right-2 text-xs lg:text-sm font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
+                key={milestone.id}
+                className={`relative rounded-sm border-2 p-4 transition-all ${
+                  milestone.unlocked
+                    ? `${rarityColors[milestone.rarity]} hover:scale-[1.02] cursor-pointer`
+                    : "border-border bg-card/30 opacity-70"
+                }`}
+                onClick={() => milestone.unlocked && handleShare(milestone)}
               >
-                {milestone.rarity}
-              </div>
+                {/* Rarity badge */}
+                <div
+                  className={`absolute top-2 right-2 text-xs lg:text-sm font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
+                >
+                  {milestone.rarity}
+                </div>
 
-              <div className="flex items-start gap-3">
-                <div className={`text-3xl ${milestone.unlocked ? "" : "grayscale opacity-50"}`}>{milestone.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-sm mb-1">{milestone.title}</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground mb-2">{milestone.description}</div>
+                <div className="flex items-start gap-3">
+                  <div className={`text-3xl ${milestone.unlocked ? "" : "grayscale opacity-50"}`}>{milestone.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm mb-1">{milestone.title}</div>
+                    <div className="text-xs lg:text-sm text-muted-foreground mb-2">{milestone.description}</div>
 
-                  {milestone.unlocked ? (
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-3 h-3 text-green-400" />
-                      <span className="text-xs lg:text-sm text-green-400">Unlocked {milestone.unlockedAt}</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between text-xs lg:text-sm mb-1">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="text-foreground font-mono">
-                          {milestone.progress}/{milestone.total}
-                        </span>
+                    {milestone.unlocked ? (
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-3 h-3 text-green-400" />
+                        <span className="text-xs lg:text-sm text-green-400">Unlocked · {milestone.points}pts</span>
                       </div>
-                      <div className="h-1.5 bg-card rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-accent transition-all"
-                          style={{ width: `${(milestone.progress / milestone.total) * 100}%` }}
-                        />
+                    ) : (
+                      <div>
+                        <div className="flex items-center justify-between text-xs lg:text-sm mb-1">
+                          <span className="text-muted-foreground">Progress</span>
+                          <span className="text-foreground font-mono">
+                            {milestone.progress}/{milestone.progressTotal}
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-card rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-accent transition-all"
+                            style={{ width: `${(milestone.progress / milestone.progressTotal) * 100}%` }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
+
+                {milestone.unlocked && (
+                  <div className="absolute bottom-2 right-2 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleMintNFT(milestone)
+                      }}
+                      className="text-xs lg:text-sm text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
+                    >
+                      Mint NFT
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleShare(milestone)
+                      }}
+                      className="text-xs lg:text-sm text-accent hover:text-primary transition-colors"
+                    >
+                      Share
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {milestone.unlocked && (
-                <div className="absolute bottom-2 right-2 flex gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleMintNFT(milestone)
-                    }}
-                    className="text-xs lg:text-sm text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
-                  >
-                    Mint NFT
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleShare(milestone)
-                    }}
-                    className="text-xs lg:text-sm text-accent hover:text-primary transition-colors"
-                  >
-                    Share
-                  </button>
-                </div>
-              )}
-
-              {milestone.disabled && (
-                <div className="absolute bottom-2 right-2 flex gap-2">
-                  <span className="text-xs lg:text-sm text-red-400 font-bold uppercase">{milestone.disabledReason}</span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {selectedMilestone && (
@@ -304,8 +186,8 @@ export function UserMilestones() {
                   description={selectedMilestone.description}
                   icon={selectedMilestone.icon}
                   rarity={selectedMilestone.rarity}
-                  unlockedAt={selectedMilestone.unlockedAt || "Recently"}
-                  address="0x1234...5678"
+                  unlockedAt="Recently"
+                  address={address || "0x0000...0000"}
                 />
               ),
               metadata: {

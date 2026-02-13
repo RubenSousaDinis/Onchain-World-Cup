@@ -12,6 +12,8 @@ import { modal } from "@/lib/reown-config"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 import { ShareModal } from "@/components/share-modal"
+import { AchievementUnlockedModal } from "@/components/achievement-unlocked-modal"
+import { type ComputedAchievement } from "@/lib/achievements"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -35,6 +37,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareData, setShareData] = useState<{votes: number, amount: string} | null>(null)
+  const [newAchievements, setNewAchievements] = useState<ComputedAchievement[]>([])
+  const [votedSuccessfully, setVotedSuccessfully] = useState(false)
+  const lastVoteDataRef = useRef<{votes: number, amount: string} | null>(null)
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -94,6 +99,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const totalCost = useMockPricing ? mockTotalCost : parseFloat(votePrice)
   const displayVotes = useMockPricing ? country?.votes || 0 : contractVotes
 
+
   // Calculate max votes based on wallet balance with dynamic pricing
   // Price increases with each vote, so we need to calculate iteratively
   const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
@@ -147,6 +153,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       processedTxRef.current = null
       indexedTxRef.current = null
       hasVotedRef.current = false
+      setNewAchievements([])
+      setShareData(null)
+      setShowShareModal(false)
+      setVotedSuccessfully(false)
+      lastVoteDataRef.current = null
       resetWrite()
     }
   }, [isOpen, resetWrite])
@@ -226,6 +237,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     // Reset vote count for next vote
     setVoteCount(1)
 
+    // Capture vote data for share modal / achievement modal before resetting state
+    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)) }
+
     // Index in background (don't block UI)
     // Transaction has 2 confirmations at this point, should be visible on RPC nodes
     setIsIndexing(true)
@@ -276,13 +290,16 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             // Note: We DON'T clear processedTxRef here - wagmi will clear hash on next transaction
 
             console.log("[Vote Modal] Ready for next vote - button should be enabled now")
+            setVotedSuccessfully(true)
 
-            // Show share modal after successful vote
-            setShareData({
-              votes: votes,
-              amount: formatETH(parseFloat(cost))
-            })
-            setTimeout(() => setShowShareModal(true), 300)
+            // Show achievement modal if any new achievements were unlocked, then share modal
+            const unlocked: ComputedAchievement[] = data.newAchievements ?? []
+            if (unlocked.length > 0) {
+              setNewAchievements(unlocked)
+            } else {
+              setShareData(lastVoteDataRef.current)
+              setTimeout(() => setShowShareModal(true), 300)
+            }
           }).catch((err) => {
             console.error("[Vote Modal] Error refetching data:", err)
             // Re-enable anyway even if refetch fails
@@ -475,12 +492,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const handleShareClose = () => {
     setShowShareModal(false)
     setShareData(null)
-  }
-
-  const handleShareAndClose = () => {
-    setShowShareModal(false)
-    setShareData(null)
-    onClose()
+    // Keep vote modal open so user can see Vote Again option
   }
 
   if (!isOpen || !country) return null
@@ -656,43 +668,84 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={onClose}
-              className="flex-1 cm-nav-tab py-3 font-bold"
-              disabled={isPending || isProcessing}
-            >
-              Close
-            </button>
-            <button
-              onClick={handleVote}
-              disabled={isPending || isProcessing || isAutoConnecting || voteCount < 1 || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
-              className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending
-                ? "Confirming..."
-                : isProcessing
-                ? isIndexing ? "Indexing..." : "Processing..."
-                : isAutoConnecting
-                ? "Connecting Wallet..."
-                : !isConnected
-                ? "Connect Wallet"
-                : !isAuthenticated
-                ? "Sign In to Vote"
-                : (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)
-                ? "Insufficient Balance"
-                : `Vote ${formatETH(totalCost)} ETH`}
-            </button>
-          </div>
+          {votedSuccessfully ? (
+            <div className="space-y-3 pt-2">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-sm p-3 text-center">
+                <p className="text-sm font-bold text-green-500">✓ Vote for {country.name} recorded!</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 cm-nav-tab py-3 font-bold"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setVotedSuccessfully(false)
+                    setVoteCount(1)
+                    resetWrite()
+                  }}
+                  className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all"
+                >
+                  Vote Again
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={onClose}
+                className="flex-1 cm-nav-tab py-3 font-bold"
+                disabled={isPending || isProcessing}
+              >
+                Close
+              </button>
+              <button
+                onClick={handleVote}
+                disabled={isPending || isProcessing || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0) || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
+                className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isPending
+                  ? "Confirming..."
+                  : isProcessing
+                  ? isIndexing ? "Indexing..." : "Processing..."
+                  : isAutoConnecting
+                  ? "Connecting Wallet..."
+                  : !isConnected
+                  ? "Connect Wallet"
+                  : !isAuthenticated
+                  ? "Sign In to Vote"
+                  : (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)
+                  ? "Insufficient Balance"
+                  : (!useMockPricing && totalCost <= 0)
+                  ? "Loading price..."
+                  : `Vote ${formatETH(totalCost)} ETH`}
+              </button>
+            </div>
+          )}
         </div>
       </div>
       </div>
+
+      {/* Achievement Unlocked Modal - shows when new achievements are earned */}
+      {newAchievements.length > 0 && (
+        <AchievementUnlockedModal
+          achievements={newAchievements}
+          onClose={() => {
+            setNewAchievements([])
+            // After dismissing achievements, show share modal with captured vote data
+            setShareData(lastVoteDataRef.current)
+            setTimeout(() => setShowShareModal(true), 200)
+          }}
+        />
+      )}
 
       {/* Share Modal - shows after successful vote */}
       {shareData && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={handleShareAndClose}
+          onClose={handleShareClose}
           type="country"
           data={{
             country: country.name,

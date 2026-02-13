@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { indexEvents } from "@/lib/indexer/event-indexer"
-import { processEvents } from "@/lib/indexer/transaction-processor"
+import { processEvents, syncRanks } from "@/lib/indexer/transaction-processor"
 import { jsonResponse } from "@/lib/api-utils"
 
 /**
@@ -48,6 +48,9 @@ export async function GET(request: NextRequest) {
     // Process events and update database
     const processResult = await processEvents(eventsData)
 
+    // Recompute and persist ranks for all users
+    const rankResult = await syncRanks()
+
     const totalEvents =
       processResult.processed.votes +
       processResult.processed.qualifications +
@@ -64,7 +67,8 @@ export async function GET(request: NextRequest) {
         to: eventsData.toBlock.toString(),
       },
       processed: processResult.processed,
-      message: `Successfully indexed ${totalEvents} events`,
+      ranksUpdated: rankResult.updated,
+      message: `Successfully indexed ${totalEvents} events, ranked ${rankResult.updated} users`,
     })
   } catch (error: any) {
     console.error("[Cron] Sync failed:", error)

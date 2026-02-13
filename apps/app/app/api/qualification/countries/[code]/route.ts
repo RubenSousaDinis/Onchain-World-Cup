@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { unstable_cache } from "next/cache"
 import { prisma } from "@/lib/prisma"
+import { computeAchievementStats, computeAchievements, computeTotalPoints } from "@/lib/achievements"
 
 /**
  * GET /api/qualification/countries/[code]
@@ -104,6 +105,15 @@ export async function GET(
         const topVoters = topVotes.map((vote) => {
           const userStat = userStatsMap.get(vote.voterAddress.toLowerCase())
           const totalEth = ethSpentMap.get(vote.voterAddress) || 0
+          const achievementPoints = userStat
+            ? computeTotalPoints(computeAchievements(computeAchievementStats({
+                qualificationVotes: userStat.qualificationVotes,
+                qualificationSpentEth: userStat.qualificationSpentEth,
+                countriesVotedFor: userStat.countriesVotedFor,
+                rank: userStat.rank,
+                createdAt: userStat.createdAt,
+              })))
+            : 0
           return {
             voter_address: vote.voterAddress,
             total_votes: vote._sum.voteCount || 0,
@@ -111,6 +121,7 @@ export async function GET(
             farcaster_fid: userStat?.user?.farcasterFid,
             farcaster_username: userStat?.user?.farcasterUsername,
             farcaster_pfp_url: userStat?.user?.farcasterPfpUrl,
+            achievement_points: achievementPoints,
           }
         })
 

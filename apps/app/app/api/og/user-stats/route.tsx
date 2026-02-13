@@ -16,6 +16,19 @@ export async function GET(request: NextRequest) {
     const countryFlag = searchParams.get('countryFlag') || '🏳️'
     const votes = searchParams.get('votes') || '0'
     const rank = searchParams.get('rank') || '0'
+    const levelNum = parseInt(searchParams.get('levelNum') || '1', 10)
+    const levelName = searchParams.get('levelName') || 'Youth Player'
+    const achievementPoints = searchParams.get('achievementPoints') || '0'
+
+    const LEVEL_COLORS: Record<number, { border: string; bg: string; text: string }> = {
+      1: { border: '#6b7280', bg: 'rgba(107,114,128,0.2)', text: '#9ca3af' },
+      2: { border: '#22c55e', bg: 'rgba(34,197,94,0.2)',   text: '#4ade80' },
+      3: { border: '#3b82f6', bg: 'rgba(59,130,246,0.2)',  text: '#60a5fa' },
+      4: { border: '#a855f7', bg: 'rgba(168,85,247,0.2)',  text: '#c084fc' },
+      5: { border: '#f97316', bg: 'rgba(249,115,22,0.2)',  text: '#fb923c' },
+      6: { border: '#eab308', bg: 'rgba(234,179,8,0.2)',   text: '#facc15' },
+    }
+    const lvlStyle = LEVEL_COLORS[levelNum] ?? LEVEL_COLORS[1]
 
     const imageResponse = new ImageResponse(
       (
@@ -60,17 +73,48 @@ export async function GET(request: NextRequest) {
             <div
               style={{
                 display: 'flex',
-                fontSize: 64,
-                fontWeight: 'bold',
-                color: '#00ff88',
-                marginBottom: 50,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
-                textAlign: 'center',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginBottom: 40,
+                gap: 20,
               }}
             >
-              📊 MY STATS
+              <div
+                style={{
+                  display: 'flex',
+                  fontSize: 64,
+                  fontWeight: 'bold',
+                  color: '#00ff88',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  textShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
+                  textAlign: 'center',
+                }}
+              >
+                📊 MY STATS
+              </div>
+              {/* Level badge */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  border: `3px solid ${lvlStyle.border}`,
+                  borderRadius: 8,
+                  backgroundColor: lvlStyle.bg,
+                  padding: '10px 24px',
+                }}
+              >
+                <span style={{ display: 'flex', fontSize: 28, fontWeight: 'bold', color: lvlStyle.text, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  LV.{levelNum}
+                </span>
+                <span style={{ display: 'flex', fontSize: 28, fontWeight: 'bold', color: lvlStyle.text, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  {levelName}
+                </span>
+                <span style={{ display: 'flex', fontSize: 22, color: '#a8b3cf' }}>
+                  · {achievementPoints} pts
+                </span>
+              </div>
             </div>
 
             {/* Stats Grid */}
