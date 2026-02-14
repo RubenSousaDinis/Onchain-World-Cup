@@ -9,7 +9,8 @@ import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { InlineLoader } from "@/components/states"
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useChainId, useEnsName } from "wagmi"
-import { mainnet } from "wagmi/chains"
+import { toCoinType } from "viem"
+import { mainnet, base } from "wagmi/chains"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 import { useAchievements } from "@/hooks/use-achievements"
@@ -71,16 +72,35 @@ export function UserProfilePageClient({ address }: { address: string }) {
   const { level, totalPoints } = useAchievements(address)
 
   // ENS resolution — must be before any early returns to satisfy Rules of Hooks
-  const { data: ensName } = useEnsName({
+  const hasFarcasterData = !!userData?.user?.farcaster_username
+  const skipEns = hasFarcasterData || !address
+
+  // 1. Try Base L2 primary name
+  const { data: baseEnsName } = useEnsName({
     address: address as `0x${string}`,
     chainId: mainnet.id,
+    coinType: toCoinType(base.id),
     query: {
-      enabled: !!address && !userData?.user?.farcaster_username,
+      enabled: !skipEns,
       staleTime: 60 * 60 * 1000,
       gcTime: 24 * 60 * 60 * 1000,
       retry: 1,
     },
   })
+
+  // 2. Fall back to L1 primary name if no Base name found
+  const { data: l1EnsName } = useEnsName({
+    address: address as `0x${string}`,
+    chainId: mainnet.id,
+    query: {
+      enabled: !skipEns && !baseEnsName,
+      staleTime: 60 * 60 * 1000,
+      gcTime: 24 * 60 * 60 * 1000,
+      retry: 1,
+    },
+  })
+
+  const ensName = baseEnsName || l1EnsName || null
 
   useEffect(() => {
     const fetchUserData = async () => {
