@@ -81,6 +81,14 @@ export async function GET(_request: NextRequest) {
                 gt: 0,
               },
             },
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  image: true,
+                },
+              },
+            },
             orderBy: {
               qualificationVotes: "desc",
             },
@@ -124,6 +132,9 @@ export async function GET(_request: NextRequest) {
           qualification_votes: user.qualificationVotes,
           qualification_spent_eth: user.qualificationSpentEth,
           countries_voted_for: user.countriesVotedFor,
+          farcaster_name: user.user?.name || null,
+          farcaster_avatar: user.user?.image || null,
+          ens_name: user.ensName || null,
         }))
 
         return {
