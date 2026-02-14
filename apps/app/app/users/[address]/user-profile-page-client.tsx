@@ -70,6 +70,18 @@ export function UserProfilePageClient({ address }: { address: string }) {
   // Compute achievements and level for this user
   const { level, totalPoints } = useAchievements(address)
 
+  // ENS resolution — must be before any early returns to satisfy Rules of Hooks
+  const { data: ensName } = useEnsName({
+    address: address as `0x${string}`,
+    chainId: mainnet.id,
+    query: {
+      enabled: !!address && !userData?.user?.farcaster_username,
+      staleTime: 60 * 60 * 1000,
+      gcTime: 24 * 60 * 60 * 1000,
+      retry: 1,
+    },
+  })
+
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true)
@@ -159,16 +171,6 @@ export function UserProfilePageClient({ address }: { address: string }) {
   const farcasterUsername = userData.user?.farcaster_username
   const farcasterPfp = userData.user?.farcaster_pfp_url
 
-  const { data: ensName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: mainnet.id,
-    query: {
-      enabled: !hasFarcaster && !!address,
-      staleTime: 60 * 60 * 1000,
-      gcTime: 24 * 60 * 60 * 1000,
-      retry: 1,
-    },
-  })
 
   // Calculate current earnings from contract (or use projected if not finalized)
   const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
