@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesDataStatic } from "@/lib/countries"
@@ -207,7 +206,6 @@ export default function HomePage() {
           </div>
 
           {/* Farcaster User Info */}
-          <FarcasterUserInfo variant="compact" className="mb-4 lg:mb-6" />
 
           {/* User Earnings Card - Show if connected, contract available, and has earnings */}
           {userAddress && isContractAvailable && currentEarnings > 0 && (
