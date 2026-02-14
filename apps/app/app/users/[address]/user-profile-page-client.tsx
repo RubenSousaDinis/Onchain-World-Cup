@@ -10,7 +10,6 @@ import { InlineLoader } from "@/components/states"
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useChainId } from "wagmi"
 import { formatEther } from "viem"
-import { useQuery } from "@tanstack/react-query"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 import { useAchievements } from "@/hooks/use-achievements"
 import { LevelBadge } from "@/components/level-badge"
@@ -32,6 +31,7 @@ type UserData = {
   qualification_won_eth: string
   countries_voted_for: number
   rank: number | null
+  ens_name?: string | null
   votes: UserVote[]
   user?: {
     farcaster_username?: string
@@ -70,20 +70,8 @@ export function UserProfilePageClient({ address }: { address: string }) {
   // Compute achievements and level for this user
   const { level, totalPoints } = useAchievements(address)
 
-  // ENS resolution via server-side API — must be before any early returns to satisfy Rules of Hooks
-  const { data: ensName } = useQuery({
-    queryKey: ["ens", address],
-    queryFn: async () => {
-      const res = await fetch(`/api/ens/${address}`)
-      if (!res.ok) return null
-      const data = await res.json()
-      return (data.name as string | null) ?? null
-    },
-    enabled: !!address && !userData?.user?.farcaster_username,
-    staleTime: 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
-    retry: 1,
-  })
+  // ENS name comes from the user API response (resolved server-side on first vote)
+  const ensName = userData?.ens_name ?? null
 
   useEffect(() => {
     const fetchUserData = async () => {

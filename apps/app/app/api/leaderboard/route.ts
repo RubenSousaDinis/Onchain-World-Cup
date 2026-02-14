@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
                   qualificationSpentEth: true,
                   countriesVotedFor: true,
                   rank: true,
+                  ensName: true,
                   createdAt: true,
                   user: {
                     select: {
@@ -95,6 +96,7 @@ export async function GET(request: NextRequest) {
                 achievementPoints: computeTotalPoints(computeAchievements(stats)),
                 farcasterName: user.user?.name || null,
                 farcasterAvatar: user.user?.image || null,
+                ensName: user.ensName || null,
               }
             })
 
@@ -144,6 +146,7 @@ export async function GET(request: NextRequest) {
                 qualificationSpentEth: true,
                 countriesVotedFor: true,
                 rank: true,
+                ensName: true,
                 createdAt: true,
                 user: {
                   select: {
@@ -183,6 +186,7 @@ export async function GET(request: NextRequest) {
                 achievementPoints: computeTotalPoints(computeAchievements(stats)),
                 farcasterName: profile?.user?.name || null,
                 farcasterAvatar: profile?.user?.image || null,
+                ensName: profile?.ensName || null,
               }
             })
 
@@ -204,6 +208,7 @@ export async function GET(request: NextRequest) {
                   qualificationSpentEth: true,
                   countriesVotedFor: true,
                   rank: true,
+                  ensName: true,
                   createdAt: true,
                   user: {
                     select: {
@@ -245,6 +250,7 @@ export async function GET(request: NextRequest) {
                 achievementPoints: computeTotalPoints(computeAchievements(stats)),
                 farcasterName: user.user?.name || null,
                 farcasterAvatar: user.user?.image || null,
+                ensName: user.ensName || null,
               }
             })
 
@@ -266,6 +272,7 @@ export async function GET(request: NextRequest) {
                   qualificationSpentEth: true,
                   countriesVotedFor: true,
                   rank: true,
+                  ensName: true,
                   createdAt: true,
                   user: {
                     select: {
@@ -308,6 +315,7 @@ export async function GET(request: NextRequest) {
                 achievementPoints: computeTotalPoints(computeAchievements(stats)),
                 farcasterName: user.user?.name || null,
                 farcasterAvatar: user.user?.image || null,
+                ensName: user.ensName || null,
               }
             })
 
@@ -328,6 +336,7 @@ export async function GET(request: NextRequest) {
                 qualificationSpentEth: true,
                 countriesVotedFor: true,
                 rank: true,
+                ensName: true,
                 createdAt: true,
                 user: {
                   select: {
@@ -367,6 +376,7 @@ export async function GET(request: NextRequest) {
               winRate: 0,
               farcasterName: user.user?.name || null,
               farcasterAvatar: user.user?.image || null,
+              ensName: user.ensName || null,
             }))
 
             return { data: rankedData, count, category: validatedCategory }

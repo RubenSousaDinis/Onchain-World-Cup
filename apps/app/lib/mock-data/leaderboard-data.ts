@@ -6,6 +6,7 @@ export interface LeaderboardEntry {
   address: string
   farcasterName: string | null
   farcasterAvatar: string | null
+  ensName?: string | null
   totalWinnings: string
   totalVotes: number
   totalBets: number

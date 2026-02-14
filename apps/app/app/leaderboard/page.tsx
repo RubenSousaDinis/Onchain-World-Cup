@@ -246,7 +246,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base cm-highlight mb-1 font-bold uppercase">1st Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                <WalletName address={filteredLeaderboard[0].address} farcasterName={filteredLeaderboard[0].farcasterName} />
+                <WalletName address={filteredLeaderboard[0].address} farcasterName={filteredLeaderboard[0].farcasterName} ensName={filteredLeaderboard[0].ensName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[0], activeCategory, "large")}
             </div>
@@ -266,7 +266,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">2nd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                <WalletName address={filteredLeaderboard[1].address} farcasterName={filteredLeaderboard[1].farcasterName} />
+                <WalletName address={filteredLeaderboard[1].address} farcasterName={filteredLeaderboard[1].farcasterName} ensName={filteredLeaderboard[1].ensName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[1], activeCategory, "medium")}
             </div>
@@ -286,7 +286,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">3rd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                <WalletName address={filteredLeaderboard[2].address} farcasterName={filteredLeaderboard[2].farcasterName} />
+                <WalletName address={filteredLeaderboard[2].address} farcasterName={filteredLeaderboard[2].farcasterName} ensName={filteredLeaderboard[2].ensName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[2], activeCategory, "medium")}
             </div>
@@ -524,12 +524,13 @@ function renderTableHeaders(category: LeaderboardCategory) {
 }
 
 // Renders name + optional address sub-line with ENS fallback
-function LeaderboardUserName({ address, farcasterName, achievementPoints }: {
+function LeaderboardUserName({ address, farcasterName, ensName, achievementPoints }: {
   address: string
   farcasterName: string | null
+  ensName?: string | null
   achievementPoints?: number
 }) {
-  const { resolvedName, shortAddress, hasName } = useWalletDisplayName(address, farcasterName)
+  const { resolvedName, shortAddress, hasName } = useWalletDisplayName(address, farcasterName, ensName)
 
   return (
     <div className="flex flex-col min-w-0">
@@ -576,6 +577,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           <LeaderboardUserName
             address={entry.address}
             farcasterName={entry.farcasterName}
+            ensName={entry.ensName}
             achievementPoints={entry.achievementPoints}
           />
         </Link>

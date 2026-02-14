@@ -6,6 +6,7 @@ import { revalidateTag } from "next/cache"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
+import { resolveEnsName } from "@/lib/server/ens"
 
 /**
  * POST /api/votes/immediate-index
@@ -242,7 +243,8 @@ export async function POST(request: NextRequest) {
           },
         })
       } else {
-        // Create new user stat
+        // Create new user stat — resolve ENS name outside the transaction (network call)
+        const ensName = await resolveEnsName(walletAddress.toLowerCase()).catch(() => null)
         await tx.userStat.create({
           data: {
             walletAddress: walletAddress.toLowerCase(),
@@ -252,6 +254,7 @@ export async function POST(request: NextRequest) {
             totalSpentEth: totalCostEth.toString(),
             countriesVotedFor: 1,
             userId: session.user.id,
+            ensName,
           },
         })
       }
