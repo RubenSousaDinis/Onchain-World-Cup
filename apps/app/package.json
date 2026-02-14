@@ -19,6 +19,8 @@
     "deploy:mainnet": "hardhat run scripts/deploy.js --network baseMainnet",
     "deploy:qualification:sepolia": "hardhat run scripts/deploy-qualification.ts --network baseSepolia",
     "deploy:qualification:mainnet": "hardhat run scripts/deploy-qualification.ts --network baseMainnet",
+    "deploy:nfts:sepolia": "hardhat run scripts/deploy-nfts.ts --network baseSepolia",
+    "deploy:nfts:mainnet": "hardhat run scripts/deploy-nfts.ts --network baseMainnet",
     "seed:countries": "tsx scripts/seed-countries.ts",
     "vote": "hardhat run scripts/vote-and-index.ts",
     "prisma:generate": "prisma generate",

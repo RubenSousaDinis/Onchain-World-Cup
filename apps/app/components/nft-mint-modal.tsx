@@ -1,13 +1,18 @@
 "use client"
 
 import { X, Award, Download, ExternalLink } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useEffect } from "react"
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import type React from "react"
 import { useNotifications } from "@/components/notifications"
+import { parseEther } from "viem"
+import { getAchievementNFTAddress, getMatchNFTAddress, NFT_ABI } from "@/lib/contracts/nft"
+import type { ComputedAchievement } from "@/lib/achievements"
 
 // Debug logging - only enable in development
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const
 
 interface NFTMintModalProps {
   isOpen: boolean
@@ -23,10 +28,31 @@ interface NFTMintModalProps {
 }
 
 export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps) {
-  const [isMinting, setIsMinting] = useState(false)
-  const { writeContract: _writeContract, data: hash } = useWriteContract()
+  // Extract milestone early so it can be used in hooks below
+  const milestone = data.metadata.milestone as ComputedAchievement | undefined
+  const achievementId = milestone?.id ?? ""
+
+  const { address } = useAccount()
+  const { writeContract, data: hash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
   const { success, error, info } = useNotifications()
+
+  // Resolve contract address without throwing (may not be configured yet)
+  let nftContractAddress: `0x${string}` | undefined
+  try {
+    nftContractAddress = type === "milestone" ? getAchievementNFTAddress() : getMatchNFTAddress()
+  } catch { /* not configured */ }
+
+  // Check on-chain how many times this user has minted this achievement
+  const { data: mintedCount, refetch: refetchMinted } = useReadContract({
+    address: nftContractAddress,
+    abi: NFT_ABI,
+    functionName: "mintCount",
+    args: [address ?? ZERO_ADDRESS, achievementId],
+    query: { enabled: !!address && !!achievementId && !!nftContractAddress },
+  })
+
+  const ownedCount = mintedCount !== undefined ? Number(mintedCount) : 0
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -38,52 +64,112 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
     return () => window.removeEventListener("keydown", handleEscape)
   }, [isOpen, onClose])
 
-  // Show notification when NFT minting succeeds
   useEffect(() => {
     if (isSuccess) {
       success("NFT Minted!", "Your NFT has been minted successfully on Base")
+      refetchMinted()
     }
-  }, [isSuccess, success])
+  }, [isSuccess, success, refetchMinted])
 
   if (!isOpen) return null
 
-  const handleMint = async () => {
-    setIsMinting(true)
-    info("Preparing NFT", "Uploading metadata to IPFS...")
+  const buildMetadataUrl = () => {
+    if (!milestone) return ""
+    return (
+      `${window.location.origin}/api/nft/metadata?` +
+      new URLSearchParams({
+        title: milestone.title,
+        description: milestone.description,
+        icon: milestone.icon,
+        rarity: milestone.rarity,
+        achievementId: milestone.id,
+        points: String(milestone.points),
+        address: address ?? "",
+      }).toString()
+    )
+  }
 
-    // TODO: Replace with actual NFT contract address
-    const _nftContractAddress = "0x0000000000000000000000000000000000000000"
+  const handleMint = async () => {
+    if (!address) {
+      error("Wallet Not Connected", "Please connect your wallet to mint an NFT.")
+      return
+    }
+
+    const metadataUrl = buildMetadataUrl()
+    if (!metadataUrl) {
+      error("Missing Data", "Achievement data is required to mint.")
+      return
+    }
+
+    if (DEBUG) {
+      console.log("Minting NFT with metadataUrl:", metadataUrl)
+    }
 
     try {
-      // In a real implementation, you would:
-      // 1. Upload metadata to IPFS
-      // 2. Call the mint function on the NFT contract
-      if (DEBUG) {
-        console.log("Minting NFT with data:", data)
-      }
-
-      info("Minting NFT", "Waiting for transaction confirmation...")
-
-      // Simulate minting for demo
-      setTimeout(() => {
-        setIsMinting(false)
-        success("NFT Minted!", "Your achievement NFT has been minted successfully")
-        onClose()
-      }, 2000)
+      const nftAddress = type === "milestone" ? getAchievementNFTAddress() : getMatchNFTAddress()
+      info("Confirm Transaction", "Please confirm the transaction in your wallet...")
+      writeContract({
+        address: nftAddress,
+        abi: NFT_ABI,
+        functionName: "mint",
+        args: [address, metadataUrl, achievementId, JSON.stringify(milestone ?? data.metadata)],
+        value: parseEther("0.001"),
+      })
     } catch (err) {
       console.error("Error minting NFT:", err)
-      setIsMinting(false)
       error("Minting Failed", err instanceof Error ? err.message : "Unable to mint NFT. Please try again.")
     }
   }
 
-  const handleDownload = () => {
-    // In production, this would download the actual generated image
-    if (DEBUG) {
-      console.log("Downloading NFT image")
+  const handleDownload = async () => {
+    if (!milestone) {
+      info("Download Unavailable", "No achievement data available to download.")
+      return
     }
-    info("Download Coming Soon", "This feature will be available after NFT contracts are deployed")
+
+    const imageUrl =
+      `${window.location.origin}/api/og/achievement-card?` +
+      new URLSearchParams({
+        title: milestone.title,
+        description: milestone.description,
+        icon: milestone.icon,
+        rarity: milestone.rarity,
+        address: address ?? "",
+      }).toString()
+
+    try {
+      const res = await fetch(imageUrl)
+      const blob = await res.blob()
+      const a = document.createElement("a")
+      a.href = URL.createObjectURL(blob)
+      a.download = `${milestone.id}-achievement.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(a.href)
+    } catch (err) {
+      console.error("Error downloading NFT image:", err)
+      error("Download Failed", "Unable to download the achievement image.")
+    }
   }
+
+  const handleViewCollection = () => {
+    try {
+      const collectionAddr =
+        type === "milestone"
+          ? process.env.NEXT_PUBLIC_ACHIEVEMENT_NFT_ADDRESS
+          : process.env.NEXT_PUBLIC_MATCH_NFT_ADDRESS
+      if (collectionAddr) {
+        window.open(`https://opensea.io/assets/base/${collectionAddr}`, "_blank")
+      } else {
+        window.open("https://opensea.io", "_blank")
+      }
+    } catch {
+      window.open("https://opensea.io", "_blank")
+    }
+  }
+
+  const isMinting = isPending || isConfirming
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -132,6 +218,12 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
                 <span className="text-muted-foreground">Mint Cost:</span>
                 <span className="cm-highlight font-bold">0.001 ETH</span>
               </div>
+              {ownedCount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">You own:</span>
+                  <span className="text-accent font-bold">{ownedCount} {ownedCount === 1 ? "copy" : "copies"}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -139,10 +231,10 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
           <div className="space-y-3">
             <button
               onClick={handleMint}
-              disabled={isMinting || isConfirming}
+              disabled={isMinting || !address}
               className="w-full cm-nav-tab py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isMinting || isConfirming ? "Minting..." : "Mint NFT"}
+              {isMinting ? "Minting..." : "Mint NFT"}
             </button>
 
             <div className="flex gap-3">
@@ -154,7 +246,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
                 Download
               </button>
               <button
-                onClick={() => window.open("https://opensea.io", "_blank")}
+                onClick={handleViewCollection}
                 className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-2 rounded-sm font-bold uppercase text-xs lg:text-sm transition-colors flex items-center justify-center gap-2"
               >
                 <ExternalLink className="w-4 h-4" />
