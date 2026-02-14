@@ -13,6 +13,7 @@ import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { ShareModal } from "@/components/share-modal"
 import { LevelBadge } from "@/components/level-badge"
 import { computeLevel } from "@/lib/achievements"
+import { WalletName, useWalletDisplayName } from "@/components/wallet-name"
 
 type LeaderboardCategory = "successful" | "largest" | "active" | "early" | "achievements"
 
@@ -245,11 +246,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base cm-highlight mb-1 font-bold uppercase">1st Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                {filteredLeaderboard[0].farcasterName || (
-                  <span className="font-mono text-sm lg:text-base">
-                    {filteredLeaderboard[0].address.slice(0, 6)}...{filteredLeaderboard[0].address.slice(-4)}
-                  </span>
-                )}
+                <WalletName address={filteredLeaderboard[0].address} farcasterName={filteredLeaderboard[0].farcasterName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[0], activeCategory, "large")}
             </div>
@@ -269,11 +266,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">2nd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                {filteredLeaderboard[1].farcasterName || (
-                  <span className="font-mono text-sm lg:text-base">
-                    {filteredLeaderboard[1].address.slice(0, 6)}...{filteredLeaderboard[1].address.slice(-4)}
-                  </span>
-                )}
+                <WalletName address={filteredLeaderboard[1].address} farcasterName={filteredLeaderboard[1].farcasterName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[1], activeCategory, "medium")}
             </div>
@@ -293,11 +286,7 @@ export default function LeaderboardPage() {
               )}
               <div className="text-sm lg:text-base text-foreground/70 mb-1 uppercase font-bold">3rd Place</div>
               <div className="text-sm lg:text-base font-bold text-foreground mb-2">
-                {filteredLeaderboard[2].farcasterName || (
-                  <span className="font-mono text-sm lg:text-base">
-                    {filteredLeaderboard[2].address.slice(0, 6)}...{filteredLeaderboard[2].address.slice(-4)}
-                  </span>
-                )}
+                <WalletName address={filteredLeaderboard[2].address} farcasterName={filteredLeaderboard[2].farcasterName} />
               </div>
               {renderCategorySpecificStat(filteredLeaderboard[2], activeCategory, "medium")}
             </div>
@@ -534,6 +523,31 @@ function renderTableHeaders(category: LeaderboardCategory) {
   }
 }
 
+// Renders name + optional address sub-line with ENS fallback
+function LeaderboardUserName({ address, farcasterName, achievementPoints }: {
+  address: string
+  farcasterName: string | null
+  achievementPoints?: number
+}) {
+  const { resolvedName, shortAddress, hasName } = useWalletDisplayName(address, farcasterName)
+
+  return (
+    <div className="flex flex-col min-w-0">
+      <span className="flex items-center gap-1.5 min-w-0">
+        <span className={`text-sm lg:text-base font-bold truncate ${!hasName ? 'font-mono' : ''}`}>
+          {resolvedName ?? shortAddress}
+        </span>
+        {achievementPoints !== undefined && (
+          <LevelBadge level={computeLevel(achievementPoints)} points={achievementPoints} size="sm" />
+        )}
+      </span>
+      {hasName && (
+        <span className="text-sm lg:text-base text-muted-foreground font-mono">{shortAddress}</span>
+      )}
+    </div>
+  )
+}
+
 // Helper function to render table rows based on category
 function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) {
   const userCell = (
@@ -559,30 +573,11 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
               <span className="text-sm lg:text-base font-bold">?</span>
             </div>
           )}
-          <div className="flex flex-col min-w-0">
-            {entry.farcasterName ? (
-              <>
-                <span className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-sm lg:text-base font-bold truncate">{entry.farcasterName}</span>
-                  {entry.achievementPoints !== undefined && (
-                    <LevelBadge level={computeLevel(entry.achievementPoints)} points={entry.achievementPoints} size="sm" />
-                  )}
-                </span>
-                <span className="text-sm lg:text-base text-muted-foreground font-mono">
-                  {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                </span>
-              </>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <span className="text-sm lg:text-base font-mono font-bold">
-                  {entry.address.slice(0, 6)}...{entry.address.slice(-4)}
-                </span>
-                {entry.achievementPoints !== undefined && (
-                  <LevelBadge level={computeLevel(entry.achievementPoints)} points={entry.achievementPoints} size="sm" />
-                )}
-              </span>
-            )}
-          </div>
+          <LeaderboardUserName
+            address={entry.address}
+            farcasterName={entry.farcasterName}
+            achievementPoints={entry.achievementPoints}
+          />
         </Link>
       </td>
     </>

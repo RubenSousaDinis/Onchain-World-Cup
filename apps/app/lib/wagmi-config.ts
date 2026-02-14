@@ -1,5 +1,5 @@
 import { createConfig, http, fallback } from "wagmi"
-import { base, baseSepolia } from "wagmi/chains"
+import { base, baseSepolia, mainnet } from "wagmi/chains"
 import { injected, walletConnect } from "wagmi/connectors"
 
 import { coinbaseWallet } from "wagmi/connectors"
@@ -21,7 +21,7 @@ const httpConfig = {
 }
 
 export const wagmiConfig = createConfig({
-  chains: [base, baseSepolia],
+  chains: [base, baseSepolia, mainnet],
   connectors: [
     injected(),
     coinbaseWallet({
@@ -43,6 +43,11 @@ export const wagmiConfig = createConfig({
       http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://sepolia.base.org', httpConfig),
       http('https://base-sepolia.publicnode.com', httpConfig),
       http('https://base-sepolia.blockpi.network/v1/rpc/public', httpConfig),
+    ]),
+    // Mainnet is included only for ENS name resolution — not used for voting
+    [mainnet.id]: fallback([
+      http(process.env.NEXT_PUBLIC_ETH_MAINNET_RPC_URL || 'https://ethereum.publicnode.com', httpConfig),
+      http('https://eth.llamarpc.com', httpConfig),
     ]),
   },
   ssr: true,
