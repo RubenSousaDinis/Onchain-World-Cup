@@ -1,6 +1,8 @@
 "use client"
 
 import { LogOut } from "lucide-react"
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 
 interface DisconnectConfirmModalProps {
   isOpen: boolean
@@ -9,10 +11,16 @@ interface DisconnectConfirmModalProps {
 }
 
 export function DisconnectConfirmModal({ isOpen, onConfirm, onCancel }: DisconnectConfirmModalProps) {
-  if (!isOpen) return null
+  const [mounted, setMounted] = useState(false)
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!isOpen || !mounted) return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70" onClick={onCancel} />
 
@@ -46,6 +54,7 @@ export function DisconnectConfirmModal({ isOpen, onConfirm, onCancel }: Disconne
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
