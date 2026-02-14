@@ -8,10 +8,9 @@ import { ShareModal } from "@/components/share-modal"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import { InlineLoader } from "@/components/states"
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
-import { useChainId, useEnsName } from "wagmi"
-import { toCoinType } from "viem"
-import { mainnet, base } from "wagmi/chains"
+import { useChainId } from "wagmi"
 import { formatEther } from "viem"
+import { useQuery } from "@tanstack/react-query"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 import { useAchievements } from "@/hooks/use-achievements"
 import { LevelBadge } from "@/components/level-badge"
@@ -71,36 +70,20 @@ export function UserProfilePageClient({ address }: { address: string }) {
   // Compute achievements and level for this user
   const { level, totalPoints } = useAchievements(address)
 
-  // ENS resolution — must be before any early returns to satisfy Rules of Hooks
-  const hasFarcasterData = !!userData?.user?.farcaster_username
-  const skipEns = hasFarcasterData || !address
-
-  // 1. Try Base L2 primary name
-  const { data: baseEnsName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: mainnet.id,
-    coinType: toCoinType(base.id),
-    query: {
-      enabled: !skipEns,
-      staleTime: 60 * 60 * 1000,
-      gcTime: 24 * 60 * 60 * 1000,
-      retry: 1,
+  // ENS resolution via server-side API — must be before any early returns to satisfy Rules of Hooks
+  const { data: ensName } = useQuery({
+    queryKey: ["ens", address],
+    queryFn: async () => {
+      const res = await fetch(`/api/ens/${address}`)
+      if (!res.ok) return null
+      const data = await res.json()
+      return (data.name as string | null) ?? null
     },
+    enabled: !!address && !userData?.user?.farcaster_username,
+    staleTime: 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    retry: 1,
   })
-
-  // 2. Fall back to L1 primary name if no Base name found
-  const { data: l1EnsName } = useEnsName({
-    address: address as `0x${string}`,
-    chainId: mainnet.id,
-    query: {
-      enabled: !skipEns && !baseEnsName,
-      staleTime: 60 * 60 * 1000,
-      gcTime: 24 * 60 * 60 * 1000,
-      retry: 1,
-    },
-  })
-
-  const ensName = baseEnsName || l1EnsName || null
 
   useEffect(() => {
     const fetchUserData = async () => {
