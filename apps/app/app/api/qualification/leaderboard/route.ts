@@ -62,6 +62,14 @@ export async function GET(request: NextRequest) {
                 gt: 0, // Only users who have voted
               },
             },
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  image: true,
+                },
+              },
+            },
             orderBy,
             take: limit,
             skip: offset,
@@ -83,6 +91,9 @@ export async function GET(request: NextRequest) {
           qualification_spent_eth: user.qualificationSpentEth,
           qualification_won_eth: user.qualificationWonEth,
           countries_voted_for: user.countriesVotedFor,
+          farcaster_name: user.user?.name || null,
+          farcaster_avatar: user.user?.image || null,
+          ens_name: user.ensName || null,
           created_at: user.createdAt.toISOString(),
           updated_at: user.updatedAt.toISOString(),
         }))
