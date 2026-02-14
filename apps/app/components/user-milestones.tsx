@@ -88,32 +88,31 @@ export function UserMilestones({ address }: UserMilestonesProps) {
                 key={milestone.id}
                 className={`relative rounded-sm border-2 p-4 transition-all ${
                   milestone.unlocked
-                    ? `${rarityColors[milestone.rarity]} hover:scale-[1.02] cursor-pointer`
+                    ? rarityColors[milestone.rarity]
                     : "border-border bg-card/30 opacity-70"
                 }`}
-                onClick={() => milestone.unlocked && handleShare(milestone)}
               >
                 {/* Rarity badge */}
                 <div
-                  className={`absolute top-2 right-2 text-xs lg:text-sm font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
+                  className={`absolute top-2 right-2 text-xs font-bold uppercase ${rarityTextColors[milestone.rarity]}`}
                 >
                   {milestone.rarity}
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className={`text-3xl ${milestone.unlocked ? "" : "grayscale opacity-50"}`}>{milestone.icon}</div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pr-12">
                     <div className="font-bold text-sm mb-1">{milestone.title}</div>
                     <div className="text-xs lg:text-sm text-muted-foreground mb-2">{milestone.description}</div>
 
                     {milestone.unlocked ? (
                       <div className="flex items-center gap-2">
                         <Shield className="w-3 h-3 text-green-400" />
-                        <span className="text-xs lg:text-sm text-green-400">Unlocked · {milestone.points}pts</span>
+                        <span className="text-xs text-green-400">Unlocked · {milestone.points}pts</span>
                       </div>
                     ) : (
                       <div>
-                        <div className="flex items-center justify-between text-xs lg:text-sm mb-1">
+                        <div className="flex items-center justify-between text-xs mb-1">
                           <span className="text-muted-foreground">Progress</span>
                           <span className="text-foreground font-mono">
                             {milestone.progress}/{milestone.progressTotal}
@@ -131,22 +130,16 @@ export function UserMilestones({ address }: UserMilestonesProps) {
                 </div>
 
                 {milestone.unlocked && (
-                  <div className="absolute bottom-2 right-2 flex gap-2">
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleMintNFT(milestone)
-                      }}
-                      className="text-xs lg:text-sm text-accent hover:text-primary transition-colors font-bold uppercase bg-card/80 px-2 py-1 rounded"
+                      onClick={() => handleMintNFT(milestone)}
+                      className="flex-1 cm-nav-tab py-1.5 rounded-sm font-bold uppercase text-xs transition-colors"
                     >
                       Mint NFT
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleShare(milestone)
-                      }}
-                      className="text-xs lg:text-sm text-accent hover:text-primary transition-colors"
+                      onClick={() => handleShare(milestone)}
+                      className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground py-1.5 rounded-sm font-bold uppercase text-xs transition-colors"
                     >
                       Share
                     </button>
@@ -169,6 +162,8 @@ export function UserMilestones({ address }: UserMilestonesProps) {
                 title: selectedMilestone.title,
                 description: selectedMilestone.description,
                 icon: selectedMilestone.icon,
+                rarity: selectedMilestone.rarity,
+                address: address,
               },
             }}
           />

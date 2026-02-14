@@ -36,12 +36,16 @@ export type { ReentrancyGuard } from "./@openzeppelin/contracts/utils/Reentrancy
 export { ReentrancyGuard__factory } from "./factories/@openzeppelin/contracts/utils/ReentrancyGuard__factory";
 export type { Strings } from "./@openzeppelin/contracts/utils/Strings";
 export { Strings__factory } from "./factories/@openzeppelin/contracts/utils/Strings__factory";
+export type { AchievementNFT } from "./contracts/AchievementNFT";
+export { AchievementNFT__factory } from "./factories/contracts/AchievementNFT__factory";
 export type { IWorldCupEventHub } from "./contracts/interfaces/IWorldCupEventHub";
 export { IWorldCupEventHub__factory } from "./factories/contracts/interfaces/IWorldCupEventHub__factory";
 export type { IWorldCupMatch } from "./contracts/interfaces/IWorldCupMatch";
 export { IWorldCupMatch__factory } from "./factories/contracts/interfaces/IWorldCupMatch__factory";
 export type { IWorldCupQualification } from "./contracts/interfaces/IWorldCupQualification";
 export { IWorldCupQualification__factory } from "./factories/contracts/interfaces/IWorldCupQualification__factory";
+export type { MatchNFT } from "./contracts/MatchNFT";
+export { MatchNFT__factory } from "./factories/contracts/MatchNFT__factory";
 export type { WorldCupEventHub } from "./contracts/WorldCupEventHub";
 export { WorldCupEventHub__factory } from "./factories/contracts/WorldCupEventHub__factory";
 export type { WorldCupMatch } from "./contracts/WorldCupMatch.sol/WorldCupMatch";

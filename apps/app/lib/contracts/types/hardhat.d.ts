@@ -74,6 +74,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Strings__factory>;
     getContractFactory(
+      name: "AchievementNFT",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AchievementNFT__factory>;
+    getContractFactory(
       name: "IWorldCupEventHub",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IWorldCupEventHub__factory>;
@@ -85,6 +89,10 @@ declare module "hardhat/types/runtime" {
       name: "IWorldCupQualification",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IWorldCupQualification__factory>;
+    getContractFactory(
+      name: "MatchNFT",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MatchNFT__factory>;
     getContractFactory(
       name: "WorldCupEventHub",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -182,6 +190,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Strings>;
     getContractAt(
+      name: "AchievementNFT",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AchievementNFT>;
+    getContractAt(
       name: "IWorldCupEventHub",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -196,6 +209,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IWorldCupQualification>;
+    getContractAt(
+      name: "MatchNFT",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MatchNFT>;
     getContractAt(
       name: "WorldCupEventHub",
       address: string | ethers.Addressable,
@@ -283,6 +301,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
+      name: "AchievementNFT",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AchievementNFT>;
+    deployContract(
       name: "IWorldCupEventHub",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IWorldCupEventHub>;
@@ -294,6 +316,10 @@ declare module "hardhat/types/runtime" {
       name: "IWorldCupQualification",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IWorldCupQualification>;
+    deployContract(
+      name: "MatchNFT",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MatchNFT>;
     deployContract(
       name: "WorldCupEventHub",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -391,6 +417,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
+      name: "AchievementNFT",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AchievementNFT>;
+    deployContract(
       name: "IWorldCupEventHub",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -405,6 +436,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IWorldCupQualification>;
+    deployContract(
+      name: "MatchNFT",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MatchNFT>;
     deployContract(
       name: "WorldCupEventHub",
       args: any[],

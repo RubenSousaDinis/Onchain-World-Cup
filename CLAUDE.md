@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Branding
+
+**Always use "Onchain World Cup"** — never "Crypto World Cup". This applies to all UI text, contract names, comments, OG images, and copy.
+
 ## Project Overview
 
 Full-stack Next.js application for ETH-based voting/betting on World Cup 2026 matches, powered by the Base network. The project uses a Turborepo monorepo structure with two apps: a main application (`app`) and a landing page (`landing`).

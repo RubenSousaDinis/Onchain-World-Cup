@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { X, Twitter, Share2, Copy, Check, Trophy, Flame, Zap, TrendingUp } from "lucide-react"
 import { useNotifications } from "@/components/notifications"
+import { MilestoneNFTCard } from "@/components/milestone-nft-card"
 
 interface ShareModalProps {
   isOpen: boolean
@@ -22,6 +23,8 @@ interface ShareModalProps {
       title: string
       description: string
       icon: string
+      rarity?: "common" | "rare" | "epic" | "legendary"
+      address?: string
     }
     country?: string
     countryCode?: string
@@ -297,11 +300,16 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             </div>
           )}
 
-          {type === "milestone" && (
-            <div className="text-center">
-              <div className="text-5xl mb-3">{data.milestone?.icon}</div>
-              <div className="text-xl font-bold cm-highlight mb-2">{data.milestone?.title}</div>
-              <div className="text-sm text-foreground/80">{data.milestone?.description}</div>
+          {type === "milestone" && data.milestone && (
+            <div className="rounded-sm overflow-hidden">
+              <MilestoneNFTCard
+                title={data.milestone.title}
+                description={data.milestone.description}
+                icon={data.milestone.icon}
+                rarity={data.milestone.rarity ?? "common"}
+                unlockedAt="Recently"
+                address={data.milestone.address ?? "0x0000...0000"}
+              />
             </div>
           )}
 
