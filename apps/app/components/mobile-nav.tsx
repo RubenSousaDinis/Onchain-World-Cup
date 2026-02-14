@@ -6,6 +6,8 @@ import { Trophy, Calendar, Users, Wallet } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
+import { useState } from "react"
+import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
@@ -21,6 +23,7 @@ export function MobileNav() {
   const { disconnect } = useDisconnect()
   const { open } = useAppKit()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 
   return (
     <>
@@ -78,7 +81,7 @@ export function MobileNav() {
             </button>
           ) : isConnected ? (
             <button
-              onClick={() => !isFrameContext && disconnect()}
+              onClick={() => !isFrameContext && setShowDisconnectConfirm(true)}
               disabled={isFrameContext}
               className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-2 rounded-sm transition-colors bg-accent text-accent-foreground disabled:opacity-70"
               aria-label={
@@ -104,6 +107,11 @@ export function MobileNav() {
           ) : null}
         </div>
       </nav>
+      <DisconnectConfirmModal
+        isOpen={showDisconnectConfirm}
+        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
+        onCancel={() => setShowDisconnectConfirm(false)}
+      />
     </>
   )
 }

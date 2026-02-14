@@ -14,7 +14,7 @@ interface FarcasterUserInfoProps {
 export function FarcasterUserInfo({
   variant = "default",
   showFid = true,
-  showLink = true,
+  showLink = false,
   className = "",
 }: FarcasterUserInfoProps) {
   const { isFarcasterMiniApp, fid, username, displayName, pfpUrl, isLoading } = useFarcaster()

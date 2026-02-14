@@ -53,6 +53,7 @@ model UserStat {
   qualificationSpentEth String    @default("0") @map("qualification_spent_eth")
   qualificationVotes    Int       @default(0) @map("qualification_votes")
   qualificationWonEth   String    @default("0") @map("qualification_won_eth")
+  ensName               String?   @map("ens_name")
   userId                String?   @unique @map("user_id") @db.Uuid
   user                  User?     @relation(fields: [userId], references: [id])
 

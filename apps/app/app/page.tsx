@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { FarcasterUserInfo } from "@/components/farcaster-user-info"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesDataStatic } from "@/lib/countries"
@@ -33,6 +32,9 @@ type TopVoter = {
   qualification_votes: number
   qualification_spent_eth: string
   countries_voted_for: number
+  farcaster_name?: string | null
+  farcaster_avatar?: string | null
+  ens_name?: string | null
 }
 
 type SummaryData = {
@@ -204,7 +206,6 @@ export default function HomePage() {
           </div>
 
           {/* Farcaster User Info */}
-          <FarcasterUserInfo variant="compact" className="mb-4 lg:mb-6" />
 
           {/* User Earnings Card - Show if connected, contract available, and has earnings */}
           {userAddress && isContractAvailable && currentEarnings > 0 && (
@@ -406,18 +407,28 @@ export default function HomePage() {
                 ) : (summaryData?.topVoters || []).length > 0 ? (
                   <>
                     {console.log('[HomePage] Rendering top voters:', summaryData?.topVoters)}
-                    {(summaryData?.topVoters || []).map((voter) => (
-                      <TopListItem
-                        key={voter.wallet_address}
-                        rank={voter.rank}
-                        icon="👤"
-                        title={`${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`}
-                        value={voter.qualification_votes}
-                        valueLabel="votes"
-                        href={`/users/${voter.wallet_address}`}
-                        highlighted
-                      />
-                    ))}
+                    {(summaryData?.topVoters || []).map((voter) => {
+                      const displayName = voter.farcaster_name || voter.ens_name || `${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`
+                      const shortAddress = `${voter.wallet_address.slice(0, 6)}...${voter.wallet_address.slice(-4)}`
+                      const hasName = !!(voter.farcaster_name || voter.ens_name)
+                      const avatar = voter.farcaster_avatar
+                      return (
+                        <TopListItem
+                          key={voter.wallet_address}
+                          rank={voter.rank}
+                          icon={avatar
+                            ? <img src={avatar} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
+                            : <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">{displayName.slice(0, 2).toUpperCase()}</div>
+                          }
+                          title={displayName}
+                          subtitle={hasName ? shortAddress : undefined}
+                          value={voter.qualification_votes}
+                          valueLabel="votes"
+                          href={`/users/${voter.wallet_address}`}
+                          highlighted
+                        />
+                      )
+                    })}
                   </>
                 ) : (
                   <>

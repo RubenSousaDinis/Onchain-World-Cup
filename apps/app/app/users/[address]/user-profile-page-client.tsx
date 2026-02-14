@@ -31,6 +31,7 @@ type UserData = {
   qualification_won_eth: string
   countries_voted_for: number
   rank: number | null
+  ens_name?: string | null
   votes: UserVote[]
   user?: {
     farcaster_username?: string
@@ -68,6 +69,9 @@ export function UserProfilePageClient({ address }: { address: string }) {
 
   // Compute achievements and level for this user
   const { level, totalPoints } = useAchievements(address)
+
+  // ENS name comes from the user API response (resolved server-side on first vote)
+  const ensName = userData?.ens_name ?? null
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -158,6 +162,7 @@ export function UserProfilePageClient({ address }: { address: string }) {
   const farcasterUsername = userData.user?.farcaster_username
   const farcasterPfp = userData.user?.farcaster_pfp_url
 
+
   // Calculate current earnings from contract (or use projected if not finalized)
   const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
   const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
@@ -205,6 +210,16 @@ export function UserProfilePageClient({ address }: { address: string }) {
                     <div className="text-xs lg:text-sm text-muted-foreground mb-1">Farcaster User</div>
                     <h1 className="text-lg lg:text-2xl font-bold cm-highlight mb-2">
                       @{farcasterUsername}
+                    </h1>
+                    <div className="text-xs lg:text-sm text-muted-foreground font-mono break-all">
+                      {address}
+                    </div>
+                  </>
+                ) : ensName ? (
+                  <>
+                    <div className="text-xs lg:text-sm text-muted-foreground mb-1">ENS Domain</div>
+                    <h1 className="text-lg lg:text-2xl font-bold cm-highlight mb-2">
+                      {ensName}
                     </h1>
                     <div className="text-xs lg:text-sm text-muted-foreground font-mono break-all">
                       {address}

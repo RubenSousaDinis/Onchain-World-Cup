@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { resolveEnsName } from '@/lib/server/ens'
 
 /**
  * GET /api/users/[address]
@@ -26,6 +27,7 @@ export async function GET(
           },
         },
       },
+      // ensName is a direct field on UserStat — included by default with findUnique
     })
 
     // If user doesn't exist yet, return default stats
@@ -73,6 +75,19 @@ export async function GET(
       created_at: vote.createdAt.toISOString(),
     }))
 
+    // Lazy ENS resolution for existing users without a stored ENS name and no Farcaster
+    let ensName = stats.ensName ?? null
+    if (!ensName && !stats.user?.name) {
+      ensName = await resolveEnsName(normalizedAddress).catch(() => null)
+      if (ensName) {
+        // Save for future requests — fire and forget
+        prisma.userStat.update({
+          where: { walletAddress: normalizedAddress },
+          data: { ensName },
+        }).catch(() => {})
+      }
+    }
+
     // Transform stats to match the expected format
     const formattedStats = {
       id: stats.id,
@@ -88,6 +103,7 @@ export async function GET(
       onboarding_completed_at: stats.onboardingCompletedAt?.toISOString() || null,
       created_at: stats.createdAt.toISOString(),
       updated_at: stats.updatedAt.toISOString(),
+      ens_name: ensName,
       user: stats.user ? {
         farcaster_username: stats.user.name,
         farcaster_pfp_url: stats.user.image,

@@ -6,6 +6,7 @@ import { revalidateTag } from "next/cache"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
+import { resolveEnsName } from "@/lib/server/ens"
 
 /**
  * POST /api/votes/immediate-index
@@ -150,6 +151,11 @@ export async function POST(request: NextRequest) {
       where: { walletAddress: walletAddress.toLowerCase() },
     })
 
+    // Resolve ENS before the transaction — network calls must not block DB transactions
+    const ensName = (!existingUserStatBeforeUpdate?.ensName)
+      ? await resolveEnsName(walletAddress.toLowerCase()).catch(() => null)
+      : null
+
     try {
       await prisma.$transaction(async (tx) => {
         // Double-check if transaction exists (race condition protection)
@@ -239,10 +245,11 @@ export async function POST(request: NextRequest) {
             totalVotes: { increment: parseInt(voteCount.toString()) },
             totalSpentEth: formatEther(parseEther(existingStats.totalSpentEth) + parseEther(totalCostEth)),
             countriesVotedFor: uniqueCountries.length,
+            // Backfill ENS if it wasn't saved before
+            ...(ensName ? { ensName } : {}),
           },
         })
       } else {
-        // Create new user stat
         await tx.userStat.create({
           data: {
             walletAddress: walletAddress.toLowerCase(),
@@ -252,6 +259,7 @@ export async function POST(request: NextRequest) {
             totalSpentEth: totalCostEth.toString(),
             countriesVotedFor: 1,
             userId: session.user.id,
+            ...(ensName ? { ensName } : {}),
           },
         })
       }
