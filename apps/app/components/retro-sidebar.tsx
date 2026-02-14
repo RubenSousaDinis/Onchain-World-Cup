@@ -6,6 +6,8 @@ import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
+import { useState } from "react"
+import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
@@ -21,6 +23,7 @@ export function RetroSidebar() {
   const { disconnect } = useDisconnect()
   const { open } = useAppKit()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 
   return (
     <div
@@ -79,7 +82,7 @@ export function RetroSidebar() {
           </button>
         ) : isConnected ? (
           <button
-            onClick={() => !isFrameContext && disconnect()}
+            onClick={() => !isFrameContext && setShowDisconnectConfirm(true)}
             disabled={isFrameContext}
             className="bg-accent text-accent-foreground px-2 py-2 rounded-sm text-xs font-bold w-full disabled:opacity-70"
             aria-label={
@@ -113,6 +116,11 @@ export function RetroSidebar() {
           </div>
         ) : null}
       </div>
+      <DisconnectConfirmModal
+        isOpen={showDisconnectConfirm}
+        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
+        onCancel={() => setShowDisconnectConfirm(false)}
+      />
     </div>
   )
 }
