@@ -12,7 +12,6 @@ import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { TooltipProvider } from "@radix-ui/react-tooltip"
-import { DemoBanner } from "@/components/demo-banner"
 import { generateMiniAppMetadata } from "@/lib/utils/miniapp-metadata"
 import { Barlow_Condensed } from "next/font/google"
 
@@ -118,7 +117,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "@type": "Organization",
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
-              "logo": "https://onchainworldcup.xyz/logo.png",
+              "logo": "https://onchainworldcup.xyz/logo.svg",
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
@@ -140,7 +139,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* End Google Tag Manager (noscript) */}
         <FarcasterReady />
         <SkipToContent />
-        <DemoBanner />
         <QueryProvider>
           <SessionProvider>
             <Web3Provider>
