@@ -72,8 +72,8 @@
 | 25 | About page | ✅ Done | #225 |
 | 26 | Remove `typescript: { ignoreBuildErrors: true }` | ⏳ Pending | — |
 | 27 | Lazy-load modal components via next/dynamic | ⏳ Backlog | — |
-| 28 | Touch targets ≥ 48px | ⏳ Pending | — |
-| 29 | Mobile body font ≥ 16px | ⏳ Pending | — |
+| 28 | Touch targets ≥ 48px | ✅ Done | round-4 |
+| 29 | Mobile body font ≥ 16px | ✅ Done | round-4 |
 | 30 | og:title / twitter:title consistency on /qualification | ✅ Done | round-4 |
 | 31 | Imgur avatar alt text | ⏳ Backlog | — |
 | 32 | Manifest icon purpose field | ✅ Done | #224 |

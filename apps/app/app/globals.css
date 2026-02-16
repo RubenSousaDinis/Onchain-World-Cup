@@ -392,15 +392,15 @@ select:focus-visible {
    MOBILE TOUCH OPTIMIZATIONS
    ============================================ */
 
-/* Minimum touch target size (44x44px for WCAG AA) */
+/* Minimum touch target size (48x48px for WCAG 2.5.5) */
 @media (max-width: 1024px) {
   button,
   a,
   input[type="checkbox"],
   input[type="radio"],
   select {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
   }
 
   /* Exception for inline text links */
@@ -461,7 +461,7 @@ a:active {
 
 @media (max-width: 1023px) {
   html {
-    font-size: clamp(15px, 4vw, 17px);
+    font-size: clamp(16px, 4vw, 18px);
   }
 }
 
