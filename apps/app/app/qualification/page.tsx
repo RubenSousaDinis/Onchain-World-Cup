@@ -5,13 +5,21 @@ import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2 } from "lucide-react"
-import { QualificationVoteModal } from "@/components/qualification-vote-modal"
+import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
-import { ShareModal } from "@/components/share-modal"
+
+const QualificationVoteModal = dynamic(
+  () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
+  { ssr: false },
+)
+const ShareModal = dynamic(
+  () => import("@/components/share-modal").then((m) => m.ShareModal),
+  { ssr: false },
+)
 
 type CountryStats = {
   country_code: string
@@ -348,6 +356,10 @@ export default function QualificationPage() {
                 <h1 className="text-2xl lg:text-4xl font-bold mb-2">
                   <span className="cm-highlight">World Cup 2026</span>{" "}Qualification
                 </h1>
+                <p className="text-xs text-muted-foreground mt-2 mb-2 border border-border/50 rounded-sm px-3 py-2 bg-card/30 max-w-xl">
+                  ⚠️ Voting requires ETH on Base. Transactions are irreversible. Only vote with ETH you can afford to lose.{" "}
+                  <Link href="https://onchainworldcup.xyz/terms" className="underline hover:text-foreground" target="_blank" rel="noopener noreferrer">Terms</Link>
+                </p>
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
               </div>
               <button

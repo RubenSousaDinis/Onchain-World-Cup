@@ -29,7 +29,7 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="Follow us on Farcaster"
             >
-              <Image src="/farcaster.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" aria-hidden="true" />
+              <Image src="/farcaster.png" alt="Farcaster" width={24} height={24} className="h-6 w-6 object-contain" />
             </Link>
             <Link
               href="https://zora.co/@onchainworldcup"
@@ -38,7 +38,7 @@ export function Footer() {
               rel="noopener noreferrer"
               aria-label="Follow us on Zora"
             >
-              <Image src="/zora.png" alt="" width={24} height={24} className="h-6 w-6 object-contain" aria-hidden="true" />
+              <Image src="/zora.png" alt="Zora" width={24} height={24} className="h-6 w-6 object-contain" />
             </Link>
             <Link
               href="mailto:onchainworldcup@gmail.com"
@@ -51,6 +51,11 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+          <div className="mb-4 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
+            <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+            <Link href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+          </div>
           <p>&copy; 2026 Onchain World Cup. Built on Base.</p>
         </div>
       </div>

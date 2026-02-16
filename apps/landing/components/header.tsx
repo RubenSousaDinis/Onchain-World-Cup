@@ -11,7 +11,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2" aria-label="Onchain World Cup home">
-            <img src="/logo.png" alt="Onchain World Cup logo" className="h-8 w-8" />
+            <Image src="/logo.png" alt="Onchain World Cup logo" width={32} height={32} priority className="h-8 w-8" />
             <span className="text-xl font-bold text-primary" aria-hidden="true">Onchain World Cup</span>
           </Link>
           <nav className="hidden gap-6 md:flex items-center" aria-label="Main navigation">
@@ -39,12 +39,19 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-2" role="navigation" aria-label="Social media links">
-          <Button variant="ghost" size="icon" asChild>
+          {/* Mobile-only Launch App button */}
+          <a
+            href={appUrl}
+            className="md:hidden bg-primary text-primary-foreground px-3 py-1.5 rounded-sm font-semibold text-sm hover:bg-accent transition-colors"
+          >
+            App →
+          </a>
+          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
               <Twitter className="h-5 w-5" aria-hidden="true" />
             </a>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a
               href="https://farcaster.xyz/onchainworldcup"
               target="_blank"
@@ -55,12 +62,12 @@ export function Header() {
               <Image src="/farcaster.png" alt="Farcaster" width={20} height={20} className="h-5 w-5 object-contain" />
             </a>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Zora" className="flex items-center justify-center">
               <Image src="/zora.png" alt="Zora" width={20} height={20} className="h-5 w-5 object-contain" />
             </a>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a href="mailto:onchainworldcup@gmail.com" aria-label="Email us">
               <Mail className="h-5 w-5" aria-hidden="true" />
             </a>

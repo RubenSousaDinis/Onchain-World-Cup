@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Trophy, Flag } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -12,6 +12,7 @@ import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
+  { icon: Flag, label: "Teams", href: "/teams" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Wallet, label: "My Votes", href: "/my-bets" },
@@ -35,7 +36,7 @@ export function RetroSidebar() {
       {/* Logo/Brand */}
       <Link href="/" className="flex flex-col items-center gap-2" aria-label="Go to home">
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
-          <Image src="/logo.svg" alt="Onchain World Cup logo" width={48} height={48} priority className="w-full h-full object-contain p-1" />
+          <Image src="/logo.png" alt="Onchain World Cup logo" width={48} height={48} priority className="w-full h-full object-contain p-1" />
         </div>
         <div className="text-sm text-center leading-tight" aria-hidden="true">
           <div className="cm-highlight">ONCHAIN</div>

@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { Award, Shield } from "lucide-react"
-import { ShareModal } from "./share-modal"
-import { NFTMintModal } from "./nft-mint-modal"
+import dynamic from "next/dynamic"
+
+const ShareModal = dynamic(() => import("./share-modal").then((m) => m.ShareModal), { ssr: false })
+const NFTMintModal = dynamic(() => import("./nft-mint-modal").then((m) => m.NFTMintModal), { ssr: false })
 import { MilestoneNFTCard } from "./milestone-nft-card"
 import { InlineLoader } from "./states"
 import { LevelBadge } from "./level-badge"

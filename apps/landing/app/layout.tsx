@@ -132,6 +132,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Onchain World Cup App",
+              "url": "https://app.onchainworldcup.xyz/",
+              "applicationCategory": "SportsApplication",
+              "operatingSystem": "Web",
+              "description": "Community-driven football tournament where fans vote for national teams using ETH on the Base blockchain.",
+              "offers": {
+                "@type": "Offer",
+                "price": "0.001",
+                "priceCurrency": "ETH",
+                "description": "First vote costs 0.001 ETH. Prices increase linearly by 0.0005 ETH per vote.",
+              },
+            }),
+          }}
+        />
       </head>
       <body className={barlowCondensed.className}>
         {/* Google Tag Manager (noscript) */}

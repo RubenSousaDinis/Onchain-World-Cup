@@ -236,7 +236,7 @@ export default function LeaderboardPage() {
               {filteredLeaderboard[0].farcasterAvatar ? (
                 <img
                   src={filteredLeaderboard[0].farcasterAvatar || "/placeholder.svg"}
-                  alt={filteredLeaderboard[0].farcasterName || "User"}
+                  alt={filteredLeaderboard[0].farcasterName ? `Profile photo of ${filteredLeaderboard[0].farcasterName}` : ""}
                   className="w-16 lg:w-20 h-16 lg:h-20 rounded-full mb-3 border-4 border-primary shadow-lg object-cover"
                 />
               ) : (
@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
               {filteredLeaderboard[1].farcasterAvatar ? (
                 <img
                   src={filteredLeaderboard[1].farcasterAvatar || "/placeholder.svg"}
-                  alt={filteredLeaderboard[1].farcasterName || "User"}
+                  alt={filteredLeaderboard[1].farcasterName ? `Profile photo of ${filteredLeaderboard[1].farcasterName}` : ""}
                   className="w-14 lg:w-16 h-14 lg:h-16 rounded-full mb-3 border-2 border-muted shadow-lg object-cover"
                 />
               ) : (
@@ -276,7 +276,7 @@ export default function LeaderboardPage() {
               {filteredLeaderboard[2].farcasterAvatar ? (
                 <img
                   src={filteredLeaderboard[2].farcasterAvatar || "/placeholder.svg"}
-                  alt={filteredLeaderboard[2].farcasterName || "User"}
+                  alt={filteredLeaderboard[2].farcasterName ? `Profile photo of ${filteredLeaderboard[2].farcasterName}` : ""}
                   className="w-14 lg:w-16 h-14 lg:h-16 rounded-full mb-3 border-2 border-muted shadow-lg object-cover"
                 />
               ) : (
@@ -566,7 +566,7 @@ function renderTableRow(entry: LeaderboardEntry, category: LeaderboardCategory) 
           {entry.farcasterAvatar ? (
             <img
               src={entry.farcasterAvatar || "/placeholder.svg"}
-              alt={entry.farcasterName || "User"}
+              alt={entry.farcasterName ? `Profile photo of ${entry.farcasterName}` : ""}
               className="w-6 lg:w-8 h-6 lg:h-8 rounded-full border border-border object-cover flex-shrink-0"
             />
           ) : (
