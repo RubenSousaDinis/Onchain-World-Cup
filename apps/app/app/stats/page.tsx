@@ -80,6 +80,7 @@ export default function StatsPage() {
         <RetroSidebar />
         <MobileNav />
         <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8">
+          <h1 className="sr-only">Statistics | Onchain World Cup 2026</h1>
           <div className="cm-panel rounded-sm p-8 text-center">
             <InlineLoader text="Loading statistics..." />
           </div>

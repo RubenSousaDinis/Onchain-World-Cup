@@ -35,6 +35,13 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // Scope CORS wildcard to API routes only
+        source: "/api/(.*)",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
+      },
     ]
   },
   webpack: (config, { webpack }) => {

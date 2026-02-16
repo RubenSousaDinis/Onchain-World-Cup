@@ -102,6 +102,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "name": "Onchain World Cup",
               "url": "https://app.onchainworldcup.xyz/",
               "inLanguage": "en",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://app.onchainworldcup.xyz/qualification?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
             }),
           }}
         />
@@ -113,6 +118,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "@type": "Organization",
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
+              "logo": "https://onchainworldcup.xyz/logo.png",
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
@@ -150,6 +156,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </Web3Provider>
           </SessionProvider>
         </QueryProvider>
+        <footer className="hidden lg:block border-t border-border/30 mt-auto py-3 px-6 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p>ETH voting is irreversible. Smart contract transactions cannot be undone. Only vote with ETH you can afford to lose.</p>
+            <nav aria-label="Legal" className="flex gap-4">
+              <a href="https://onchainworldcup.xyz/privacy-policy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Privacy</a>
+              <a href="https://onchainworldcup.xyz/terms" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Terms</a>
+              <a href="https://onchainworldcup.xyz/about" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">About</a>
+            </nav>
+          </div>
+        </footer>
       </body>
     </html>
   )

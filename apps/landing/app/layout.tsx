@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
   description:
     "Back your country with ETH. Only top 48 qualify. Prize pool shared among winners. Early supporters shape the tournament.",
+  manifest: "/manifest.json",
   alternates: {
     canonical: "https://onchainworldcup.xyz",
   },
@@ -104,6 +105,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "@type": "Organization",
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
+              "logo": "https://onchainworldcup.xyz/logo.png",
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
@@ -118,7 +120,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "@context": "https://schema.org",
               "@type": "Event",
               "name": "Onchain World Cup 2026 — Qualification Phase",
+              "description": "Community-driven football tournament on the Base blockchain. 211 nations compete for 48 spots. Vote with ETH to qualify your country.",
               "startDate": "2026-02-16",
+              "endDate": "2026-06-11",
+              "image": "https://onchainworldcup.xyz/logo.png",
               "eventStatus": "https://schema.org/EventScheduled",
               "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
               "location": {
