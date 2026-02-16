@@ -35,7 +35,6 @@ type Country = {
   code: string
   votes: number
   momentum: string
-  change: number
 }
 
 export default function QualificationPage() {

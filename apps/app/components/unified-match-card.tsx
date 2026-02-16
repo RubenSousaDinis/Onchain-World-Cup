@@ -318,8 +318,6 @@ export function UnifiedMatchCard({
               winner={winner || team1}
               matchDate={matchDate}
               stadium={stadium}
-              userWon={false}
-              userWinnings="0"
             />
           ),
           metadata: {

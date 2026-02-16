@@ -1,4 +1,3 @@
-import Link from "next/link"
 import { UserProfilePageClient } from "./user-profile-page-client"
 
 export default async function UserProfilePage({
@@ -25,14 +24,7 @@ export default async function UserProfilePage({
           }),
         }}
       />
-      <nav aria-label="Breadcrumb" className="px-4 pt-4 text-xs text-muted-foreground flex items-center gap-1">
-        <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-        <span aria-hidden="true">›</span>
-        <Link href="/leaderboard" className="hover:text-foreground transition-colors">Leaderboard</Link>
-        <span aria-hidden="true">›</span>
-        <span aria-current="page" className="text-foreground">{shortAddress}</span>
-      </nav>
-      <UserProfilePageClient address={address} />
+      <UserProfilePageClient address={address} shortAddress={shortAddress} />
     </>
   )
 }

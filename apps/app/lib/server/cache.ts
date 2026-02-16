@@ -41,14 +41,14 @@ export function createCachedFunction<T>(
  * invalidateCacheTag('matches') // Invalidates all matches cache
  */
 export function invalidateCacheTag(tag: string) {
-  revalidateTag(tag)
+  revalidateTag(tag, "default")
 }
 
 /**
  * Invalidate multiple cache tags
  */
 export function invalidateCacheTags(tags: string[]) {
-  tags.forEach((tag) => revalidateTag(tag))
+  tags.forEach((tag) => revalidateTag(tag, "default"))
 }
 
 /**

@@ -413,7 +413,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
             Share on Farcaster
           </button>
 
-          {typeof navigator !== "undefined" && navigator.share && (
+          {typeof navigator !== "undefined" && "share" in navigator && (
             <button
               onClick={nativeShare}
               className="w-full flex items-center justify-center gap-3 cm-nav-tab py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform"

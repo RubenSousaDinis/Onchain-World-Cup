@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, Flag, Info } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet, Info } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -13,7 +13,6 @@ import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
   { icon: Trophy, label: "Qualification", href: "/qualification" },
-  { icon: Flag, label: "Teams", href: "/teams" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Info, label: "How It Works", href: "/how-it-works" },

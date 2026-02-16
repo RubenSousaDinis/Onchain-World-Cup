@@ -156,7 +156,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </Web3Provider>
           </SessionProvider>
         </QueryProvider>
-        <footer className="hidden lg:block border-t border-border/30 mt-auto py-3 px-6 text-xs text-muted-foreground">
+        <footer className="hidden lg:block border-t border-border/30 mt-auto py-3 px-6 lg:ml-24 lg:px-8 text-xs text-muted-foreground">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p>ETH voting is irreversible. Smart contract transactions cannot be undone. Only vote with ETH you can afford to lose.</p>
             <nav aria-label="Legal" className="flex gap-4">

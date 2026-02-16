@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { createPublicClient, http, parseEther, formatEther } from "viem"
 import { base, baseSepolia } from "viem/chains"
 import { revalidateTag } from "next/cache"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
 import { resolveEnsName } from "@/lib/server/ens"
@@ -32,6 +32,7 @@ import { resolveEnsName } from "@/lib/server/ens"
  *   - isFarcasterContext?: boolean (optional, for Farcaster Mini App context)
  */
 export async function POST(request: NextRequest) {
+  let txHash = ""
   try {
     // 1. Verify authentication
     const session = await getServerSession(authOptions)
@@ -42,7 +43,8 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate request body
     const body = await request.json()
-    const { txHash, contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth, isFarcasterContext } = body
+    const { contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth, isFarcasterContext } = body
+    txHash = body.txHash
 
     if (!txHash || !contractAddress || !walletAddress || !chainId || !countryCode || !voteCount || !totalCostEth) {
       console.error("[Immediate Index] Missing required fields")
@@ -196,7 +198,7 @@ export async function POST(request: NextRequest) {
           voteCount: parseInt(voteCount.toString()),
           totalCostEth: totalCostEth.toString(),
           txHash,
-          blockNumber: 0n, // Will be updated by cron when confirmed
+          blockNumber: BigInt(0), // Will be updated by cron when confirmed
         },
       })
 
@@ -280,8 +282,8 @@ export async function POST(request: NextRequest) {
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
 
       // Revalidate Next.js caches to show updated data immediately
-      revalidateTag("qualification-countries")
-      revalidateTag("qualification-summary")
+      revalidateTag("qualification-countries", "default")
+      revalidateTag("qualification-summary", "default")
       console.log("[Immediate Index] Cache revalidated")
 
       return NextResponse.json(

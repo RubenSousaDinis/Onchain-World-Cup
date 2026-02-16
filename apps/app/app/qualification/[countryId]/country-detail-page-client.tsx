@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
+import { Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
@@ -17,7 +17,7 @@ interface CountryData {
   flagEmoji: string
 }
 
-export function CountryDetailPageClient({ countryId }: { countryId: string }) {
+export function CountryDetailPageClient({ countryId, countryName }: { countryId: string; countryName: string }) {
   const countryIdUpper = countryId.toUpperCase()
 
   const countryMatch = countriesData.find(
@@ -143,8 +143,8 @@ export function CountryDetailPageClient({ countryId }: { countryId: string }) {
         <main className="flex-1 lg:ml-24 p-8 pb-20 lg:pb-8">
           <div className="cm-panel p-8 rounded-sm text-center">
             <p className="text-muted-foreground">Country not found</p>
-            <Link href="/qualification" className="cm-nav-tab inline-block px-6 py-2 mt-4">
-              Back to Qualification
+            <Link href="/qualification" className="text-accent hover:text-accent/80 text-sm font-medium mt-4 inline-block">
+              Qualification
             </Link>
           </div>
         </main>
@@ -176,27 +176,27 @@ export function CountryDetailPageClient({ countryId }: { countryId: string }) {
       <RetroSidebar />
       <MobileNav />
 
-      <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
-        <Link
-          href="/qualification"
-          className="inline-flex items-center gap-2 text-sm lg:text-base text-accent hover:text-accent/80 mb-4 lg:mb-6"
-        >
-          <ArrowLeft className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
-          Back to Qualification
-        </Link>
-
-        <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+      <main className="flex-1 min-w-0 lg:ml-24 pb-20 lg:pb-8 max-w-full overflow-hidden">
+        <div className="p-4 lg:p-8">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm lg:text-base leading-tight pb-1.5 lg:pb-3">
+            <Link href="/qualification" className="text-accent hover:text-accent/80 transition-colors flex-shrink-0 inline-flex items-center py-0.5 leading-tight">
+              Qualification
+            </Link>
+            <span aria-hidden="true" className="text-muted-foreground flex-shrink-0 leading-tight">›</span>
+            <span aria-current="page" className="text-foreground font-medium truncate min-w-0 leading-tight">{countryName}</span>
+          </nav>
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-6 lg:p-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
             <div className="text-6xl lg:text-9xl">{country.flag}</div>
             <div className="text-center lg:text-left flex-1">
               <h1 className="text-4xl lg:text-6xl font-bold cm-highlight mb-3">{country.name}</h1>
-              <div className="flex flex-col lg:flex-row items-center lg:items-start gap-2 lg:gap-4 mb-3">
+              <div className="flex flex-col lg:flex-row items-center lg:items-baseline gap-2 lg:gap-4 mb-3">
                 {groupAssignment && (
                   <span className="text-base lg:text-lg text-muted-foreground font-bold">
                     {groupAssignment}
                   </span>
                 )}
-                <div className="flex items-center gap-3">
+                <div className="flex items-baseline gap-3">
                   <span className="text-lg lg:text-xl text-muted-foreground">
                     Rank <span className="cm-highlight font-bold text-2xl lg:text-3xl">#{displayRank > 0 ? displayRank : '—'}</span>
                   </span>
@@ -439,6 +439,7 @@ export function CountryDetailPageClient({ countryId }: { countryId: string }) {
               <div className="text-xs lg:text-sm opacity-80">Tell your friends</div>
             </div>
           </button>
+        </div>
         </div>
       </main>
 
