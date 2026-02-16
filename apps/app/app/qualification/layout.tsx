@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "World Cup 2026 Qualification Leaderboard",
+    title: "World Cup 2026 Qualification | Onchain World Cup",
     description: "Vote with ETH on Base. Top 48 countries qualify. Dynamic pricing — early voters get better rates.",
   },
 }
