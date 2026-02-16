@@ -1,5 +1,3 @@
-"use client"
-
 import { Calendar } from "lucide-react"
 
 const milestones = [
@@ -47,7 +45,7 @@ export function TimelineSection() {
         </div>
 
         {/* Desktop: Horizontal Timeline */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:block" aria-hidden="true">
           <div className="relative py-8">
             {/* Connection line */}
             <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-border" />
@@ -128,7 +126,7 @@ export function TimelineSection() {
         {/* Call to action */}
         <div className="mt-12 text-center">
           <p className="text-lg font-semibold text-primary">
-            Get notified when qualification opens
+            Qualification is now open — vote to support your country
           </p>
         </div>
       </div>

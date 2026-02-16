@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
+import { usePathname } from "next/navigation"
 
 const ONBOARDING_KEY = "onboardingCompleted"
 
@@ -15,6 +16,7 @@ export function useOnboarding() {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true) // Default to true to avoid flash
   const [isLoading, setIsLoading] = useState(true)
   const { address, isConnected } = useAccount()
+  const pathname = usePathname()
 
   // Fetch onboarding status from database
   const fetchOnboardingStatus = async (walletAddress: string) => {
@@ -89,13 +91,17 @@ export function useOnboarding() {
 
         setHasCompletedOnboarding(dbCompleted)
 
-        // Auto-show onboarding for first-time users
+        // Auto-show onboarding for first-time users (only on homepage)
         if (!dbCompleted) {
-          const timer = setTimeout(() => {
-            setIsOnboardingOpen(true)
-          }, 500)
+          if (pathname === "/") {
+            const timer = setTimeout(() => {
+              setIsOnboardingOpen(true)
+            }, 500)
+            setIsLoading(false)
+            return () => clearTimeout(timer)
+          }
           setIsLoading(false)
-          return () => clearTimeout(timer)
+          return
         }
       } else {
         // User not connected - check localStorage
@@ -103,13 +109,17 @@ export function useOnboarding() {
           const completed = localStorage.getItem(ONBOARDING_KEY) === "true"
           setHasCompletedOnboarding(completed)
 
-          // Auto-show onboarding for first-time users
+          // Auto-show onboarding for first-time users (only on homepage)
           if (!completed) {
-            const timer = setTimeout(() => {
-              setIsOnboardingOpen(true)
-            }, 500)
+            if (pathname === "/") {
+              const timer = setTimeout(() => {
+                setIsOnboardingOpen(true)
+              }, 500)
+              setIsLoading(false)
+              return () => clearTimeout(timer)
+            }
             setIsLoading(false)
-            return () => clearTimeout(timer)
+            return
           }
         }
       }
@@ -118,7 +128,7 @@ export function useOnboarding() {
     }
 
     checkOnboardingStatus()
-  }, [address, isConnected])
+  }, [address, isConnected, pathname])
 
   const showOnboarding = () => {
     setIsOnboardingOpen(true)

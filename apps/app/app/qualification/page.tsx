@@ -346,7 +346,7 @@ export default function QualificationPage() {
             <div className="flex items-start justify-between gap-4 mb-2">
               <div className="flex-1">
                 <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-                  <span className="cm-highlight">Onchain World Cup</span>
+                  <span className="cm-highlight">World Cup 2026</span>{" "}Qualification
                 </h1>
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
               </div>

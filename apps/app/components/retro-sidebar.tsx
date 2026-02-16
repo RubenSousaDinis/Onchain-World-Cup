@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
@@ -34,7 +35,7 @@ export function RetroSidebar() {
       {/* Logo/Brand */}
       <Link href="/" className="flex flex-col items-center gap-2" aria-label="Go to home">
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
-          <img src="/logo.png" alt="Onchain World Cup logo" className="w-full h-full object-contain p-1" />
+          <Image src="/logo.svg" alt="Onchain World Cup logo" width={48} height={48} priority className="w-full h-full object-contain p-1" />
         </div>
         <div className="text-sm text-center leading-tight" aria-hidden="true">
           <div className="cm-highlight">ONCHAIN</div>
