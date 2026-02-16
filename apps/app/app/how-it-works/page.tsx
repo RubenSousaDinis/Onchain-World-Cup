@@ -1,14 +1,9 @@
-"use client"
-
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, Flag, Target, Vote, Award, Info, HelpCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useOnboardingContext } from "@/providers/onboarding-provider"
+import { Trophy, Clock, Flag, Target, Vote, Award, Info } from "lucide-react"
+import { TourGuideButton } from "./tour-guide-button"
 
 export default function HowItWorksPage() {
-  const { showOnboarding } = useOnboardingContext()
-
   return (
     <div className="min-h-screen flex">
       <RetroSidebar />
@@ -25,10 +20,7 @@ export default function HowItWorksPage() {
                 How the Onchain World Cup evolves from qualification to champion
               </p>
             </div>
-            <Button onClick={showOnboarding} variant="outline" size="sm" className="flex-shrink-0">
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Tour Guide
-            </Button>
+            <TourGuideButton />
           </div>
         </div>
 

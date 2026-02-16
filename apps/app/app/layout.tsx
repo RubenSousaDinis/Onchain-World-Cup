@@ -32,7 +32,7 @@ const miniAppMetadata = generateMiniAppMetadata({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz"),
   ...miniAppMetadata,
   icons: {
     icon: [
@@ -54,7 +54,21 @@ export const metadata: Metadata = {
       },
     ],
   },
-  generator: 'v0.app'
+  manifest: "/manifest.json",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    ...miniAppMetadata.openGraph,
+    type: "website",
+    url: "https://app.onchainworldcup.xyz",
+    siteName: "Onchain World Cup",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@OnchainC29697",
+  },
 }
 
 export default function RootLayout({
@@ -65,6 +79,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Google Tag Manager */}
         <Script
           id="gtm-script"
@@ -77,22 +93,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PSTDFCLL');`,
           }}
         />
-
-        {/* Google Analytics (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-14FTMVVK49"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="gtag-init"
-          strategy="afterInteractive"
+        <script
+          type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-14FTMVVK49');
-            `,
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Onchain World Cup",
+              "url": "https://app.onchainworldcup.xyz/",
+              "inLanguage": "en",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Onchain World Cup",
+              "url": "https://onchainworldcup.xyz/",
+              "sameAs": [
+                "https://x.com/OnchainC29697",
+                "https://zora.co/@onchainworldcup",
+              ],
+            }),
           }}
         />
       </head>

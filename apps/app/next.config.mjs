@@ -10,14 +10,35 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      { protocol: "https", hostname: "i.imgur.com" },
+    ],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
   },
   // Empty turbopack config to acknowledge we're using Turbopack (Next.js 16 default)
   // The webpack config below is only used in production builds
   turbopack: {},
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ]
+  },
   webpack: (config, { webpack }) => {
     const emptyModulePath = path.resolve(__dirname, 'empty-module.js')
-    
+
     // Replace test files and test directories with empty module
     config.plugins.push(
       // Match paths containing /test/ directory (e.g., thread-stream/test/create-and-exit.js)

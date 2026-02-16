@@ -14,10 +14,13 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "http://localhost:3000"),
-  title: "Onchain World Cup | Qualification Opens Soon",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "https://onchainworldcup.xyz"),
+  title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
   description:
     "Back your country with ETH. Only top 48 qualify. Prize pool shared among winners. Early supporters shape the tournament.",
+  alternates: {
+    canonical: "https://onchainworldcup.xyz",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -39,7 +42,11 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Onchain World Cup | Qualification Opens Soon",
+    type: "website",
+    url: "https://onchainworldcup.xyz",
+    siteName: "Onchain World Cup",
+    locale: "en_US",
+    title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
     description: "Back your country with ETH. Only top 48 qualify. Early supporters shape the tournament.",
     images: [
       {
@@ -49,6 +56,10 @@ export const metadata: Metadata = {
         alt: "Onchain World Cup - The World Cup, decided onchain",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@OnchainC29697",
   },
 }
 
@@ -60,6 +71,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* Google Tag Manager */}
         <Script
           id="gtm-script"
@@ -72,22 +84,52 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-TJ49B9N8');`,
           }}
         />
-
-        {/* Google Analytics (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-C16J55Y2J7"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="gtag-init"
-          strategy="afterInteractive"
+        <script
+          type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-C16J55Y2J7');
-            `,
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Onchain World Cup",
+              "url": "https://onchainworldcup.xyz/",
+              "inLanguage": "en",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Onchain World Cup",
+              "url": "https://onchainworldcup.xyz/",
+              "sameAs": [
+                "https://x.com/OnchainC29697",
+                "https://zora.co/@onchainworldcup",
+              ],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Event",
+              "name": "Onchain World Cup 2026 — Qualification Phase",
+              "startDate": "2026-02-16",
+              "eventStatus": "https://schema.org/EventScheduled",
+              "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+              "location": {
+                "@type": "VirtualLocation",
+                "url": "https://onchainworldcup.xyz/",
+              },
+              "organizer": {
+                "@type": "Organization",
+                "name": "Onchain World Cup",
+              },
+            }),
           }}
         />
       </head>

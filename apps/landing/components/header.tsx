@@ -1,18 +1,11 @@
-"use client"
-
-import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Twitter, Mail } from "lucide-react"
 import { Button } from "./ui/button"
-import { getAppUrl } from "@/lib/utils"
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.onchainworldcup.xyz"
 
 export function Header() {
-  const [appUrl, setAppUrl] = useState("https://app.onchainworldcup.xyz")
-  
-  useEffect(() => {
-    setAppUrl(getAppUrl())
-  }, [])
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -59,12 +52,12 @@ export function Header() {
               aria-label="Follow us on Farcaster"
               className="flex items-center justify-center"
             >
-              <Image src="/farcaster.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" aria-hidden="true" />
+              <Image src="/farcaster.png" alt="Farcaster" width={20} height={20} className="h-5 w-5 object-contain" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
             <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Zora" className="flex items-center justify-center">
-              <Image src="/zora.png" alt="" width={20} height={20} className="h-5 w-5 object-contain" aria-hidden="true" />
+              <Image src="/zora.png" alt="Zora" width={20} height={20} className="h-5 w-5 object-contain" />
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild>
