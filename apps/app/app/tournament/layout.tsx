@@ -17,5 +17,22 @@ export const metadata: Metadata = {
 }
 
 export default function TournamentLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://app.onchainworldcup.xyz/" },
+              { "@type": "ListItem", "position": 2, "name": "Tournament", "item": "https://app.onchainworldcup.xyz/tournament" },
+            ],
+          }),
+        }}
+      />
+      {children}
+    </>
+  )
 }

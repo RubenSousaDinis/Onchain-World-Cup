@@ -20,6 +20,13 @@ const nextConfig = {
   // Empty turbopack config to acknowledge we're using Turbopack (Next.js 16 default)
   // The webpack config below is only used in production builds
   turbopack: {},
+  async redirects() {
+    return [
+      { source: "/about", destination: "https://onchainworldcup.xyz/about", permanent: true },
+      { source: "/privacy", destination: "https://onchainworldcup.xyz/privacy-policy", permanent: true },
+      { source: "/terms", destination: "https://onchainworldcup.xyz/terms", permanent: true },
+    ]
+  },
   async headers() {
     return [
       {
