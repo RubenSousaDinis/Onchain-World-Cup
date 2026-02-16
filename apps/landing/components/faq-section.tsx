@@ -65,6 +65,24 @@ export function FAQSection() {
   ]
 
   return (
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": faqs.map((faq) => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": faq.answer,
+            },
+          })),
+        }),
+      }}
+    />
     <section id="faq" className="py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-3xl">
@@ -83,5 +101,6 @@ export function FAQSection() {
         </div>
       </div>
     </section>
+    </>
   )
 }

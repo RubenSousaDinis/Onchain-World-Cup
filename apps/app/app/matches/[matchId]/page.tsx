@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { MatchDetailPageClient } from "./match-detail-page-client"
 
 export const metadata: Metadata = {
@@ -31,13 +30,6 @@ export default async function MatchDetailPage({
           }),
         }}
       />
-      <nav aria-label="Breadcrumb" className="px-4 pt-4 text-xs text-muted-foreground flex items-center gap-1">
-        <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-        <span aria-hidden="true">›</span>
-        <Link href="/tournament" className="hover:text-foreground transition-colors">Tournament</Link>
-        <span aria-hidden="true">›</span>
-        <span aria-current="page" className="text-foreground">Match</span>
-      </nav>
       <MatchDetailPageClient matchId={matchId} />
     </>
   )

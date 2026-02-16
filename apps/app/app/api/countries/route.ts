@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { countries } from '@/lib/countries'
 import { prisma } from '@/lib/prisma'
 import { handleOptions, addCorsHeaders } from '@/lib/api-utils'
+import { createClient } from '@supabase/supabase-js'
+
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 /**
  * OPTIONS /api/countries
@@ -35,7 +44,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    let result = countries
+    let result: unknown[] = countries
 
     // Optionally merge with voting statistics
     if (includeStats) {
@@ -140,8 +149,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Revalidate countries cache
-    const { revalidateTag } = await import('next/cache')
-    revalidateTag('countries')
+    revalidateTag('countries', "default")
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {

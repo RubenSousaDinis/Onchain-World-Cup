@@ -59,7 +59,7 @@ export function VoteModal({
   const totalCost = pricePerVote * voteCount
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose()
       }

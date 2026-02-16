@@ -8,15 +8,7 @@ import { coinbaseWallet } from "wagmi/connectors"
 const httpConfig = {
   // Reduce retries to prevent thousands of failed requests on rate limits
   retryCount: 1,
-  // Exponential backoff: 1s, 2s, 4s...
-  retryDelay: ({ count, error }: { count: number; error: any }) => {
-    // If we get a 429 rate limit error, wait longer before retrying
-    if (error && 'status' in error && error.status === 429) {
-      return 5000 // Wait 5 seconds on rate limit
-    }
-    return ~~(1 << count) * 1000 // Exponential backoff: 2^count seconds
-  },
-  // Timeout after 10 seconds
+  retryDelay: 1000,
   timeout: 10_000,
 }
 

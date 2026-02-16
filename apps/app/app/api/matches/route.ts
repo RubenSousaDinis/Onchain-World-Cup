@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // Revalidate matches cache
     const { revalidateTag } = await import('next/cache')
-    revalidateTag('matches')
+    revalidateTag('matches', "default")
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {

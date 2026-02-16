@@ -41,7 +41,7 @@ export async function GET(
         const groupsWithSortedStandings = groups?.map((group) => ({
           ...group,
           standings: group.standings?.sort(
-            (a, b) => ((a as { position?: number }).position || 999) - ((b as { position?: number }).position || 999)
+            (a: { position?: number }, b: { position?: number }) => (a.position || 999) - (b.position || 999)
           ),
         }))
 
@@ -114,8 +114,8 @@ export async function POST(
 
     // Revalidate tournament groups cache
     const { revalidateTag } = await import('next/cache')
-    revalidateTag('tournament-groups')
-    revalidateTag(`tournament-${tournamentId}`)
+    revalidateTag('tournament-groups', "default")
+    revalidateTag(`tournament-${tournamentId}`, "default")
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {

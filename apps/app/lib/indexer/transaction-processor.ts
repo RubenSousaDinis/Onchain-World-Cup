@@ -12,24 +12,47 @@
 
 import { prisma } from "@/lib/server/prisma"
 import { type Log } from "viem"
+
+type VotePlacedLog = Log & {
+  args: {
+    voter: string
+    country: string
+    votes: bigint
+    cost: bigint
+    timestamp: bigint
+  }
+}
+
+type QualificationFinalizedLog = Log & {
+  args: {
+    qualifiedCountries: string[]
+  }
+}
+
+type WinningsClaimedLog = Log & {
+  args: {
+    user: string
+    amount: bigint
+  }
+}
+
+type CountryAddedLog = Log & {
+  args: {
+    country: string
+  }
+}
 import { formatEther } from "viem"
 import { bytes8ToCountryCode } from "./event-indexer"
 
 /**
  * Process VotePlaced events and update database
  */
-export async function processVotePlacedEvents(events: Log[]) {
+export async function processVotePlacedEvents(events: VotePlacedLog[]) {
   console.log(`[Processor] Processing ${events.length} VotePlaced events`)
 
   for (const event of events) {
     try {
-      const { voter, country, votes, cost, timestamp: _timestamp } = event.args as {
-        voter: string
-        country: string
-        votes: bigint
-        cost: bigint
-        timestamp: bigint
-      }
+      const { voter, country, votes, cost, timestamp: _timestamp } = event.args
 
       const countryCode = bytes8ToCountryCode(country)
       const voterAddress = voter.toLowerCase()
@@ -193,14 +216,12 @@ export async function processVotePlacedEvents(events: Log[]) {
 /**
  * Process QualificationFinalized events
  */
-export async function processQualificationFinalizedEvents(events: Log[]) {
+export async function processQualificationFinalizedEvents(events: QualificationFinalizedLog[]) {
   console.log(`[Processor] Processing ${events.length} QualificationFinalized events`)
 
   for (const event of events) {
     try {
-      const { qualifiedCountries } = event.args as {
-        qualifiedCountries: string[]
-      }
+      const { qualifiedCountries } = event.args
 
       console.log(`[Processor] Qualification finalized with ${qualifiedCountries.length} countries`)
 
@@ -234,15 +255,12 @@ export async function processQualificationFinalizedEvents(events: Log[]) {
 /**
  * Process WinningsClaimed events
  */
-export async function processWinningsClaimedEvents(events: Log[]) {
+export async function processWinningsClaimedEvents(events: WinningsClaimedLog[]) {
   console.log(`[Processor] Processing ${events.length} WinningsClaimed events`)
 
   for (const event of events) {
     try {
-      const { user, amount } = event.args as {
-        user: string
-        amount: bigint
-      }
+      const { user, amount } = event.args
 
       const userAddress = user.toLowerCase()
       const wonEth = formatEther(amount)
@@ -283,14 +301,12 @@ export async function processWinningsClaimedEvents(events: Log[]) {
 /**
  * Process CountryAdded events
  */
-export async function processCountryAddedEvents(events: Log[]) {
+export async function processCountryAddedEvents(events: CountryAddedLog[]) {
   console.log(`[Processor] Processing ${events.length} CountryAdded events`)
 
   for (const event of events) {
     try {
-      const { country } = event.args as {
-        country: string
-      }
+      const { country } = event.args
 
       const countryCode = bytes8ToCountryCode(country)
 
@@ -362,10 +378,10 @@ export async function processEvents(eventsData: {
 
   try {
     // Process events in order of importance
-    await processCountryAddedEvents(eventsData.countryAddedEvents)
-    await processVotePlacedEvents(eventsData.votePlacedEvents)
-    await processQualificationFinalizedEvents(eventsData.qualificationFinalizedEvents)
-    await processWinningsClaimedEvents(eventsData.winningsClaimedEvents)
+    await processCountryAddedEvents(eventsData.countryAddedEvents as CountryAddedLog[])
+    await processVotePlacedEvents(eventsData.votePlacedEvents as VotePlacedLog[])
+    await processQualificationFinalizedEvents(eventsData.qualificationFinalizedEvents as QualificationFinalizedLog[])
+    await processWinningsClaimedEvents(eventsData.winningsClaimedEvents as WinningsClaimedLog[])
 
     console.log(`[Processor] Event processing completed successfully`)
 

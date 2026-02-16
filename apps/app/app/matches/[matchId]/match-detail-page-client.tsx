@@ -53,16 +53,16 @@ export function MatchDetailPageClient({ matchId }: { matchId: string }) {
       <RetroSidebar />
       <MobileNav />
 
-      <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
-        <div className="mb-6 lg:mb-8">
-          <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-            <Link href="/" className="hover:text-accent transition-colors">
-              Matches
+      <main className="flex-1 min-w-0 lg:ml-24 pb-20 lg:pb-8 max-w-full overflow-hidden">
+        <div className="p-4 lg:p-8">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm lg:text-base leading-tight pb-1.5 lg:pb-3">
+            <Link href="/tournament" className="text-accent hover:text-accent/80 transition-colors flex-shrink-0 inline-flex items-center py-0.5 leading-tight">
+              Tournament
             </Link>
-            <span>/</span>
-            <span className="text-foreground">Match #{matchId}</span>
-          </div>
-
+            <span aria-hidden="true" className="text-muted-foreground flex-shrink-0 leading-tight">›</span>
+            <span aria-current="page" className="text-foreground font-medium truncate min-w-0 leading-tight">Match #{matchId}</span>
+          </nav>
+          <div className="mb-6 lg:mb-8">
           <div className="cm-panel rounded-sm overflow-hidden">
             <div className="soccer-field-bg p-4 lg:p-6">
               <div className="flex items-center justify-between mb-4">
@@ -308,6 +308,7 @@ export function MatchDetailPageClient({ matchId }: { matchId: string }) {
             </div>
           </div>
         )}
+        </div>
       </main>
 
       <NFTMintModal

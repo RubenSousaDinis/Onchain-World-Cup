@@ -22,10 +22,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date("2026-02-14"),
     },
     {
-      url: `${baseUrl}/schedule`,
-      lastModified: new Date("2026-02-14"),
-    },
-    {
       url: `${baseUrl}/tournament`,
       lastModified: new Date("2026-02-14"),
     },
@@ -35,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/how-it-works`,
-      lastModified: new Date("2026-01-01"),
+      lastModified: new Date("2026-02-14"),
     },
   ]
 
@@ -44,10 +40,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date("2026-02-14"),
   }))
 
-  const teamRoutes: MetadataRoute.Sitemap = countriesData.map((country) => ({
-    url: `${baseUrl}/teams/${country.code.toLowerCase()}`,
-    lastModified: new Date("2026-02-14"),
-  }))
-
-  return [...staticRoutes, ...qualificationRoutes, ...teamRoutes]
+  // /teams/* pages are noindex (mock data) — excluded from sitemap to avoid directive conflict
+  return [...staticRoutes, ...qualificationRoutes]
 }

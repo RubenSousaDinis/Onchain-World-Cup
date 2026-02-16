@@ -1,7 +1,7 @@
 "use client"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { ArrowLeft, Trophy, TrendingUp, DollarSign, Share2, Wallet } from "lucide-react"
+import { Trophy, TrendingUp, DollarSign, Share2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { ShareModal } from "@/components/share-modal"
@@ -47,7 +47,7 @@ type FavoriteCountry = {
   totalEth: number
 }
 
-export function UserProfilePageClient({ address }: { address: string }) {
+export function UserProfilePageClient({ address, shortAddress }: { address: string; shortAddress: string }) {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -144,8 +144,8 @@ export function UserProfilePageClient({ address }: { address: string }) {
         <main className="flex-1 lg:ml-24 p-8 pb-20 lg:pb-8">
           <div className="cm-panel p-8 rounded-sm text-center">
             <p className="text-muted-foreground mb-4">{error || "User not found"}</p>
-            <Link href="/leaderboard" className="cm-nav-tab inline-block px-6 py-2">
-              Back to Leaderboard
+            <Link href="/leaderboard" className="text-accent hover:text-accent/80 text-sm font-medium inline-block">
+              Leaderboard
             </Link>
           </div>
         </main>
@@ -179,32 +179,27 @@ export function UserProfilePageClient({ address }: { address: string }) {
       <RetroSidebar />
       <MobileNav />
 
-      <main className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
-        {/* Back Button */}
-        <Link
-          href="/leaderboard"
-          className="inline-flex items-center gap-2 text-sm lg:text-base text-accent hover:text-accent/80 mb-4 lg:mb-6"
-        >
-          <ArrowLeft className="w-3.5 lg:w-4 h-3.5 lg:h-4" />
-          Back to Leaderboard
-        </Link>
-
-        {/* User Header */}
-        <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+      <main className="flex-1 min-w-0 lg:ml-24 pb-20 lg:pb-8 max-w-full overflow-hidden">
+        <div className="p-4 lg:p-8">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm lg:text-base leading-tight pb-1.5 lg:pb-3">
+            <Link href="/leaderboard" className="text-accent hover:text-accent/80 transition-colors flex-shrink-0 inline-flex items-center py-0.5 leading-tight">
+              Leaderboard
+            </Link>
+            <span aria-hidden="true" className="text-muted-foreground flex-shrink-0 leading-tight">›</span>
+            <span aria-current="page" className="text-foreground font-medium truncate min-w-0 leading-tight">{shortAddress}</span>
+          </nav>
+          {/* User Header */}
+          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-4 lg:p-8">
-            <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
-              {hasFarcaster && farcasterPfp ? (
+            <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-6">
+              {hasFarcaster && farcasterPfp && (
                 <img
                   src={farcasterPfp}
                   alt={farcasterUsername}
-                  className="w-16 lg:w-24 h-16 lg:h-24 rounded-full border-4 border-primary"
+                  className="w-16 lg:w-24 h-16 lg:h-24 rounded-full border-4 border-primary flex-shrink-0"
                 />
-              ) : (
-                <div className="w-16 lg:w-24 h-16 lg:h-24 rounded-full bg-primary flex items-center justify-center">
-                  <Trophy className="w-8 lg:w-12 h-8 lg:h-12 text-primary-foreground" />
-                </div>
               )}
-              <div className="text-center lg:text-left flex-1 min-w-0">
+              <div className="text-left flex-1 min-w-0">
                 {hasFarcaster ? (
                   <>
                     <div className="text-xs lg:text-sm text-muted-foreground mb-1">Farcaster User</div>
@@ -233,7 +228,7 @@ export function UserProfilePageClient({ address }: { address: string }) {
                     </h1>
                   </>
                 )}
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-sm mt-2">
+                <div className="flex flex-wrap items-center justify-start gap-4 text-sm mt-2">
                   {rank && (
                     <div className="flex items-center gap-2">
                       <Trophy className="w-4 h-4 text-primary" />
@@ -421,6 +416,7 @@ export function UserProfilePageClient({ address }: { address: string }) {
               </div>
             )}
           </div>
+        </div>
         </div>
       </main>
 

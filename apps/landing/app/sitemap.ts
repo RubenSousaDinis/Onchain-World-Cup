@@ -8,5 +8,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: baseUrl,
       lastModified: new Date("2026-02-14"),
     },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date("2026-02-14"),
+    },
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date("2026-02-14"),
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date("2026-02-14"),
+    },
   ]
 }

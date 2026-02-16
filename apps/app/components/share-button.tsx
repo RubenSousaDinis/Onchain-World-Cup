@@ -17,7 +17,7 @@ export function ShareButton({ messageKey, messageData, variant = "default" }: Sh
 
   const message = shareMessages[messageKey]
   const shareText =
-    typeof message === "function" ? message(messageData).text : message.text
+    typeof message === "function" ? (message as (data?: unknown) => { text: string })(messageData).text : message.text
 
   const handleShare = async () => {
     if (navigator.share) {

@@ -14,7 +14,7 @@ export default function HowItWorksPage() {
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-                <span className="cm-highlight">PROJECT PHASES</span>
+                <span className="cm-highlight">How It Works</span>
               </h1>
               <p className="text-sm lg:text-base text-muted-foreground">
                 How the Onchain World Cup evolves from qualification to champion

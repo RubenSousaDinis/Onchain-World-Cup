@@ -28,9 +28,9 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log("[AutoAuth] Disconnect check:", { isConnected, isReconnecting, status, isAuthenticated })
 
-    // Don't logout during reconnection or initial connection - wait for wagmi to finish
-    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
-      console.log("[AutoAuth] Skipping logout - wallet is connecting/reconnecting")
+    // Don't logout during reconnection - wait for wagmi to finish
+    if (isReconnecting) {
+      console.log("[AutoAuth] Skipping logout - wallet is reconnecting")
       return
     }
 
@@ -72,8 +72,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // Skip during connection states
-    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
+    // Skip during reconnection
+    if (isReconnecting) {
       return
     }
 
@@ -123,9 +123,9 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       hasTriggeredAuth: hasTriggeredAuth.current,
     })
 
-    // Wait for wagmi reconnection/connection to finish
-    if (isReconnecting || status === 'connecting' || status === 'reconnecting') {
-      console.log("[AutoAuth] Skipping - wallet is connecting/reconnecting")
+    // Wait for wagmi reconnection to finish
+    if (isReconnecting) {
+      console.log("[AutoAuth] Skipping - wallet is reconnecting")
       return
     }
 

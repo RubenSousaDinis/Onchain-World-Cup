@@ -180,9 +180,9 @@ export async function PUT(
     }
 
     // Invalidate cache for this group and tournament groups
-    revalidateTag('group-standings')
-    revalidateTag(`group-${groupId}`)
-    revalidateTag('tournament-groups')
+    revalidateTag('group-standings', "default")
+    revalidateTag(`group-${groupId}`, "default")
+    revalidateTag('tournament-groups', "default")
 
     // Fetch updated standings
     const { data, error: fetchError } = await supabase

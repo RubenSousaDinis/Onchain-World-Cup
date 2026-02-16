@@ -118,9 +118,6 @@ export async function GET(
             voter_address: vote.voterAddress,
             total_votes: vote._sum.voteCount || 0,
             total_eth: totalEth.toString(),
-            farcaster_fid: userStat?.user?.farcasterFid,
-            farcaster_username: userStat?.user?.farcasterUsername,
-            farcaster_pfp_url: userStat?.user?.farcasterPfpUrl,
             achievement_points: achievementPoints,
           }
         })

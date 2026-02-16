@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { CountryDetailPageClient } from "./country-detail-page-client"
 import countriesData from "@/data/countries.json"
 
@@ -65,14 +64,7 @@ export default async function CountryDetailPage({
           }),
         }}
       />
-      <nav aria-label="Breadcrumb" className="px-4 pt-4 text-xs text-muted-foreground flex items-center gap-1">
-        <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
-        <span aria-hidden="true">›</span>
-        <Link href="/qualification" className="hover:text-foreground transition-colors">Qualification</Link>
-        <span aria-hidden="true">›</span>
-        <span aria-current="page" className="text-foreground">{countryName}</span>
-      </nav>
-      <CountryDetailPageClient countryId={countryId} />
+      <CountryDetailPageClient countryId={countryId} countryName={countryName} />
     </>
   )
 }

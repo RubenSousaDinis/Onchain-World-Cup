@@ -42,7 +42,7 @@ export function Header() {
           {/* Mobile-only Launch App button */}
           <a
             href={appUrl}
-            className="md:hidden bg-primary text-primary-foreground px-3 py-1.5 rounded-sm font-semibold text-sm hover:bg-accent transition-colors"
+            className="md:hidden inline-flex items-center bg-primary text-primary-foreground px-3 py-3 rounded-sm font-semibold text-sm hover:bg-accent transition-colors min-h-[48px]"
           >
             App →
           </a>
