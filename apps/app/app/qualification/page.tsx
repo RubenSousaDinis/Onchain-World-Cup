@@ -5,13 +5,21 @@ import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2 } from "lucide-react"
-import { QualificationVoteModal } from "@/components/qualification-vote-modal"
+import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
-import { ShareModal } from "@/components/share-modal"
+
+const QualificationVoteModal = dynamic(
+  () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
+  { ssr: false },
+)
+const ShareModal = dynamic(
+  () => import("@/components/share-modal").then((m) => m.ShareModal),
+  { ssr: false },
+)
 
 type CountryStats = {
   country_code: string

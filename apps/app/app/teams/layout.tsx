@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://app.onchainworldcup.xyz/teams",
   },
+  // noindex until real team data replaces mock data
+  robots: { index: false, follow: true },
 }
 
 export default function TeamsLayout({ children }: { children: React.ReactNode }) {

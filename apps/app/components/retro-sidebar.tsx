@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Trophy, Flag } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { useAppKit } from "@reown/appkit/react"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -12,6 +12,7 @@ import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
+  { icon: Flag, label: "Teams", href: "/teams" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
   { icon: Wallet, label: "My Votes", href: "/my-bets" },
