@@ -5,6 +5,7 @@ import { useAccount } from "wagmi"
 import { usePathname } from "next/navigation"
 
 const ONBOARDING_KEY = "onboardingCompleted"
+const ONBOARDING_SESSION_KEY = "onboardingShownThisSession"
 
 /**
  * Hook to manage onboarding state
@@ -91,9 +92,10 @@ export function useOnboarding() {
 
         setHasCompletedOnboarding(dbCompleted)
 
-        // Auto-show onboarding for first-time users (only on homepage)
+        // Auto-show onboarding for first-time users (only on homepage, once per session)
         if (!dbCompleted) {
-          if (pathname === "/") {
+          if (pathname === "/" && !sessionStorage.getItem(ONBOARDING_SESSION_KEY)) {
+            sessionStorage.setItem(ONBOARDING_SESSION_KEY, "true")
             const timer = setTimeout(() => {
               setIsOnboardingOpen(true)
             }, 500)
@@ -109,9 +111,10 @@ export function useOnboarding() {
           const completed = localStorage.getItem(ONBOARDING_KEY) === "true"
           setHasCompletedOnboarding(completed)
 
-          // Auto-show onboarding for first-time users (only on homepage)
+          // Auto-show onboarding for first-time users (only on homepage, once per session)
           if (!completed) {
-            if (pathname === "/") {
+            if (pathname === "/" && !sessionStorage.getItem(ONBOARDING_SESSION_KEY)) {
+              sessionStorage.setItem(ONBOARDING_SESSION_KEY, "true")
               const timer = setTimeout(() => {
                 setIsOnboardingOpen(true)
               }, 500)
