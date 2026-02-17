@@ -38,6 +38,7 @@ export default async function Image() {
         const { count: voterCount } = await supabase
           .from('user_stats')
           .select('*', { count: 'exact', head: true })
+          .gt('qualification_votes', 0)
 
         stats = {
           totalVotes,

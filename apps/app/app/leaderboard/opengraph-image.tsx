@@ -33,16 +33,17 @@ export default async function Image() {
 
       const { data, error } = await supabase
         .from('user_stats')
-        .select('wallet_address, total_votes, total_spent_eth, rank')
-        .order('total_votes', { ascending: false })
+        .select('wallet_address, qualification_votes, qualification_spent_eth')
+        .gt('qualification_votes', 0)
+        .order('qualification_votes', { ascending: false })
         .limit(3)
 
       if (!error && data) {
         topVoters = data.map((user: any, index: number) => ({
           rank: index + 1,
           address: truncateAddress(user.wallet_address || ''),
-          votes: user.total_votes || 0,
-          eth: parseFloat(user.total_spent_eth || '0').toFixed(4),
+          votes: user.qualification_votes || 0,
+          eth: parseFloat(user.qualification_spent_eth || '0').toFixed(4),
         }))
       }
     } catch (err) {

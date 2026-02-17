@@ -76,38 +76,17 @@ export default async function Image() {
           </div>
 
           {/* Main message */}
-          <div tw="flex flex-col" style={{ gap: 30 }}>
-            <div tw="flex flex-col" style={{ gap: 15 }}>
+          <div tw="flex flex-col" style={{ gap: 24 }}>
+            <div tw="flex flex-col" style={{ gap: 10 }}>
               <div tw="flex font-bold" style={{ fontSize: 72, color: '#ffffff', lineHeight: 1.1 }}>
-                The Tournament.
+                The World Cup.
               </div>
               <div tw="flex font-bold" style={{ fontSize: 72, color: '#d4ff00', lineHeight: 1.1 }}>
                 Decided Onchain.
               </div>
             </div>
 
-            {/* Phase pills */}
-            <div tw="flex" style={{ gap: 16 }}>
-              {['GROUP STAGE', 'ROUND OF 16', 'QUARTER-FINALS', 'FINAL'].map((phase) => (
-                <div
-                  key={phase}
-                  tw="flex font-bold"
-                  style={{
-                    background: 'rgba(212, 255, 0, 0.1)',
-                    border: '1px solid rgba(212, 255, 0, 0.3)',
-                    borderRadius: 6,
-                    padding: '8px 16px',
-                    fontSize: 15,
-                    color: '#d4ff00',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  {phase}
-                </div>
-              ))}
-            </div>
-
-            <div tw="flex" style={{ fontSize: 26, color: '#a0a0a0', maxWidth: 800, lineHeight: 1.4 }}>
+            <div tw="flex" style={{ fontSize: 28, color: '#a0a0a0', maxWidth: 800, lineHeight: 1.4 }}>
               48 nations • Community ETH voting • Jun 2026
             </div>
           </div>
