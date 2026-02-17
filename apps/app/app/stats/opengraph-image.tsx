@@ -12,6 +12,18 @@ export const alt = 'Onchain World Cup 2026 Live Statistics — Total votes, ETH 
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE
 
+const QUALIFICATION_END = new Date('2026-06-04T00:00:00Z')
+
+function timeLeft(): string {
+  const diff = QUALIFICATION_END.getTime() - Date.now()
+  if (diff <= 0) return 'ENDED'
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  if (days >= 1) return `${days}d ${hours}h`
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  return `${hours}h ${minutes}m`
+}
+
 export default async function Image() {
   try {
     const baseUrl = getBaseUrl()
@@ -20,7 +32,6 @@ export default async function Image() {
       totalVotes: 0,
       totalEth: '0.0000',
       totalVoters: 0,
-      qualifiedCount: 0,
     }
 
     try {
@@ -34,7 +45,6 @@ export default async function Image() {
             totalVotes: json.data.total_votes || 0,
             totalEth: parseFloat(json.data.total_eth || '0').toFixed(4),
             totalVoters: json.data.total_voters || 0,
-            qualifiedCount: json.data.qualified_count || 0,
           }
         }
       }
@@ -46,7 +56,7 @@ export default async function Image() {
       { label: 'TOTAL VOTES', value: stats.totalVotes.toLocaleString(), highlight: true },
       { label: 'ETH RAISED', value: `${stats.totalEth} ETH`, highlight: false },
       { label: 'VOTERS', value: stats.totalVoters.toLocaleString(), highlight: false },
-      { label: 'QUALIFIED', value: `${stats.qualifiedCount} / 48`, highlight: false },
+      { label: 'TIME LEFT', value: timeLeft(), highlight: false },
     ]
 
     return new ImageResponse(
