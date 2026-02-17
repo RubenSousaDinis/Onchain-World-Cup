@@ -1,13 +1,15 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { HomePageClient } from "./homepage-client"
+import { HomeLazy } from "./home-lazy"
 
 /**
  * Homepage — server component wrapper.
  *
  * The Hero section (h1 LCP element) is static HTML rendered on the server,
  * so it paints immediately without waiting for any JS bundle.
- * All dynamic/interactive content is handled by HomePageClient.
+ * All dynamic/interactive content (wagmi hooks, contracts, stats, leaderboard
+ * preview) is handled by HomeLazy, which is code-split with ssr:false and
+ * loads as a separate JS chunk after hydration.
  */
 export default function HomePage() {
   return (
@@ -35,7 +37,7 @@ export default function HomePage() {
           </div>
 
           {/* Dynamic content — stats, leaderboard preview, quick actions */}
-          <HomePageClient />
+          <HomeLazy />
         </main>
       </div>
     </div>
