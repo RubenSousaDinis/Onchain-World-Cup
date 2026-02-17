@@ -7,6 +7,17 @@ export const metadata: Metadata = {
     "Terms of Service for Onchain World Cup 2026. Important information about ETH voting, smart contract risks, and platform rules.",
   alternates: { canonical: "https://onchainworldcup.xyz/terms" },
   robots: { index: true, follow: true },
+  openGraph: {
+    title: "Terms of Service | Onchain World Cup",
+    description: "Terms of Service for Onchain World Cup 2026. Important information about ETH voting, smart contract risks, and platform rules.",
+    type: "website",
+    url: "https://onchainworldcup.xyz/terms",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Onchain World Cup",
+    description: "Terms of Service for Onchain World Cup 2026. Important information about ETH voting, smart contract risks, and platform rules.",
+  },
 }
 
 export default function TermsPage() {

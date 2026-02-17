@@ -7,6 +7,17 @@ export const metadata: Metadata = {
     "Learn about Onchain World Cup 2026 — a community-driven ETH voting tournament on the Base blockchain, aligned with the FIFA World Cup 2026.",
   alternates: { canonical: "https://onchainworldcup.xyz/about" },
   robots: { index: true, follow: true },
+  openGraph: {
+    title: "About Onchain World Cup 2026 — ETH Voting on Base",
+    description: "Learn about Onchain World Cup 2026 — a community-driven ETH voting tournament on the Base blockchain, aligned with the FIFA World Cup 2026.",
+    type: "website",
+    url: "https://onchainworldcup.xyz/about",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Onchain World Cup 2026 — ETH Voting on Base",
+    description: "Learn about Onchain World Cup 2026 — a community-driven ETH voting tournament on the Base blockchain, aligned with the FIFA World Cup 2026.",
+  },
 }
 
 export default function AboutPage() {
@@ -161,6 +172,31 @@ export default function AboutPage() {
           .
         </p>
       </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-xl font-bold">Team &amp; Mission</h2>
+        <p className="text-muted-foreground">
+          Onchain World Cup is built by a small team of football fans and Base blockchain developers who
+          believe community ownership should shape the beautiful game. Our mission is to prove that
+          on-chain governance can create a more transparent, global, and participatory tournament
+          experience — where every supporter, regardless of geography, has a real stake in the outcome.
+          We are fully transparent: all contracts are open-source, all prize flows are verifiable
+          on-chain, and we take only a small fee to fund ongoing development.
+        </p>
+      </section>
+
+      <div className="mb-10 rounded-sm border border-primary/40 bg-primary/5 p-6 text-center">
+        <p className="mb-3 text-lg font-bold">Ready to vote?</p>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Back your country with ETH. Qualification is live — early supporters get more votes for less.
+        </p>
+        <a
+          href="https://app.onchainworldcup.xyz"
+          className="inline-block rounded-sm bg-primary px-6 py-2 text-sm font-bold text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          Vote Now →
+        </a>
+      </div>
 
       <div className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground transition-colors">

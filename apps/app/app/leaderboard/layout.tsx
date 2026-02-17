@@ -17,7 +17,33 @@ export const metadata: Metadata = {
   },
 }
 
-export default function LeaderboardLayout({ children }: { children: React.ReactNode }) {
+export default async function LeaderboardLayout({ children }: { children: React.ReactNode }) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz"
+
+  let itemListElement: Array<{ "@type": string; position: number; name: string; url: string }> = []
+  try {
+    const res = await fetch(`${baseUrl}/api/qualification/leaderboard?limit=3`, {
+      next: { revalidate: 300 },
+    })
+    if (res.ok) {
+      const json = await res.json()
+      itemListElement = (json.data ?? []).map(
+        (u: { wallet_address: string; farcaster_name?: string | null; ens_name?: string | null }, i: number) => {
+          const addr = u.wallet_address
+          const name = u.farcaster_name || u.ens_name || `${addr.slice(0, 6)}...${addr.slice(-4)}`
+          return {
+            "@type": "ListItem",
+            position: i + 1,
+            name,
+            url: `${baseUrl}/users/${addr}`,
+          }
+        },
+      )
+    }
+  } catch {
+    // silently fail — schema still renders without items
+  }
+
   return (
     <>
       <script
@@ -42,6 +68,7 @@ export default function LeaderboardLayout({ children }: { children: React.ReactN
             "name": "Top Onchain World Cup 2026 Voters",
             "description": "Live leaderboard of the top ETH voters in the Onchain World Cup 2026 qualification phase on Base blockchain.",
             "url": "https://app.onchainworldcup.xyz/leaderboard",
+            ...(itemListElement.length > 0 ? { itemListElement } : {}),
           }),
         }}
       />
