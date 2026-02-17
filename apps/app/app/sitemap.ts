@@ -14,10 +14,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date("2026-02-14"),
     },
     {
-      url: `${baseUrl}/teams`,
-      lastModified: new Date("2026-02-14"),
-    },
-    {
       url: `${baseUrl}/leaderboard`,
       lastModified: new Date("2026-02-14"),
     },
