@@ -20,7 +20,10 @@ import { Barlow_Condensed } from "next/font/google"
 const barlowCondensed = Barlow_Condensed({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  display: "swap",
+  // "optional" tells the browser to use the font only if it's already cached
+  // or loads within a very short window (~100ms). No font-swap re-paint means
+  // the LCP element is measured at FCP time instead of at ~4s on slow 4G.
+  display: "optional",
 })
 
 // Generate Farcaster Mini App metadata using utility
@@ -79,7 +82,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* fonts.gstatic.com preconnect removed — next/font self-hosts Barlow Condensed */}
         {/* Google Tag Manager */}
         <Script
           id="gtm-script"
