@@ -45,7 +45,7 @@ export default function QualificationLayout({ children }: { children: React.Reac
             "name": "Onchain World Cup 2026 — Qualification Phase",
             "description": "Community-driven football tournament on Base blockchain. 64 nations compete for 48 spots via ETH voting. Top 48 advance to the tournament.",
             "startDate": "2026-02-16",
-            "endDate": "2026-06-04",
+            "endDate": "2026-02-25",
             "eventStatus": "https://schema.org/EventScheduled",
             "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
             "location": {

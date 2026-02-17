@@ -12,7 +12,7 @@ export const alt = 'Onchain World Cup 2026 Live Statistics — Total votes, ETH 
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE
 
-const QUALIFICATION_END = new Date('2026-06-04T00:00:00Z')
+const QUALIFICATION_END = new Date(1772060445 * 1000)
 
 function timeLeft(): string {
   const diff = QUALIFICATION_END.getTime() - Date.now()
