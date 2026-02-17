@@ -118,6 +118,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
               "logo": "https://onchainworldcup.xyz/logo.svg",
+              "description": "Community-driven football tournament on the Base blockchain. Vote with ETH to qualify countries for World Cup 2026.",
+              "foundingDate": "2025",
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
