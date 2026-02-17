@@ -84,14 +84,7 @@ export default async function CountryDetailPage({
           }),
         }}
       />
-      {stats && (
-        <div className="px-4 pt-4 pb-2 text-sm text-muted-foreground">
-          {countryName} is currently ranked #{stats.rank ?? "—"} with {stats.total_votes?.toLocaleString() ?? 0} votes
-          and {parseFloat(stats.total_eth || "0").toFixed(4)} ETH in the Onchain World Cup 2026 qualification on Base.
-          {stats.qualified && " ✓ Qualified."}
-        </div>
-      )}
-      <CountryDetailPageClient countryId={countryId} countryName={countryName} />
+      <CountryDetailPageClient countryId={countryId} countryName={countryName} serverStats={stats} />
     </>
   )
 }
