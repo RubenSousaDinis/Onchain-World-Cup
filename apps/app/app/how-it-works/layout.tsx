@@ -100,6 +100,37 @@ export default function HowItWorksLayout({ children }: { children: React.ReactNo
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "How to Vote on Onchain World Cup",
+            "description": "Vote with ETH on Base to support your country in the Onchain World Cup 2026 qualification. Top 48 countries share the prize pool.",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Connect Your Wallet",
+                "text": "Connect a crypto wallet — Coinbase Wallet, MetaMask, or any EVM-compatible wallet — to the Onchain World Cup app on Base.",
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Vote with ETH",
+                "text": "Choose a country and vote with ETH. The first vote costs 0.001 ETH and prices increase linearly by 0.0005 ETH per vote. Early voters pay less per vote than later ones.",
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Earn Prizes",
+                "text": "If your country finishes in the top 48 during qualification, or wins their match in the tournament, you share 90% of the ETH prize pool proportional to your votes.",
+              },
+            ],
+          }),
+        }}
+      />
       {children}
     </>
   )

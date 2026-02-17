@@ -3,43 +3,54 @@ import countriesData from "@/data/countries.json"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz"
+  const now = new Date()
+  const staticContentDate = new Date("2026-02-16")
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/qualification`,
-      lastModified: new Date("2026-02-14"),
-    },
-    {
-      url: `${baseUrl}/teams`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/leaderboard`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/tournament`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/stats`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/how-it-works`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: staticContentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
   ]
 
   const qualificationRoutes: MetadataRoute.Sitemap = countriesData.map((country) => ({
     url: `${baseUrl}/qualification/${country.name.toLowerCase().replace(/\s+/g, "-")}`,
-    lastModified: new Date("2026-02-14"),
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.5,
   }))
 
-  // /teams/* pages are noindex (mock data) — excluded from sitemap to avoid directive conflict
   return [...staticRoutes, ...qualificationRoutes]
 }

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     "Back your country with ETH. Only top 48 qualify. Prize pool shared among winners. Early supporters shape the tournament.",
   manifest: "/manifest.json",
   alternates: {
-    canonical: "https://onchainworldcup.xyz",
+    canonical: "https://onchainworldcup.xyz/",
   },
   icons: {
     icon: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://onchainworldcup.xyz",
+    url: "https://onchainworldcup.xyz/",
     siteName: "Onchain World Cup",
     locale: "en_US",
     title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
