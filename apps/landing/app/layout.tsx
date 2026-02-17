@@ -120,6 +120,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
+                "https://warpcast.com/onchainworldcup",
               ],
             }),
           }}
@@ -134,7 +135,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "description": "Community-driven football tournament on the Base blockchain. 211 nations compete for 48 spots. Vote with ETH to qualify your country.",
               "startDate": "2026-02-16",
               "endDate": "2026-02-25",
-              "image": "https://onchainworldcup.xyz/logo.svg",
+              "image": "https://onchainworldcup.xyz/android-chrome-512x512.png",
               "eventStatus": "https://schema.org/EventScheduled",
               "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
               "location": {

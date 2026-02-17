@@ -7,6 +7,17 @@ export const metadata: Metadata = {
     "Privacy Policy for Onchain World Cup 2026. How we handle analytics, wallet data, and ETH transactions.",
   alternates: { canonical: "https://onchainworldcup.xyz/privacy-policy" },
   robots: { index: true, follow: true },
+  openGraph: {
+    title: "Privacy Policy | Onchain World Cup",
+    description: "Privacy Policy for Onchain World Cup 2026. How we handle analytics, wallet data, and ETH transactions.",
+    type: "website",
+    url: "https://onchainworldcup.xyz/privacy-policy",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | Onchain World Cup",
+    description: "Privacy Policy for Onchain World Cup 2026. How we handle analytics, wallet data, and ETH transactions.",
+  },
 }
 
 export default function PrivacyPolicyPage() {

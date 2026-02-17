@@ -17,7 +17,15 @@ interface CountryData {
   flagEmoji: string
 }
 
-export function CountryDetailPageClient({ countryId, countryName }: { countryId: string; countryName: string }) {
+export function CountryDetailPageClient({
+  countryId,
+  countryName,
+  serverStats,
+}: {
+  countryId: string
+  countryName: string
+  serverStats?: { total_votes?: number; total_eth?: string; rank?: number; qualified?: boolean } | null
+}) {
   const countryIdUpper = countryId.toUpperCase()
 
   const countryMatch = countriesData.find(
@@ -185,6 +193,13 @@ export function CountryDetailPageClient({ countryId, countryName }: { countryId:
             <span aria-hidden="true" className="text-muted-foreground flex-shrink-0 leading-tight">›</span>
             <span aria-current="page" className="text-foreground font-medium truncate min-w-0 leading-tight">{countryName}</span>
           </nav>
+          {serverStats && (
+            <p className="text-xs text-muted-foreground mb-3">
+              {countryName} is currently ranked #{serverStats.rank ?? "—"} with {serverStats.total_votes?.toLocaleString() ?? 0} votes
+              and {parseFloat(serverStats.total_eth || "0").toFixed(4)} ETH in the Onchain World Cup 2026 qualification on Base.
+              {serverStats.qualified && " ✓ Qualified."}
+            </p>
+          )}
           <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
           <div className="soccer-field-bg p-6 lg:p-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
             <div className="text-6xl lg:text-9xl">{country.flag}</div>

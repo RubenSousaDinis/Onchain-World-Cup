@@ -33,6 +33,21 @@ export default function StatsLayout({ children }: { children: React.ReactNode })
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            "name": "Onchain World Cup 2026 — Live Qualification Statistics",
+            "description": "Real-time ETH voting statistics for the Onchain World Cup 2026 qualification phase on Base blockchain.",
+            "url": "https://app.onchainworldcup.xyz/stats",
+            "creator": { "@type": "Organization", "name": "Onchain World Cup", "url": "https://onchainworldcup.xyz/" },
+            "dateModified": "2026-02-17",
+            "inLanguage": "en",
+          }),
+        }}
+      />
       {children}
     </>
   )

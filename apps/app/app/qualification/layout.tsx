@@ -28,19 +28,6 @@ export default function QualificationLayout({ children }: { children: React.Reac
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://app.onchainworldcup.xyz/" },
-              { "@type": "ListItem", "position": 2, "name": "Qualification", "item": "https://app.onchainworldcup.xyz/qualification" },
-            ],
-          }),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
             "@type": "SportsEvent",
             "name": "Onchain World Cup 2026 — Qualification Phase",
             "description": "Community-driven football tournament on Base blockchain. 64 nations compete for 48 spots via ETH voting. Top 48 advance to the tournament.",
