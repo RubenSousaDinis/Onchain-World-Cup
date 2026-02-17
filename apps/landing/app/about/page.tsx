@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-  title: "About | Onchain World Cup",
+  title: "About Onchain World Cup 2026 — ETH Voting on Base",
   description:
     "Learn about Onchain World Cup 2026 — a community-driven ETH voting tournament on the Base blockchain, aligned with the FIFA World Cup 2026.",
   alternates: { canonical: "https://onchainworldcup.xyz/about" },

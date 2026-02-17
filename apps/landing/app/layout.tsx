@@ -61,6 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@OnchainC29697",
+    creator: "@OnchainC29697",
   },
 }
 
@@ -94,6 +95,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
               "inLanguage": "en",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": "https://app.onchainworldcup.xyz/qualification?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
+              },
             }),
           }}
         />
@@ -106,6 +115,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "name": "Onchain World Cup",
               "url": "https://onchainworldcup.xyz/",
               "logo": "https://onchainworldcup.xyz/logo.svg",
+              "email": "onchainworldcup@gmail.com",
+              "description": "Community-driven football tournament on the Base blockchain. Vote with ETH to qualify countries for World Cup 2026.",
               "sameAs": [
                 "https://x.com/OnchainC29697",
                 "https://zora.co/@onchainworldcup",
@@ -133,6 +144,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "organizer": {
                 "@type": "Organization",
                 "name": "Onchain World Cup",
+                "url": "https://onchainworldcup.xyz/",
               },
             }),
           }}

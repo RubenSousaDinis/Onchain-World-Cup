@@ -1,0 +1,34 @@
+# Onchain World Cup
+
+Onchain World Cup is a community-driven football tournament on the Base blockchain.
+Fans vote for national teams with ETH. The top 48 countries qualify for the tournament.
+This is not a prediction market — it is a community support mechanism.
+
+## Key Facts
+
+- 211 nations compete in the qualification phase
+- Top 48 qualify for the tournament bracket
+- Voting uses ETH on Base (Ethereum L2 by Coinbase)
+- First vote costs 0.001 ETH; price increases linearly by 0.0005 ETH per vote
+- 90% of the prize pool is distributed to voters for qualified countries
+- The platform fee is 10%
+- All smart contract logic is public and verifiable on Basescan
+- Not gambling; no odds, no bookmakers
+- Aligned with FIFA World Cup 2026 (qualification phase: Feb–Jun 2026)
+
+## How It Works
+
+1. Connect a crypto wallet (Coinbase Wallet, MetaMask, or any EVM wallet)
+2. Choose a country to support from the 211 competing nations
+3. Vote with ETH — each vote raises the price slightly for the next voter
+4. If your country finishes in the top 48, you share the prize pool proportionally
+5. Early voters get more votes per ETH than late voters
+
+## Links
+
+- Landing page: https://onchainworldcup.xyz
+- App (vote here): https://app.onchainworldcup.xyz
+- X (Twitter): https://x.com/OnchainC29697
+- Farcaster: https://warpcast.com/onchainworldcup
+- Zora: https://zora.co/@onchainworldcup
+- Contact: onchainworldcup@gmail.com
