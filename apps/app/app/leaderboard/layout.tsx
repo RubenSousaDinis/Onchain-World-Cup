@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Leaderboard | Top Voters — Onchain World Cup 2026",
   description:
-    "Top supporters ranked by ETH spent, votes cast, and early bird status in the Onchain World Cup 2026 on Base.",
+    "Explore the Onchain World Cup 2026 leaderboard. Top supporters ranked by ETH spent, votes cast, and early bird status. Base network, live rankings.",
   alternates: {
     canonical: "https://app.onchainworldcup.xyz/leaderboard",
   },

@@ -2,23 +2,32 @@ import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN || "https://onchainworldcup.xyz"
+  const now = new Date()
 
   return [
     {
       url: baseUrl,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/about`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/privacy-policy`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: new Date("2026-02-16"),
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
     {
       url: `${baseUrl}/terms`,
-      lastModified: new Date("2026-02-14"),
+      lastModified: new Date("2026-02-16"),
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
   ]
 }
