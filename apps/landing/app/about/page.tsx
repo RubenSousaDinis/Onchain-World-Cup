@@ -10,10 +10,26 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "url": "https://onchainworldcup.xyz/about",
+    "name": "About Onchain World Cup 2026",
+    "description": "Learn about Onchain World Cup 2026 — a community-driven ETH voting tournament on the Base blockchain, aligned with the FIFA World Cup 2026.",
+    "isPartOf": {
+      "@type": "WebSite",
+      "url": "https://onchainworldcup.xyz/",
+      "name": "Onchain World Cup",
+    },
+  }
   const contractAddress = process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <h1 className="mb-4 text-3xl font-bold text-primary">About Onchain World Cup</h1>
       <p className="mb-8 text-lg text-muted-foreground">
         The World Cup, decided onchain. Community-driven football tournament where fans back their country

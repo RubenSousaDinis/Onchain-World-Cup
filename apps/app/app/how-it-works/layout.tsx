@@ -108,6 +108,8 @@ export default function HowItWorksLayout({ children }: { children: React.ReactNo
             "@type": "HowTo",
             "name": "How to Vote on Onchain World Cup",
             "description": "Vote with ETH on Base to support your country in the Onchain World Cup 2026 qualification. Top 48 countries share the prize pool.",
+            "datePublished": "2026-02-16",
+            "dateModified": "2026-02-16",
             "step": [
               {
                 "@type": "HowToStep",

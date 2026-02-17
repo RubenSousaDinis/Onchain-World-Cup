@@ -33,6 +33,18 @@ export default function LeaderboardLayout({ children }: { children: React.ReactN
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "Top Onchain World Cup 2026 Voters",
+            "description": "Live leaderboard of the top ETH voters in the Onchain World Cup 2026 qualification phase on Base blockchain.",
+            "url": "https://app.onchainworldcup.xyz/leaderboard",
+          }),
+        }}
+      />
       {children}
     </>
   )
