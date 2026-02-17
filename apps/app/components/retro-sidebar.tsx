@@ -5,7 +5,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
-import { useAppKit } from "@reown/appkit/react"
+import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
 import { useState } from "react"
 import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
@@ -22,7 +22,7 @@ export function RetroSidebar() {
   const pathname = usePathname()
   const { address, isConnected, chain } = useAccount()
   const { disconnect } = useDisconnect()
-  const { open } = useAppKit()
+  const open = () => modal.open()
   const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 

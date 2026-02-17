@@ -2,7 +2,7 @@
 
 import { Wallet } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
-import { useAppKit } from "@reown/appkit/react"
+import { modal } from "@/lib/reown-config"
 import { useNotifications } from "@/components/notifications"
 import { useEffect, useState } from "react"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -11,7 +11,6 @@ import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 export function WalletConnectButton() {
   const { address, isConnected, chain } = useAccount()
   const { disconnect } = useDisconnect()
-  const { open } = useAppKit()
   const { success, info } = useNotifications()
   const { isFrameContext } = useFarcaster()
   const [hasShownConnectedNotification, setHasShownConnectedNotification] = useState(false)
@@ -29,7 +28,7 @@ export function WalletConnectButton() {
   }, [isConnected, address, chain, success, hasShownConnectedNotification])
 
   const handleConnect = () => {
-    open()
+    modal.open()
   }
 
   const handleDisconnect = () => {
