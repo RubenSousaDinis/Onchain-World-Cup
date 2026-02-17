@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { getBaseUrl, createOgImageSupabaseClient } from '@/lib/utils/og-image'
+import { getBaseUrl } from '@/lib/utils/og-image'
 import {
   OG_IMAGE_SIZE,
   OG_IMAGE_CONTENT_TYPE,
@@ -17,34 +17,37 @@ function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`
 }
 
+function displayName(voter: { wallet_address: string; ens_name?: string | null; farcaster_name?: string | null }): string {
+  if (voter.ens_name) return voter.ens_name
+  if (voter.farcaster_name) return voter.farcaster_name
+  return truncateAddress(voter.wallet_address)
+}
+
 export default async function Image() {
   try {
     const baseUrl = getBaseUrl()
 
     let topVoters: Array<{
       rank: number
-      address: string
+      name: string
       votes: number
       eth: string
     }> = []
 
     try {
-      const supabase = createOgImageSupabaseClient()
-
-      const { data, error } = await supabase
-        .from('user_stats')
-        .select('wallet_address, qualification_votes, qualification_spent_eth')
-        .gt('qualification_votes', 0)
-        .order('qualification_votes', { ascending: false })
-        .limit(3)
-
-      if (!error && data) {
-        topVoters = data.map((user: any, index: number) => ({
-          rank: index + 1,
-          address: truncateAddress(user.wallet_address || ''),
-          votes: user.qualification_votes || 0,
-          eth: parseFloat(user.qualification_spent_eth || '0').toFixed(4),
-        }))
+      const res = await fetch(`${baseUrl}/api/qualification/leaderboard?limit=3`, {
+        next: { revalidate: 300 },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.data && json.data.length > 0) {
+          topVoters = json.data.map((user: any) => ({
+            rank: user.rank,
+            name: displayName(user),
+            votes: user.qualification_votes || 0,
+            eth: parseFloat(user.qualification_spent_eth || '0').toFixed(4),
+          }))
+        }
       }
     } catch (err) {
       console.error('Failed to fetch leaderboard:', err)
@@ -52,9 +55,9 @@ export default async function Image() {
 
     if (topVoters.length === 0) {
       topVoters = [
-        { rank: 1, address: '0x1234…5678', votes: 0, eth: '0.0000' },
-        { rank: 2, address: '0xabcd…ef01', votes: 0, eth: '0.0000' },
-        { rank: 3, address: '0x9876…4321', votes: 0, eth: '0.0000' },
+        { rank: 1, name: '0x1234…5678', votes: 0, eth: '0.0000' },
+        { rank: 2, name: '0xabcd…ef01', votes: 0, eth: '0.0000' },
+        { rank: 3, name: '0x9876…4321', votes: 0, eth: '0.0000' },
       ]
     }
 
@@ -69,7 +72,6 @@ export default async function Image() {
             fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
-          {/* Grid pattern overlay */}
           <div
             tw="absolute inset-0 flex"
             style={{
@@ -78,7 +80,6 @@ export default async function Image() {
             }}
           />
 
-          {/* Main content */}
           <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '36px 48px 40px' }}>
             {/* Header */}
             <div tw="flex items-center justify-between w-full flex-shrink-0">
@@ -114,7 +115,7 @@ export default async function Image() {
               </div>
             </div>
 
-            {/* Leaderboard rows */}
+            {/* Rows */}
             <div tw="flex flex-col flex-1 min-h-0" style={{ gap: 10, marginTop: 20, marginBottom: 20 }}>
               {topVoters.map((voter) => (
                 <div
@@ -140,7 +141,7 @@ export default async function Image() {
                       {voter.rank}
                     </div>
                     <div tw="flex font-bold" style={{ fontSize: 22, color: '#ffffff', fontFamily: 'monospace' }}>
-                      {voter.address}
+                      {voter.name}
                     </div>
                   </div>
 

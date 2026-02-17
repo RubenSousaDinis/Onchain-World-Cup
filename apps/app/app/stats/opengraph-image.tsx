@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { getBaseUrl, createOgImageSupabaseClient } from '@/lib/utils/og-image'
+import { getBaseUrl } from '@/lib/utils/og-image'
 import {
   OG_IMAGE_SIZE,
   OG_IMAGE_CONTENT_TYPE,
@@ -20,31 +20,22 @@ export default async function Image() {
       totalVotes: 0,
       totalEth: '0.0000',
       totalVoters: 0,
-      totalCountries: 0,
+      qualifiedCount: 0,
     }
 
     try {
-      const supabase = createOgImageSupabaseClient()
-
-      const { data, error } = await supabase
-        .from('country_stats')
-        .select('total_votes, total_eth')
-
-      if (!error && data && data.length > 0) {
-        const totalVotes = data.reduce((sum: number, row: any) => sum + (row.total_votes || 0), 0)
-        const totalEth = data.reduce((sum: number, row: any) => sum + parseFloat(row.total_eth || '0'), 0)
-        const activeCountries = data.filter((row: any) => (row.total_votes || 0) > 0).length
-
-        const { count: voterCount } = await supabase
-          .from('user_stats')
-          .select('*', { count: 'exact', head: true })
-          .gt('qualification_votes', 0)
-
-        stats = {
-          totalVotes,
-          totalEth: totalEth.toFixed(4),
-          totalVoters: voterCount || 0,
-          totalCountries: activeCountries,
+      const res = await fetch(`${baseUrl}/api/qualification/summary`, {
+        next: { revalidate: 300 },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json.data) {
+          stats = {
+            totalVotes: json.data.total_votes || 0,
+            totalEth: parseFloat(json.data.total_eth || '0').toFixed(4),
+            totalVoters: json.data.total_voters || 0,
+            qualifiedCount: json.data.qualified_count || 0,
+          }
         }
       }
     } catch (err) {
@@ -55,7 +46,7 @@ export default async function Image() {
       { label: 'TOTAL VOTES', value: stats.totalVotes.toLocaleString(), highlight: true },
       { label: 'ETH RAISED', value: `${stats.totalEth} ETH`, highlight: false },
       { label: 'VOTERS', value: stats.totalVoters.toLocaleString(), highlight: false },
-      { label: 'COUNTRIES ACTIVE', value: stats.totalCountries.toString(), highlight: false },
+      { label: 'QUALIFIED', value: `${stats.qualifiedCount} / 48`, highlight: false },
     ]
 
     return new ImageResponse(
@@ -67,7 +58,6 @@ export default async function Image() {
             fontFamily: OG_IMAGE_FONT_FAMILY,
           }}
         >
-          {/* Grid pattern overlay */}
           <div
             tw="absolute inset-0 flex"
             style={{
@@ -76,7 +66,6 @@ export default async function Image() {
             }}
           />
 
-          {/* Main content */}
           <div tw="flex flex-col w-full h-full justify-between" style={{ padding: '48px 60px' }}>
             {/* Header */}
             <div tw="flex items-center justify-between w-full">
