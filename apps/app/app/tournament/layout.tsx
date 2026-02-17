@@ -32,6 +32,32 @@ export default function TournamentLayout({ children }: { children: React.ReactNo
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SportsEvent",
+            "name": "Onchain World Cup 2026 — Tournament",
+            "description": "The 48 qualified nations compete in group stage and knockout rounds. Match outcomes decided by community ETH voting on Base blockchain.",
+            "startDate": "2026-06-05",
+            "endDate": "2026-06-11",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+            "location": {
+              "@type": "VirtualLocation",
+              "url": "https://app.onchainworldcup.xyz/tournament",
+            },
+            "organizer": {
+              "@type": "Organization",
+              "name": "Onchain World Cup",
+              "url": "https://onchainworldcup.xyz/",
+            },
+            "sport": "Association Football",
+            "url": "https://app.onchainworldcup.xyz/tournament",
+          }),
+        }}
+      />
       {children}
     </>
   )
