@@ -114,7 +114,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'vote-collector',
     title: 'Vote Collector',
-    description: 'Cast 10 qualification votes',
+    description: 'Casted 10 qualification votes',
     icon: '🔥',
     rarity: 'common',
     points: 20,
