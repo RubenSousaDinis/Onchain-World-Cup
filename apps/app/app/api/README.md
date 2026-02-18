@@ -1,4 +1,4 @@
-# Crypto World Cup API
+# Onchain World Cup API
 
 Server-side API routes using Supabase for database access.
 

@@ -348,6 +348,37 @@ export function useVote() {
 }
 
 /**
+ * Check if user has already claimed their winnings
+ */
+export function useHasClaimed(chainId: number, userAddress: Address | undefined) {
+  let address: Address | null = null
+
+  try {
+    address = getQualificationAddress(chainId)
+  } catch (error) {
+    return useReadContract({
+      address: '0x0000000000000000000000000000000000000000' as Address,
+      abi: WORLD_CUP_QUALIFICATION_ABI,
+      functionName: "hasClaimed",
+      args: [userAddress!],
+      query: {
+        enabled: false,
+      },
+    })
+  }
+
+  return useReadContract({
+    address: address!,
+    abi: WORLD_CUP_QUALIFICATION_ABI,
+    functionName: "hasClaimed",
+    args: [userAddress!],
+    query: {
+      enabled: !!userAddress,
+    },
+  })
+}
+
+/**
  * Claim winnings after qualification is finalized
  */
 export function useClaim() {

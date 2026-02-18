@@ -13,7 +13,7 @@ import {
   TopListItem,
   EmptyState,
 } from "@/components/dashboard"
-import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
+import { useClaimable, useQualificationEndTime, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useAccount, useChainId } from "wagmi"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
@@ -43,6 +43,17 @@ type SummaryData = {
   topVoters: TopVoter[]
 }
 
+function formatTimeLeft(end: Date): string {
+  const diffSecs = Math.max(0, Math.floor((end.getTime() - Date.now()) / 1000))
+  if (diffSecs === 0) return "Ended"
+  const days = Math.floor(diffSecs / 86400)
+  const hours = Math.floor((diffSecs % 86400) / 3600)
+  if (days > 0) return `${days}d ${hours}h`
+  const minutes = Math.floor((diffSecs % 3600) / 60)
+  if (hours > 0) return `${hours}h ${minutes}m`
+  return `${minutes}m`
+}
+
 export function HomePageClient() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -54,6 +65,9 @@ export function HomePageClient() {
   const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei } = useClaimable(chainId, userAddress)
   const { projectedEarnings } = useProjectedEarnings(userAddress)
+
+  const { data: qualEndTimestamp } = useQualificationEndTime(chainId)
+  const qualEndDate = qualEndTimestamp ? new Date(Number(qualEndTimestamp) * 1000) : undefined
 
   const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
   const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
@@ -195,7 +209,7 @@ export function HomePageClient() {
                 </p>
               </div>
             </div>
-            <CountdownTimer />
+            <CountdownTimer endDate={qualEndDate} />
           </div>
         </div>
       </div>
@@ -217,7 +231,12 @@ export function HomePageClient() {
           valueColor="accent"
           className="col-span-2 lg:col-span-1"
         />
-        <StatCard icon={Clock} label="Time Left" value="30d" className="col-span-2 lg:col-span-1" />
+        <StatCard
+          icon={Clock}
+          label="Time Left"
+          value={qualEndDate ? formatTimeLeft(qualEndDate) : "..."}
+          className="col-span-2 lg:col-span-1"
+        />
       </div>
 
       {/* View Full Statistics Button */}

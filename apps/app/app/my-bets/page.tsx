@@ -9,6 +9,7 @@ import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
 import { useState, useEffect, useRef } from "react"
 import { NoVotesEmpty, InlineLoader } from "@/components/states"
+import { ClaimSection } from "@/components/claim-section"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import Link from "next/link"
 import { base, baseSepolia } from "wagmi/chains"
@@ -204,6 +205,9 @@ export default function MyBetsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Claim Section */}
+            <ClaimSection address={address} totalVotes={totalVotes} />
 
             {/* Milestones Section */}
             <div className="mb-6 lg:mb-8">

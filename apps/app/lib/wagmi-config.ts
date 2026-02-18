@@ -17,7 +17,7 @@ export const wagmiConfig = createConfig({
   connectors: [
     injected(),
     coinbaseWallet({
-      appName: "Crypto World Cup 2026",
+      appName: "Onchain World Cup 2026",
       preference: "smartWalletOnly",
     }),
     walletConnect({

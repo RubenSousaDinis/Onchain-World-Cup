@@ -78,7 +78,7 @@ export function MatchResultNFTCard({
         {/* Stadium Info */}
         <div className="text-center mt-4">
           <div className="text-xs text-white/60 mb-2">{stadium}</div>
-          <div className="text-sm font-bold text-accent tracking-wider">CRYPTO WORLD CUP 2026</div>
+          <div className="text-sm font-bold text-accent tracking-wider">ONCHAIN WORLD CUP 2026</div>
         </div>
       </div>
     </div>

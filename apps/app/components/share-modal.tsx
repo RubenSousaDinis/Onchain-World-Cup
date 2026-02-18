@@ -84,7 +84,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
       const pool = data.prizePool
       return {
         title: "Match Prize Pool",
-        text: `🏆 ${pool?.team1Flag} ${pool?.team1Name} vs ${pool?.team2Flag} ${pool?.team2Name}\n\n💰 Prize Pool: ${pool?.totalPool} ETH\n\n${pool?.team1Flag} ${pool?.team1Name}: ${pool?.team1Pool} ETH (${pool?.team1Votes} votes)\n${pool?.team2Flag} ${pool?.team2Name}: ${pool?.team2Pool} ETH (${pool?.team2Votes} votes)\n\nWinner takes 90% of the pool! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `🏆 ${pool?.team1Flag} ${pool?.team1Name} vs ${pool?.team2Flag} ${pool?.team2Name}\n\n💰 Prize Pool: ${pool?.totalPool} ETH\n\n${pool?.team1Flag} ${pool?.team1Name}: ${pool?.team1Pool} ETH (${pool?.team1Votes} votes)\n${pool?.team2Flag} ${pool?.team2Name}: ${pool?.team2Pool} ETH (${pool?.team2Votes} votes)\n\nWinner takes 90% of the pool! ⚽\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: pool?.matchId ? `${baseUrl}/matches/${pool.matchId}` : baseUrl,
         ogImage: `${baseUrl}/api/og/prize-pool?totalPool=${pool?.totalPool}&team1Name=${encodeURIComponent(pool?.team1Name || "")}&team1Flag=${encodeURIComponent(pool?.team1Flag || "")}&team1Pool=${pool?.team1Pool}&team1Votes=${pool?.team1Votes}&team2Name=${encodeURIComponent(pool?.team2Name || "")}&team2Flag=${encodeURIComponent(pool?.team2Flag || "")}&team2Pool=${pool?.team2Pool}&team2Votes=${pool?.team2Votes}`,
       }
@@ -93,8 +93,8 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     if (type === "user-stats") {
       const stats = data.userStats
       return {
-        title: "My Crypto World Cup Stats",
-        text: `My Crypto World Cup 2026 Stats:\n\n💰 Spent: ${stats?.ethSpent} ETH\n🏆 Earnings: ${stats?.currentEarnings} ETH\n⚽ Favorite: ${stats?.favoriteCountryFlag} ${stats?.favoriteCountry}\n📊 Total Votes: ${stats?.totalVotes}${stats?.rank ? `\n🎯 Rank: #${stats.rank}` : ''}\n\nJoin the action and vote for your favorite teams!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        title: "My Onchain World Cup Stats",
+        text: `My Onchain World Cup 2026 Stats:\n\n💰 Spent: ${stats?.ethSpent} ETH\n🏆 Earnings: ${stats?.currentEarnings} ETH\n⚽ Favorite: ${stats?.favoriteCountryFlag} ${stats?.favoriteCountry}\n📊 Total Votes: ${stats?.totalVotes}${stats?.rank ? `\n🎯 Rank: #${stats.rank}` : ''}\n\nJoin the action and vote for your favorite teams!\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: baseUrl,
         ogImage: `${baseUrl}/api/og/user-stats?ethSpent=${stats?.ethSpent}&earnings=${stats?.currentEarnings}&country=${encodeURIComponent(stats?.favoriteCountry || "")}&countryFlag=${encodeURIComponent(stats?.favoriteCountryFlag || "")}&votes=${stats?.totalVotes}&rank=${stats?.rank || 0}&levelNum=${stats?.levelNum || 1}&levelName=${encodeURIComponent(stats?.levelName || 'Youth Player')}&achievementPoints=${stats?.achievementPoints || 0}`,
       }
@@ -116,7 +116,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
 
       return {
         title: "Qualification Leaderboard",
-        text: `🏆 Current Qualification Leaderboard:\n\n${top3Text}\n\nTop 48 countries qualify! Vote for your country now! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `🏆 Current Qualification Leaderboard:\n\n${top3Text}\n\nTop 48 countries qualify! Vote for your country now! ⚽\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: `${baseUrl}/qualification`,
         ogImage: `${baseUrl}/api/og/leaderboard?countries=${countriesParam}`,
       }
@@ -125,7 +125,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     if (type === "country") {
       return {
         title: "I just voted for my country!",
-        text: `I just backed ${data.countryFlag} ${data.country} with ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} to qualify for the World Cup 2026!\n\nVote early = better prices. Help your country qualify! ⚽\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `I just backed ${data.countryFlag} ${data.country} with ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} to qualify for the World Cup 2026!\n\nVote early = better prices. Help your country qualify! ⚽\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: `${baseUrl}/qualification/${data.countryCode}`,
         ogImage: `${baseUrl}/api/og/country-vote?country=${encodeURIComponent(data.country || "")}&countryCode=${data.countryCode}&votes=${data.votes}&amount=${data.amount}`,
       }
@@ -134,7 +134,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     if (type === "vote") {
       return {
         title: "I just voted!",
-        text: `I just placed ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} for ${data.teamFlag} ${data.team} in the Crypto World Cup 2026!\n\nVote early for better odds. The more you wait, the more you pay.\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `I just placed ${data.votes} vote${(data.votes || 0) > 1 ? "s" : ""} for ${data.teamFlag} ${data.team} in the Onchain World Cup 2026!\n\nVote early for better odds. The more you wait, the more you pay.\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: `${baseUrl}/matches/${data.matchId}`,
       }
     }
@@ -143,13 +143,13 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
       if (data.result === "won" || data.result === "earned") {
         return {
           title: "I won!",
-          text: `I just won ${data.winnings} betting on ${data.teamFlag} ${data.team} in the Crypto World Cup 2026!\n\nJoin the action and vote for your favorite teams.\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+          text: `I just won ${data.winnings} betting on ${data.teamFlag} ${data.team} in the Onchain World Cup 2026!\n\nJoin the action and vote for your favorite teams.\n\n#OnchainWorldCup #WorldCup2026 #Base`,
           url: `${baseUrl}/matches/${data.matchId}`,
         }
       }
       return {
         title: "Better luck next time!",
-        text: `My team ${data.teamFlag} ${data.team} lost in the Crypto World Cup 2026, but the game goes on!\n\nJoin and vote for the next match.\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `My team ${data.teamFlag} ${data.team} lost in the Onchain World Cup 2026, but the game goes on!\n\nJoin and vote for the next match.\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: `${baseUrl}/matches/${data.matchId}`,
       }
     }
@@ -157,7 +157,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
     if (type === "milestone") {
       return {
         title: data.milestone?.title || "Achievement Unlocked!",
-        text: `${data.milestone?.icon} I just unlocked "${data.milestone?.title}" in Crypto World Cup 2026!\n\n${data.milestone?.description}\n\nJoin the competition!\n\n#CryptoWorldCup #WorldCup2026 #Base`,
+        text: `${data.milestone?.icon} I just unlocked "${data.milestone?.title}" in Onchain World Cup 2026!\n\n${data.milestone?.description}\n\nJoin the competition!\n\n#OnchainWorldCup #WorldCup2026 #Base`,
         url: baseUrl,
       }
     }
@@ -316,7 +316,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
           {type === "user-stats" && (
             <div className="text-center">
               <div className="text-4xl mb-3">📊</div>
-              <div className="text-xl font-bold cm-highlight mb-2">My Crypto World Cup Stats</div>
+              <div className="text-xl font-bold cm-highlight mb-2">My Onchain World Cup Stats</div>
               {data.userStats?.levelNum != null && (
                 <div className="inline-flex items-center gap-2 bg-secondary/30 border border-border rounded-sm px-3 py-1.5 mb-4 text-sm font-bold">
                   <span className="text-muted-foreground">Lv.{data.userStats.levelNum}</span>

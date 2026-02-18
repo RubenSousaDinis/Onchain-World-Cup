@@ -68,7 +68,7 @@ export default function HomePageClient() {
         <div className="mb-6 lg:mb-8 max-w-full">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-2">
             <h1 className="text-2xl lg:text-4xl font-bold truncate">
-              <span className="cm-highlight">Crypto World Cup 2026</span>
+              <span className="cm-highlight">Onchain World Cup 2026</span>
             </h1>
             <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
               <div className="cm-panel px-3 lg:px-4 py-2 rounded-sm flex-shrink-0">
