@@ -19,7 +19,7 @@ export function HeroSection() {
 
           <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
             <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-            Testnet live now — Mainnet launching mid-March 2026
+            Testnet live now — Mainnet launching late March 2026
           </div>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

@@ -154,7 +154,7 @@ export function HomePageClient() {
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
             <p className="text-xs lg:text-sm font-bold text-primary uppercase tracking-wide">
-              Testnet — Mainnet launching mid-March 2026
+              Testnet — Mainnet launching late March 2026
             </p>
           </div>
           <p className="text-xs text-muted-foreground">
