@@ -79,12 +79,7 @@ export function MatchResultNFTCard({
         <div className="text-center mt-4">
           <div className="text-xs text-white/60 mb-2">{stadium}</div>
           <div className="flex items-center justify-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <g style={{ transform: "scale(95%)", transformOrigin: "center" }}>
-                <path fill="#FBBF24" d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z" />
-                <path fill="#FBBF24" d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z" />
-              </g>
-            </svg>
+            <img src="/logo.svg" alt="Onchain World Cup" className="h-6 w-auto" />
             <div className="text-sm font-bold text-accent tracking-wider">ONCHAIN WORLD CUP 2026</div>
           </div>
         </div>
