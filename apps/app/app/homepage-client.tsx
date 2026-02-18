@@ -148,6 +148,21 @@ export function HomePageClient() {
         </div>
       )}
 
+      {/* Mainnet Launch Banner */}
+      <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-primary/40 bg-primary/5">
+        <div className="p-3 lg:p-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
+            <p className="text-xs lg:text-sm font-bold text-primary uppercase tracking-wide">
+              Testnet — Mainnet launching mid-March 2026
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Votes placed now on testnet will not carry over to mainnet.
+          </p>
+        </div>
+      </div>
+
       {/* User Earnings Card */}
       {userAddress && isContractAvailable && currentEarnings > 0 && (
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-green-400/30">

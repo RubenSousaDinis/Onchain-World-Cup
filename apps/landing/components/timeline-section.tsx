@@ -3,26 +3,26 @@ import { Calendar } from "lucide-react"
 const milestones = [
   {
     date: "Mid-February 2026",
-    title: "Qualification Opens",
-    description: "Vote for countries with ETH. Linear pricing in Phase 1.",
+    title: "Testnet Launch",
+    description: "Qualification opens on testnet. Vote for countries with ETH and try the platform.",
+    status: "current" as const,
+  },
+  {
+    date: "Mid-March 2026",
+    title: "Mainnet Launch",
+    description: "Real ETH goes live on Base mainnet. Qualification continues with real stakes.",
     status: "upcoming" as const,
   },
   {
-    date: "TBD",
-    title: "Qualification Ends",
-    description: "Top 48 countries qualify for the tournament.",
-    status: "future" as const,
-  },
-  {
     date: "Early June 2026",
-    title: "Onchain World Cup Final",
-    description: "1 week before the real World Cup begins.",
+    title: "Qualification Ends",
+    description: "Top 48 countries qualify. Onchain World Cup Final crowns a champion.",
     status: "future" as const,
   },
   {
     date: "June 11 - July 19, 2026",
     title: "Real World Cup",
-    description: "FIFA World Cup 2026 in North America.",
+    description: "FIFA World Cup 2026 in North America. Season 2 begins.",
     status: "future" as const,
   },
 ]
@@ -51,7 +51,7 @@ export function TimelineSection() {
             <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-border" />
             <div
               className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-primary transition-all duration-1000"
-              style={{ width: "25%" }}
+              style={{ width: "12.5%" }}
             />
 
             <div className="relative grid grid-cols-4 gap-6">
@@ -60,12 +60,12 @@ export function TimelineSection() {
                   {/* Dot */}
                   <div
                     className={`relative z-10 mb-6 flex h-8 w-8 items-center justify-center rounded-full border-4 ${
-                      milestone.status === "upcoming"
+                      milestone.status === "current" || milestone.status === "upcoming"
                         ? "border-primary bg-primary"
                         : "border-border bg-background"
                     }`}
                   >
-                    {milestone.status === "upcoming" && (
+                    {(milestone.status === "current" || milestone.status === "upcoming") && (
                       <div className="h-3 w-3 animate-pulse rounded-full bg-primary-foreground" />
                     )}
                   </div>
@@ -74,7 +74,7 @@ export function TimelineSection() {
                   <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg">
                     <div
                       className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
-                        milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
+                        milestone.status === "current" || milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
                       }`}
                     >
                       {milestone.date}
@@ -126,7 +126,7 @@ export function TimelineSection() {
         {/* Call to action */}
         <div className="mt-12 text-center">
           <p className="text-lg font-semibold text-primary">
-            Qualification is now open — vote to support your country
+            Testnet is live now — Mainnet launches mid-March 2026
           </p>
         </div>
       </div>
