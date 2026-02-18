@@ -29,7 +29,7 @@ contract WorldCupNFT is ERC721URIStorage, Ownable {
     event MilestoneNFTMinted(address indexed user, uint256 indexed tokenId, string milestoneId);
     event MatchResultNFTMinted(address indexed user, uint256 indexed tokenId, string matchId);
     
-    constructor() ERC721("Crypto World Cup 2026", "CWC26") Ownable(msg.sender) {}
+    constructor() ERC721("Onchain World Cup 2026", "OWC26") Ownable(msg.sender) {}
     
     /**
      * @dev Mint a milestone achievement NFT

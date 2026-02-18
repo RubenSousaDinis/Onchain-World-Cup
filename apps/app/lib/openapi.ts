@@ -1,13 +1,13 @@
 /**
- * OpenAPI specification for Crypto World Cup API
+ * OpenAPI specification for Onchain World Cup API
  */
 
 export const openApiSpec = {
   openapi: '3.0.0',
   info: {
-    title: 'Crypto World Cup API',
+    title: 'Onchain World Cup API',
     version: '1.0.0',
-    description: 'Server-side API for the Crypto World Cup voting platform',
+    description: 'Server-side API for the Onchain World Cup voting platform',
     contact: {
       name: 'API Support',
     },

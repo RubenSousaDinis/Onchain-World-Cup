@@ -321,7 +321,7 @@ export function MatchDetailPageClient({ matchId }: { matchId: string }) {
           imageComponent: (
             <div className="w-full aspect-square bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg p-6 flex flex-col justify-between soccer-field-bg">
               <div className="text-center">
-                <div className="text-xs text-white/70 mb-4">CRYPTO WORLD CUP 2026</div>
+                <div className="text-xs text-white/70 mb-4">ONCHAIN WORLD CUP 2026</div>
                 <div className="flex items-center justify-center gap-8">
                   <div className="text-center">
                     <div className="text-5xl mb-2">{mockMatchData.team1.flag}</div>

@@ -1,8 +1,8 @@
-# Crypto World Cup Smart Contracts
+# Onchain World Cup Smart Contracts
 
 ## Overview
 
-This directory contains the Solidity smart contracts for the Crypto World Cup 2026 betting platform.
+This directory contains the Solidity smart contracts for the Onchain World Cup 2026 betting platform.
 
 ## Contracts
 

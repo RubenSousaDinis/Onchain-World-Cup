@@ -1,4 +1,4 @@
-# Crypto World Cup 2026
+# Onchain World Cup 2026
 
 A full-stack Next.js application for ETH-based voting/betting on World Cup 2026 matches, powered by the Base network.
 

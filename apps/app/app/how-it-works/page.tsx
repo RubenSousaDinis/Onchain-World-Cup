@@ -250,7 +250,7 @@ export default function HowItWorksPage() {
               <div className="flex gap-3 items-start p-2">
                 <Award className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <div className="font-bold mb-1">One Crypto World Cup Champion</div>
+                  <div className="font-bold mb-1">One Onchain World Cup Champion</div>
                   <div className="text-xs lg:text-sm text-muted-foreground">
                     The final match determines the ultimate winner. The community crowns the first-ever Onchain World
                     Cup champion - a title earned purely through onchain voting.
