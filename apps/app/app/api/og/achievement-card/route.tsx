@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
 
     const borderColor = rarityColors[rarity] ?? rarityColors.common
     const gradient = rarityGradients[rarity] ?? rarityGradients.common
+    const logoSrc = new URL('/logo.png', request.url).href
 
     const imageResponse = new ImageResponse(
       (
@@ -105,7 +106,7 @@ export async function GET(request: NextRequest) {
           </div>
 
           {/* Footer */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, gap: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, gap: 10 }}>
             <div
               style={{
                 display: 'flex',
@@ -116,6 +117,10 @@ export async function GET(request: NextRequest) {
               }}
             >
               {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
+            </div>
+            {/* Logo branding */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0.8 }}>
+              <img src={logoSrc} width={40} height={39} style={{ borderRadius: 4 }} />
             </div>
           </div>
         </div>

@@ -101,7 +101,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'first-vote',
     title: 'First Vote',
-    description: 'Cast your first qualification vote',
+    description: 'Casted your first qualification vote',
     icon: '⚽',
     rarity: 'common',
     points: 10,
@@ -114,7 +114,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'vote-collector',
     title: 'Vote Collector',
-    description: 'Cast 10 qualification votes',
+    description: 'Casted 10 qualification votes',
     icon: '🔥',
     rarity: 'common',
     points: 20,
@@ -127,7 +127,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'power-voter',
     title: 'Power Voter',
-    description: 'Cast 50 qualification votes',
+    description: 'Casted 50 qualification votes',
     icon: '⚡',
     rarity: 'rare',
     points: 50,
@@ -140,7 +140,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'vote-whale',
     title: 'Vote Whale',
-    description: 'Cast 100 qualification votes',
+    description: 'Casted 100 qualification votes',
     icon: '🐋',
     rarity: 'epic',
     points: 100,
@@ -153,7 +153,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'globetrotter',
     title: 'Globetrotter',
-    description: 'Vote for 5 different countries',
+    description: 'Voted for 5 different countries',
     icon: '🌍',
     rarity: 'rare',
     points: 50,
@@ -166,7 +166,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'world-citizen',
     title: 'World Citizen',
-    description: 'Vote for 10 different countries',
+    description: 'Voted for 10 different countries',
     icon: '🌐',
     rarity: 'epic',
     points: 100,
@@ -179,7 +179,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'spender',
     title: 'Spender',
-    description: 'Spend 0.05 ETH on qualification votes',
+    description: 'Spent 0.05 ETH on qualification votes',
     icon: '💸',
     rarity: 'rare',
     points: 40,
@@ -192,7 +192,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'high-roller',
     title: 'High Roller',
-    description: 'Spend 0.5 ETH on qualification votes',
+    description: 'Spent 0.5 ETH on qualification votes',
     icon: '🎰',
     rarity: 'epic',
     points: 80,
@@ -205,7 +205,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'top-100',
     title: 'Top 100',
-    description: 'Reach the top 100 on the qualification leaderboard',
+    description: 'Reached the top 100 on the qualification leaderboard',
     icon: '📊',
     rarity: 'rare',
     points: 50,
@@ -218,7 +218,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'top-10',
     title: 'Top 10',
-    description: 'Reach the top 10 on the qualification leaderboard',
+    description: 'Reached the top 10 on the qualification leaderboard',
     icon: '👑',
     rarity: 'legendary',
     points: 200,
@@ -231,7 +231,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
   {
     id: 'early-bird',
     title: 'Early Bird',
-    description: 'Vote in the first week of qualification',
+    description: 'Voted in the first week of qualification',
     icon: '🐦',
     rarity: 'epic',
     points: 75,
