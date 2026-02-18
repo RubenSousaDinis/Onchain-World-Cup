@@ -67,7 +67,7 @@ function AchievementNFTCard({ achievement }: { achievement: ComputedAchievement 
             opacity: 0.8,
           }}
         >
-          Crypto World Cup 2026
+          Onchain World Cup 2026
         </span>
       </div>
 
@@ -257,6 +257,7 @@ export function AchievementUnlockedModal({ achievements, onClose }: AchievementU
           description: achievement.description,
           imageComponent: <AchievementNFTCard achievement={achievement} />,
           metadata: {
+            milestone: achievement,
             achievementId: achievement.id,
             rarity: achievement.rarity,
             points: achievement.points,
