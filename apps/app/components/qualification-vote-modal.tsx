@@ -36,10 +36,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
   const [showShareModal, setShowShareModal] = useState(false)
-  const [shareData, setShareData] = useState<{votes: number, amount: string} | null>(null)
+  const [shareData, setShareData] = useState<{votes: number, amount: string, countryCode: string} | null>(null)
+  const shareModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [newAchievements, setNewAchievements] = useState<ComputedAchievement[]>([])
   const [votedSuccessfully, setVotedSuccessfully] = useState(false)
-  const lastVoteDataRef = useRef<{votes: number, amount: string} | null>(null)
+  const lastVoteDataRef = useRef<{votes: number, amount: string, countryCode: string} | null>(null)
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -144,14 +145,19 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return parseFloat(value.toFixed(6)).toString()
   }
 
-  // Reset state when modal opens
+  // Reset state when modal opens or closes
   useEffect(() => {
     if (isOpen) {
       setVoteCount(1)
       setIsIndexing(false)
       setIsProcessing(false)
-      processedTxRef.current = null
-      indexedTxRef.current = null
+      // Do NOT null-out processedTxRef / indexedTxRef here.
+      // wagmi's hash is still set to the previous tx on the first render after open.
+      // Keeping refs pointed at the old hash ensures the dedup guards in the
+      // hash-processing and confirmation effects fire correctly and return early,
+      // preventing re-indexing and a stale share modal appearing for the new country.
+      // The refs will naturally diverge once resetWrite() clears hash and a new
+      // transaction is submitted.
       hasVotedRef.current = false
       setNewAchievements([])
       setShareData(null)
@@ -159,6 +165,15 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setVotedSuccessfully(false)
       lastVoteDataRef.current = null
       resetWrite()
+    } else {
+      // Clear any pending share modal timer so it can't fire into the next session
+      if (shareModalTimerRef.current) {
+        clearTimeout(shareModalTimerRef.current)
+        shareModalTimerRef.current = null
+      }
+      setShareData(null)
+      setShowShareModal(false)
+      setVotedSuccessfully(false)
     }
   }, [isOpen, resetWrite])
 
@@ -174,13 +189,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape" && isOpen && !isPending && !isProcessing) {
         onClose()
       }
     }
     window.addEventListener("keydown", handleEscape as any)
     return () => window.removeEventListener("keydown", handleEscape as any)
-  }, [isOpen, onClose])
+  }, [isOpen, isPending, isProcessing, onClose])
 
   // Debug: Log state changes
   useEffect(() => {
@@ -238,7 +253,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     setVoteCount(1)
 
     // Capture vote data for share modal / achievement modal before resetting state
-    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)) }
+    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)), countryCode: country.code }
 
     // Index in background (don't block UI)
     // Transaction has 2 confirmations at this point, should be visible on RPC nodes
@@ -298,7 +313,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               setNewAchievements(unlocked)
             } else {
               setShareData(lastVoteDataRef.current)
-              setTimeout(() => setShowShareModal(true), 300)
+              shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 300)
             }
           }).catch((err) => {
             console.error("[Vote Modal] Error refetching data:", err)
@@ -499,15 +514,23 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg cm-panel rounded-sm border-2 border-accent/30 overflow-hidden">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        onClick={() => { if (!isPending && !isProcessing) onClose() }}
+      >
+      <div
+        className="relative w-full max-w-lg cm-panel rounded-sm border-2 border-accent/30 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-secondary/40 p-4 border-b-2 border-accent/30 flex items-center justify-between">
           <h2 className="text-lg font-bold cm-highlight">Vote for Qualification</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-accent/20 rounded transition-colors"
+            disabled={isPending || isProcessing}
+            className="p-1 hover:bg-accent/20 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Close"
+            title={isPending || isProcessing ? "Please wait until your transaction is processed" : undefined}
           >
             <X className="w-5 h-5" />
           </button>
@@ -736,13 +759,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             setNewAchievements([])
             // After dismissing achievements, show share modal with captured vote data
             setShareData(lastVoteDataRef.current)
-            setTimeout(() => setShowShareModal(true), 200)
+            shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 200)
           }}
         />
       )}
 
       {/* Share Modal - shows after successful vote */}
-      {shareData && (
+      {shareData && shareData.countryCode === country?.code && (
         <ShareModal
           isOpen={showShareModal}
           onClose={handleShareClose}
