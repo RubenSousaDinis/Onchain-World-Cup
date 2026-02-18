@@ -55,7 +55,7 @@ export function FAQSection() {
     {
       question: "What chain is this on?",
       answer:
-        "Onchain World Cup is built on Base, an Ethereum Layer 2 network developed by Coinbase. Base offers very low transaction fees (typically under $0.01 per vote), fast confirmations, and the full security guarantees of Ethereum. All smart contracts are deployed on Base mainnet, are publicly verifiable on Basescan, and are open source. You will need ETH on the Base network to vote — you can bridge ETH from Ethereum mainnet or buy directly on Base via Coinbase or other supported exchanges.",
+        "Onchain World Cup is built on Base, an Ethereum Layer 2 network developed by Coinbase. Base offers very low transaction fees (typically under $0.01 per vote), fast confirmations, and the full security guarantees of Ethereum. The platform is currently live on Base Sepolia testnet, with mainnet launching late March 2026. All smart contracts are open source and publicly verifiable on Basescan. You will need ETH on the Base network to vote — you can bridge ETH from Ethereum mainnet or buy directly on Base via Coinbase or other supported exchanges.",
     },
     {
       question: "Where can I follow updates?",

@@ -15,7 +15,9 @@ export function PhasesSection() {
                 <div>
                   <h4 className="mb-2 font-semibold text-primary">Phase 1: Qualification Phase</h4>
                   <ul className="space-y-1 text-sm text-foreground/80">
-                    <li>• Launch: mid-February</li>
+                    <li>• Testnet live: mid-February 2026</li>
+                    <li>• <span className="font-semibold text-primary">Mainnet launch: late March 2026</span></li>
+                    <li>• Qualification runs until mid-April 2026</li>
                     <li>• Fans vote for national teams with ETH</li>
                     <li>• Linear pricing: 0.001 ETH + (vote count × 0.0005 ETH)</li>
                     <li>• No matches yet - pure fan support</li>
@@ -27,6 +29,7 @@ export function PhasesSection() {
                 <div>
                   <h4 className="mb-2 font-semibold text-primary">Phase 2: Onchain World Cup Tournament</h4>
                   <ul className="space-y-1 text-sm text-foreground/80">
+                    <li>• Starts: beginning of May 2026</li>
                     <li>• Group stage + knockout rounds</li>
                     <li>• Matches exist only onchain</li>
                     <li>• Community voting decides winners</li>
@@ -37,7 +40,8 @@ export function PhasesSection() {
                   <h4 className="mb-2 font-semibold text-primary">Final</h4>
                   <ul className="space-y-1 text-sm text-foreground/80">
                     <li>• Onchain World Cup Final</li>
-                    <li>• Ends 1 week before the real World Cup</li>
+                    <li>• Concludes by early June 2026</li>
+                    <li>• Champion crowned before the real World Cup kicks off</li>
                   </ul>
                 </div>
               </div>

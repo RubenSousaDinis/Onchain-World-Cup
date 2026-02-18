@@ -2,27 +2,27 @@ import { Calendar } from "lucide-react"
 
 const milestones = [
   {
-    date: "Mid-February 2026",
-    title: "Qualification Opens",
-    description: "Vote for countries with ETH. Linear pricing in Phase 1.",
+    date: "Late March 2026",
+    title: "Mainnet Launch & Qualification",
+    description: "Real ETH voting opens on Base mainnet. Back your country to earn a spot in the top 48.",
     status: "upcoming" as const,
   },
   {
-    date: "TBD",
+    date: "Mid-April 2026",
     title: "Qualification Ends",
-    description: "Top 48 countries qualify for the tournament.",
+    description: "Voting closes. The 48 most-backed countries advance to the Onchain World Cup.",
     status: "future" as const,
   },
   {
-    date: "Early June 2026",
-    title: "Onchain World Cup Final",
-    description: "1 week before the real World Cup begins.",
+    date: "May – Early June 2026",
+    title: "Onchain World Cup",
+    description: "Group stage and knockout rounds. Community voting decides every match winner.",
     status: "future" as const,
   },
   {
-    date: "June 11 - July 19, 2026",
-    title: "Real World Cup",
-    description: "FIFA World Cup 2026 in North America.",
+    date: "June 11, 2026",
+    title: "Real World Cup Begins",
+    description: "FIFA World Cup 2026 kicks off in North America. Season 2 begins.",
     status: "future" as const,
   },
 ]
@@ -51,7 +51,7 @@ export function TimelineSection() {
             <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-border" />
             <div
               className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-primary transition-all duration-1000"
-              style={{ width: "25%" }}
+              style={{ width: "12.5%" }}
             />
 
             <div className="relative grid grid-cols-4 gap-6">
@@ -65,7 +65,7 @@ export function TimelineSection() {
                         : "border-border bg-background"
                     }`}
                   >
-                    {milestone.status === "upcoming" && (
+                    {(milestone.status === "upcoming") && (
                       <div className="h-3 w-3 animate-pulse rounded-full bg-primary-foreground" />
                     )}
                   </div>
@@ -101,7 +101,7 @@ export function TimelineSection() {
                       : "border-border bg-background"
                   }`}
                 >
-                  {milestone.status === "upcoming" && (
+                  {(milestone.status === "upcoming") && (
                     <div className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground" />
                   )}
                 </div>
@@ -126,7 +126,7 @@ export function TimelineSection() {
         {/* Call to action */}
         <div className="mt-12 text-center">
           <p className="text-lg font-semibold text-primary">
-            Qualification is now open — vote to support your country
+            Mainnet launches late March — be ready to back your country
           </p>
         </div>
       </div>
