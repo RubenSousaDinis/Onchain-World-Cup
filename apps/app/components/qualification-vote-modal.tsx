@@ -36,10 +36,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
   const [showShareModal, setShowShareModal] = useState(false)
-  const [shareData, setShareData] = useState<{votes: number, amount: string} | null>(null)
+  const [shareData, setShareData] = useState<{votes: number, amount: string, countryCode: string} | null>(null)
+  const shareModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [newAchievements, setNewAchievements] = useState<ComputedAchievement[]>([])
   const [votedSuccessfully, setVotedSuccessfully] = useState(false)
-  const lastVoteDataRef = useRef<{votes: number, amount: string} | null>(null)
+  const lastVoteDataRef = useRef<{votes: number, amount: string, countryCode: string} | null>(null)
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -144,7 +145,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return parseFloat(value.toFixed(6)).toString()
   }
 
-  // Reset state when modal opens
+  // Reset state when modal opens or closes
   useEffect(() => {
     if (isOpen) {
       setVoteCount(1)
@@ -159,6 +160,15 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setVotedSuccessfully(false)
       lastVoteDataRef.current = null
       resetWrite()
+    } else {
+      // Clear any pending share modal timer so it can't fire into the next session
+      if (shareModalTimerRef.current) {
+        clearTimeout(shareModalTimerRef.current)
+        shareModalTimerRef.current = null
+      }
+      setShareData(null)
+      setShowShareModal(false)
+      setVotedSuccessfully(false)
     }
   }, [isOpen, resetWrite])
 
@@ -238,7 +248,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     setVoteCount(1)
 
     // Capture vote data for share modal / achievement modal before resetting state
-    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)) }
+    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)), countryCode: country.code }
 
     // Index in background (don't block UI)
     // Transaction has 2 confirmations at this point, should be visible on RPC nodes
@@ -298,7 +308,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               setNewAchievements(unlocked)
             } else {
               setShareData(lastVoteDataRef.current)
-              setTimeout(() => setShowShareModal(true), 300)
+              shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 300)
             }
           }).catch((err) => {
             console.error("[Vote Modal] Error refetching data:", err)
@@ -736,13 +746,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             setNewAchievements([])
             // After dismissing achievements, show share modal with captured vote data
             setShareData(lastVoteDataRef.current)
-            setTimeout(() => setShowShareModal(true), 200)
+            shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 200)
           }}
         />
       )}
 
       {/* Share Modal - shows after successful vote */}
-      {shareData && (
+      {shareData && shareData.countryCode === country?.code && (
         <ShareModal
           isOpen={showShareModal}
           onClose={handleShareClose}
