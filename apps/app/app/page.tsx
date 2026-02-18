@@ -53,22 +53,6 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Compact stats strip — visible, server-rendered */}
-            <div className="border-t border-border/30 px-6 lg:px-8 py-3 flex items-center gap-6 text-xs lg:text-sm text-foreground/70">
-              <span><span className="cm-highlight font-bold">Top 48</span> qualify</span>
-              {stats?.total_votes != null && (
-                <>
-                  <span className="text-border/50">·</span>
-                  <span><span className="cm-highlight font-bold">{stats.total_votes.toLocaleString()}</span> votes cast</span>
-                </>
-              )}
-              {stats?.total_eth != null && (
-                <>
-                  <span className="text-border/50">·</span>
-                  <span><span className="cm-highlight font-bold">{parseFloat(stats.total_eth).toFixed(3)} ETH</span> prize pool</span>
-                </>
-              )}
-            </div>
           </div>
 
           {/* SEO content — indexed by crawlers, invisible to users */}
