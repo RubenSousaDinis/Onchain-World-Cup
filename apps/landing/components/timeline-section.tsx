@@ -60,12 +60,12 @@ export function TimelineSection() {
                   {/* Dot */}
                   <div
                     className={`relative z-10 mb-6 flex h-8 w-8 items-center justify-center rounded-full border-4 ${
-                      milestone.status === "current" || milestone.status === "upcoming"
+                      milestone.status === "upcoming"
                         ? "border-primary bg-primary"
                         : "border-border bg-background"
                     }`}
                   >
-                    {(milestone.status === "current" || milestone.status === "upcoming") && (
+                    {(milestone.status === "upcoming") && (
                       <div className="h-3 w-3 animate-pulse rounded-full bg-primary-foreground" />
                     )}
                   </div>
@@ -74,7 +74,7 @@ export function TimelineSection() {
                   <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg">
                     <div
                       className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
-                        milestone.status === "current" || milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
+                        milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
                       }`}
                     >
                       {milestone.date}
@@ -96,12 +96,12 @@ export function TimelineSection() {
                 {/* Dot */}
                 <div
                   className={`absolute -left-10 top-0 flex h-6 w-6 items-center justify-center rounded-full border-4 ${
-                    milestone.status === "current" || milestone.status === "upcoming"
+                    milestone.status === "upcoming"
                       ? "border-primary bg-primary"
                       : "border-border bg-background"
                   }`}
                 >
-                  {(milestone.status === "current" || milestone.status === "upcoming") && (
+                  {(milestone.status === "upcoming") && (
                     <div className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground" />
                   )}
                 </div>
@@ -110,7 +110,7 @@ export function TimelineSection() {
                 <div className="rounded-lg border border-border bg-card p-6 transition-all hover:border-primary">
                   <div
                     className={`mb-2 text-sm font-semibold uppercase tracking-wide ${
-                      milestone.status === "current" || milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
+                      milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
                     }`}
                   >
                     {milestone.date}
