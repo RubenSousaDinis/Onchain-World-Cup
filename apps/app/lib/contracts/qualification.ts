@@ -35,6 +35,21 @@ export function getQualificationAddress(chainId: number): Address {
   return address as Address
 }
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address
+
+/**
+ * Get the qualification contract address, returning null instead of throwing
+ * when the address is not configured. Use for read hooks that should silently
+ * disable when the contract is unavailable.
+ */
+function getQualificationAddressSafe(chainId: number): Address | null {
+  try {
+    return getQualificationAddress(chainId)
+  } catch {
+    return null
+  }
+}
+
 /**
  * Check if contract is deployed on the current chain
  */
@@ -77,16 +92,16 @@ export function bytes8ToCountryCode(bytes: string): string {
  * Get the current vote price for a country
  */
 export function useVotePrice(chainId: number, countryCode: string) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "votePrice",
     args: [countryBytes],
     query: {
-      enabled: !!countryCode,
+      enabled: !!address && !!countryCode,
     },
   })
 }
@@ -95,16 +110,16 @@ export function useVotePrice(chainId: number, countryCode: string) {
  * Calculate the total cost for multiple votes
  */
 export function useCalculateVoteCost(chainId: number, countryCode: string, votes: number) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVoteCost",
     args: [countryBytes, BigInt(votes)],
     query: {
-      enabled: !!countryCode && votes > 0,
+      enabled: !!address && !!countryCode && votes > 0,
     },
   })
 }
@@ -113,16 +128,16 @@ export function useCalculateVoteCost(chainId: number, countryCode: string, votes
  * Get the current vote count for a country
  */
 export function useCountryVotes(chainId: number, countryCode: string) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "countryVotes",
     args: [countryBytes],
     query: {
-      enabled: !!countryCode,
+      enabled: !!address && !!countryCode,
     },
   })
 }
@@ -131,16 +146,16 @@ export function useCountryVotes(chainId: number, countryCode: string) {
  * Get the total ETH collected for a country
  */
 export function useCountryETH(chainId: number, countryCode: string) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getETHPerCountry",
     args: [countryBytes],
     query: {
-      enabled: !!countryCode,
+      enabled: !!address && !!countryCode,
     },
   })
 }
@@ -149,16 +164,16 @@ export function useCountryETH(chainId: number, countryCode: string) {
  * Get user's votes for a specific country
  */
 export function useUserVotes(chainId: number, userAddress: Address | undefined, countryCode: string) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "userVotes",
     args: [userAddress!, countryBytes],
     query: {
-      enabled: !!userAddress && !!countryCode,
+      enabled: !!address && !!userAddress && !!countryCode,
     },
   })
 }
@@ -167,15 +182,15 @@ export function useUserVotes(chainId: number, userAddress: Address | undefined, 
  * Get user's votes across all countries
  */
 export function useGetUserVotes(chainId: number, userAddress: Address | undefined) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getUserVotes",
     args: [userAddress!],
     query: {
-      enabled: !!userAddress,
+      enabled: !!address && !!userAddress,
     },
   })
 }
@@ -184,16 +199,16 @@ export function useGetUserVotes(chainId: number, userAddress: Address | undefine
  * Check if a country is qualified
  */
 export function useIsQualified(chainId: number, countryCode: string) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
   const countryBytes = countryCodeToBytes8(countryCode)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "isQualified",
     args: [countryBytes],
     query: {
-      enabled: !!countryCode,
+      enabled: !!address && !!countryCode,
     },
   })
 }
@@ -202,12 +217,13 @@ export function useIsQualified(chainId: number, countryCode: string) {
  * Check if qualification is finalized
  */
 export function useQualificationFinalized(chainId: number) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationFinalized",
+    query: { enabled: !!address },
   })
 }
 
@@ -215,12 +231,13 @@ export function useQualificationFinalized(chainId: number) {
  * Get qualification start time
  */
 export function useQualificationStartTime(chainId: number) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationStartTime",
+    query: { enabled: !!address },
   })
 }
 
@@ -228,12 +245,13 @@ export function useQualificationStartTime(chainId: number) {
  * Get qualification end time
  */
 export function useQualificationEndTime(chainId: number) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationEndTime",
+    query: { enabled: !!address },
   })
 }
 
@@ -300,12 +318,13 @@ export function useClaimable(chainId: number, userAddress: Address | undefined) 
  * Check if contract is paused
  */
 export function usePaused(chainId: number) {
-  const address = getQualificationAddress(chainId)
+  const address = getQualificationAddressSafe(chainId)
 
   return useReadContract({
-    address,
+    address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "paused",
+    query: { enabled: !!address },
   })
 }
 
