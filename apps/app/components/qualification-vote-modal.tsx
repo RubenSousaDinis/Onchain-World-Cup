@@ -151,8 +151,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setVoteCount(1)
       setIsIndexing(false)
       setIsProcessing(false)
-      processedTxRef.current = null
-      indexedTxRef.current = null
+      // Do NOT null-out processedTxRef / indexedTxRef here.
+      // wagmi's hash is still set to the previous tx on the first render after open.
+      // Keeping refs pointed at the old hash ensures the dedup guards in the
+      // hash-processing and confirmation effects fire correctly and return early,
+      // preventing re-indexing and a stale share modal appearing for the new country.
+      // The refs will naturally diverge once resetWrite() clears hash and a new
+      // transaction is submitted.
       hasVotedRef.current = false
       setNewAchievements([])
       setShareData(null)
