@@ -184,13 +184,13 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape" && isOpen && !isPending && !isProcessing) {
         onClose()
       }
     }
     window.addEventListener("keydown", handleEscape as any)
     return () => window.removeEventListener("keydown", handleEscape as any)
-  }, [isOpen, onClose])
+  }, [isOpen, isPending, isProcessing, onClose])
 
   // Debug: Log state changes
   useEffect(() => {
@@ -509,15 +509,23 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg cm-panel rounded-sm border-2 border-accent/30 overflow-hidden">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        onClick={() => { if (!isPending && !isProcessing) onClose() }}
+      >
+      <div
+        className="relative w-full max-w-lg cm-panel rounded-sm border-2 border-accent/30 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-secondary/40 p-4 border-b-2 border-accent/30 flex items-center justify-between">
           <h2 className="text-lg font-bold cm-highlight">Vote for Qualification</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-accent/20 rounded transition-colors"
+            disabled={isPending || isProcessing}
+            className="p-1 hover:bg-accent/20 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Close"
+            title={isPending || isProcessing ? "Please wait until your transaction is processed" : undefined}
           >
             <X className="w-5 h-5" />
           </button>
