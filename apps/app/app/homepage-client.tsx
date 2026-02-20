@@ -292,7 +292,7 @@ export function HomePageClient() {
         >
           <div className="space-y-3">
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              <div className="text-center py-8 text-muted-foreground" role="status" aria-live="polite">Loading...</div>
             ) : topCountries.length > 0 ? (
               topCountries.map((country) => (
                 <TopListItem
@@ -378,7 +378,7 @@ export function HomePageClient() {
         >
           <div className="space-y-3">
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading...</div>
+              <div className="text-center py-8 text-muted-foreground" role="status" aria-live="polite">Loading...</div>
             ) : (summaryData?.topVoters || []).length > 0 ? (
               (summaryData?.topVoters || []).map((voter) => {
                 const displayName =

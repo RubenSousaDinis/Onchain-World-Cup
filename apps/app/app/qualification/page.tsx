@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment, useRef, useMemo } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2 } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
@@ -341,9 +341,9 @@ export default function QualificationPage() {
       case "down":
         return <TrendingDown className="w-4 h-4 text-red-500" />
       case "critical-up":
-        return <TrendingUp className="w-4 h-4 text-green-500 animate-pulse" />
+        return <TrendingUp className="w-4 h-4 text-green-500 animate-pulse [animation-iteration-count:5]" />
       case "critical-down":
-        return <TrendingDown className="w-4 h-4 text-red-500 animate-pulse" />
+        return <TrendingDown className="w-4 h-4 text-red-500 animate-pulse [animation-iteration-count:5]" />
       default:
         return <Minus className="w-4 h-4 text-muted-foreground" />
     }
@@ -368,15 +368,16 @@ export default function QualificationPage() {
                 <h1 className="text-2xl lg:text-4xl font-bold mb-2">
                   <span className="cm-highlight">World Cup 2026</span>{" "}Qualification
                 </h1>
-                <p className="text-xs text-muted-foreground mt-2 mb-2 border border-border/50 rounded-sm px-3 py-2 bg-card/30 max-w-xl">
-                  ⚠️ Voting requires ETH on Base. Transactions are irreversible. Only vote with ETH you can afford to lose.{" "}
-                  <Link href="https://onchainworldcup.xyz/terms" className="underline hover:text-foreground" target="_blank" rel="noopener noreferrer">Terms</Link>
-                </p>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2 mb-2 border border-border/50 rounded-sm px-3 py-2 bg-card/30 max-w-xl">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  <span>Voting requires ETH on Base. Transactions are irreversible. Only vote with ETH you can afford to lose.{" "}
+                  <Link href="https://onchainworldcup.xyz/terms" className="underline hover:text-foreground" target="_blank" rel="noopener noreferrer">Terms</Link></span>
+                </div>
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
               </div>
               <button
                 onClick={() => setShowShareModal(true)}
-                className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0"
+                className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 flex-shrink-0"
                 aria-label="Share leaderboard"
               >
                 <Share2 className="w-4 h-4" />
@@ -405,7 +406,7 @@ export default function QualificationPage() {
         )}
 
         {/* Prize Pool - Prominent Display */}
-        <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-all duration-300 ${prizePoolUpdating ? 'scale-105 border-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
+        <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-[box-shadow] duration-300 ${prizePoolUpdating ? 'shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
           <div className="bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
               {/* Total Prize Pool */}
@@ -477,7 +478,7 @@ export default function QualificationPage() {
 
         <div className="mb-4 lg:mb-6">
           <div className="cm-panel rounded-sm p-3 lg:p-4 flex items-center gap-3 max-w-md">
-            <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <input
               type="text"
               placeholder="Search countries..."
@@ -491,15 +492,15 @@ export default function QualificationPage() {
         {/* Legend */}
         <div className="mb-4 lg:mb-6 grid grid-cols-1 lg:grid-cols-3 gap-3">
           <div className="cm-panel rounded-sm p-3 bg-green-500/5 border border-green-500/20">
-            <div className="text-sm lg:text-base font-bold text-green-500 mb-1">✓ QUALIFIED</div>
+            <div className="flex items-center gap-1.5 text-sm lg:text-base font-bold text-green-500 mb-1"><CheckCircle2 className="w-4 h-4" /> QUALIFIED</div>
             <div className="text-sm lg:text-base text-muted-foreground">Ranks 1-48 advance to tournament</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-yellow-500/5 border border-yellow-500/20">
-            <div className="text-sm lg:text-base font-bold text-yellow-500 mb-1">⚠ AT RISK</div>
+            <div className="flex items-center gap-1.5 text-sm lg:text-base font-bold text-yellow-500 mb-1"><AlertTriangle className="w-4 h-4" /> AT RISK</div>
             <div className="text-sm lg:text-base text-muted-foreground">Ranks 46-50 need support</div>
           </div>
           <div className="cm-panel rounded-sm p-3 bg-red-500/5 border border-red-500/20">
-            <div className="text-sm lg:text-base font-bold text-red-500 mb-1">✗ ELIMINATED</div>
+            <div className="flex items-center gap-1.5 text-sm lg:text-base font-bold text-red-500 mb-1"><XCircle className="w-4 h-4" /> ELIMINATED</div>
             <div className="text-sm lg:text-base text-muted-foreground">Below rank 48 - not qualified</div>
           </div>
         </div>
@@ -559,6 +560,8 @@ export default function QualificationPage() {
                               !isQualified && !isAtRisk ? "bg-red-500/5" : ""
                             }`}
                             onClick={() => handleVote(country)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleVote(country) } }}
+                            tabIndex={0}
                             style={{ cursor: "pointer" }}
                           >
                             <td className="p-2 lg:p-3">

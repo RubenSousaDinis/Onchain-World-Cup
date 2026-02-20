@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react"
 
 export function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center" role="status" aria-live="polite">
       <div className="text-center space-y-4">
         <Loader2 className="w-12 h-12 animate-spin text-accent mx-auto" />
         <p className="text-sm text-muted-foreground">Loading...</p>
@@ -54,7 +54,7 @@ export function ButtonLoader() {
 
 export function InlineLoader({ text = "Loading..." }: { text?: string }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status" aria-live="polite">
       <Loader2 className="w-4 h-4 animate-spin" />
       <span>{text}</span>
     </div>
