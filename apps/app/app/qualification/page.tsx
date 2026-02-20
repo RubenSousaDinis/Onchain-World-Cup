@@ -533,26 +533,14 @@ export default function QualificationPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredCountries.slice(0, displayedCountries).map((country) => {
-                      const isCutoff = country.rank === 48
+                    filteredCountries.slice(0, displayedCountries).map((country, idx, arr) => {
                       const isAtRisk = country.rank >= 46 && country.rank <= 50
                       const isQualified = country.rank <= 48
+                      const nextCountry = arr[idx + 1]
+                      const isCutoff = isQualified && (!nextCountry || nextCountry.rank > 48)
 
                       return (
                         <Fragment key={country.rank}>
-                          {isCutoff && (
-                            <tr>
-                              <td colSpan={6} className="p-0">
-                                <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
-                                  <div className="text-sm lg:text-base font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
-                                    <span className="hidden lg:inline">━━━━━</span>
-                                    Qualification Cutoff (Top 48)
-                                    <span className="hidden lg:inline">━━━━━</span>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
                           <tr
                             className={`border-b border-border hover:bg-accent/5 transition-colors ${
                               isAtRisk ? "bg-yellow-500/10" : ""
@@ -602,6 +590,19 @@ export default function QualificationPage() {
                               </div>
                             </td>
                           </tr>
+                          {isCutoff && (
+                            <tr>
+                              <td colSpan={6} className="p-0">
+                                <div className="relative h-8 bg-accent/20 border-y-2 border-accent flex items-center justify-center">
+                                  <div className="text-sm lg:text-base font-bold cm-highlight uppercase tracking-wider flex items-center gap-2">
+                                    <span className="hidden lg:inline">━━━━━</span>
+                                    Qualification Cutoff (Top 48)
+                                    <span className="hidden lg:inline">━━━━━</span>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
                         </Fragment>
                       )
                     })
