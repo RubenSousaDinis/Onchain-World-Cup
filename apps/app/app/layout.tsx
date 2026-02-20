@@ -29,7 +29,7 @@ const barlowCondensed = Barlow_Condensed({
 // Generate Farcaster Mini App metadata using utility
 const miniAppMetadata = generateMiniAppMetadata({
   title: "Onchain World Cup 2026 | Vote with ETH on Base Network",
-  description: "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+  description: "Onchain World Cup — vote on World Cup 2026 qualification with ETH on Base. Back your country, earn rewards. Dynamic pricing rewards early voters. Top 48 of 192 nations qualify.",
   buttonTitle: "⚽ Vote Now",
 })
 
