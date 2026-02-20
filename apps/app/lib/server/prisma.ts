@@ -14,16 +14,24 @@ const globalForPrisma = globalThis as unknown as {
 
 /**
  * Append connection pooling parameters to the database URL for serverless environments.
- * Vercel spawns many function instances; without a cap each opens its own pool and
- * can exhaust PostgreSQL's max_connections.
- * Supabase's pgbouncer (port 6543) should be used as the DATABASE_URL so these
- * per-instance connections are multiplexed into a bounded server-side pool.
+ *
+ * DATABASE_URL should point to Supabase's pgbouncer pooler (port 6543), not the direct
+ * PostgreSQL connection (port 5432). pgbouncer sits in front of PostgreSQL and multiplexes
+ * all Vercel function instances into a small fixed pool of actual DB connections.
+ *
+ * With pgbouncer in the chain, connection_limit=1 is correct: each serverless instance
+ * holds just 1 connection slot and pgbouncer does the real pooling server-side.
+ * Without pgbouncer, every Vercel instance × its pool size = total PostgreSQL connections,
+ * which can easily exhaust Supabase's max_connections under load.
+ *
+ * DATABASE_URL (queries) → port 6543 (pgbouncer) → PostgreSQL
+ * DIRECT_URL  (migrations) → port 5432 (direct)  → PostgreSQL
  */
 function buildDatasourceUrl(): string | undefined {
   const url = process.env.DATABASE_URL
   if (!url || url.includes("connection_limit")) return url
   const sep = url.includes("?") ? "&" : "?"
-  return `${url}${sep}connection_limit=5&pool_timeout=20`
+  return `${url}${sep}connection_limit=1&pool_timeout=20`
 }
 
 export const prisma =
