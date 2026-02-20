@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { isAuthenticated } from '@/lib/api-auth'
 
 /**
  * GET /api/matches/[id]
@@ -65,7 +66,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // TODO: Add authentication/authorization check
+    if (!isAuthenticated(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const supabase = getSupabaseClient()
     const { id } = await params
     const body = await request.json()
