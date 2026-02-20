@@ -1,6 +1,10 @@
+import { Button } from "./ui/button"
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.onchainworldcup.xyz"
+
 export function HowVotingWorksSection() {
   return (
-    <section className="border-b border-border bg-card py-20">
+    <section id="how-voting-works" className="border-b border-border bg-card py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-12 text-center text-4xl font-bold text-primary">How Voting Works</h2>
@@ -80,6 +84,16 @@ export function HowVotingWorksSection() {
           <div className="mt-12 text-center">
             <p className="text-xl font-bold text-accent">No admin control.</p>
             <p className="text-xl font-bold text-accent">No hidden rules.</p>
+          </div>
+
+          <div className="mt-10 text-center">
+            <Button
+              size="lg"
+              className="bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground hover:bg-accent transition-colors duration-200"
+              asChild
+            >
+              <a href={appUrl}>Vote Now</a>
+            </Button>
           </div>
         </div>
       </div>

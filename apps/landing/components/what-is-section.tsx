@@ -1,3 +1,5 @@
+import { X, Check } from "lucide-react"
+
 export function WhatIsSection() {
   return (
     <section id="how-it-works" className="border-b border-border py-20">
@@ -12,15 +14,15 @@ export function WhatIsSection() {
                   <p className="mb-3 text-xl font-semibold text-primary">There are:</p>
                   <div className="space-y-2 text-base">
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✗</span>
+                      <X className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>No odds</span>
                     </p>
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✗</span>
+                      <X className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>No predictions</span>
                     </p>
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✗</span>
+                      <X className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>No bookmakers</span>
                     </p>
                   </div>
@@ -29,15 +31,15 @@ export function WhatIsSection() {
                   <p className="mb-3 text-xl font-semibold text-primary">Instead:</p>
                   <div className="space-y-2 text-base">
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✓</span>
+                      <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>Fans vote for the national teams they support</span>
                     </p>
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✓</span>
+                      <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>Teams advance based on community backing</span>
                     </p>
                     <p className="flex items-start gap-3">
-                      <span className="text-accent">✓</span>
+                      <Check className="h-4 w-4 flex-shrink-0 mt-0.5 text-accent" aria-hidden="true" />
                       <span>The most supported team becomes the <span className="cm-highlight font-semibold">Onchain World Cup Champion</span></span>
                     </p>
                   </div>

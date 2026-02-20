@@ -11,7 +11,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2" aria-label="Onchain World Cup home">
-            <Image src="/logo.png" alt="Onchain World Cup logo" width={32} height={32} priority className="h-8 w-8" />
+            <Image src="/logo.jpg" alt="Onchain World Cup logo" width={32} height={32} priority className="h-8 w-8" />
             <span className="text-xl font-bold text-primary" aria-hidden="true">Onchain World Cup</span>
           </Link>
           <nav className="hidden gap-6 md:flex items-center" aria-label="Main navigation">
@@ -44,7 +44,7 @@ export function Header() {
             href={appUrl}
             className="md:hidden inline-flex items-center bg-primary text-primary-foreground px-3 py-3 rounded-sm font-semibold text-sm hover:bg-accent transition-colors min-h-[48px]"
           >
-            App →
+            Launch App
           </a>
           <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
