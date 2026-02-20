@@ -11,6 +11,8 @@ import {
 } from "@/lib/contracts/qualification"
 import { useMatchDetails } from "@/lib/contracts/match-admin"
 import { getCountryByCode } from "@/lib/countries"
+import { getAddressExplorerUrl, getTxExplorerUrl } from "@/lib/admin"
+import { getQualificationAddress, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 
 interface MatchRow {
   id: string
@@ -34,7 +36,7 @@ interface VoteRow {
 
 const PAGE_SIZE = 20
 
-function MatchOnchainRow({ match }: { match: MatchRow }) {
+function MatchOnchainRow({ match, chainId }: { match: MatchRow; chainId: number }) {
   const address = match.contract_address as Address | undefined
   const { data, isLoading } = useMatchDetails(address || undefined)
 
@@ -57,6 +59,20 @@ function MatchOnchainRow({ match }: { match: MatchRow }) {
       <td className="px-3 py-2 text-sm">
         {isLoading ? "..." : isFinalized != null ? (isFinalized ? "Yes" : "No") : "N/A"}
       </td>
+      <td className="px-3 py-2 text-sm font-mono">
+        {match.contract_address ? (
+          <a
+            href={getAddressExplorerUrl(chainId, match.contract_address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--highlight-yellow)] hover:underline"
+          >
+            {truncateAddress(match.contract_address)}
+          </a>
+        ) : (
+          "—"
+        )}
+      </td>
     </tr>
   )
 }
@@ -76,6 +92,10 @@ export function OverviewTab() {
   const [votesTotal, setVotesTotal] = useState(0)
   const [votesPage, setVotesPage] = useState(0)
 
+  // Daily ETH stats
+  const [dailyEth, setDailyEth] = useState<{ day: string; total_eth: string; vote_count: number }[]>([])
+  const [dailyEthLoading, setDailyEthLoading] = useState(true)
+
   const { data: finalized } = useQualificationFinalized(chainId)
   const { data: endTime } = useQualificationEndTime(chainId)
   const { data: prizePool } = useTotalPrizePool(chainId)
@@ -87,6 +107,12 @@ export function OverviewTab() {
       .then((res) => setMatches(res.data || []))
       .catch(console.error)
       .finally(() => setMatchesLoading(false))
+
+    fetch("/api/admin/stats/daily-eth")
+      .then((r) => r.json())
+      .then((res) => setDailyEth(res.data || []))
+      .catch(console.error)
+      .finally(() => setDailyEthLoading(false))
   }, [])
 
   const fetchVotes = useCallback((page: number) => {
@@ -139,6 +165,53 @@ export function OverviewTab() {
             </span>
           </div>
         </div>
+        {isQualificationContractAvailable(chainId) && (
+          <p className="text-xs text-muted-foreground mt-3 font-mono">
+            <a
+              href={getAddressExplorerUrl(chainId, getQualificationAddress(chainId))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--highlight-yellow)] hover:underline"
+            >
+              View on BaseScan
+            </a>
+          </p>
+        )}
+      </div>
+
+      {/* Daily ETH */}
+      <div className="cm-panel p-4">
+        <h3 className="cm-section-header px-3 py-2 mb-4">Daily ETH Spent</h3>
+        {dailyEthLoading ? (
+          <p className="text-muted-foreground text-sm p-4">Loading...</p>
+        ) : dailyEth.length === 0 ? (
+          <p className="text-muted-foreground text-sm p-4">No data yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-xs text-muted-foreground border-b border-border/30">
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2">ETH Spent</th>
+                  <th className="px-3 py-2">Votes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dailyEth.map((row) => (
+                  <tr key={row.day} className="border-b border-border/10">
+                    <td className="px-3 py-2 text-sm">
+                      {new Date(row.day).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-2 text-sm cm-highlight">
+                      {Number(row.total_eth).toFixed(6)} ETH
+                    </td>
+                    <td className="px-3 py-2 text-sm">{row.vote_count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Matches table */}
@@ -158,11 +231,12 @@ export function OverviewTab() {
                   <th className="px-3 py-2">Prize Pool</th>
                   <th className="px-3 py-2">Phase</th>
                   <th className="px-3 py-2">Finalized</th>
+                  <th className="px-3 py-2">Contract</th>
                 </tr>
               </thead>
               <tbody>
                 {matches.map((m) => (
-                  <MatchOnchainRow key={m.id} match={m} />
+                  <MatchOnchainRow key={m.id} match={m} chainId={chainId} />
                 ))}
               </tbody>
             </table>
@@ -218,7 +292,7 @@ export function OverviewTab() {
                       <td className="px-3 py-2 text-sm font-mono">
                         {v.tx_hash ? (
                           <a
-                            href={`https://sepolia.basescan.org/tx/${v.tx_hash}`}
+                            href={getTxExplorerUrl(chainId, v.tx_hash)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[var(--highlight-yellow)] hover:underline"
