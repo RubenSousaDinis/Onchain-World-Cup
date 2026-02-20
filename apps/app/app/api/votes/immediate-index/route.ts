@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { createPublicClient, http, parseEther, formatEther } from "viem"
+import { createPublicClient, http } from "viem"
 import { base, baseSepolia } from "viem/chains"
-import { revalidateTag } from "next/cache"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
@@ -102,9 +101,14 @@ export async function POST(request: NextRequest) {
 
     // 6. Verify transaction exists on blockchain
     const chain = chainId === 8453 ? base : baseSepolia
+    // Use the configured RPC URL to avoid rate-limits on the default public endpoint
+    // under concurrent load (100 users voting simultaneously = 100 concurrent RPC calls)
+    const rpcUrl = chainId === 8453
+      ? process.env.BASE_MAINNET_RPC_URL
+      : process.env.NEXT_PUBLIC_BASE_RPC_URL
     const publicClient = createPublicClient({
       chain,
-      transport: http(),
+      transport: http(rpcUrl || undefined),
     })
 
     let transaction
@@ -208,13 +212,15 @@ export async function POST(request: NextRequest) {
       })
 
       if (existingCountry) {
-        await tx.countryStats.update({
-          where: { countryCode },
-          data: {
-            totalVotes: { increment: parseInt(voteCount.toString()) },
-            totalEth: formatEther(parseEther(existingCountry.totalEth) + parseEther(totalCostEth)),
-          },
-        })
+        // Use a single atomic SQL UPDATE so concurrent votes for the same country
+        // never overwrite each other's ETH value (read-modify-write race condition)
+        await tx.$executeRaw`
+          UPDATE country_stats
+          SET
+            total_votes = total_votes + ${parseInt(voteCount.toString())},
+            total_eth   = (total_eth::numeric + ${totalCostEth}::numeric)::text
+          WHERE country_code = ${countryCode}
+        `
       } else {
         await tx.countryStats.create({
           data: {
@@ -232,25 +238,38 @@ export async function POST(request: NextRequest) {
       })
 
       if (existingStats) {
-        // Count unique countries voted for
-        const uniqueCountries = await tx.qualificationVote.findMany({
-          where: { voterAddress: walletAddress.toLowerCase() },
-          select: { countryCode: true },
-          distinct: ["countryCode"],
+        // O(1) check: did this user already vote for this country before this tx?
+        // Uses NOT txHash to exclude the vote record we just created above.
+        // If no prior vote exists we increment countriesVotedFor by 1 atomically.
+        const priorVoteForCountry = await tx.qualificationVote.findFirst({
+          where: {
+            voterAddress: walletAddress.toLowerCase(),
+            countryCode,
+            NOT: { txHash },
+          },
+          select: { id: true },
         })
 
-        await tx.userStat.update({
-          where: { walletAddress: walletAddress.toLowerCase() },
-          data: {
-            qualificationVotes: { increment: parseInt(voteCount.toString()) },
-            qualificationSpentEth: formatEther(parseEther(existingStats.qualificationSpentEth) + parseEther(totalCostEth)),
-            totalVotes: { increment: parseInt(voteCount.toString()) },
-            totalSpentEth: formatEther(parseEther(existingStats.totalSpentEth) + parseEther(totalCostEth)),
-            countriesVotedFor: uniqueCountries.length,
-            // Backfill ENS if it wasn't saved before
-            ...(ensName ? { ensName } : {}),
-          },
-        })
+        // Single atomic SQL UPDATE — ETH fields use DB-level addition to prevent
+        // lost-update race conditions when multiple votes arrive concurrently
+        await tx.$executeRaw`
+          UPDATE user_stats
+          SET
+            qualification_votes    = qualification_votes    + ${parseInt(voteCount.toString())},
+            qualification_spent_eth = (qualification_spent_eth::numeric + ${totalCostEth}::numeric)::text,
+            total_votes            = total_votes            + ${parseInt(voteCount.toString())},
+            total_spent_eth        = (total_spent_eth::numeric + ${totalCostEth}::numeric)::text,
+            countries_voted_for    = countries_voted_for   + ${priorVoteForCountry ? 0 : 1}
+          WHERE wallet_address = ${walletAddress.toLowerCase()}
+        `
+
+        // ENS backfill is a rare, non-critical update — keep as separate ORM call
+        if (ensName) {
+          await tx.userStat.update({
+            where: { walletAddress: walletAddress.toLowerCase() },
+            data: { ensName },
+          })
+        }
       } else {
         await tx.userStat.create({
           data: {
@@ -281,10 +300,10 @@ export async function POST(request: NextRequest) {
 
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
 
-      // Revalidate Next.js caches to show updated data immediately
-      revalidateTag("qualification-countries", "default")
-      revalidateTag("qualification-summary", "default")
-      console.log("[Immediate Index] Cache revalidated")
+      // Cache revalidation intentionally removed: under concurrent load (100 votes at once)
+      // firing revalidateTag on every vote triggers 100 expensive DB re-aggregations in
+      // rapid succession. API routes already have a 300s TTL which is acceptable staleness.
+      // The voting user receives their result immediately from this response.
 
       return NextResponse.json(
         {
