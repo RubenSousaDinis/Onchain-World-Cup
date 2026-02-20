@@ -8,7 +8,7 @@ import {
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = 'edge'
+export const revalidate = 300
 export const alt = 'World Cup 2026 Qualification Leaderboard - Top 3 Countries. Vote now with ETH on Base Network. Top 48 qualify!'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

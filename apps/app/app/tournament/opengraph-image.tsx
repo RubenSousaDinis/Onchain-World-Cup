@@ -7,7 +7,7 @@ import {
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = 'edge'
+export const revalidate = false // fully static — pre-built at deploy time
 export const alt = 'Onchain World Cup 2026 — Tournament. 48 qualified nations compete in group stage and knockout rounds. Vote on Base.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

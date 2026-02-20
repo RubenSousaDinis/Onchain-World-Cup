@@ -7,7 +7,7 @@ import {
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = 'edge'
+export const revalidate = 300
 export const alt = 'Onchain World Cup 2026 Live Statistics — Total votes, ETH raised, and countries competing on Base.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE

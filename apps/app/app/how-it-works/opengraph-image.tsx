@@ -7,7 +7,7 @@ import {
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = 'edge'
+export const revalidate = false // fully static — pre-built at deploy time
 export const alt = 'How Onchain World Cup Works — Connect wallet, vote with ETH, earn prizes. 3 simple steps on Base.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE
