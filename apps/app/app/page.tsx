@@ -47,9 +47,15 @@ export default async function HomePage() {
                 <p className="text-base lg:text-xl text-foreground/90 mb-2">
                   The World Cup, decided onchain.
                 </p>
-                <p className="text-sm lg:text-base text-foreground/70">
+                <p className="text-sm lg:text-base text-foreground/70 mb-5">
                   Vote with ETH on Base network • Community determines qualification • Winners share prize pool
                 </p>
+                <a
+                  href="/qualification"
+                  className="inline-flex items-center gap-2 cm-nav-tab px-5 py-2.5 rounded-sm font-bold uppercase text-sm tracking-wide hover:scale-[1.02] transition-transform"
+                >
+                  ⚽ Vote Now
+                </a>
               </div>
             </div>
 
