@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const borderColor = rarityColors[rarity] ?? rarityColors.common
     const gradient = rarityGradients[rarity] ?? rarityGradients.common
-    const logoSrc = new URL('/logo.png', request.url).href
+    const logoSrc = new URL('/logo.jpg', request.url).href
 
     const imageResponse = new ImageResponse(
       (

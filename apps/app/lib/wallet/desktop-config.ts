@@ -60,7 +60,7 @@ export const desktopWalletModal = createAppKit({
     name: "Onchain World Cup",
     description: "Vote on World Cup 2026 matches with ETH on Base network",
     url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
-    icons: ["https://app.onchainworldcup.xyz/logo.png"],
+    icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
   },
   features: {
     analytics: true,

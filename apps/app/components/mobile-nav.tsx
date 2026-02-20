@@ -56,7 +56,7 @@ export function MobileNav() {
               >
                 {item.isLogo ? (
                   <div className="w-6 h-6 rounded-sm bg-primary flex items-center justify-center overflow-hidden pointer-events-none shrink-0">
-                    <Image src="/logo.png" alt="Onchain World Cup logo" width={24} height={24} priority className="w-full h-full object-contain p-0.5" />
+                    <Image src="/logo.jpg" alt="Onchain World Cup logo" width={24} height={24} priority className="w-full h-full object-contain p-0.5" />
                   </div>
                 ) : (
                   Icon && <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -94,7 +94,7 @@ export function MobileNav() {
             >
               {isFrameContext && pfpUrl ? (
                 <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
-                  <img src={pfpUrl} alt="" className="w-full h-full object-cover" />
+                  <img src={pfpUrl} alt={username ? `${username} profile` : "Profile"} className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <Wallet className="w-5 h-5 shrink-0" aria-hidden="true" />

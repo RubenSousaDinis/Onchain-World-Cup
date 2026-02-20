@@ -70,7 +70,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
 
   // Construct full URLs
   const baseUrl = appDomain.startsWith('http') ? appDomain : `https://${appDomain}`
-  const icon = iconUrl || `${baseUrl}/logo.png`
+  const icon = iconUrl || `${baseUrl}/logo.jpg`
   const splash = splashImageUrl || `${baseUrl}/splash_social.png`
   const home = baseUrl
   const webhook = webhookUrl || `${baseUrl}/api/farcaster/webhook`

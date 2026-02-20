@@ -63,7 +63,7 @@ export function MilestoneNFTCard({ title, description, icon, rarity, unlockedAt,
           <div className="text-xs text-white/70 text-center">Unlocked {unlockedAt}</div>
           <div className="text-xs font-mono text-white/50 text-center truncate">{address}</div>
           <div className="flex justify-center pt-1">
-            <img src="/logo.svg" alt="Onchain World Cup" className="h-8 w-auto opacity-80" />
+            <img src="/logo.jpg" alt="Onchain World Cup" className="h-8 w-auto opacity-80" />
           </div>
         </div>
       </div>

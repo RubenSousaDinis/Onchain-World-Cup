@@ -1,0 +1,1717 @@
+{
+  "homepage": {
+    "url": "https://app.onchainworldcup.xyz/",
+    "viewports": {
+      "desktop": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/homepage_desktop.png",
+        "meta": {
+          "title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "canonical": null,
+          "meta_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "og_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "og_type": null,
+          "og_url": null,
+          "twitter_card": "summary_large_image",
+          "twitter_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "twitter_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Onchain World Cup",
+              "above_fold": true
+            },
+            {
+              "tag": "H2",
+              "text": "Qualification Active",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Top 5 Countries",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "How It Works",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Top Voters",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Quick Actions",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Early Voting Advantage",
+              "above_fold": false
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "https://i.imgur.com/OCqCnqh.jpg",
+              "alt": "rubendinis",
+              "width": 3000,
+              "height": 2000,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 7,
+              "rect_h": 22,
+              "rect_w": 22
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 826,
+              "rect_h": 52,
+              "rect_w": 71
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 189,
+              "rect_h": 18,
+              "rect_w": 18
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 702,
+              "rect_h": 18,
+              "rect_w": 39
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 695,
+              "rect_h": 29,
+              "rect_w": 61
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 1440,
+          "window_inner_width": 1440,
+          "viewport_height": 900,
+          "page_url": "https://app.onchainworldcup.xyz/"
+        }
+      },
+      "mobile": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/homepage_mobile.png",
+        "meta": {
+          "title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "canonical": null,
+          "meta_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "og_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "og_type": null,
+          "og_url": null,
+          "twitter_card": "summary_large_image",
+          "twitter_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "twitter_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Onchain World Cup",
+              "above_fold": true
+            },
+            {
+              "tag": "H2",
+              "text": "Qualification Active",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Top 5 Countries",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "How It Works",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Top Voters",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Quick Actions",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Early Voting Advantage",
+              "above_fold": false
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "https://i.imgur.com/OCqCnqh.jpg",
+              "alt": "rubendinis",
+              "width": 3000,
+              "height": 2000,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 14,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 758,
+              "rect_h": 48,
+              "rect_w": 51
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 124,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 64
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 375,
+          "window_inner_width": 375,
+          "viewport_height": 812,
+          "page_url": "https://app.onchainworldcup.xyz/"
+        }
+      }
+    }
+  },
+  "qualification": {
+    "url": "https://app.onchainworldcup.xyz/qualification",
+    "viewports": {
+      "desktop": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/qualification_desktop.png",
+        "meta": {
+          "title": "Qualification Leaderboard | Onchain World Cup 2026",
+          "canonical": null,
+          "meta_description": "Vote for your country in World Cup 2026 qualification with ETH on Base Network. Top 48 countries qualify. Early voters get better rates with dynamic pricing.",
+          "og_title": "World Cup 2026 Qualification - Top 3 Countries",
+          "og_description": "Vote now with ETH on Base Network. Support your country in qualification voting. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/qualification/opengraph-image?3f5225d2ceb8e091",
+          "og_type": "website",
+          "og_url": "https://app.onchainworldcup.xyz/qualification",
+          "twitter_card": "summary_large_image",
+          "twitter_title": "World Cup 2026 Qualification Leaderboard",
+          "twitter_image": "https://app.onchainworldcup.xyz/qualification/opengraph-image?3f5225d2ceb8e091",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Onchain World Cup",
+              "above_fold": true
+            },
+            {
+              "tag": "H2",
+              "text": "Qualification Phase",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Total Prize Pool",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Qualification Ends In",
+              "above_fold": true
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 7,
+              "rect_h": 22,
+              "rect_w": 22
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 826,
+              "rect_h": 52,
+              "rect_w": 71
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "Share",
+              "above_fold": true,
+              "rect_top": 91,
+              "rect_h": 34,
+              "rect_w": 79
+            },
+            {
+              "text": "VOTE",
+              "above_fold": true,
+              "rect_top": 793,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": true,
+              "rect_top": 853,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 914,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 975,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1035,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1096,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1156,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1217,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1277,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1338,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1399,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1459,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1520,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1580,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1641,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1701,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1762,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1823,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1883,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1944,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2004,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2065,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2126,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2186,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2247,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2307,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2368,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2428,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2489,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2550,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2610,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2671,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2731,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2792,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2852,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2913,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2974,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3034,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3095,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3155,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3216,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3276,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3337,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3398,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3458,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3519,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3579,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3669,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3729,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3790,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3850,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3911,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3972,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4032,
+              "rect_h": 38,
+              "rect_w": 57
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 189,
+              "rect_h": 18,
+              "rect_w": 18
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 702,
+              "rect_h": 18,
+              "rect_w": 39
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 695,
+              "rect_h": 29,
+              "rect_w": 61
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 1440,
+          "window_inner_width": 1440,
+          "viewport_height": 900,
+          "page_url": "https://app.onchainworldcup.xyz/qualification"
+        }
+      },
+      "mobile": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/qualification_mobile.png",
+        "meta": {
+          "title": "Qualification Leaderboard | Onchain World Cup 2026",
+          "canonical": null,
+          "meta_description": "Vote for your country in World Cup 2026 qualification with ETH on Base Network. Top 48 countries qualify. Early voters get better rates with dynamic pricing.",
+          "og_title": "World Cup 2026 Qualification - Top 3 Countries",
+          "og_description": "Vote now with ETH on Base Network. Support your country in qualification voting. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/qualification/opengraph-image?3f5225d2ceb8e091",
+          "og_type": "website",
+          "og_url": "https://app.onchainworldcup.xyz/qualification",
+          "twitter_card": "summary_large_image",
+          "twitter_title": "World Cup 2026 Qualification Leaderboard",
+          "twitter_image": "https://app.onchainworldcup.xyz/qualification/opengraph-image?3f5225d2ceb8e091",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Onchain World Cup",
+              "above_fold": true
+            },
+            {
+              "tag": "H2",
+              "text": "Qualification Phase",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Total Prize Pool",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Qualification Ends In",
+              "above_fold": true
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 14,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 758,
+              "rect_h": 48,
+              "rect_w": 51
+            },
+            {
+              "text": "Share",
+              "above_fold": true,
+              "rect_top": 106,
+              "rect_h": 48,
+              "rect_w": 47
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 871,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 935,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 999,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1063,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1127,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1191,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1255,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1319,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1383,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1447,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1511,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1575,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1639,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1703,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1767,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1831,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1895,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 1959,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2023,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2087,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2151,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2215,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2279,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2343,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2407,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2471,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2535,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2599,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2663,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2727,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2791,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2855,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2919,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 2983,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3047,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3111,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3175,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3239,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3303,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3367,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3431,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3495,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3559,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3623,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3687,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3751,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3815,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3909,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 3973,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4037,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4101,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4165,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4229,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "VOTE",
+              "above_fold": false,
+              "rect_top": 4293,
+              "rect_h": 48,
+              "rect_w": 56
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 124,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 64
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 375,
+          "window_inner_width": 375,
+          "viewport_height": 812,
+          "page_url": "https://app.onchainworldcup.xyz/qualification"
+        }
+      }
+    }
+  },
+  "teams": {
+    "url": "https://app.onchainworldcup.xyz/teams",
+    "viewports": {
+      "desktop": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/teams_desktop.png",
+        "meta": {
+          "title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "canonical": null,
+          "meta_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "og_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "og_type": null,
+          "og_url": null,
+          "twitter_card": "summary_large_image",
+          "twitter_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "twitter_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Teams Overview",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Brazil",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Argentina",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Germany",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "France",
+              "above_fold": false
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 7,
+              "rect_h": 22,
+              "rect_w": 22
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 826,
+              "rect_h": 52,
+              "rect_w": 71
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 189,
+              "rect_h": 18,
+              "rect_w": 18
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 702,
+              "rect_h": 18,
+              "rect_w": 39
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 695,
+              "rect_h": 29,
+              "rect_w": 61
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 1440,
+          "window_inner_width": 1440,
+          "viewport_height": 900,
+          "page_url": "https://app.onchainworldcup.xyz/teams"
+        }
+      },
+      "mobile": {
+        "path": "/Users/rubendinis/Documents/Code/v0-crypto-world-cup-app/screenshots/teams_mobile.png",
+        "meta": {
+          "title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "canonical": null,
+          "meta_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "og_description": "Vote on World Cup 2026 qualification with ETH. Support your country, earn rewards. Dynamic pricing, real-time voting on Base blockchain. Top 48 qualify!",
+          "og_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "og_type": null,
+          "og_url": null,
+          "twitter_card": "summary_large_image",
+          "twitter_title": "Onchain World Cup 2026 | Vote with ETH on Base Network",
+          "twitter_image": "https://app.onchainworldcup.xyz/opengraph-image?456cd2c279a78ce5",
+          "viewport_meta": "width=device-width, initial-scale=1",
+          "headings": [
+            {
+              "tag": "H1",
+              "text": "Teams Overview",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Brazil",
+              "above_fold": true
+            },
+            {
+              "tag": "H3",
+              "text": "Argentina",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "Germany",
+              "above_fold": false
+            },
+            {
+              "tag": "H3",
+              "text": "France",
+              "above_fold": false
+            }
+          ],
+          "images": [
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            },
+            {
+              "src": "/logo.png",
+              "alt": "Onchain World Cup logo",
+              "width": 2864,
+              "height": 2664,
+              "loaded": true
+            }
+          ],
+          "nav_links": [
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            },
+            {
+              "text": "How it Works",
+              "href": "/how-it-works"
+            },
+            {
+              "text": "Home",
+              "href": "/"
+            },
+            {
+              "text": "Qualification",
+              "href": "/qualification"
+            },
+            {
+              "text": "Tournament",
+              "href": "/tournament"
+            },
+            {
+              "text": "Leaderboard",
+              "href": "/leaderboard"
+            },
+            {
+              "text": "My Votes",
+              "href": "/my-bets"
+            }
+          ],
+          "buttons": [
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 14,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 0,
+              "rect_h": 0,
+              "rect_w": 0
+            },
+            {
+              "text": "CONNECT",
+              "above_fold": true,
+              "rect_top": 758,
+              "rect_h": 48,
+              "rect_w": 51
+            },
+            {
+              "text": "",
+              "above_fold": true,
+              "rect_top": 124,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Skip tour",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 44
+            },
+            {
+              "text": "Next",
+              "above_fold": true,
+              "rect_top": 644,
+              "rect_h": 44,
+              "rect_w": 64
+            }
+          ],
+          "horizontal_scroll": false,
+          "body_scroll_width": 375,
+          "window_inner_width": 375,
+          "viewport_height": 812,
+          "page_url": "https://app.onchainworldcup.xyz/teams"
+        }
+      }
+    }
+  }
+}
