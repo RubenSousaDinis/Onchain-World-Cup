@@ -277,7 +277,12 @@ export function OverviewTab() {
                   {votes.map((v) => (
                     <tr key={v.id} className="border-b border-border/10">
                       <td className="px-3 py-2 text-sm font-mono">
-                        {truncateAddress(v.voter_address)}
+                        <a
+                          href={`/users/${v.voter_address}`}
+                          className="text-[var(--highlight-yellow)] hover:underline"
+                        >
+                          {truncateAddress(v.voter_address)}
+                        </a>
                       </td>
                       <td className="px-3 py-2 text-sm">
                         {(() => {
