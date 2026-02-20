@@ -1,9 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useChainId } from "wagmi"
 import { Address, formatEther } from "viem"
-import { getAddressExplorerUrl } from "@/lib/admin"
 import {
   useMatchDetails,
   useMatchPaused,
@@ -15,7 +13,6 @@ import {
 } from "@/lib/contracts/match-admin"
 
 export function MatchContractPanel({ contractAddress }: { contractAddress: Address }) {
-  const chainId = useChainId()
   const { data: details, isLoading: detailsLoading } = useMatchDetails(contractAddress)
   const { data: isPaused, refetch: refetchPaused } = useMatchPaused(contractAddress)
   const { data: feePercent } = useMatchPlatformFee(contractAddress)
@@ -38,17 +35,6 @@ export function MatchContractPanel({ contractAddress }: { contractAddress: Addre
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-muted-foreground font-mono break-all">
-        Contract:{" "}
-        <a
-          href={getAddressExplorerUrl(chainId, contractAddress)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[var(--highlight-yellow)] hover:underline"
-        >
-          {contractAddress}
-        </a>
-      </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <div>
           <span className="text-muted-foreground block">Prize Pool</span>
