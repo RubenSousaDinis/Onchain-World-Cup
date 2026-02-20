@@ -14,9 +14,9 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "CountryAdded",
@@ -27,12 +27,44 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "CountryRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Paused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "PlatformFeeTransferred",
     type: "event",
   },
   {
@@ -60,19 +92,6 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "PlatformFeesWithdrawn",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
         name: "totalPrizePool",
         type: "uint256",
       },
@@ -91,12 +110,25 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "bytes2[]",
+        internalType: "bytes8[]",
         name: "qualifiedCountries",
-        type: "bytes2[]",
+        type: "bytes8[]",
       },
     ],
     name: "QualificationFinalized",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Unpaused",
     type: "event",
   },
   {
@@ -110,9 +142,9 @@ const _abi = [
       },
       {
         indexed: true,
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
       {
         indexed: false,
@@ -223,9 +255,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2[]",
+        internalType: "bytes8[]",
         name: "countries",
-        type: "bytes2[]",
+        type: "bytes8[]",
       },
     ],
     name: "addCountries",
@@ -236,9 +268,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "addCountry",
@@ -249,9 +281,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
       {
         internalType: "uint256",
@@ -299,9 +331,28 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
+      },
+    ],
+    name: "countryETH",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes8",
+        name: "country",
+        type: "bytes8",
       },
     ],
     name: "countryVotes",
@@ -318,9 +369,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "ethForCountry",
@@ -350,9 +401,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2[]",
+        internalType: "bytes8[]",
         name: "qualifiedCountries",
-        type: "bytes2[]",
+        type: "bytes8[]",
       },
     ],
     name: "finalizeQualification",
@@ -404,9 +455,9 @@ const _abi = [
     name: "getUserVotes",
     outputs: [
       {
-        internalType: "bytes2[]",
+        internalType: "bytes8[]",
         name: "countries",
-        type: "bytes2[]",
+        type: "bytes8[]",
       },
       {
         internalType: "uint256[]",
@@ -439,12 +490,32 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "isQualified",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "paused",
     outputs: [
       {
         internalType: "bool",
@@ -495,11 +566,24 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "qualificationStartTime",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "removeCountry",
@@ -522,7 +606,27 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "totalPlatformFees",
+    name: "sweepResidual",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalETHCollected",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "totalPlatformFeesCollected",
     outputs: [
       {
         internalType: "uint256",
@@ -573,6 +677,13 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "unpause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -580,9 +691,9 @@ const _abi = [
         type: "address",
       },
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "userVotes",
@@ -599,9 +710,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "validCountry",
@@ -618,9 +729,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
       {
         internalType: "uint256",
@@ -636,9 +747,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes2",
+        internalType: "bytes8",
         name: "country",
-        type: "bytes2",
+        type: "bytes8",
       },
     ],
     name: "votePrice",
@@ -650,13 +761,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "withdrawPlatformFees",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;

@@ -137,7 +137,7 @@ async function main() {
       const details = await qualification.getQualificationDetails();
       const platformFeeBps = await qualification.platformFeeBps();
       const totalVotes = await qualification.totalVotes();
-      const totalPlatformFees = await qualification.totalPlatformFees();
+      const totalPlatformFees = await qualification.totalPlatformFeesCollected();
       const qualificationFinalized = await qualification.qualificationFinalized();
       
       console.log("Qualification End Time:", new Date(Number(details._qualificationEndTime) * 1000).toISOString());

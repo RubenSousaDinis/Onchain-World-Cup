@@ -36,6 +36,7 @@ export interface IWorldCupQualificationInterface extends Interface {
       | "calculateVoteCost"
       | "claim"
       | "claimable"
+      | "countryETH"
       | "countryVotes"
       | "ethForCountry"
       | "feeRecipient"
@@ -44,31 +45,38 @@ export interface IWorldCupQualificationInterface extends Interface {
       | "getUserVotes"
       | "hasClaimed"
       | "isQualified"
+      | "pause"
+      | "paused"
       | "platformFeeBps"
       | "qualificationEndTime"
       | "qualificationFinalized"
+      | "qualificationStartTime"
       | "removeCountry"
       | "setPlatformFee"
-      | "totalPlatformFees"
+      | "sweepResidual"
+      | "totalETHCollected"
+      | "totalPlatformFeesCollected"
       | "totalPrizePool"
       | "totalQualifiedVotes"
       | "totalVotes"
+      | "unpause"
       | "userVotes"
       | "validCountry"
       | "vote"
       | "votePrice"
-      | "withdrawPlatformFees"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "CountryAdded"
       | "CountryRemoved"
+      | "Paused"
+      | "PlatformFeeTransferred"
       | "PlatformFeeUpdated"
-      | "PlatformFeesWithdrawn"
       | "PrizesDistributed"
       | "QualificationEnded"
       | "QualificationFinalized"
+      | "Unpaused"
       | "VotePlaced"
       | "WinningsClaimed"
   ): EventFragment;
@@ -111,6 +119,10 @@ export interface IWorldCupQualificationInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "countryETH",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "countryVotes",
     values: [BytesLike]
   ): string;
@@ -142,6 +154,8 @@ export interface IWorldCupQualificationInterface extends Interface {
     functionFragment: "isQualified",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
+  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "platformFeeBps",
     values?: undefined
@@ -155,6 +169,10 @@ export interface IWorldCupQualificationInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "qualificationStartTime",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "removeCountry",
     values: [BytesLike]
   ): string;
@@ -163,7 +181,15 @@ export interface IWorldCupQualificationInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "totalPlatformFees",
+    functionFragment: "sweepResidual",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalETHCollected",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalPlatformFeesCollected",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -178,6 +204,7 @@ export interface IWorldCupQualificationInterface extends Interface {
     functionFragment: "totalVotes",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "userVotes",
     values: [AddressLike, BytesLike]
@@ -193,10 +220,6 @@ export interface IWorldCupQualificationInterface extends Interface {
   encodeFunctionData(
     functionFragment: "votePrice",
     values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "withdrawPlatformFees",
-    values?: undefined
   ): string;
 
   decodeFunctionResult(functionFragment: "BASE_PRICE", data: BytesLike): Result;
@@ -227,6 +250,7 @@ export interface IWorldCupQualificationInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "claim", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claimable", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "countryETH", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "countryVotes",
     data: BytesLike
@@ -256,6 +280,8 @@ export interface IWorldCupQualificationInterface extends Interface {
     functionFragment: "isQualified",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "platformFeeBps",
     data: BytesLike
@@ -269,6 +295,10 @@ export interface IWorldCupQualificationInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "qualificationStartTime",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "removeCountry",
     data: BytesLike
   ): Result;
@@ -277,7 +307,15 @@ export interface IWorldCupQualificationInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalPlatformFees",
+    functionFragment: "sweepResidual",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalETHCollected",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalPlatformFeesCollected",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -289,6 +327,7 @@ export interface IWorldCupQualificationInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "totalVotes", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "userVotes", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validCountry",
@@ -296,10 +335,6 @@ export interface IWorldCupQualificationInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "votePrice", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "withdrawPlatformFees",
-    data: BytesLike
-  ): Result;
 }
 
 export namespace CountryAddedEvent {
@@ -326,12 +361,11 @@ export namespace CountryRemovedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace PlatformFeeUpdatedEvent {
-  export type InputTuple = [oldFeeBps: BigNumberish, newFeeBps: BigNumberish];
-  export type OutputTuple = [oldFeeBps: bigint, newFeeBps: bigint];
+export namespace PausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
   export interface OutputObject {
-    oldFeeBps: bigint;
-    newFeeBps: bigint;
+    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -339,11 +373,25 @@ export namespace PlatformFeeUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace PlatformFeesWithdrawnEvent {
-  export type InputTuple = [amount: BigNumberish];
-  export type OutputTuple = [amount: bigint];
+export namespace PlatformFeeTransferredEvent {
+  export type InputTuple = [recipient: AddressLike, amount: BigNumberish];
+  export type OutputTuple = [recipient: string, amount: bigint];
   export interface OutputObject {
+    recipient: string;
     amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PlatformFeeUpdatedEvent {
+  export type InputTuple = [oldFeeBps: BigNumberish, newFeeBps: BigNumberish];
+  export type OutputTuple = [oldFeeBps: bigint, newFeeBps: bigint];
+  export interface OutputObject {
+    oldFeeBps: bigint;
+    newFeeBps: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -378,6 +426,18 @@ export namespace QualificationFinalizedEvent {
   export type OutputTuple = [qualifiedCountries: string[]];
   export interface OutputObject {
     qualifiedCountries: string[];
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace UnpausedEvent {
+  export type InputTuple = [account: AddressLike];
+  export type OutputTuple = [account: string];
+  export interface OutputObject {
+    account: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -497,6 +557,8 @@ export interface IWorldCupQualification extends BaseContract {
 
   claimable: TypedContractMethod<[user: AddressLike], [bigint], "view">;
 
+  countryETH: TypedContractMethod<[country: BytesLike], [bigint], "view">;
+
   countryVotes: TypedContractMethod<[country: BytesLike], [bigint], "view">;
 
   ethForCountry: TypedContractMethod<[country: BytesLike], [bigint], "view">;
@@ -533,11 +595,17 @@ export interface IWorldCupQualification extends BaseContract {
 
   isQualified: TypedContractMethod<[country: BytesLike], [boolean], "view">;
 
+  pause: TypedContractMethod<[], [void], "nonpayable">;
+
+  paused: TypedContractMethod<[], [boolean], "view">;
+
   platformFeeBps: TypedContractMethod<[], [bigint], "view">;
 
   qualificationEndTime: TypedContractMethod<[], [bigint], "view">;
 
   qualificationFinalized: TypedContractMethod<[], [boolean], "view">;
+
+  qualificationStartTime: TypedContractMethod<[], [bigint], "view">;
 
   removeCountry: TypedContractMethod<
     [country: BytesLike],
@@ -551,13 +619,19 @@ export interface IWorldCupQualification extends BaseContract {
     "nonpayable"
   >;
 
-  totalPlatformFees: TypedContractMethod<[], [bigint], "view">;
+  sweepResidual: TypedContractMethod<[], [void], "nonpayable">;
+
+  totalETHCollected: TypedContractMethod<[], [bigint], "view">;
+
+  totalPlatformFeesCollected: TypedContractMethod<[], [bigint], "view">;
 
   totalPrizePool: TypedContractMethod<[], [bigint], "view">;
 
   totalQualifiedVotes: TypedContractMethod<[], [bigint], "view">;
 
   totalVotes: TypedContractMethod<[], [bigint], "view">;
+
+  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   userVotes: TypedContractMethod<
     [voter: AddressLike, country: BytesLike],
@@ -574,8 +648,6 @@ export interface IWorldCupQualification extends BaseContract {
   >;
 
   votePrice: TypedContractMethod<[country: BytesLike], [bigint], "view">;
-
-  withdrawPlatformFees: TypedContractMethod<[], [void], "nonpayable">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -615,6 +687,9 @@ export interface IWorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "claimable"
   ): TypedContractMethod<[user: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "countryETH"
+  ): TypedContractMethod<[country: BytesLike], [bigint], "view">;
   getFunction(
     nameOrSignature: "countryVotes"
   ): TypedContractMethod<[country: BytesLike], [bigint], "view">;
@@ -660,6 +735,12 @@ export interface IWorldCupQualification extends BaseContract {
     nameOrSignature: "isQualified"
   ): TypedContractMethod<[country: BytesLike], [boolean], "view">;
   getFunction(
+    nameOrSignature: "pause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "paused"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
     nameOrSignature: "platformFeeBps"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -669,13 +750,22 @@ export interface IWorldCupQualification extends BaseContract {
     nameOrSignature: "qualificationFinalized"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
+    nameOrSignature: "qualificationStartTime"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "removeCountry"
   ): TypedContractMethod<[country: BytesLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setPlatformFee"
   ): TypedContractMethod<[newFeeBps: BigNumberish], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "totalPlatformFees"
+    nameOrSignature: "sweepResidual"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "totalETHCollected"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "totalPlatformFeesCollected"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "totalPrizePool"
@@ -686,6 +776,9 @@ export interface IWorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "totalVotes"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "unpause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "userVotes"
   ): TypedContractMethod<
@@ -706,9 +799,6 @@ export interface IWorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "votePrice"
   ): TypedContractMethod<[country: BytesLike], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "withdrawPlatformFees"
-  ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
     key: "CountryAdded"
@@ -725,18 +815,25 @@ export interface IWorldCupQualification extends BaseContract {
     CountryRemovedEvent.OutputObject
   >;
   getEvent(
+    key: "Paused"
+  ): TypedContractEvent<
+    PausedEvent.InputTuple,
+    PausedEvent.OutputTuple,
+    PausedEvent.OutputObject
+  >;
+  getEvent(
+    key: "PlatformFeeTransferred"
+  ): TypedContractEvent<
+    PlatformFeeTransferredEvent.InputTuple,
+    PlatformFeeTransferredEvent.OutputTuple,
+    PlatformFeeTransferredEvent.OutputObject
+  >;
+  getEvent(
     key: "PlatformFeeUpdated"
   ): TypedContractEvent<
     PlatformFeeUpdatedEvent.InputTuple,
     PlatformFeeUpdatedEvent.OutputTuple,
     PlatformFeeUpdatedEvent.OutputObject
-  >;
-  getEvent(
-    key: "PlatformFeesWithdrawn"
-  ): TypedContractEvent<
-    PlatformFeesWithdrawnEvent.InputTuple,
-    PlatformFeesWithdrawnEvent.OutputTuple,
-    PlatformFeesWithdrawnEvent.OutputObject
   >;
   getEvent(
     key: "PrizesDistributed"
@@ -760,6 +857,13 @@ export interface IWorldCupQualification extends BaseContract {
     QualificationFinalizedEvent.OutputObject
   >;
   getEvent(
+    key: "Unpaused"
+  ): TypedContractEvent<
+    UnpausedEvent.InputTuple,
+    UnpausedEvent.OutputTuple,
+    UnpausedEvent.OutputObject
+  >;
+  getEvent(
     key: "VotePlaced"
   ): TypedContractEvent<
     VotePlacedEvent.InputTuple,
@@ -775,7 +879,7 @@ export interface IWorldCupQualification extends BaseContract {
   >;
 
   filters: {
-    "CountryAdded(bytes2)": TypedContractEvent<
+    "CountryAdded(bytes8)": TypedContractEvent<
       CountryAddedEvent.InputTuple,
       CountryAddedEvent.OutputTuple,
       CountryAddedEvent.OutputObject
@@ -786,7 +890,7 @@ export interface IWorldCupQualification extends BaseContract {
       CountryAddedEvent.OutputObject
     >;
 
-    "CountryRemoved(bytes2)": TypedContractEvent<
+    "CountryRemoved(bytes8)": TypedContractEvent<
       CountryRemovedEvent.InputTuple,
       CountryRemovedEvent.OutputTuple,
       CountryRemovedEvent.OutputObject
@@ -795,6 +899,28 @@ export interface IWorldCupQualification extends BaseContract {
       CountryRemovedEvent.InputTuple,
       CountryRemovedEvent.OutputTuple,
       CountryRemovedEvent.OutputObject
+    >;
+
+    "Paused(address)": TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
+    >;
+    Paused: TypedContractEvent<
+      PausedEvent.InputTuple,
+      PausedEvent.OutputTuple,
+      PausedEvent.OutputObject
+    >;
+
+    "PlatformFeeTransferred(address,uint256)": TypedContractEvent<
+      PlatformFeeTransferredEvent.InputTuple,
+      PlatformFeeTransferredEvent.OutputTuple,
+      PlatformFeeTransferredEvent.OutputObject
+    >;
+    PlatformFeeTransferred: TypedContractEvent<
+      PlatformFeeTransferredEvent.InputTuple,
+      PlatformFeeTransferredEvent.OutputTuple,
+      PlatformFeeTransferredEvent.OutputObject
     >;
 
     "PlatformFeeUpdated(uint256,uint256)": TypedContractEvent<
@@ -806,17 +932,6 @@ export interface IWorldCupQualification extends BaseContract {
       PlatformFeeUpdatedEvent.InputTuple,
       PlatformFeeUpdatedEvent.OutputTuple,
       PlatformFeeUpdatedEvent.OutputObject
-    >;
-
-    "PlatformFeesWithdrawn(uint256)": TypedContractEvent<
-      PlatformFeesWithdrawnEvent.InputTuple,
-      PlatformFeesWithdrawnEvent.OutputTuple,
-      PlatformFeesWithdrawnEvent.OutputObject
-    >;
-    PlatformFeesWithdrawn: TypedContractEvent<
-      PlatformFeesWithdrawnEvent.InputTuple,
-      PlatformFeesWithdrawnEvent.OutputTuple,
-      PlatformFeesWithdrawnEvent.OutputObject
     >;
 
     "PrizesDistributed(uint256)": TypedContractEvent<
@@ -841,7 +956,7 @@ export interface IWorldCupQualification extends BaseContract {
       QualificationEndedEvent.OutputObject
     >;
 
-    "QualificationFinalized(bytes2[])": TypedContractEvent<
+    "QualificationFinalized(bytes8[])": TypedContractEvent<
       QualificationFinalizedEvent.InputTuple,
       QualificationFinalizedEvent.OutputTuple,
       QualificationFinalizedEvent.OutputObject
@@ -852,7 +967,18 @@ export interface IWorldCupQualification extends BaseContract {
       QualificationFinalizedEvent.OutputObject
     >;
 
-    "VotePlaced(address,bytes2,uint256,uint256,uint256)": TypedContractEvent<
+    "Unpaused(address)": TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
+    >;
+    Unpaused: TypedContractEvent<
+      UnpausedEvent.InputTuple,
+      UnpausedEvent.OutputTuple,
+      UnpausedEvent.OutputObject
+    >;
+
+    "VotePlaced(address,bytes8,uint256,uint256,uint256)": TypedContractEvent<
       VotePlacedEvent.InputTuple,
       VotePlacedEvent.OutputTuple,
       VotePlacedEvent.OutputObject

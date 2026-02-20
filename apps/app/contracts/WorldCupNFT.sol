@@ -90,6 +90,30 @@ contract WorldCupNFT is ERC721URIStorage, Ownable {
     }
     
     /**
+     * @dev Override to keep userNFTs in sync with transfers
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address from = super._update(to, tokenId, auth);
+
+        if (from != address(0)) {
+            uint256[] storage fromNFTs = userNFTs[from];
+            for (uint256 i = 0; i < fromNFTs.length; i++) {
+                if (fromNFTs[i] == tokenId) {
+                    fromNFTs[i] = fromNFTs[fromNFTs.length - 1];
+                    fromNFTs.pop();
+                    break;
+                }
+            }
+        }
+
+        if (to != address(0) && from != address(0)) {
+            userNFTs[to].push(tokenId);
+        }
+
+        return from;
+    }
+
+    /**
      * @dev Get all NFTs owned by a user
      */
     function getUserNFTs(address user) public view returns (uint256[] memory) {

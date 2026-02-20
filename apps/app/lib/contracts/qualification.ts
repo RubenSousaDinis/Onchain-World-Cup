@@ -152,7 +152,7 @@ export function useCountryETH(chainId: number, countryCode: string) {
   return useReadContract({
     address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "getETHPerCountry",
+    functionName: "ethForCountry",
     args: [countryBytes],
     query: {
       enabled: !!address && !!countryCode,
@@ -268,7 +268,7 @@ export function useTotalPrizePool(chainId: number) {
     return useReadContract({
       address: '0x0000000000000000000000000000000000000000' as Address,
       abi: WORLD_CUP_QUALIFICATION_ABI,
-      functionName: "getTotalPrizePool",
+      functionName: "totalPrizePool",
       query: {
         enabled: false,
       },
@@ -278,7 +278,7 @@ export function useTotalPrizePool(chainId: number) {
   return useReadContract({
     address: address!,
     abi: WORLD_CUP_QUALIFICATION_ABI,
-    functionName: "getTotalPrizePool",
+    functionName: "totalPrizePool",
   })
 }
 

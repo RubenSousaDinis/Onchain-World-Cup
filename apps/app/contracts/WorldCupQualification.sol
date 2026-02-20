@@ -43,10 +43,10 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     uint256 public totalVotes;
     uint256 public totalQualifiedVotes;
 
-    uint256 public totalPrizePool;        // net ETH for players
-    uint256 public totalPlatformFees;     // protocol revenue
-    uint256 public totalETHCollected;     // total ETH collected (before fees)
-    uint256 public platformFeeBps;        // Platform fee in basis points (updatable)
+    uint256 public totalPrizePool;            // net ETH for players
+    uint256 public totalPlatformFeesCollected; // lifetime platform fees (transferred immediately)
+    uint256 public totalETHCollected;         // total ETH collected (before fees)
+    uint256 public platformFeeBps;            // Platform fee in basis points (updatable)
 
     // Country data
     mapping(bytes8 => bool) public validCountry;
@@ -55,6 +55,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     mapping(bytes8 => bool) public isQualified;
 
     bytes8[] public allCountries;
+    bytes8[] public qualifiedCountries;
 
     // User data
     mapping(address => mapping(bytes8 => uint256)) public userVotes;
@@ -63,12 +64,6 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
-
-    event Voted(
-        address indexed user,
-        bytes8 indexed country,
-        uint256 amount
-    );
 
     event VotePlaced(
         address indexed voter,
@@ -86,7 +81,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     event QualificationEnded();
     event QualificationFinalized(bytes8[] qualifiedCountries);
     event WinningsClaimed(address indexed user, uint256 amount);
-    event PlatformFeesWithdrawn(uint256 amount);
+    event PlatformFeeTransferred(address indexed recipient, uint256 amount);
     event PrizesDistributed(uint256 totalPrizePool);
 
     /*//////////////////////////////////////////////////////////////
@@ -198,6 +193,15 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
         validCountry[country] = false;
 
+        // Remove from allCountries array (swap-and-pop)
+        for (uint256 i = 0; i < allCountries.length; i++) {
+            if (allCountries[i] == country) {
+                allCountries[i] = allCountries[allCountries.length - 1];
+                allCountries.pop();
+                break;
+            }
+        }
+
         emit CountryRemoved(country);
     }
 
@@ -252,9 +256,8 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         require(validCountry[country], "Invalid country");
 
         uint256 currentVotes = countryVotes[country];
-        for (uint256 i = 0; i < votes; i++) {
-            totalCost += BASE_PRICE + ((currentVotes + i) * PRICE_INCREMENT);
-        }
+        // Arithmetic series: sum = n * BASE_PRICE + PRICE_INCREMENT * n * (2*currentVotes + n - 1) / 2
+        totalCost = (votes * BASE_PRICE) + (PRICE_INCREMENT * votes * (2 * currentVotes + votes - 1)) / 2;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -279,7 +282,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         uint256 net = cost - fee;
 
         totalETHCollected += cost;
-        totalPlatformFees += fee;
+        totalPlatformFeesCollected += fee;
         totalPrizePool += net;
 
         countryVotes[country] += votes;
@@ -288,13 +291,19 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
         totalVotes += votes;
 
+        // Transfer platform fee immediately
+        if (fee > 0) {
+            (bool feeOk,) = feeRecipient.call{value: fee}("");
+            require(feeOk, "Fee transfer failed");
+            emit PlatformFeeTransferred(feeRecipient, fee);
+        }
+
         // Refund overpayment
         if (msg.value > cost) {
             (bool refundOk,) = msg.sender.call{value: msg.value - cost}("");
             require(refundOk, "Refund failed");
         }
 
-        emit Voted(msg.sender, country, cost);
         emit VotePlaced(msg.sender, country, votes, cost, block.timestamp);
     }
 
@@ -304,36 +313,35 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
     /**
      * @dev Finalize qualification with top 48 countries
-     * @param qualifiedCountries Array of exactly 48 country codes that qualified
+     * @param _qualifiedCountries Array of exactly 48 country codes that qualified
      * @notice CRITICAL: Countries must have votes to qualify (trust guarantee)
      */
-    function finalizeQualification(bytes8[] calldata qualifiedCountries)
+    function finalizeQualification(bytes8[] calldata _qualifiedCountries)
         external
         onlyOwner
         onlyAfterEnd
     {
         require(!qualificationFinalized, "Already finalized");
         require(
-            qualifiedCountries.length == QUALIFICATION_SPOTS,
+            _qualifiedCountries.length == QUALIFICATION_SPOTS,
             "Must specify exactly 48 countries"
         );
 
-        for (uint256 i = 0; i < qualifiedCountries.length; i++) {
-            bytes8 country = qualifiedCountries[i];
+        for (uint256 i = 0; i < _qualifiedCountries.length; i++) {
+            bytes8 country = _qualifiedCountries[i];
             require(validCountry[country], "Invalid country");
-            // CRITICAL TRUST GUARANTEE: Country cannot qualify without votes
             require(countryVotes[country] > 0, "Country has no votes");
+            require(!isQualified[country], "Duplicate country");
 
-            if (!isQualified[country]) {
-                isQualified[country] = true;
-                totalQualifiedVotes += countryVotes[country];
-            }
+            isQualified[country] = true;
+            totalQualifiedVotes += countryVotes[country];
+            qualifiedCountries.push(country);
         }
 
         qualificationFinalized = true;
 
         emit QualificationEnded();
-        emit QualificationFinalized(qualifiedCountries);
+        emit QualificationFinalized(_qualifiedCountries);
         emit PrizesDistributed(totalPrizePool);
     }
 
@@ -356,11 +364,8 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
 
         uint256 userQualifiedVotes;
 
-        for (uint256 i = 0; i < allCountries.length; i++) {
-            bytes8 country = allCountries[i];
-            if (isQualified[country]) {
-                userQualifiedVotes += userVotes[user][country];
-            }
+        for (uint256 i = 0; i < qualifiedCountries.length; i++) {
+            userQualifiedVotes += userVotes[user][qualifiedCountries[i]];
         }
 
         if (userQualifiedVotes == 0) return 0;
@@ -382,50 +387,21 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         emit WinningsClaimed(msg.sender, amount);
     }
 
-    /*//////////////////////////////////////////////////////////////
-                        PLATFORM FEE WITHDRAWAL
-    //////////////////////////////////////////////////////////////*/
+    /**
+     * @dev Sweep residual ETH (rounding dust) after all claims are settled
+     * @notice Only callable by owner after finalization
+     */
+    function sweepResidual() external onlyOwner onlyFinalized nonReentrant {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No residual");
 
-    function withdrawPlatformFees() external onlyOwner nonReentrant {
-        uint256 amount = totalPlatformFees;
-        require(amount > 0, "No fees");
-
-        totalPlatformFees = 0;
-
-        (bool ok,) = feeRecipient.call{value: amount}("");
-        require(ok, "Fee transfer failed");
-
-        emit PlatformFeesWithdrawn(amount);
+        (bool ok,) = feeRecipient.call{value: balance}("");
+        require(ok, "Sweep failed");
     }
 
     /*//////////////////////////////////////////////////////////////
                             READ-ONLY METRICS
     //////////////////////////////////////////////////////////////*/
-
-    /**
-     * @dev Get ETH collected for a specific country (read-only metric)
-     * @param country Country code
-     * @return Total ETH collected for this country
-     */
-    function getETHPerCountry(bytes8 country) external view returns (uint256) {
-        return countryETH[country];
-    }
-
-    /**
-     * @dev Get total prize pool (read-only metric)
-     * @return Total prize pool available for distribution
-     */
-    function getTotalPrizePool() external view returns (uint256) {
-        return totalPrizePool;
-    }
-
-    /**
-     * @dev Get platform fee amount (read-only metric)
-     * @return Total platform fees collected
-     */
-    function getPlatformFeeAmount() external view returns (uint256) {
-        return totalPlatformFees;
-    }
 
     /**
      * @dev Get total ETH allocated to a country (for display purposes)

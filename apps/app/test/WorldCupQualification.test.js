@@ -30,6 +30,17 @@ describe("WorldCupQualification", function () {
   const NL = toBytes8("NL");
   const GB_ENG = toBytes8("GB-ENG"); // Test longer country code
 
+  // Helper: generate N unique country bytes8 codes
+  const generateCountries = (n) => {
+    const countries = [];
+    for (let i = 0; i < n; i++) {
+      const c1 = String.fromCharCode(65 + (i % 26));
+      const c2 = String.fromCharCode(65 + Math.floor(i / 26));
+      countries.push(toBytes8(c1 + c2));
+    }
+    return countries;
+  };
+
   beforeEach(async function () {
     [owner, platform, voter1, voter2, voter3] = await ethers.getSigners();
 
@@ -262,36 +273,34 @@ describe("WorldCupQualification", function () {
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 2000;
+
+      // Create 48 unique countries
+      const countries48 = [];
+      for (let i = 0; i < 48; i++) {
+        const c1 = String.fromCharCode(65 + (i % 26));
+        const c2 = String.fromCharCode(65 + Math.floor(i / 26));
+        countries48.push(toBytes8(c1 + c2));
+      }
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US],
+        countries48,
         1000
       );
       await testQual.waitForDeployment();
 
-      // Add more countries to reach 48
-      const additionalCountries = [];
-      for (let i = 1; i < 48; i++) {
-        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes8(countryCode);
-        additionalCountries.push(countryBytes);
-      }
-      await testQual.connect(owner).addCountries(additionalCountries);
-
-      // Fast forward to start time and add votes
+      // Fast forward to start time and add votes to all 48 countries
       await time.increaseTo(startTime);
-      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      for (const c of countries48) {
+        await testQual.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+      }
       await time.increase(2001);
-      
-      const all48Countries = Array(48).fill(US);
-      await testQual.connect(owner).finalizeQualification(all48Countries);
-      
+
+      await testQual.connect(owner).finalizeQualification(countries48);
+
       // The modifier checks time first, so it will revert with "Qualification ended"
-      // But we also check finalization in the function, so let's test that the function
-      // itself would check finalization if time wasn't an issue
-      // Actually, the modifier onlyBeforeEnd checks time first, so it will always revert with "Qualification ended"
       await expect(
         testQual.connect(owner).setPlatformFee(500)
       ).to.be.revertedWith("Qualification ended");
@@ -306,7 +315,7 @@ describe("WorldCupQualification", function () {
       
       // Fee should be 5% now
       const expectedFee = (votePrice * 500n) / 10000n;
-      expect(await qualification.totalPlatformFees()).to.equal(expectedFee);
+      expect(await qualification.totalPlatformFeesCollected()).to.equal(expectedFee);
       
       // Prize pool should be 95%
       const expectedPrizePool = votePrice - expectedFee;
@@ -365,8 +374,8 @@ describe("WorldCupQualification", function () {
       await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
       await qualification.connect(voter1).vote(US, 1, { value: parseEth("0.0015") });
 
-      expect(await qualification.getETHPerCountry(US)).to.equal(parseEth("0.0025"));
       expect(await qualification.ethForCountry(US)).to.equal(parseEth("0.0025"));
+      expect(await qualification.countryETH(US)).to.equal(parseEth("0.0025"));
     });
 
     it("Should allow different voters on different countries", async function () {
@@ -447,28 +456,29 @@ describe("WorldCupQualification", function () {
 
   describe("Platform Fee", function () {
     beforeEach(async function () {
-      // Fast forward to qualification start time
       await time.increaseTo(qualificationStartTime);
     });
 
-    it("Should accumulate 10% platform fee on vote", async function () {
+    it("Should transfer 10% platform fee immediately on vote", async function () {
       const votePrice = parseEth("0.001");
       const expectedFee = (votePrice * 1000n) / 10000n; // 10%
 
+      const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
       await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+      const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
 
-      expect(await qualification.totalPlatformFees()).to.equal(expectedFee);
+      expect(platformBalanceAfter - platformBalanceBefore).to.equal(expectedFee);
     });
 
     it("Should track total platform fees collected", async function () {
-      const votePrice1 = parseEth("0.001"); // First vote for US
-      const votePrice2 = parseEth("0.001"); // First vote for BR
+      const votePrice1 = parseEth("0.001");
+      const votePrice2 = parseEth("0.001");
 
       await qualification.connect(voter1).vote(US, 1, { value: votePrice1 });
       await qualification.connect(voter2).vote(BR, 1, { value: votePrice2 });
 
       const expectedTotalFee = (votePrice1 * 1000n) / 10000n + (votePrice2 * 1000n) / 10000n;
-      expect(await qualification.totalPlatformFees()).to.equal(expectedTotalFee);
+      expect(await qualification.totalPlatformFeesCollected()).to.equal(expectedTotalFee);
     });
 
     it("Should store only prize pool (90%) in contract", async function () {
@@ -480,32 +490,13 @@ describe("WorldCupQualification", function () {
       expect(await qualification.totalPrizePool()).to.equal(expectedPrizePool);
     });
 
-    it("Should allow owner to withdraw platform fees", async function () {
+    it("Should emit PlatformFeeTransferred event on each vote", async function () {
       const votePrice = parseEth("0.001");
-      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
+      const expectedFee = (votePrice * 1000n) / 10000n;
 
-      const fees = await qualification.totalPlatformFees();
-      const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
-
-      const tx = await qualification.connect(owner).withdrawPlatformFees();
-      const receipt = await tx.wait();
-      const gasCost = receipt.gasUsed * receipt.gasPrice;
-
-      const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
-      expect(platformBalanceAfter - platformBalanceBefore).to.equal(fees);
-
-      expect(await qualification.totalPlatformFees()).to.equal(0);
-    });
-
-    it("Should emit PlatformFeesWithdrawn event", async function () {
-      const votePrice = parseEth("0.001");
-      await qualification.connect(voter1).vote(US, 1, { value: votePrice });
-
-      const fees = await qualification.totalPlatformFees();
-      
-      await expect(qualification.connect(owner).withdrawPlatformFees())
-        .to.emit(qualification, "PlatformFeesWithdrawn")
-        .withArgs(fees);
+      await expect(qualification.connect(voter1).vote(US, 1, { value: votePrice }))
+        .to.emit(qualification, "PlatformFeeTransferred")
+        .withArgs(platform.address, expectedFee);
     });
   });
 
@@ -573,86 +564,69 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should finalize qualification with specified countries", async function () {
-      // Create a new contract with initial countries
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 1000;
+
+      // Generate 48 unique countries
+      const countries48 = generateCountries(48);
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US, BR, AR],
+        countries48,
         1000
       );
       await testQual.waitForDeployment();
 
-      // Fast forward to start time
       await time.increaseTo(startTime);
 
-      // Add votes with correct prices
-      const usPrice1 = await testQual.calculateVoteCost(US, 5);
-      const brPrice1 = await testQual.calculateVoteCost(BR, 3);
-      const arPrice1 = await testQual.calculateVoteCost(AR, 4);
-
-      await testQual.connect(voter1).vote(US, 5, { value: usPrice1 });
-      await testQual.connect(voter2).vote(BR, 3, { value: brPrice1 });
-      await testQual.connect(voter3).vote(AR, 4, { value: arPrice1 });
+      // Vote for all 48 countries (required: each must have votes)
+      for (const c of countries48) {
+        await testQual.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+      }
 
       await time.increase(1001);
-      
-      // Create 48 countries array (repeat US, BR, AR to fill 48 spots)
-      const qualifiedCountries = [];
-      for (let i = 0; i < 48; i++) {
-        qualifiedCountries.push([US, BR, AR][i % 3]);
-      }
-      
-      await expect(testQual.connect(owner).finalizeQualification(qualifiedCountries))
+
+      await expect(testQual.connect(owner).finalizeQualification(countries48))
         .to.emit(testQual, "QualificationEnded")
         .to.emit(testQual, "QualificationFinalized")
         .to.emit(testQual, "PrizesDistributed");
-      
+
       expect(await testQual.qualificationFinalized()).to.be.true;
-      expect(await testQual.isQualified(US)).to.be.true;
-      expect(await testQual.isQualified(BR)).to.be.true;
-      expect(await testQual.isQualified(AR)).to.be.true;
+      expect(await testQual.isQualified(countries48[0])).to.be.true;
+      expect(await testQual.isQualified(countries48[47])).to.be.true;
     });
 
     it("Should revert if trying to qualify country with no votes (CRITICAL TRUST GUARANTEE)", async function () {
-      // Create a new contract
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 1000;
+
+      const countries48 = generateCountries(48);
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US, BR, AR],
+        countries48,
         1000
       );
       await testQual.waitForDeployment();
 
-      // Fast forward to start time
       await time.increaseTo(startTime);
 
-      // Add votes only for US
-      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      // Only vote for the first country
+      await testQual.connect(voter1).vote(countries48[0], 1, { value: parseEth("0.001") });
 
       await time.increase(1001);
-      
-      // Try to qualify BR and AR which have no votes - should fail
-      const qualifiedCountries = [];
-      for (let i = 0; i < 48; i++) {
-        if (i < 1) {
-          qualifiedCountries.push(US); // US has votes
-        } else {
-          qualifiedCountries.push(BR); // BR has no votes - should fail
-        }
-      }
-      
+
+      // Try to finalize with all 48 — second country has no votes
       await expect(
-        testQual.connect(owner).finalizeQualification(qualifiedCountries)
+        testQual.connect(owner).finalizeQualification(countries48)
       ).to.be.revertedWith("Country has no votes");
     });
 
@@ -714,57 +688,73 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should prevent double finalization", async function () {
-      // Create a fresh contract for this test
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 2000;
+
+      const countries48 = generateCountries(48);
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US],
+        countries48,
         1000
       );
       await testQual.waitForDeployment();
 
-      // Add more countries to reach 48
-      const additionalCountries = [];
-      for (let i = 1; i < 48; i++) {
-        const countryCode = String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((Math.floor(i / 26)) % 26));
-        const countryBytes = toBytes8(countryCode);
-        additionalCountries.push(countryBytes);
-      }
-      await testQual.connect(owner).addCountries(additionalCountries);
-
-      // Fast forward to start time
       await time.increaseTo(startTime);
 
-      // Add votes to US first (required for trust guarantee)
-      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      // Vote for all 48 countries
+      for (const c of countries48) {
+        await testQual.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+      }
 
-      // Fast forward past end time
       await time.increase(2001);
-      
-      const all48Countries = Array(48).fill(US); // Use same country for simplicity in test
-      await testQual.connect(owner).finalizeQualification(all48Countries);
-      
-      // Verify finalization happened
+
+      await testQual.connect(owner).finalizeQualification(countries48);
       expect(await testQual.qualificationFinalized()).to.be.true;
-      
-      // Try to finalize again - should revert
+
+      // Try to finalize again
       await expect(
-        testQual.connect(owner).finalizeQualification(all48Countries)
+        testQual.connect(owner).finalizeQualification(countries48)
       ).to.be.revertedWith("Already finalized");
     });
   });
 
   describe("Winnings Calculation and Claiming", function () {
-    beforeEach(async function () {
-      // Fast forward to qualification start time
-      await time.increaseTo(qualificationStartTime);
+    let winningsCountries48;
 
-      // Setup: US gets 5 votes, AR gets 4 votes, BR gets 3 votes
+    beforeEach(async function () {
+      // Deploy a fresh contract with 48 unique countries including US, AR, BR
+      const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
+      const currentTime = await time.latest();
+      const startTime = currentTime + 60;
+      const endTime = currentTime + 7 * 24 * 3600 + 60;
+
+      // Build 48 unique countries, ensuring US, BR, AR are included
+      winningsCountries48 = [US, BR, AR];
+      let idx = 0;
+      while (winningsCountries48.length < 48) {
+        const c = toBytes8("Z" + String.fromCharCode(65 + (idx % 26)) + String.fromCharCode(65 + Math.floor(idx / 26)));
+        if (!winningsCountries48.includes(c)) {
+          winningsCountries48.push(c);
+        }
+        idx++;
+      }
+
+      qualification = await WorldCupQualification.deploy(
+        startTime,
+        endTime,
+        platform.address,
+        winningsCountries48,
+        1000
+      );
+      await qualification.waitForDeployment();
+
+      await time.increaseTo(startTime);
+
       // voter1 votes for US (5 votes)
       for (let i = 0; i < 5; i++) {
         const price = await qualification.votePrice(US);
@@ -783,60 +773,69 @@ describe("WorldCupQualification", function () {
         await qualification.connect(voter3).vote(BR, 1, { value: price });
       }
 
+      // Vote for remaining countries (1 vote each so they can qualify)
+      for (const c of winningsCountries48) {
+        if (c !== US && c !== BR && c !== AR) {
+          await qualification.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+        }
+      }
+
       // Fast forward and finalize
       await time.increase(7 * 24 * 3600 + 1);
-      
-      // Create 48 countries array (using US, AR, BR and filling rest)
-      const qualifiedCountries = [US, AR, BR];
-      for (let i = 3; i < 48; i++) {
-        qualifiedCountries.push(US); // Fill with US for simplicity
-      }
-      
-      await qualification.connect(owner).finalizeQualification(qualifiedCountries);
+      await qualification.connect(owner).finalizeQualification(winningsCountries48);
     });
 
     it("Should calculate winnings using unified pool formula", async function () {
-      // voter1 has 5 votes for US (qualified)
-      // Total qualified votes = 5 (US) + 4 (AR) + 3 (BR) = 12
-      // But we qualified all 48 countries, so we need to check actual qualified votes
-      
+      // voter1 has 5 votes for US + 45 votes for filler countries = 50 qualified votes
+      // voter2 has 4 votes for AR
+      // voter3 has 3 votes for BR
+      // Total qualified votes = 50 + 4 + 3 = 57 (plus 45 filler = counted once each)
+
       const totalQualifiedVotes = await qualification.totalQualifiedVotes();
       const totalPrizePool = await qualification.totalPrizePool();
-      const userQualifiedVotes = await qualification.userVotes(voter1.address, US);
 
-      // Formula: (userQualifiedVotes * totalPrizePool) / totalQualifiedVotes
-      const expectedWinnings = (userQualifiedVotes * totalPrizePool) / totalQualifiedVotes;
+      // Calculate voter1's total qualified votes across all countries
+      const [countries, votes] = await qualification.getUserVotes(voter1.address);
+      let voter1QualifiedVotes = 0n;
+      for (let i = 0; i < countries.length; i++) {
+        voter1QualifiedVotes += votes[i];
+      }
+
+      const expectedWinnings = (voter1QualifiedVotes * totalPrizePool) / totalQualifiedVotes;
       const actualWinnings = await qualification.claimable(voter1.address);
 
       expect(actualWinnings).to.equal(expectedWinnings);
     });
 
     it("Should return zero winnings for non-qualified country voters", async function () {
-      // Create a new contract where BR doesn't qualify
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 1000;
+
+      // 48 unique countries; BR is NOT included so voter2 loses
+      const countries48 = generateCountries(48);
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US, BR, AR],
+        [...countries48, BR], // add BR as valid but won't be in qualified list
         1000
       );
       await testQual.waitForDeployment();
 
-      // Fast forward to start time
       await time.increaseTo(startTime);
 
-      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      // Vote for all 48 qualifying countries
+      for (const c of countries48) {
+        await testQual.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+      }
+      // voter2 only votes for BR (not in qualified list)
       await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
 
       await time.increase(1001);
-      
-      // Only US qualifies
-      const qualifiedCountries = Array(48).fill(US);
-      await testQual.connect(owner).finalizeQualification(qualifiedCountries);
+      await testQual.connect(owner).finalizeQualification(countries48);
 
       // voter2 should get 0 winnings (BR didn't qualify)
       expect(await testQual.claimable(voter2.address)).to.equal(0);
@@ -885,33 +884,32 @@ describe("WorldCupQualification", function () {
     });
 
     it("Should revert claim if no winnings", async function () {
-      // Create user with no qualified votes
       const WorldCupQualification = await ethers.getContractFactory("WorldCupQualification");
       const currentTime = await time.latest();
       const startTime = currentTime + 60;
       const endTime = currentTime + 1000;
+
+      const countries48 = generateCountries(48);
+
       const testQual = await WorldCupQualification.deploy(
         startTime,
         endTime,
         platform.address,
-        [US, BR],
+        [...countries48, BR], // BR valid but not qualified
         1000
       );
       await testQual.waitForDeployment();
 
-      // Fast forward to start time
       await time.increaseTo(startTime);
 
-      await testQual.connect(voter1).vote(US, 1, { value: parseEth("0.001") });
+      for (const c of countries48) {
+        await testQual.connect(voter1).vote(c, 1, { value: parseEth("0.001") });
+      }
       await testQual.connect(voter2).vote(BR, 1, { value: parseEth("0.001") });
 
       await time.increase(1001);
-      
-      // Only US qualifies
-      const qualifiedCountries = Array(48).fill(US);
-      await testQual.connect(owner).finalizeQualification(qualifiedCountries);
+      await testQual.connect(owner).finalizeQualification(countries48);
 
-      // voter2 should have no winnings
       await expect(
         testQual.connect(voter2).claim()
       ).to.be.revertedWith("Nothing to claim");
@@ -928,37 +926,31 @@ describe("WorldCupQualification", function () {
 
   describe("Read-Only Metrics", function () {
     beforeEach(async function () {
-      // Fast forward to qualification start time
       await time.increaseTo(qualificationStartTime);
 
-      // Calculate correct prices for 2 votes: 0.001 + 0.0015 = 0.0025
       const usPrice2 = await qualification.calculateVoteCost(US, 2);
-      await qualification.connect(voter1).vote(US, 2, { value: usPrice2 }); // 2 votes
-      await qualification.connect(voter1).vote(BR, 1, { value: parseEth("0.001") }); // 1 vote
-      await qualification.connect(voter2).vote(AR, 1, { value: parseEth("0.001") }); // 1 vote
+      await qualification.connect(voter1).vote(US, 2, { value: usPrice2 });
+      await qualification.connect(voter1).vote(BR, 1, { value: parseEth("0.001") });
+      await qualification.connect(voter2).vote(AR, 1, { value: parseEth("0.001") });
     });
 
     it("Should return ETH per country", async function () {
-      // US: 2 votes = 0.001 + 0.0015 = 0.0025
-      const usETH = await qualification.getETHPerCountry(US);
-      expect(usETH).to.equal(parseEth("0.0025"));
-      expect(await qualification.getETHPerCountry(BR)).to.equal(parseEth("0.001"));
-      expect(await qualification.getETHPerCountry(AR)).to.equal(parseEth("0.001"));
+      expect(await qualification.ethForCountry(US)).to.equal(parseEth("0.0025"));
+      expect(await qualification.ethForCountry(BR)).to.equal(parseEth("0.001"));
+      expect(await qualification.ethForCountry(AR)).to.equal(parseEth("0.001"));
     });
 
-    it("Should return total prize pool", async function () {
-      const prizePool = await qualification.getTotalPrizePool();
+    it("Should return total prize pool via public getter", async function () {
+      const prizePool = await qualification.totalPrizePool();
       expect(prizePool).to.be.greaterThan(0);
-      // Prize pool should be 90% of total ETH collected
       const totalETH = parseEth("0.0025") + parseEth("0.001") + parseEth("0.001");
       const expectedPrizePool = totalETH - (totalETH * 1000n) / 10000n;
       expect(prizePool).to.equal(expectedPrizePool);
     });
 
-    it("Should return platform fee amount", async function () {
-      const fees = await qualification.getPlatformFeeAmount();
+    it("Should return platform fee amount via public getter", async function () {
+      const fees = await qualification.totalPlatformFeesCollected();
       expect(fees).to.be.greaterThan(0);
-      // Fees should be 10% of total ETH collected
       const totalETH = parseEth("0.0025") + parseEth("0.001") + parseEth("0.001");
       const expectedFees = (totalETH * 1000n) / 10000n;
       expect(fees).to.equal(expectedFees);

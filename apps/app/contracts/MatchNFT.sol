@@ -23,7 +23,7 @@ contract MatchNFT is ERC721URIStorage, Ownable {
 
     event NFTMinted(address indexed user, uint256 indexed tokenId, string tokenURI);
 
-    constructor() ERC721("CWC26 Match Results", "CWC26M") Ownable(msg.sender) {}
+    constructor() ERC721("OWC26 Match Results", "OWC26M") Ownable(msg.sender) {}
 
     /**
      * @dev Mint a match result NFT
@@ -51,6 +51,32 @@ contract MatchNFT is ERC721URIStorage, Ownable {
         emit NFTMinted(to, newTokenId, _tokenURI);
 
         return newTokenId;
+    }
+
+    /**
+     * @dev Override to keep userNFTs in sync with transfers
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address from = super._update(to, tokenId, auth);
+
+        // Remove from sender's list
+        if (from != address(0)) {
+            uint256[] storage fromNFTs = userNFTs[from];
+            for (uint256 i = 0; i < fromNFTs.length; i++) {
+                if (fromNFTs[i] == tokenId) {
+                    fromNFTs[i] = fromNFTs[fromNFTs.length - 1];
+                    fromNFTs.pop();
+                    break;
+                }
+            }
+        }
+
+        // Add to receiver's list (skip burns)
+        if (to != address(0) && from != address(0)) {
+            userNFTs[to].push(tokenId);
+        }
+
+        return from;
     }
 
     /**
