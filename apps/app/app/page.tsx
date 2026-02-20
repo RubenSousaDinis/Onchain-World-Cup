@@ -19,7 +19,7 @@ import { HomeLazy } from "./home-lazy"
 async function getStats() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "https://app.onchainworldcup.xyz"
-    const res = await fetch(`${baseUrl}/api/qualification/summary`, { next: { revalidate: 60 } })
+    const res = await fetch(`${baseUrl}/api/qualification/summary`, { next: { revalidate: 300 } })
     if (!res.ok) return null
     const { data } = await res.json()
     return data

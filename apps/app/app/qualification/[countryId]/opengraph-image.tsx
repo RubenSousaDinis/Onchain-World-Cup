@@ -8,7 +8,7 @@ import {
   OG_IMAGE_LOGO,
 } from '@/lib/constants'
 
-export const runtime = 'edge'
+export const revalidate = 300
 export const alt = 'Vote for your country in World Cup 2026 qualification. Support with ETH on Base Network.'
 export const size = OG_IMAGE_SIZE
 export const contentType = OG_IMAGE_CONTENT_TYPE
