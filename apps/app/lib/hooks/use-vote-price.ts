@@ -16,6 +16,7 @@ interface UseQualificationVotePriceOptions {
 
 interface UseMatchVotePriceOptions {
   contractAddress: `0x${string}`
+  teamIndex?: number
   voteCount?: number
   enabled?: boolean
 }
@@ -152,15 +153,15 @@ export function useQualificationVotePrice({
  * Hook for tracking real-time vote prices for match voting
  * Automatically updates when new votes are placed
  */
-export function useMatchVotePrice({ contractAddress, voteCount = 1, enabled = true }: UseMatchVotePriceOptions) {
+export function useMatchVotePrice({ contractAddress, teamIndex = 0, voteCount = 1, enabled = true }: UseMatchVotePriceOptions) {
   const [refetchTrigger, setRefetchTrigger] = useState(0)
 
-  // Calculate price for the specified amount
+  // Calculate price for the next vote on the given team
   const { data: votePrice, refetch: refetchPrice } = useReadContract({
     address: contractAddress,
     abi: WORLD_CUP_MATCH_ABI,
     functionName: "calculateVotePrice",
-    args: [parseEther(voteCount.toString())],
+    args: [teamIndex as unknown as number],
     query: {
       enabled: enabled && voteCount > 0,
     },
@@ -180,7 +181,7 @@ export function useMatchVotePrice({ contractAddress, voteCount = 1, enabled = tr
   useWatchContractEvent({
     address: contractAddress,
     abi: WORLD_CUP_MATCH_ABI,
-    eventName: "VotePlaced",
+    eventName: "VotesPlaced",
     onLogs: () => {
       setRefetchTrigger((prev) => prev + 1)
     },

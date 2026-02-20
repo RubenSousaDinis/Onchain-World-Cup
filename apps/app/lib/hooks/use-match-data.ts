@@ -24,7 +24,7 @@ export function useMatchData(contractAddress: `0x${string}`) {
   useWatchContractEvent({
     address: contractAddress,
     abi: WORLD_CUP_MATCH_ABI,
-    eventName: "VotePlaced",
+    eventName: "VotesPlaced",
     onLogs: () => {
       setRefetchTrigger((prev) => prev + 1)
     },
@@ -52,18 +52,23 @@ export function useMatchData(contractAddress: `0x${string}`) {
     }
   }
 
-  const [team1Name, team2Name, team1Votes, team2Votes, totalPrizePool, currentPhase, isFinalized, winningTeam] =
-    matchDetails
+  const [
+    team1Name, team2Name,
+    team1Votes, team2Votes,
+    team1ETH, team2ETH,
+    totalPrizePool, totalPlatformFees,
+    currentPhase, isFinalized, winner
+  ] = matchDetails
 
   return {
     team1Name,
     team2Name,
-    team1Votes: formatEther(team1Votes as bigint),
-    team2Votes: formatEther(team2Votes as bigint),
+    team1Votes: String(team1Votes),
+    team2Votes: String(team2Votes),
     totalPrizePool: formatEther(totalPrizePool as bigint),
     currentPhase: Number(currentPhase),
     isFinalized,
-    winningTeam: Number(winningTeam),
+    winningTeam: winner === team1Name ? 0 : winner === team2Name ? 1 : winner === "TIE" ? 255 : 0,
     voterCount: Number(voterCount || 0),
     isLoading: false,
   }

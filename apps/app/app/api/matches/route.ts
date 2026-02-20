@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { isAuthenticated } from '@/lib/api-auth'
 
 /**
  * GET /api/matches
@@ -89,8 +90,9 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // TODO: Add authentication/authorization check
-    // Only allow admin users to create matches
+    if (!isAuthenticated(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const supabase = getSupabaseClient()
     const body = await request.json()
@@ -134,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     // Revalidate matches cache
     const { revalidateTag } = await import('next/cache')
-    revalidateTag('matches', "default")
+    revalidateTag('matches', 'default')
 
     return NextResponse.json({ data }, { status: 201 })
   } catch (error) {
