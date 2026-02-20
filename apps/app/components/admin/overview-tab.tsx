@@ -10,6 +10,7 @@ import {
   usePaused as useQualificationPaused,
 } from "@/lib/contracts/qualification"
 import { useMatchDetails } from "@/lib/contracts/match-admin"
+import { getCountryByCode } from "@/lib/countries"
 
 interface MatchRow {
   id: string
@@ -204,7 +205,14 @@ export function OverviewTab() {
                       <td className="px-3 py-2 text-sm font-mono">
                         {truncateAddress(v.voter_address)}
                       </td>
-                      <td className="px-3 py-2 text-sm font-mono">{v.country_code}</td>
+                      <td className="px-3 py-2 text-sm">
+                        {(() => {
+                          const country = getCountryByCode(v.country_code)
+                          return country
+                            ? `${country.flagEmoji} ${country.name}`
+                            : v.country_code
+                        })()}
+                      </td>
                       <td className="px-3 py-2 text-sm">{v.vote_count}</td>
                       <td className="px-3 py-2 text-sm">{v.total_cost_eth}</td>
                       <td className="px-3 py-2 text-sm font-mono">
