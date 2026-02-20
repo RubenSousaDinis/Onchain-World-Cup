@@ -210,12 +210,12 @@ export default function QualificationPage() {
     }
     window.addEventListener("vote-recorded", handleVoteRecorded)
 
-    // Refresh data every 10 seconds when page is focused (with cache-busting)
+    // Refresh data every 60 seconds when page is focused (with cache-busting)
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         fetchPublicData(true, Date.now())
       }
-    }, 10000)
+    }, 60000)
 
     // Refresh immediately when the user returns to the tab
     const handleVisibilityChange = () => {

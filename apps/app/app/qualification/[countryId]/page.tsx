@@ -4,6 +4,12 @@ import countriesData from "@/data/countries.json"
 
 export const revalidate = 300
 
+export function generateStaticParams() {
+  return countriesData.map((c) => ({
+    countryId: c.name.toLowerCase().replace(/\s+/g, "-"),
+  }))
+}
+
 export async function generateMetadata({
   params,
 }: {
