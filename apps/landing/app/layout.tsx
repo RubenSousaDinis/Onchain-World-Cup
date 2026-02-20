@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_DOMAIN || "https://onchainworldcup.xyz"),
   title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
   description:
-    "Back your country with ETH. Only top 48 qualify. Prize pool shared among winners. Early supporters shape the tournament.",
+    "Onchain World Cup 2026 — back your country with ETH on Base. Top 48 of 192 nations qualify. Prize pool shared among winning supporters. First vote from 0.001 ETH.",
   manifest: "/manifest.json",
   alternates: {
     canonical: "https://onchainworldcup.xyz/",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     siteName: "Onchain World Cup",
     locale: "en_US",
     title: "Onchain World Cup 2026 | Vote for Your Country with ETH on Base",
-    description: "Back your country with ETH. Only top 48 qualify. Early supporters shape the tournament.",
+    description: "Onchain World Cup 2026 — back your country with ETH on Base. Top 48 of 192 nations qualify. First vote from 0.001 ETH.",
     images: [
       {
         url: "/splash_social.png",

@@ -53,6 +53,7 @@ export function Footer() {
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
           <div className="mb-4 flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
             <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+            <Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
             <Link href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
           </div>
