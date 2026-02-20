@@ -11,6 +11,7 @@ import {
   usePaused,
 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
+import { getAddressExplorerUrl } from "@/lib/admin"
 
 export function QualificationContractPanel() {
   const chainId = useChainId()
@@ -83,7 +84,15 @@ export function QualificationContractPanel() {
       </button>
 
       <p className="text-xs text-muted-foreground mt-2 font-mono break-all">
-        Contract: {contractAddress}
+        Contract:{" "}
+        <a
+          href={getAddressExplorerUrl(chainId, contractAddress)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[var(--highlight-yellow)] hover:underline"
+        >
+          {contractAddress}
+        </a>
       </p>
     </div>
   )
