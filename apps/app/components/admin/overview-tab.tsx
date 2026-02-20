@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useAccount, useChainId } from "wagmi"
+import { useCallback, useEffect, useState } from "react"
+import { useChainId } from "wagmi"
 import { formatEther, Address } from "viem"
 import {
   useQualificationFinalized,
@@ -19,6 +19,19 @@ interface MatchRow {
   status: string
   match_start_time: string
 }
+
+interface VoteRow {
+  id: string
+  country_code: string
+  voter_address: string
+  vote_count: number
+  total_cost_eth: string
+  tx_hash: string
+  block_number: number
+  created_at: string
+}
+
+const PAGE_SIZE = 20
 
 function MatchOnchainRow({ match }: { match: MatchRow }) {
   const address = match.contract_address as Address | undefined
@@ -47,10 +60,20 @@ function MatchOnchainRow({ match }: { match: MatchRow }) {
   )
 }
 
+function truncateAddress(addr: string) {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
+
 export function OverviewTab() {
   const chainId = useChainId()
   const [matches, setMatches] = useState<MatchRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [matchesLoading, setMatchesLoading] = useState(true)
+
+  // Votes pagination state
+  const [votes, setVotes] = useState<VoteRow[]>([])
+  const [votesLoading, setVotesLoading] = useState(true)
+  const [votesTotal, setVotesTotal] = useState(0)
+  const [votesPage, setVotesPage] = useState(0)
 
   const { data: finalized } = useQualificationFinalized(chainId)
   const { data: endTime } = useQualificationEndTime(chainId)
@@ -62,8 +85,27 @@ export function OverviewTab() {
       .then((r) => r.json())
       .then((res) => setMatches(res.data || []))
       .catch(console.error)
-      .finally(() => setLoading(false))
+      .finally(() => setMatchesLoading(false))
   }, [])
+
+  const fetchVotes = useCallback((page: number) => {
+    setVotesLoading(true)
+    const offset = page * PAGE_SIZE
+    fetch(`/api/qualification/votes?limit=${PAGE_SIZE}&offset=${offset}&sort=recent`)
+      .then((r) => r.json())
+      .then((res) => {
+        setVotes(res.data || [])
+        setVotesTotal(res.count || 0)
+      })
+      .catch(console.error)
+      .finally(() => setVotesLoading(false))
+  }, [])
+
+  useEffect(() => {
+    fetchVotes(votesPage)
+  }, [votesPage, fetchVotes])
+
+  const totalPages = Math.ceil(votesTotal / PAGE_SIZE)
 
   return (
     <div className="space-y-6">
@@ -101,7 +143,7 @@ export function OverviewTab() {
       {/* Matches table */}
       <div className="cm-panel p-4">
         <h3 className="cm-section-header px-3 py-2 mb-4">Matches</h3>
-        {loading ? (
+        {matchesLoading ? (
           <p className="text-muted-foreground text-sm p-4">Loading matches...</p>
         ) : matches.length === 0 ? (
           <p className="text-muted-foreground text-sm p-4">No matches found.</p>
@@ -124,6 +166,95 @@ export function OverviewTab() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* Votes table (paginated) */}
+      <div className="cm-panel p-4">
+        <h3 className="cm-section-header px-3 py-2 mb-4">
+          All Votes
+          {votesTotal > 0 && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              ({votesTotal} total)
+            </span>
+          )}
+        </h3>
+
+        {votesLoading && votes.length === 0 ? (
+          <p className="text-muted-foreground text-sm p-4">Loading votes...</p>
+        ) : votes.length === 0 ? (
+          <p className="text-muted-foreground text-sm p-4">No votes found.</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground border-b border-border/30">
+                    <th className="px-3 py-2">Voter</th>
+                    <th className="px-3 py-2">Country</th>
+                    <th className="px-3 py-2">Votes</th>
+                    <th className="px-3 py-2">Cost (ETH)</th>
+                    <th className="px-3 py-2">Tx Hash</th>
+                    <th className="px-3 py-2">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {votes.map((v) => (
+                    <tr key={v.id} className="border-b border-border/10">
+                      <td className="px-3 py-2 text-sm font-mono">
+                        {truncateAddress(v.voter_address)}
+                      </td>
+                      <td className="px-3 py-2 text-sm font-mono">{v.country_code}</td>
+                      <td className="px-3 py-2 text-sm">{v.vote_count}</td>
+                      <td className="px-3 py-2 text-sm">{v.total_cost_eth}</td>
+                      <td className="px-3 py-2 text-sm font-mono">
+                        {v.tx_hash ? (
+                          <a
+                            href={`https://sepolia.basescan.org/tx/${v.tx_hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[var(--highlight-yellow)] hover:underline"
+                          >
+                            {truncateAddress(v.tx_hash)}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-muted-foreground">
+                        {new Date(v.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-border/20 mt-4">
+                <span className="text-xs text-muted-foreground">
+                  Page {votesPage + 1} of {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setVotesPage((p) => Math.max(0, p - 1))}
+                    disabled={votesPage === 0 || votesLoading}
+                    className="cm-highlight bg-[var(--nav-purple)] border border-border/50 px-3 py-1 text-xs font-semibold disabled:opacity-30"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setVotesPage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={votesPage >= totalPages - 1 || votesLoading}
+                    className="cm-highlight bg-[var(--nav-purple)] border border-border/50 px-3 py-1 text-xs font-semibold disabled:opacity-30"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
