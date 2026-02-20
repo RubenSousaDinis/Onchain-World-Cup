@@ -224,7 +224,16 @@ export function HomePageClient() {
                 </p>
               </div>
             </div>
-            <CountdownTimer endDate={qualEndDate} />
+            <div className="flex items-center gap-3 flex-wrap">
+              <CountdownTimer endDate={qualEndDate} />
+              <Link
+                href="/qualification"
+                className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform"
+              >
+                Vote Now
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -453,10 +462,10 @@ export function HomePageClient() {
         description="Vote prices increase as more people vote. Early voters get the best prices and have a better chance of winning if their team succeeds. Don't wait - vote now!"
         action={
           <Link
-            href="/how-it-works"
+            href="/qualification"
             className="inline-flex items-center gap-1 text-xs lg:text-sm text-accent hover:text-accent/80 transition-colors font-bold"
           >
-            Learn about pricing
+            Vote for your country
             <ChevronRight className="w-3 h-3" aria-hidden="true" />
           </Link>
         }
