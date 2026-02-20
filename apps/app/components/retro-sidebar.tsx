@@ -35,7 +35,7 @@ export function RetroSidebar() {
       {/* Logo/Brand */}
       <Link href="/" className="flex flex-col items-center gap-2" aria-label="Go to home">
         <div className="w-12 h-12 rounded-sm bg-primary flex items-center justify-center overflow-hidden">
-          <Image src="/logo.png" alt="Onchain World Cup logo" width={48} height={48} priority className="w-full h-full object-contain p-1" />
+          <Image src="/logo.jpg" alt="Onchain World Cup logo" width={48} height={48} priority className="w-full h-full object-contain p-1" />
         </div>
         <div className="text-sm text-center leading-tight" aria-hidden="true">
           <div className="cm-highlight">ONCHAIN</div>
@@ -96,7 +96,7 @@ export function RetroSidebar() {
               <>
                 {pfpUrl && (
                   <div className="w-8 h-8 rounded-full overflow-hidden mx-auto mb-1">
-                    <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" />
+                    <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   </div>
                 )}
                 <div className="truncate">{displayName || username || "Farcaster User"}</div>

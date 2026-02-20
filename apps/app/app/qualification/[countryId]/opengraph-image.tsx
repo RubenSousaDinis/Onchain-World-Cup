@@ -106,7 +106,7 @@ export default async function Image({ params }: { params: Promise<{ countryId: s
               <div tw="flex items-center" style={{ gap: 20 }}>
                 {/* Logo */}
                 <img
-                  src={`${baseUrl}/logo.svg`}
+                  src={`${baseUrl}/logo.jpg`}
                   width={OG_IMAGE_LOGO.LARGE.width}
                   height={OG_IMAGE_LOGO.LARGE.height}
                   style={{ objectFit: 'contain' }}

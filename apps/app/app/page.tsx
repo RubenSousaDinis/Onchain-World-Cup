@@ -1,3 +1,4 @@
+import { Trophy } from "lucide-react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { HomeLazy } from "./home-lazy"
@@ -52,9 +53,10 @@ export default async function HomePage() {
                 </p>
                 <a
                   href="/qualification"
-                  className="inline-flex items-center gap-2 cm-nav-tab px-5 py-2.5 rounded-sm font-bold uppercase text-sm tracking-wide hover:scale-[1.02] transition-transform"
+                  className="inline-flex items-center gap-2 cm-nav-tab px-5 py-2.5 rounded-sm font-bold uppercase text-sm tracking-wide"
                 >
-                  ⚽ Vote Now
+                  <Trophy className="w-4 h-4" aria-hidden="true" />
+                  Vote Now
                 </a>
               </div>
             </div>

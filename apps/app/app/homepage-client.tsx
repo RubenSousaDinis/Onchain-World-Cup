@@ -166,7 +166,7 @@ export function HomePageClient() {
       <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-primary/40 bg-primary/5">
         <div className="p-3 lg:p-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse [animation-iteration-count:5] shrink-0" />
             <p className="text-xs lg:text-sm font-bold text-primary uppercase tracking-wide">
               Testnet — Mainnet launching late March 2026
             </p>
@@ -200,7 +200,7 @@ export function HomePageClient() {
               </div>
               <Link
                 href={`/users/${userAddress}`}
-                className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform"
+                className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200"
               >
                 View Profile
                 <ChevronRight className="w-4 h-4" />
@@ -228,7 +228,7 @@ export function HomePageClient() {
               <CountdownTimer endDate={qualEndDate} />
               <Link
                 href="/qualification"
-                className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform"
+                className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold uppercase text-sm hover:brightness-110 transition-colors duration-200"
               >
                 Vote Now
                 <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -267,7 +267,7 @@ export function HomePageClient() {
       <div className="mb-6 lg:mb-8">
         <Link
           href="/stats"
-          className="cm-nav-tab inline-flex items-center gap-2 px-4 py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform"
+          className="cm-nav-tab inline-flex items-center gap-2 px-4 py-3 rounded-sm font-bold uppercase text-sm hover:brightness-110 transition-colors duration-200"
         >
           <BarChart3 className="w-5 h-5" aria-hidden="true" />
           View Full Statistics
@@ -283,7 +283,7 @@ export function HomePageClient() {
           footer={
             <Link
               href="/qualification"
-              className="w-full cm-nav-tab py-3 rounded-sm font-bold uppercase text-sm flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+              className="w-full cm-nav-tab py-3 rounded-sm font-bold uppercase text-sm flex items-center justify-center gap-2 hover:brightness-110 transition-colors duration-200"
             >
               <Trophy className="w-4 h-4" aria-hidden="true" />
               Vote for Your Country

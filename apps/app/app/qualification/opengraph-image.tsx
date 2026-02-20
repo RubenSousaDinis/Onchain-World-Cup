@@ -91,7 +91,7 @@ export default async function Image() {
               <div tw="flex items-center" style={{ gap: 16 }}>
                 {/* Logo */}
                 <img
-                  src={`${baseUrl}/logo.svg`}
+                  src={`${baseUrl}/logo.jpg`}
                   width={OG_IMAGE_LOGO.SMALL.width}
                   height={OG_IMAGE_LOGO.SMALL.height}
                   style={{ objectFit: 'contain' }}

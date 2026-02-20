@@ -79,7 +79,7 @@ export function MatchResultNFTCard({
         <div className="text-center mt-4">
           <div className="text-xs text-white/60 mb-2">{stadium}</div>
           <div className="flex items-center justify-center gap-2">
-            <img src="/logo.svg" alt="Onchain World Cup" className="h-6 w-auto" />
+            <img src="/logo.jpg" alt="Onchain World Cup" className="h-6 w-auto" />
             <div className="text-sm font-bold text-accent tracking-wider">ONCHAIN WORLD CUP 2026</div>
           </div>
         </div>
