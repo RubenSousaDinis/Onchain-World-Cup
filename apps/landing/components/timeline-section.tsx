@@ -50,8 +50,8 @@ export function TimelineSection() {
             {/* Connection line */}
             <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-border" />
             <div
-              className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-primary transition-all duration-1000"
-              style={{ width: "12.5%" }}
+              className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-primary transition-[width] duration-300"
+              style={{ width: `${(milestones.filter(m => m.status !== "future").length / milestones.length) * 100}%` }}
             />
 
             <div className="relative grid grid-cols-4 gap-6">
@@ -66,12 +66,12 @@ export function TimelineSection() {
                     }`}
                   >
                     {(milestone.status === "upcoming") && (
-                      <div className="h-3 w-3 animate-pulse rounded-full bg-primary-foreground" />
+                      <div className="h-3 w-3 animate-pulse [animation-iteration-count:5] rounded-full bg-primary-foreground" />
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-all hover:border-primary hover:shadow-lg">
+                  <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-[colors,box-shadow] duration-200 hover:border-primary hover:shadow-lg">
                     <div
                       className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
                         milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
@@ -102,12 +102,12 @@ export function TimelineSection() {
                   }`}
                 >
                   {(milestone.status === "upcoming") && (
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground" />
+                    <div className="h-2 w-2 animate-pulse [animation-iteration-count:5] rounded-full bg-primary-foreground" />
                   )}
                 </div>
 
                 {/* Content */}
-                <div className="rounded-lg border border-border bg-card p-6 transition-all hover:border-primary">
+                <div className="rounded-lg border border-border bg-card p-6 transition-colors duration-200 hover:border-primary">
                   <div
                     className={`mb-2 text-sm font-semibold uppercase tracking-wide ${
                       milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
