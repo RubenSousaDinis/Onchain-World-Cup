@@ -14,6 +14,29 @@ import { getCountryByCode } from "@/lib/countries"
 import { getAddressExplorerUrl, getTxExplorerUrl } from "@/lib/admin"
 import { getQualificationAddress, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 
+/** Strip trailing zeros: 0.001500 → 0.0015, 1.000000 → 1 */
+function trimEth(raw: string | number | bigint): string {
+  const n = typeof raw === "bigint" ? Number(formatEther(raw)) : Number(raw)
+  if (n === 0) return "0"
+  return parseFloat(n.toFixed(8)).toString()
+}
+
+function EthAmount({ eth, price }: { eth: string | number | bigint; price: number | null }) {
+  const formatted = trimEth(eth)
+  const n = typeof eth === "bigint" ? Number(formatEther(eth)) : Number(eth)
+  const usd = price != null ? n * price : null
+  return (
+    <span>
+      {formatted} ETH
+      {usd != null && (
+        <span className="text-muted-foreground text-xs ml-1">
+          (${usd < 0.01 ? usd.toFixed(4) : usd.toFixed(2)})
+        </span>
+      )}
+    </span>
+  )
+}
+
 interface MatchRow {
   id: string
   team1: { name: string; flag_emoji: string } | null
@@ -36,7 +59,7 @@ interface VoteRow {
 
 const PAGE_SIZE = 20
 
-function MatchOnchainRow({ match, chainId }: { match: MatchRow; chainId: number }) {
+function MatchOnchainRow({ match, chainId, ethPrice }: { match: MatchRow; chainId: number; ethPrice: number | null }) {
   const address = match.contract_address as Address | undefined
   const { data, isLoading } = useMatchDetails(address || undefined)
 
@@ -51,7 +74,7 @@ function MatchOnchainRow({ match, chainId }: { match: MatchRow; chainId: number 
       </td>
       <td className="px-3 py-2 text-sm">{match.status}</td>
       <td className="px-3 py-2 text-sm">
-        {isLoading ? "..." : prizePool != null ? `${Number(formatEther(prizePool)).toFixed(4)} ETH` : "N/A"}
+        {isLoading ? "..." : prizePool != null ? <EthAmount eth={prizePool} price={ethPrice} /> : "N/A"}
       </td>
       <td className="px-3 py-2 text-sm">
         {isLoading ? "..." : phase != null ? (phase === 0 ? "Closed" : `Phase ${phase}`) : "N/A"}
@@ -96,10 +119,20 @@ export function OverviewTab() {
   const [dailyEth, setDailyEth] = useState<{ day: string; total_eth: string; vote_count: number }[]>([])
   const [dailyEthLoading, setDailyEthLoading] = useState(true)
 
+  // ETH/USD price
+  const [ethPrice, setEthPrice] = useState<number | null>(null)
+
   const { data: finalized } = useQualificationFinalized(chainId)
   const { data: endTime } = useQualificationEndTime(chainId)
   const { data: prizePool } = useTotalPrizePool(chainId)
   const { data: qPaused } = useQualificationPaused(chainId)
+
+  useEffect(() => {
+    fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
+      .then((r) => r.json())
+      .then((data) => setEthPrice(data?.ethereum?.usd ?? null))
+      .catch(() => null)
+  }, [])
 
   useEffect(() => {
     fetch("/api/matches?limit=50")
@@ -143,7 +176,7 @@ export function OverviewTab() {
           <div>
             <span className="text-muted-foreground block">Prize Pool</span>
             <span className="cm-highlight text-lg">
-              {prizePool != null ? `${Number(formatEther(prizePool)).toFixed(4)} ETH` : "—"}
+              {prizePool != null ? <EthAmount eth={prizePool} price={ethPrice} /> : "—"}
             </span>
           </div>
           <div>
@@ -203,7 +236,7 @@ export function OverviewTab() {
                       {new Date(row.day).toLocaleDateString()}
                     </td>
                     <td className="px-3 py-2 text-sm cm-highlight">
-                      {Number(row.total_eth).toFixed(6)} ETH
+                      <EthAmount eth={row.total_eth} price={ethPrice} />
                     </td>
                     <td className="px-3 py-2 text-sm">{row.vote_count}</td>
                   </tr>
@@ -236,7 +269,7 @@ export function OverviewTab() {
               </thead>
               <tbody>
                 {matches.map((m) => (
-                  <MatchOnchainRow key={m.id} match={m} chainId={chainId} />
+                  <MatchOnchainRow key={m.id} match={m} chainId={chainId} ethPrice={ethPrice} />
                 ))}
               </tbody>
             </table>
@@ -293,7 +326,9 @@ export function OverviewTab() {
                         })()}
                       </td>
                       <td className="px-3 py-2 text-sm">{v.vote_count}</td>
-                      <td className="px-3 py-2 text-sm">{v.total_cost_eth}</td>
+                      <td className="px-3 py-2 text-sm">
+                        <EthAmount eth={v.total_cost_eth} price={ethPrice} />
+                      </td>
                       <td className="px-3 py-2 text-sm font-mono">
                         {v.tx_hash ? (
                           <a
