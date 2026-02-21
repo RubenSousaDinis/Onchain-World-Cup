@@ -19,6 +19,78 @@ interface Group {
 
 type DeployStep = "idle" | "deploying" | "authorizing" | "saving" | "done"
 
+// Standard FIFA World Cup group-stage kickoff times (UTC)
+// Two matches per day: early slot and evening slot
+const KICKOFF_SLOTS_UTC = [17, 21] // 17:00 UTC and 21:00 UTC
+
+/**
+ * Returns the next N upcoming kickoff slot datetimes as datetime-local strings.
+ * Each day has two slots. We start from now and skip slots that are already past.
+ */
+function getUpcomingSlots(count = 6): { label: string; value: string }[] {
+  const slots: { label: string; value: string }[] = []
+  const now = new Date()
+
+  // Start from today and look ahead up to 14 days
+  for (let dayOffset = 0; dayOffset <= 14 && slots.length < count; dayOffset++) {
+    const base = new Date(now)
+    base.setUTCHours(0, 0, 0, 0)
+    base.setUTCDate(base.getUTCDate() + dayOffset)
+
+    for (const hour of KICKOFF_SLOTS_UTC) {
+      if (slots.length >= count) break
+      const slot = new Date(base)
+      slot.setUTCHours(hour, 0, 0, 0)
+
+      // Skip slots in the past (with a 1-hour buffer)
+      if (slot.getTime() <= now.getTime() + 60 * 60 * 1000) continue
+
+      // Format as datetime-local value (YYYY-MM-DDTHH:MM) in local time
+      const localStr = new Date(slot.getTime() - slot.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16)
+
+      const dayLabel =
+        dayOffset === 0
+          ? "Today"
+          : dayOffset === 1
+          ? "Tomorrow"
+          : slot.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
+
+      slots.push({
+        label: `${dayLabel} ${slot.getUTCHours().toString().padStart(2, "0")}:00 UTC`,
+        value: localStr,
+      })
+    }
+  }
+
+  return slots
+}
+
+/** Format a datetime-local string as a readable time */
+function formatLocalDt(value: string): string {
+  if (!value) return ""
+  return new Date(value).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+/** Add hours to a datetime-local string */
+function addHours(value: string, hours: number): string {
+  if (!value) return ""
+  return new Date(new Date(value).getTime() + hours * 3600_000).toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
 export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
   const [groups, setGroups] = useState<Group[]>([])
   const [loadingGroups, setLoadingGroups] = useState(true)
@@ -33,12 +105,18 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
   const [error, setError] = useState("")
   const [result, setResult] = useState<{ contractAddress: string; matchId: string } | null>(null)
 
+  const upcomingSlots = getUpcomingSlots(6)
+
   useEffect(() => {
     fetch("/api/tournament/groups")
       .then((r) => r.json())
       .then((res) => setGroups(res.data || []))
       .catch(() => setGroupError("Failed to load groups"))
       .finally(() => setLoadingGroups(false))
+
+    // Pre-fill with the next upcoming standard slot
+    const slots = getUpcomingSlots(1)
+    if (slots.length > 0) setMatchStartTime(slots[0].value)
   }, [])
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId) || null
@@ -82,8 +160,6 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
         }),
       })
 
-      // Simulate step progression (the server handles all steps atomically,
-      // but we show progress to the user for UX)
       setStep("authorizing")
       await new Promise((r) => setTimeout(r, 500))
       setStep("saving")
@@ -100,11 +176,11 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
         matchId: data.data?.id,
       })
 
-      // Reset form
       setSelectedGroupId("")
       setTeam1Code("")
       setTeam2Code("")
-      setMatchStartTime("")
+      const nextSlots = getUpcomingSlots(1)
+      setMatchStartTime(nextSlots[0]?.value || "")
 
       onCreated()
     } catch (err) {
@@ -128,11 +204,9 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
       <h3 className="cm-section-header px-3 py-2 mb-4">Create Match from Group</h3>
 
       <form onSubmit={handleSubmit} className="space-y-5 max-w-lg">
-        {/* Step 1: Select Group */}
+        {/* Group */}
         <div>
-          <label className="block text-sm text-muted-foreground mb-1">
-            1. Select Group
-          </label>
+          <label className="block text-sm text-muted-foreground mb-1">1. Select Group</label>
           {loadingGroups ? (
             <p className="text-sm text-muted-foreground">Loading groups...</p>
           ) : groupError ? (
@@ -154,13 +228,11 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
           )}
         </div>
 
-        {/* Step 2: Select Teams */}
+        {/* Teams */}
         {selectedGroup && (
           <>
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">
-                2. Team 1
-              </label>
+              <label className="block text-sm text-muted-foreground mb-1">2. Team 1</label>
               <select
                 value={team1Code}
                 onChange={(e) => setTeam1Code(e.target.value)}
@@ -169,11 +241,7 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
               >
                 <option value="">Select team 1...</option>
                 {selectedGroup.teams.map((t) => (
-                  <option
-                    key={t.countryCode}
-                    value={t.countryCode}
-                    disabled={t.countryCode === team2Code}
-                  >
+                  <option key={t.countryCode} value={t.countryCode} disabled={t.countryCode === team2Code}>
                     {t.flagEmoji} {t.countryName} (#{t.qualRank})
                   </option>
                 ))}
@@ -181,9 +249,7 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">
-                3. Team 2
-              </label>
+              <label className="block text-sm text-muted-foreground mb-1">3. Team 2</label>
               <select
                 value={team2Code}
                 onChange={(e) => setTeam2Code(e.target.value)}
@@ -192,11 +258,7 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
               >
                 <option value="">Select team 2...</option>
                 {selectedGroup.teams.map((t) => (
-                  <option
-                    key={t.countryCode}
-                    value={t.countryCode}
-                    disabled={t.countryCode === team1Code}
-                  >
+                  <option key={t.countryCode} value={t.countryCode} disabled={t.countryCode === team1Code}>
                     {t.flagEmoji} {t.countryName} (#{t.qualRank})
                   </option>
                 ))}
@@ -205,11 +267,30 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
           </>
         )}
 
-        {/* Step 3: Match time */}
+        {/* Start time */}
         <div>
           <label className="block text-sm text-muted-foreground mb-1">
             {selectedGroup ? "4." : "2."} Match Start Time
           </label>
+
+          {/* Quick-select slots */}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {upcomingSlots.map((slot) => (
+              <button
+                key={slot.value}
+                type="button"
+                onClick={() => setMatchStartTime(slot.value)}
+                className={`px-2 py-1 text-xs border rounded transition-colors ${
+                  matchStartTime === slot.value
+                    ? "bg-[var(--nav-purple)] border-[var(--highlight-yellow)] text-white"
+                    : "bg-background border-border/40 text-muted-foreground hover:border-border"
+                }`}
+              >
+                {slot.label}
+              </button>
+            ))}
+          </div>
+
           <input
             type="datetime-local"
             value={matchStartTime}
@@ -219,10 +300,50 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
           />
         </div>
 
-        {/* Preview */}
+        {/* Voting timeline */}
+        {matchStartTime && (
+          <div className="cm-panel bg-muted/20 px-3 py-3 text-xs space-y-2">
+            <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">
+              Voting Timeline
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-start gap-2">
+                <span className="text-green-400 mt-0.5">▶</span>
+                <div>
+                  <span className="font-medium">Voting opens</span>
+                  <span className="text-muted-foreground ml-1">— {formatLocalDt(matchStartTime)}</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-400 mt-0.5">⚡</span>
+                <div>
+                  <span className="font-medium">Phase 1 ends</span>
+                  <span className="text-muted-foreground ml-1">
+                    — {addHours(matchStartTime, 2)}
+                    <span className="ml-1 opacity-60">(early-bird pricing closes)</span>
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-red-400 mt-0.5">■</span>
+                <div>
+                  <span className="font-medium">Voting closes</span>
+                  <span className="text-muted-foreground ml-1">
+                    — {addHours(matchStartTime, 24)}
+                    <span className="ml-1 opacity-60">(24h window)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Deployment preview */}
         {isValid && selectedGroup && (
           <div className="cm-panel bg-muted/20 px-3 py-2 text-xs space-y-1">
-            <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">Deployment Preview</p>
+            <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">
+              Deployment Preview
+            </p>
             <p>
               <span className="text-muted-foreground">Match:</span>{" "}
               {selectedGroup.teams.find((t) => t.countryCode === team1Code)?.flagEmoji}{" "}
@@ -233,10 +354,6 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
             </p>
             <p>
               <span className="text-muted-foreground">Group:</span> {selectedGroup.displayName}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Start:</span>{" "}
-              {new Date(matchStartTime).toLocaleString()}
             </p>
             <p className="text-muted-foreground/70 mt-1">
               A new WorldCupMatch contract will be deployed and authorized in the EventHub.
@@ -253,7 +370,12 @@ export function CreateMatchForm({ onCreated }: { onCreated: () => void }) {
                 (s === "authorizing" && step === "saving")
               const active = step === s
               return (
-                <div key={s} className={`flex items-center gap-2 ${done ? "text-green-400" : active ? "text-yellow-400" : "text-muted-foreground/40"}`}>
+                <div
+                  key={s}
+                  className={`flex items-center gap-2 ${
+                    done ? "text-green-400" : active ? "text-yellow-400" : "text-muted-foreground/40"
+                  }`}
+                >
                   <span>{done ? "✓" : active ? "⟳" : "○"}</span>
                   <span>
                     {s === "deploying" && "Deploying WorldCupMatch contract"}
