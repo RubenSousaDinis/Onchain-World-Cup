@@ -6,8 +6,11 @@ import { getSupabaseClient } from "@/lib/server/supabase"
 import { revalidateTag } from "next/cache"
 import { ethers } from "ethers"
 
-import WorldCupMatchArtifact from "@/artifacts/contracts/WorldCupMatch.sol/WorldCupMatch.json"
-import EventHubArtifact from "@/artifacts/contracts/WorldCupEventHub.sol/WorldCupEventHub.json"
+import {
+  WORLD_CUP_MATCH_BYTECODE,
+  WORLD_CUP_MATCH_DEPLOY_ABI,
+  EVENT_HUB_AUTHORIZE_ABI,
+} from "@/lib/contracts/deploy-artifacts"
 
 /**
  * POST /api/admin/deploy-match
@@ -103,8 +106,8 @@ export async function POST(request: NextRequest) {
 
     // Deploy WorldCupMatch
     const matchFactory = new ethers.ContractFactory(
-      WorldCupMatchArtifact.abi,
-      WorldCupMatchArtifact.bytecode,
+      WORLD_CUP_MATCH_DEPLOY_ABI,
+      WORLD_CUP_MATCH_BYTECODE,
       signer
     )
 
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
     const matchAddress = await matchContract.getAddress()
 
     // Authorize in EventHub
-    const eventHub = new ethers.Contract(eventHubAddress, EventHubArtifact.abi, signer)
+    const eventHub = new ethers.Contract(eventHubAddress, EVENT_HUB_AUTHORIZE_ABI, signer)
     const authTx = await eventHub.authorizeMatch(matchAddress)
     await authTx.wait()
 
