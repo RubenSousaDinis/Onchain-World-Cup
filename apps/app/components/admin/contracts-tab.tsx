@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Address } from "viem"
 import { MatchContractPanel } from "./match-contract-panel"
 import { QualificationContractPanel } from "./qualification-contract-panel"
+import { NftContractPanel } from "./nft-contract-panel"
 
 interface MatchOption {
   id: string
@@ -26,6 +27,7 @@ export function ContractsTab() {
   return (
     <div className="space-y-6">
       <QualificationContractPanel />
+      <NftContractPanel />
 
       <div className="cm-panel p-4">
         <h3 className="cm-section-header px-3 py-2 mb-4">Match Contracts</h3>
