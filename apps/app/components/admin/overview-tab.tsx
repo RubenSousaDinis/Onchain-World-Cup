@@ -1,8 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useChainId } from "wagmi"
-import { formatEther, Address } from "viem"
+import { useChainId, useReadContract } from "wagmi"
+import { formatEther, isAddress, Address } from "viem"
 import {
   useQualificationFinalized,
   useQualificationEndTime,
@@ -104,6 +104,11 @@ function truncateAddress(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
+const NFT_SUPPLY_ABI = [
+  { inputs: [], name: "totalSupply", outputs: [{ type: "uint256" }], stateMutability: "view", type: "function" },
+  { inputs: [], name: "MINT_PRICE", outputs: [{ type: "uint256" }], stateMutability: "view", type: "function" },
+] as const
+
 export function OverviewTab() {
   const chainId = useChainId()
   const [matches, setMatches] = useState<MatchRow[]>([])
@@ -126,6 +131,29 @@ export function OverviewTab() {
   const { data: endTime } = useQualificationEndTime(chainId)
   const { data: prizePool } = useTotalPrizePool(chainId)
   const { data: qPaused } = useQualificationPaused(chainId)
+
+  // NFT contract stats
+  const achievementAddr = process.env.NEXT_PUBLIC_ACHIEVEMENT_NFT_ADDRESS as `0x${string}` | undefined
+  const matchNftAddr = process.env.NEXT_PUBLIC_MATCH_NFT_ADDRESS as `0x${string}` | undefined
+
+  const { data: achievementSupply } = useReadContract({
+    address: achievementAddr && isAddress(achievementAddr) ? achievementAddr : undefined,
+    abi: NFT_SUPPLY_ABI,
+    functionName: "totalSupply",
+    query: { enabled: !!achievementAddr && isAddress(achievementAddr ?? "") },
+  })
+  const { data: achievementMintPrice } = useReadContract({
+    address: achievementAddr && isAddress(achievementAddr) ? achievementAddr : undefined,
+    abi: NFT_SUPPLY_ABI,
+    functionName: "MINT_PRICE",
+    query: { enabled: !!achievementAddr && isAddress(achievementAddr ?? "") },
+  })
+  const { data: matchNftSupply } = useReadContract({
+    address: matchNftAddr && isAddress(matchNftAddr) ? matchNftAddr : undefined,
+    abi: NFT_SUPPLY_ABI,
+    functionName: "totalSupply",
+    query: { enabled: !!matchNftAddr && isAddress(matchNftAddr ?? "") },
+  })
 
   useEffect(() => {
     fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd")
@@ -211,6 +239,41 @@ export function OverviewTab() {
           </p>
         )}
       </div>
+
+      {/* NFT contracts */}
+      {(achievementAddr || matchNftAddr) && (
+        <div className="cm-panel p-4">
+          <h3 className="cm-section-header px-3 py-2 mb-4">NFT Contracts</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            {achievementAddr && isAddress(achievementAddr) && (
+              <>
+                <div>
+                  <span className="text-muted-foreground block">Achievement NFTs minted</span>
+                  <span className="cm-highlight text-lg">
+                    {achievementSupply != null ? Number(achievementSupply).toLocaleString() : "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block">Achievement mint price</span>
+                  <span>
+                    {achievementMintPrice != null
+                      ? <EthAmount eth={achievementMintPrice} price={ethPrice} />
+                      : "—"}
+                  </span>
+                </div>
+              </>
+            )}
+            {matchNftAddr && isAddress(matchNftAddr) && (
+              <div>
+                <span className="text-muted-foreground block">Match NFTs minted</span>
+                <span className="cm-highlight text-lg">
+                  {matchNftSupply != null ? Number(matchNftSupply).toLocaleString() : "—"}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Daily ETH */}
       <div className="cm-panel p-4">
