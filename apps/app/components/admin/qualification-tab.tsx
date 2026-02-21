@@ -266,9 +266,23 @@ export function QualificationTab() {
       {/* Finalize */}
       {!finalized && (
         <div className="cm-panel p-4">
-          <h3 className="cm-section-header px-3 py-2 mb-4">
-            Finalize Qualification — {selected.size}/48 Selected
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="cm-section-header px-3 py-2">
+              Finalize Qualification
+            </h3>
+            <button
+              onClick={() =>
+                setSelected(
+                  selected.size === countries.length
+                    ? new Set()
+                    : new Set(countries.map((c) => c.code))
+                )
+              }
+              className="text-sm text-[var(--highlight-yellow)] hover:underline px-3"
+            >
+              {selected.size === countries.length ? "Deselect all" : `${selected.size}/48 Selected — Select all`}
+            </button>
+          </div>
 
           {loading ? (
             <p className="text-muted-foreground text-sm">Loading countries...</p>
