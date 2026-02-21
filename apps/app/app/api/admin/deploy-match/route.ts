@@ -6,23 +6,21 @@ import { getSupabaseClient } from "@/lib/server/supabase"
 import { revalidateTag } from "next/cache"
 import { ethers } from "ethers"
 
-// Compiled artifact bytecode + ABI
 import WorldCupMatchArtifact from "@/artifacts/contracts/WorldCupMatch.sol/WorldCupMatch.json"
 import EventHubArtifact from "@/artifacts/contracts/WorldCupEventHub.sol/WorldCupEventHub.json"
 
 /**
  * POST /api/admin/deploy-match
  *
- * Deploys a new WorldCupMatch contract, authorizes it in the EventHub,
- * then creates the corresponding database record.
+ * Deploys a WorldCupMatch contract and authorizes it in the EventHub.
+ * When `matchId` is provided, updates the existing DB record with the
+ * deployed contract address. Otherwise creates a new record.
  *
- * Body:
- *   - team1Code: string  (ISO country code, e.g. "BR")
- *   - team2Code: string  (ISO country code, e.g. "AR")
- *   - team1Name: string  (display name, e.g. "Brazil")
- *   - team2Name: string  (display name, e.g. "Argentina")
- *   - matchStartTime: ISO string
- *   - groupId: string (optional — tournament group UUID)
+ * Body (matchId mode — preferred):
+ *   - matchId: string  (UUID of existing undeployed match)
+ *
+ * Body (create mode — legacy):
+ *   - team1Code, team2Code, team1Name, team2Name, matchStartTime, groupId
  */
 export async function POST(request: NextRequest) {
   try {
@@ -32,17 +30,52 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { team1Code, team2Code, team1Name, team2Name, matchStartTime, groupId } = body
+    const supabase = getSupabaseClient()
 
-    if (!team1Code || !team2Code || !team1Name || !team2Name || !matchStartTime) {
-      return NextResponse.json(
-        { error: "Missing required fields: team1Code, team2Code, team1Name, team2Name, matchStartTime" },
-        { status: 400 }
-      )
-    }
+    // Resolve team names and start time — either from an existing match or from the request body
+    let team1Name: string
+    let team2Name: string
+    let matchStartTime: string
+    let existingMatchId: string | null = null
 
-    if (team1Code === team2Code) {
-      return NextResponse.json({ error: "Teams must be different" }, { status: 400 })
+    if (body.matchId) {
+      // Load the existing match record
+      const { data: matchRow, error: matchFetchErr } = await supabase
+        .from("matches")
+        .select(`
+          id, match_start_time, contract_address,
+          team1:countries!matches_team1_id_fkey(name),
+          team2:countries!matches_team2_id_fkey(name)
+        `)
+        .eq("id", body.matchId)
+        .single()
+
+      if (matchFetchErr || !matchRow) {
+        return NextResponse.json({ error: "Match not found" }, { status: 404 })
+      }
+      if (matchRow.contract_address) {
+        return NextResponse.json({ error: "Match already has a contract deployed" }, { status: 400 })
+      }
+
+      team1Name = (matchRow.team1 as unknown as { name: string } | null)?.name ?? "Team 1"
+      team2Name = (matchRow.team2 as unknown as { name: string } | null)?.name ?? "Team 2"
+      matchStartTime = matchRow.match_start_time
+      existingMatchId = matchRow.id
+    } else {
+      // Legacy create mode
+      const { team1Code, team2Code, team1Name: t1, team2Name: t2, matchStartTime: mst, groupId } = body
+      if (!team1Code || !team2Code || !t1 || !t2 || !mst) {
+        return NextResponse.json(
+          { error: "Provide matchId, or team1Code+team2Code+team1Name+team2Name+matchStartTime" },
+          { status: 400 }
+        )
+      }
+      team1Name = t1
+      team2Name = t2
+      matchStartTime = mst
+      body._legacyGroupId = groupId
+      body._legacyTeam1Code = team1Code
+      body._legacyTeam2Code = team2Code
     }
 
     // Validate env vars
@@ -59,15 +92,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "NEXT_PUBLIC_EVENT_HUB_ADDRESS env var not set" }, { status: 500 })
     }
 
-    // Set up provider + signer
+    // Set up ethers provider + signer
     const provider = new ethers.JsonRpcProvider(rpcUrl)
     const signer = new ethers.Wallet(
       privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`,
       provider
     )
     const deployerAddress = await signer.getAddress()
-
-    // Effective platform address (fallback to deployer if not set)
     const effectivePlatformAddress = platformAddress || deployerAddress
 
     // Deploy WorldCupMatch
@@ -78,7 +109,6 @@ export async function POST(request: NextRequest) {
     )
 
     const deployTime = Math.floor(new Date(matchStartTime).getTime() / 1000)
-
     const matchContract = await matchFactory.deploy(
       team1Name,
       team2Name,
@@ -87,100 +117,98 @@ export async function POST(request: NextRequest) {
       platformFeeBps,
       eventHubAddress
     )
-
     await matchContract.waitForDeployment()
     const matchAddress = await matchContract.getAddress()
 
-    // Authorize match in EventHub
+    // Authorize in EventHub
     const eventHub = new ethers.Contract(eventHubAddress, EventHubArtifact.abi, signer)
     const authTx = await eventHub.authorizeMatch(matchAddress)
     await authTx.wait()
 
-    // Look up country UUIDs in Supabase by country code
-    const supabase = getSupabaseClient()
+    // Update or create the DB record
+    let match: unknown
+    if (existingMatchId) {
+      const { data, error: updateErr } = await supabase
+        .from("matches")
+        .update({ contract_address: matchAddress })
+        .eq("id", existingMatchId)
+        .select()
+        .single()
 
-    const { data: countries, error: countriesError } = await supabase
-      .from("countries")
-      .select("id, code")
-      .in("code", [team1Code.toUpperCase(), team2Code.toUpperCase()])
+      if (updateErr) {
+        console.error("Failed to update match with contract address:", updateErr)
+        return NextResponse.json(
+          { error: "Contract deployed but failed to update database record.", contractAddress: matchAddress, details: updateErr.message },
+          { status: 500 }
+        )
+      }
+      match = data
+    } else {
+      // Legacy create path
+      const { team1Code, team2Code, groupId } = {
+        team1Code: body._legacyTeam1Code,
+        team2Code: body._legacyTeam2Code,
+        groupId: body._legacyGroupId,
+      }
 
-    if (countriesError || !countries || countries.length < 2) {
-      console.error("Failed to find countries:", countriesError)
-      return NextResponse.json(
-        {
-          error: "Contract deployed but failed to find country records in database. Contract address: " + matchAddress,
-          contractAddress: matchAddress,
-          details: countriesError?.message,
-        },
-        { status: 500 }
-      )
-    }
+      const { data: countries, error: countriesError } = await supabase
+        .from("countries")
+        .select("id, code")
+        .in("code", [team1Code.toUpperCase(), team2Code.toUpperCase()])
 
-    const team1 = countries.find((c) => c.code.toUpperCase() === team1Code.toUpperCase())
-    const team2 = countries.find((c) => c.code.toUpperCase() === team2Code.toUpperCase())
+      if (countriesError || !countries || countries.length < 2) {
+        return NextResponse.json(
+          { error: "Contract deployed but failed to find country records.", contractAddress: matchAddress },
+          { status: 500 }
+        )
+      }
 
-    if (!team1 || !team2) {
-      return NextResponse.json(
-        {
-          error: `Country not found in database. Contract deployed at: ${matchAddress}`,
-          contractAddress: matchAddress,
-          missingCodes: [!team1 ? team1Code : null, !team2 ? team2Code : null].filter(Boolean),
-        },
-        { status: 500 }
-      )
-    }
+      const team1 = countries.find((c: { id: string; code: string }) => c.code.toUpperCase() === team1Code.toUpperCase())
+      const team2 = countries.find((c: { id: string; code: string }) => c.code.toUpperCase() === team2Code.toUpperCase())
 
-    // Create match record in Supabase
-    const startTime = new Date(matchStartTime)
-    const votingEndTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000) // +24h
-    const matchEndTime = new Date(startTime.getTime() + 26 * 60 * 60 * 1000)  // +26h
+      if (!team1 || !team2) {
+        return NextResponse.json(
+          { error: "Country not found in database. Contract deployed at: " + matchAddress, contractAddress: matchAddress },
+          { status: 500 }
+        )
+      }
 
-    const { data: match, error: matchError } = await supabase
-      .from("matches")
-      .insert({
-        team1_id: team1.id,
-        team2_id: team2.id,
-        contract_address: matchAddress,
-        match_start_time: startTime.toISOString(),
-        voting_end_time: votingEndTime.toISOString(),
-        match_end_time: matchEndTime.toISOString(),
-        status: "upcoming",
-        group_id: groupId || null,
-        is_qualification: false,
-      })
-      .select()
-      .single()
+      const startTime = new Date(matchStartTime)
+      const { data, error: insertErr } = await supabase
+        .from("matches")
+        .insert({
+          team1_id: team1.id,
+          team2_id: team2.id,
+          contract_address: matchAddress,
+          match_start_time: startTime.toISOString(),
+          voting_end_time: new Date(startTime.getTime() + 24 * 3600_000).toISOString(),
+          match_end_time: new Date(startTime.getTime() + 26 * 3600_000).toISOString(),
+          status: "upcoming",
+          group_id: groupId || null,
+          is_qualification: false,
+        })
+        .select()
+        .single()
 
-    if (matchError) {
-      console.error("Failed to create match DB record:", matchError)
-      return NextResponse.json(
-        {
-          error: "Contract deployed and authorized but failed to create database record.",
-          contractAddress: matchAddress,
-          details: matchError.message,
-        },
-        { status: 500 }
-      )
+      if (insertErr) {
+        return NextResponse.json(
+          { error: "Contract deployed but failed to create database record.", contractAddress: matchAddress, details: insertErr.message },
+          { status: 500 }
+        )
+      }
+      match = data
     }
 
     revalidateTag("matches", "default")
 
     return NextResponse.json(
-      {
-        data: match,
-        contractAddress: matchAddress,
-        deployedBy: deployerAddress,
-        eventHubAuthorized: true,
-      },
+      { data: match, contractAddress: matchAddress, deployedBy: deployerAddress, eventHubAuthorized: true },
       { status: 201 }
     )
   } catch (error) {
     console.error("Unexpected error in POST /api/admin/deploy-match:", error)
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     )
   }
