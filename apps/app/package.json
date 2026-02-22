@@ -34,6 +34,7 @@
     "@farcaster/frame-sdk": "^0.1.12",
     "@farcaster/miniapp-sdk": "latest",
     "@farcaster/miniapp-wagmi-connector": "^1.1.1",
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@openzeppelin/contracts": "^5.4.0",
