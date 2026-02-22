@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 const MARKETING_PLAN_PROMPT = `You are a growth marketing strategist for Onchain World Cup, a Web3 application where users vote on World Cup 2026 matches using ETH on the Base blockchain network.
 
@@ -100,21 +99,50 @@ Generate a comprehensive content marketing plan focused on user acquisition. Ret
   "competitiveAdvantages": ["advantage 1", "advantage 2", "advantage 3"]
 }
 
-Make the plan specific to World Cup 2026 timing, the Farcaster ecosystem, Base network community, and the unique mechanics of the platform. Focus on tactics that work with limited budget but high engagement.`
+Make the plan specific to World Cup 2026 timing, the Farcaster ecosystem, Base network community, and the unique mechanics of the platform. Focus on tactics that work with limited budget but high engagement. Return only valid JSON, no markdown code fences.`
+
+async function generateWithGemini(prompt: string): Promise<string> {
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: { responseMimeType: "application/json" } as object,
+  })
+  const result = await model.generateContent(prompt)
+  return result.response.text()
+}
+
+async function generateWithClaude(prompt: string): Promise<string> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const message = await client.messages.create({
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 8192,
+    messages: [{ role: "user", content: prompt }],
+  })
+  return message.content[0].type === "text" ? message.content[0].text : ""
+}
+
+async function generateContent(prompt: string): Promise<{ raw: string; provider: string }> {
+  if (process.env.GOOGLE_AI_API_KEY) {
+    const raw = await generateWithGemini(prompt)
+    return { raw, provider: "gemini-2.0-flash" }
+  }
+  if (process.env.ANTHROPIC_API_KEY) {
+    const raw = await generateWithClaude(prompt)
+    return { raw, provider: "claude-haiku-4-5" }
+  }
+  throw new Error("No AI provider configured. Set GOOGLE_AI_API_KEY or ANTHROPIC_API_KEY.")
+}
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 })
+    if (!process.env.GOOGLE_AI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: "No AI provider configured. Set GOOGLE_AI_API_KEY or ANTHROPIC_API_KEY." },
+        { status: 500 }
+      )
     }
 
-    const message = await client.messages.create({
-      model: "claude-opus-4-5",
-      max_tokens: 8192,
-      messages: [{ role: "user", content: MARKETING_PLAN_PROMPT }],
-    })
-
-    const rawContent = message.content[0].type === "text" ? message.content[0].text : ""
+    const { raw: rawContent, provider } = await generateContent(MARKETING_PLAN_PROMPT)
 
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
@@ -123,7 +151,7 @@ export async function POST(req: NextRequest) {
 
     const plan = JSON.parse(jsonMatch[0])
 
-    return NextResponse.json({ plan, generatedAt: new Date().toISOString() })
+    return NextResponse.json({ plan, generatedAt: new Date().toISOString(), provider })
   } catch (err) {
     console.error("[content/marketing-plan]", err)
     return NextResponse.json({ error: "Marketing plan generation failed" }, { status: 500 })
