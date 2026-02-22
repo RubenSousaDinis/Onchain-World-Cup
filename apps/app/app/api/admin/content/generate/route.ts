@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import Anthropic from "@anthropic-ai/sdk"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { prisma } from "@/lib/server/prisma"
 
@@ -144,38 +143,6 @@ Format as JSON with this structure:
 Write 6-10 tweets. The first tweet must be a compelling hook. Each tweet must be under 280 characters. The last tweet should have a clear CTA. Use emojis sparingly but effectively. Focus on the topic while naturally weaving in Onchain World Cup. Ensure this thread takes a fresh angle not already covered in the content memory above. Return only valid JSON, no markdown code fences.`
 }
 
-async function generateWithGemini(prompt: string): Promise<string> {
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { responseMimeType: "application/json" } as object,
-  })
-  const result = await model.generateContent(prompt)
-  return result.response.text()
-}
-
-async function generateWithClaude(prompt: string): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  const message = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
-    messages: [{ role: "user", content: prompt }],
-  })
-  return message.content[0].type === "text" ? message.content[0].text : ""
-}
-
-async function generateContent(prompt: string): Promise<{ raw: string; provider: string }> {
-  if (process.env.GOOGLE_AI_API_KEY) {
-    const raw = await generateWithGemini(prompt)
-    return { raw, provider: "gemini-2.0-flash" }
-  }
-  if (process.env.ANTHROPIC_API_KEY) {
-    const raw = await generateWithClaude(prompt)
-    return { raw, provider: "claude-haiku-4-5" }
-  }
-  throw new Error("No AI provider configured. Set GOOGLE_AI_API_KEY or ANTHROPIC_API_KEY.")
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -189,11 +156,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "type must be blog or twitter_thread" }, { status: 400 })
     }
 
-    if (!process.env.GOOGLE_AI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: "No AI provider configured. Set GOOGLE_AI_API_KEY or ANTHROPIC_API_KEY." },
-        { status: 500 }
-      )
+    if (!process.env.GOOGLE_AI_API_KEY) {
+      return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 })
     }
 
     const memoryContext = await buildMemoryContext(type)
@@ -203,7 +167,13 @@ export async function POST(req: NextRequest) {
         ? getBlogPrompt(topic, customPrompt, memoryContext)
         : getTwitterThreadPrompt(topic, customPrompt, memoryContext)
 
-    const { raw: rawContent, provider } = await generateContent(prompt)
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      generationConfig: { responseMimeType: "application/json" } as object,
+    })
+    const result = await model.generateContent(prompt)
+    const rawContent = result.response.text()
 
     // Extract JSON from the response (handles both raw JSON and markdown fences)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
@@ -220,7 +190,6 @@ export async function POST(req: NextRequest) {
       generated: parsed,
       rawContent,
       memoryUsed: memoryContext.length > 0,
-      provider,
     })
   } catch (err) {
     console.error("[content/generate]", err)
