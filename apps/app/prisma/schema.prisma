@@ -250,3 +250,24 @@ model GroupStanding {
   @@index([qualRank])
   @@map("group_standings")
 }
+
+model ContentPost {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type         String    // "blog" | "twitter_thread"
+  title        String
+  content      String    @db.Text
+  status       String    @default("draft") // "draft" | "published" | "archived"
+  topic        String?
+  aiGenerated  Boolean   @default(false) @map("ai_generated")
+  prompt       String?   @db.Text
+  metadata     Json?     // thread tweets array, SEO data, estimated reach, etc.
+  publishedAt  DateTime? @map("published_at") @db.Timestamptz(6)
+  scheduledAt  DateTime? @map("scheduled_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("content_posts")
+}
