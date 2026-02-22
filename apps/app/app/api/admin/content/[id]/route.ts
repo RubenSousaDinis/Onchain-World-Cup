@@ -15,7 +15,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await req.json()
-    const { title, content, status, topic, metadata, scheduledAt } = body
+    const { title, content, status, topic, metadata, scheduledAt, performanceRating, performanceNotes } = body
 
     const existing = await prisma.contentPost.findUnique({ where: { id: params.id } })
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 })
@@ -28,6 +28,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(topic !== undefined && { topic }),
         ...(metadata !== undefined && { metadata }),
         ...(scheduledAt !== undefined && { scheduledAt: scheduledAt ? new Date(scheduledAt) : null }),
+        ...(performanceRating !== undefined && { performanceRating: performanceRating ?? null }),
+        ...(performanceNotes !== undefined && { performanceNotes: performanceNotes ?? null }),
         ...(status !== undefined && {
           status,
           publishedAt:

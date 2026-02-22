@@ -28,6 +28,8 @@ export async function GET(req: NextRequest) {
           aiGenerated: true,
           publishedAt: true,
           scheduledAt: true,
+          performanceRating: true,
+          performanceNotes: true,
           createdAt: true,
           updatedAt: true,
           // Exclude full content for list view for performance

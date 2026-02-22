@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import Anthropic from "@anthropic-ai/sdk"
+import { prisma } from "@/lib/server/prisma"
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -26,10 +27,72 @@ Tone: energetic, passionate about football, approachable for both crypto natives
 Brand voice: "Onchain World Cup" (never "Crypto World Cup")
 `
 
-function getBlogPrompt(topic: string, customPrompt: string): string {
+async function buildMemoryContext(type: string): Promise<string> {
+  const posts = await prisma.contentPost.findMany({
+    where: { type },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: {
+      title: true,
+      topic: true,
+      status: true,
+      performanceRating: true,
+      performanceNotes: true,
+      publishedAt: true,
+    },
+  })
+
+  if (posts.length === 0) return ""
+
+  const published = posts.filter((p) => p.status === "published" || p.status === "archived")
+  const drafts = posts.filter((p) => p.status === "draft")
+
+  const goodPerformers = published.filter((p) => p.performanceRating === "good")
+  const poorPerformers = published.filter((p) => p.performanceRating === "poor")
+
+  const lines: string[] = ["--- CONTENT MEMORY (use this to inform your generation) ---"]
+
+  if (published.length > 0) {
+    lines.push(`\nAlready published ${type === "blog" ? "blog posts" : "Twitter threads"} (DO NOT repeat these topics):`)
+    published.forEach((p) => {
+      const rating = p.performanceRating ? ` [${p.performanceRating.toUpperCase()}]` : ""
+      const topic = p.topic ?? p.title
+      lines.push(`  - "${topic}"${rating}`)
+    })
+  }
+
+  if (drafts.length > 0) {
+    lines.push(`\nExisting drafts (consider these topics already being worked on):`)
+    drafts.forEach((p) => {
+      lines.push(`  - "${p.topic ?? p.title}"`)
+    })
+  }
+
+  if (goodPerformers.length > 0) {
+    lines.push(`\nHigh-performing content (emulate these angles and styles):`)
+    goodPerformers.forEach((p) => {
+      const note = p.performanceNotes ? ` — ${p.performanceNotes}` : ""
+      lines.push(`  - "${p.topic ?? p.title}"${note}`)
+    })
+  }
+
+  if (poorPerformers.length > 0) {
+    lines.push(`\nPoor-performing content (avoid these angles):`)
+    poorPerformers.forEach((p) => {
+      const note = p.performanceNotes ? ` — ${p.performanceNotes}` : ""
+      lines.push(`  - "${p.topic ?? p.title}"${note}`)
+    })
+  }
+
+  lines.push("--- END CONTENT MEMORY ---")
+
+  return "\n\n" + lines.join("\n")
+}
+
+function getBlogPrompt(topic: string, customPrompt: string, memoryContext: string): string {
   return `You are a content writer for Onchain World Cup, a Web3 voting platform for World Cup 2026.
 
-${PLATFORM_CONTEXT}
+${PLATFORM_CONTEXT}${memoryContext}
 
 Write a compelling blog post about: ${topic}
 ${customPrompt ? `\nAdditional instructions: ${customPrompt}` : ""}
@@ -49,13 +112,13 @@ Format the blog post as JSON with this structure:
   "estimatedReadTime": 5
 }
 
-Write approximately 800-1200 words total. Make it engaging, informative, and relevant to both football fans and crypto users. Include specific details about how Onchain World Cup works where relevant.`
+Write approximately 800-1200 words total. Make it engaging, informative, and relevant to both football fans and crypto users. Include specific details about how Onchain World Cup works where relevant. Ensure this post covers a fresh angle not already addressed in the content memory above.`
 }
 
-function getTwitterThreadPrompt(topic: string, customPrompt: string): string {
+function getTwitterThreadPrompt(topic: string, customPrompt: string, memoryContext: string): string {
   return `You are a social media manager for Onchain World Cup, a Web3 voting platform for World Cup 2026.
 
-${PLATFORM_CONTEXT}
+${PLATFORM_CONTEXT}${memoryContext}
 
 Write a Twitter/X thread about: ${topic}
 ${customPrompt ? `\nAdditional instructions: ${customPrompt}` : ""}
@@ -79,7 +142,7 @@ Format as JSON with this structure:
   "estimatedImpressions": "1k-5k"
 }
 
-Write 6-10 tweets. The first tweet must be a compelling hook. Each tweet must be under 280 characters. The last tweet should have a clear CTA. Use emojis sparingly but effectively. Focus on the topic while naturally weaving in Onchain World Cup.`
+Write 6-10 tweets. The first tweet must be a compelling hook. Each tweet must be under 280 characters. The last tweet should have a clear CTA. Use emojis sparingly but effectively. Focus on the topic while naturally weaving in Onchain World Cup. Ensure this thread takes a fresh angle not already covered in the content memory above.`
 }
 
 export async function POST(req: NextRequest) {
@@ -99,9 +162,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 })
     }
 
+    const memoryContext = await buildMemoryContext(type)
+
     const prompt = type === "blog"
-      ? getBlogPrompt(topic, customPrompt)
-      : getTwitterThreadPrompt(topic, customPrompt)
+      ? getBlogPrompt(topic, customPrompt, memoryContext)
+      : getTwitterThreadPrompt(topic, customPrompt, memoryContext)
 
     const message = await client.messages.create({
       model: "claude-opus-4-5",
@@ -125,6 +190,7 @@ export async function POST(req: NextRequest) {
       prompt: customPrompt,
       generated: parsed,
       rawContent,
+      memoryUsed: memoryContext.length > 0,
     })
   } catch (err) {
     console.error("[content/generate]", err)

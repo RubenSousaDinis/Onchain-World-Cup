@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 const TOPIC_SUGGESTIONS = {
   blog: [
@@ -55,6 +55,114 @@ interface GeneratedContent {
   type: "blog" | "twitter_thread"
   topic: string
   generated: GeneratedBlog | GeneratedThread
+}
+
+interface ContentMemoryItem {
+  topic: string | null
+  title: string
+  status: string
+  performanceRating: string | null
+}
+
+const PERFORMANCE_LABELS: Record<string, string> = {
+  good: "Good",
+  neutral: "Neutral",
+  poor: "Poor",
+}
+
+const PERFORMANCE_COLORS: Record<string, string> = {
+  good: "text-green-400",
+  neutral: "text-yellow-400",
+  poor: "text-red-400",
+}
+
+function MemoryPanel({ type }: { type: "blog" | "twitter_thread" }) {
+  const [items, setItems] = useState<ContentMemoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchMemory = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch(`/api/admin/content?type=${type}&limit=50`)
+    const data = await res.json()
+    setItems(data.data ?? [])
+    setLoading(false)
+  }, [type])
+
+  useEffect(() => { fetchMemory() }, [fetchMemory])
+
+  if (loading) return <p className="text-xs text-muted-foreground">Loading memory...</p>
+  if (items.length === 0) return null
+
+  const published = items.filter((i) => i.status === "published" || i.status === "archived")
+  const drafts = items.filter((i) => i.status === "draft")
+  const goodPerformers = published.filter((i) => i.performanceRating === "good")
+  const poorPerformers = published.filter((i) => i.performanceRating === "poor")
+
+  return (
+    <div className="space-y-3 text-xs">
+      {published.length > 0 && (
+        <div>
+          <p className="text-muted-foreground font-semibold mb-1">Already published ({published.length}):</p>
+          <ul className="space-y-0.5">
+            {published.map((item, i) => {
+              const label = item.topic ?? item.title
+              const rating = item.performanceRating
+              return (
+                <li key={i} className="flex items-center gap-2">
+                  <span className="text-muted-foreground/50">—</span>
+                  <span className="text-muted-foreground truncate max-w-xs" title={label}>{label}</span>
+                  {rating && (
+                    <span className={`shrink-0 ${PERFORMANCE_COLORS[rating]}`}>
+                      [{PERFORMANCE_LABELS[rating]}]
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+      {drafts.length > 0 && (
+        <div>
+          <p className="text-muted-foreground font-semibold mb-1">In drafts ({drafts.length}):</p>
+          <ul className="space-y-0.5">
+            {drafts.map((item, i) => (
+              <li key={i} className="flex items-center gap-2">
+                <span className="text-muted-foreground/50">—</span>
+                <span className="text-yellow-400/70 truncate max-w-xs" title={item.topic ?? item.title}>
+                  {item.topic ?? item.title}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {goodPerformers.length > 0 && (
+        <div className="border-l-2 border-green-500/40 pl-2">
+          <p className="text-green-400/80 font-semibold mb-0.5">What worked well:</p>
+          <ul className="space-y-0.5">
+            {goodPerformers.map((item, i) => (
+              <li key={i} className="text-muted-foreground truncate" title={item.topic ?? item.title}>
+                {item.topic ?? item.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {poorPerformers.length > 0 && (
+        <div className="border-l-2 border-red-500/40 pl-2">
+          <p className="text-red-400/80 font-semibold mb-0.5">What didn&apos;t perform well:</p>
+          <ul className="space-y-0.5">
+            {poorPerformers.map((item, i) => (
+              <li key={i} className="text-muted-foreground truncate" title={item.topic ?? item.title}>
+                {item.topic ?? item.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
 }
 
 interface ContentGeneratorProps {
@@ -134,6 +242,8 @@ export function ContentGenerator({ onSave }: ContentGeneratorProps) {
   const [saving, setSaving] = useState(false)
   const [generated, setGenerated] = useState<GeneratedContent | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showMemory, setShowMemory] = useState(false)
+  const [memoryUsed, setMemoryUsed] = useState(false)
 
   const handleGenerate = async () => {
     if (!topic.trim()) return
@@ -150,6 +260,7 @@ export function ContentGenerator({ onSave }: ContentGeneratorProps) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Generation failed")
       setGenerated(data)
+      setMemoryUsed(data.memoryUsed ?? false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
@@ -199,7 +310,7 @@ export function ContentGenerator({ onSave }: ContentGeneratorProps) {
         {(["blog", "twitter_thread"] as const).map((t) => (
           <button
             key={t}
-            onClick={() => { setContentType(t); setGenerated(null) }}
+            onClick={() => { setContentType(t); setGenerated(null); setShowMemory(false) }}
             className={`px-4 py-2 text-sm font-semibold border transition-colors ${
               contentType === t
                 ? "border-[var(--cm-highlight)] text-foreground bg-[var(--nav-purple)]/50"
@@ -209,6 +320,22 @@ export function ContentGenerator({ onSave }: ContentGeneratorProps) {
             {t === "blog" ? "Blog Post" : "Twitter Thread"}
           </button>
         ))}
+      </div>
+
+      {/* Content memory toggle */}
+      <div className="border border-border/20 rounded">
+        <button
+          onClick={() => setShowMemory((s) => !s)}
+          className="w-full flex items-center justify-between px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span className="font-semibold">Content Memory</span>
+          <span>{showMemory ? "Hide" : "Show"} — AI uses this to avoid repetition and learn from past performance</span>
+        </button>
+        {showMemory && (
+          <div className="px-3 pb-3 border-t border-border/20 pt-2">
+            <MemoryPanel type={contentType} />
+          </div>
+        )}
       </div>
 
       {/* Topic input */}
@@ -270,7 +397,14 @@ export function ContentGenerator({ onSave }: ContentGeneratorProps) {
       {generated && (
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold cm-highlight">Generated Content</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-semibold cm-highlight">Generated Content</h4>
+              {memoryUsed && (
+                <span className="text-xs text-muted-foreground bg-[var(--nav-purple)]/40 px-2 py-0.5 border border-border/20">
+                  Memory-informed
+                </span>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => handleSave("draft")}

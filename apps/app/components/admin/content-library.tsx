@@ -11,6 +11,8 @@ interface ContentPost {
   aiGenerated: boolean
   publishedAt: string | null
   scheduledAt: string | null
+  performanceRating: string | null
+  performanceNotes: string | null
   createdAt: string
 }
 
@@ -23,6 +25,103 @@ const STATUS_COLORS: Record<string, string> = {
 const TYPE_LABELS: Record<string, string> = {
   blog: "Blog",
   twitter_thread: "Thread",
+}
+
+const PERFORMANCE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  good: { label: "Good", color: "text-green-400", bg: "border-green-500/50 bg-green-500/10" },
+  neutral: { label: "Neutral", color: "text-yellow-400", bg: "border-yellow-500/50 bg-yellow-500/10" },
+  poor: { label: "Poor", color: "text-red-400", bg: "border-red-500/50 bg-red-500/10" },
+}
+
+function PerformanceRater({
+  postId,
+  currentRating,
+  currentNotes,
+  onUpdated,
+}: {
+  postId: string
+  currentRating: string | null
+  currentNotes: string | null
+  onUpdated: () => void
+}) {
+  const [saving, setSaving] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
+  const [notes, setNotes] = useState(currentNotes ?? "")
+
+  const setRating = async (rating: string | null) => {
+    setSaving(true)
+    await fetch(`/api/admin/content/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ performanceRating: rating }),
+    })
+    setSaving(false)
+    onUpdated()
+  }
+
+  const saveNotes = async () => {
+    setSaving(true)
+    await fetch(`/api/admin/content/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ performanceNotes: notes || null }),
+    })
+    setSaving(false)
+    setShowNotes(false)
+    onUpdated()
+  }
+
+  return (
+    <div className="space-y-1">
+      <div className="flex gap-1 items-center">
+        {(["good", "neutral", "poor"] as const).map((r) => (
+          <button
+            key={r}
+            onClick={() => setRating(currentRating === r ? null : r)}
+            disabled={saving}
+            title={`Mark as ${r}`}
+            className={`text-xs px-1.5 py-0.5 border transition-colors disabled:opacity-40 ${
+              currentRating === r
+                ? PERFORMANCE_CONFIG[r].bg + " " + PERFORMANCE_CONFIG[r].color
+                : "border-border/20 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {PERFORMANCE_CONFIG[r].label}
+          </button>
+        ))}
+        <button
+          onClick={() => setShowNotes((s) => !s)}
+          title="Add notes"
+          className="text-xs px-1.5 py-0.5 border border-border/20 text-muted-foreground hover:text-foreground"
+        >
+          Notes
+        </button>
+      </div>
+      {showNotes && (
+        <div className="flex gap-1 mt-1">
+          <input
+            type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Why did it perform this way?"
+            className="flex-1 text-xs bg-background border border-border/50 px-2 py-1 focus:outline-none focus:border-[var(--cm-highlight)]"
+          />
+          <button
+            onClick={saveNotes}
+            disabled={saving}
+            className="text-xs px-2 py-1 border border-[var(--cm-highlight)] text-[var(--cm-highlight)] disabled:opacity-40"
+          >
+            {saving ? "..." : "Save"}
+          </button>
+        </div>
+      )}
+      {currentNotes && !showNotes && (
+        <p className="text-xs text-muted-foreground italic truncate max-w-[200px]" title={currentNotes}>
+          {currentNotes}
+        </p>
+      )}
+    </div>
+  )
 }
 
 export function ContentLibrary() {
@@ -121,6 +220,7 @@ export function ContentLibrary() {
                 <th className="px-3 py-2">Type</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">AI</th>
+                <th className="px-3 py-2">Performance</th>
                 <th className="px-3 py-2">Created</th>
                 <th className="px-3 py-2">Actions</th>
               </tr>
@@ -151,11 +251,19 @@ export function ContentLibrary() {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                  <td className="px-3 py-2">
+                    <PerformanceRater
+                      postId={post.id}
+                      currentRating={post.performanceRating}
+                      currentNotes={post.performanceNotes}
+                      onUpdated={fetchPosts}
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-3 py-2">
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 flex-wrap">
                       {post.status === "draft" && (
                         <button
                           onClick={() => handleStatusChange(post.id, "published")}
