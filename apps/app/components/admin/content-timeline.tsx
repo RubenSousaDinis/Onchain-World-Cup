@@ -4,7 +4,16 @@ import { useState, useMemo } from "react"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Phase = "pre-launch" | "qualification" | "group-stage" | "round-of-16" | "knockout"
+/**
+ * Five sequential phases of the Onchain World Cup:
+ *
+ * pre-launch    Mar 1–31       Building hype before qualification
+ * qualification Apr 1–May 31   48 countries qualify via ETH voting
+ * group-draw    Jun 1–10       Claim ETH + groups seeded from qual standings
+ * world-cup-1   Jun 11–Jun 26  Our onchain tournament (qualification groups)
+ * real-world-cup Jun 27–Jul 19 Mirrors actual FIFA 2026 — same teams & groups
+ */
+type Phase = "pre-launch" | "qualification" | "group-draw" | "world-cup-1" | "real-world-cup"
 
 interface ScheduledPost {
   account: "app" | "builder"
@@ -24,47 +33,42 @@ interface TimelineDay {
 
 const PHASE_META: Record<
   Phase,
-  { title: string; subtitle: string; dateRange: string; textColor: string; badgeCls: string; borderCls: string }
+  { title: string; subtitle: string; dateRange: string; textColor: string; borderCls: string }
 > = {
   "pre-launch": {
     title: "Pre-Launch",
     subtitle: "Building hype before qualification opens",
     dateRange: "Mar 1 – Mar 31, 2026",
     textColor: "text-sky-400",
-    badgeCls: "bg-sky-500/10 border border-sky-500/30 text-sky-400",
-    borderCls: "border-l-sky-500/40",
+    borderCls: "border-l-sky-500/50",
   },
   qualification: {
     title: "Phase 1 — Qualification",
-    subtitle: "48 countries qualify from 211 FIFA members",
+    subtitle: "48 countries qualify from 211 FIFA members via ETH voting",
     dateRange: "Apr 1 – May 31, 2026",
     textColor: "text-[var(--cm-highlight)]",
-    badgeCls: "bg-[var(--nav-purple)]/50 border border-[var(--cm-highlight)]/40 text-[var(--cm-highlight)]",
-    borderCls: "border-l-[var(--cm-highlight)]/40",
+    borderCls: "border-l-[var(--cm-highlight)]/50",
   },
-  "group-stage": {
-    title: "Phase 2 — Group Stage",
-    subtitle: "12 groups of 4 teams, top 2 advance",
+  "group-draw": {
+    title: "Phase 2 — Group Draw",
+    subtitle: "Claim ETH rewards · Groups seeded from qualification standings",
+    dateRange: "Jun 1 – Jun 10, 2026",
+    textColor: "text-violet-400",
+    borderCls: "border-l-violet-500/50",
+  },
+  "world-cup-1": {
+    title: "Phase 3 — World Cup 1",
+    subtitle: "Onchain World Cup with our qualification-derived groups",
     dateRange: "Jun 11 – Jun 26, 2026",
     textColor: "text-emerald-400",
-    badgeCls: "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400",
-    borderCls: "border-l-emerald-500/40",
+    borderCls: "border-l-emerald-500/50",
   },
-  "round-of-16": {
-    title: "Phase 3 — Round of 16",
-    subtitle: "Seeded from group stage results — 16 matches, single elimination",
-    dateRange: "Jun 27 – Jul 1, 2026",
-    textColor: "text-orange-400",
-    badgeCls: "bg-orange-500/10 border border-orange-500/30 text-orange-400",
-    borderCls: "border-l-orange-500/40",
-  },
-  knockout: {
-    title: "Phase 4 — Knockout",
-    subtitle: "Quarter-finals · Semi-finals · Final — the real bracket",
-    dateRange: "Jul 3 – Jul 19, 2026",
+  "real-world-cup": {
+    title: "Phase 4 — Real World Cup",
+    subtitle: "Mirrors actual FIFA 2026 — same teams, same groups, real results",
+    dateRange: "Jun 27 – Jul 19, 2026",
     textColor: "text-red-400",
-    badgeCls: "bg-red-500/10 border border-red-500/30 text-red-400",
-    borderCls: "border-l-red-500/40",
+    borderCls: "border-l-red-500/50",
   },
 }
 
@@ -147,7 +151,7 @@ function buildTimeline(): TimelineDay[] {
         account: "builder",
         channel: "farcaster",
         template:
-          "Been building @onchainworldcup for the past few months.\n\nQualification opens April 1. Up to 8 weeks. 48 spots.\n\nEarly voters get linear pricing. Late voters pay exponential. It rewards conviction over hype.\n\nSharing more on how we built it this week.",
+          "Been building @onchainworldcup for the past few months.\n\nQualification opens April 1. Up to 8 weeks. 48 spots.\n\nEarly voters get linear pricing. Late voters pay exponential. Rewards conviction over hype.\n\nSharing more on how we built it this week.",
       },
     ],
   })
@@ -320,7 +324,7 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "10 days.\n\nQualification opens April 1.\nUp to 8 weeks. 48 spots. ETH prize pool.\n\nAdd the app to get notified the moment voting goes live.\n[app link]",
+          "10 days.\n\nQualification opens April 1.\nUp to 8 weeks. 48 spots. ETH prize pool.\n\nFull journey:\n→ Apr 1: Qualification opens\n→ May 31: Top 48 locked\n→ Jun 11: World Cup 1 begins (our onchain tournament)\n→ Jun 27: Real World Cup — same teams, same groups as FIFA 2026\n→ Jul 19: The Final\n\n[app link]",
       },
     ],
   })
@@ -344,7 +348,7 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "6 days. Here's the full timeline:\n\n→ April 1: Qualification opens\n→ End of May: Qualification closes — top 48 locked\n→ June 1–10: Claim your ETH\n→ June 11: Group stage begins\n→ July 19: The Final\n\n48 countries. 163 eliminated. All onchain.",
+          "6 days. Here's the full timeline:\n\n→ April 1: Qualification opens — 48 countries compete\n→ End of May: Top 48 locked, claim ETH\n→ June 11: World Cup 1 starts (our groups, our tournament)\n→ June 27: Real World Cup — same teams & groups as actual FIFA 2026\n→ July 19: The Final\n\n48 countries. 163 eliminated. All onchain.",
       },
     ],
   })
@@ -387,12 +391,12 @@ function buildTimeline(): TimelineDay[] {
   })
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 1 — QUALIFICATION  Apr 1 – May 31  (+ claim period Jun 1–10)
+  // PHASE 1 — QUALIFICATION  Apr 1 – May 31
+  // 48 countries qualify via ETH voting — top 48 by vote count
   // ────────────────────────────────────────────────────────────────────────────
 
   const qualOrigin = new Date(2026, 3, 1)
 
-  // Launch Day
   days.push({
     dateStr: ds(2026, 4, 1),
     phase: "qualification",
@@ -454,14 +458,14 @@ function buildTimeline(): TimelineDay[] {
         {
           account: "app",
           channel: "both",
-          template: `📊 Qualification Update — Day ${n}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nUnique voters: [XXX]\nTop country: [Country] 🏳️ with [X,XXX] votes\n\n[Leaderboard link]\n\n---\nCountry callout (rotate by region):\n[Country] supporters: currently at rank #[X]. [X] votes to top 48.\n\nIs your country in the top 48? Check the live leaderboard.\n[link]`,
+          template: `📊 Qualification Update — Day ${n}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nUnique voters: [XXX]\nTop country: [Country] 🏳️ with [X,XXX] votes\n\n[Leaderboard link]\n\n---\nCountry callout:\n[Country] supporters: currently at rank #[X]. [X] votes to top 48.\n[link]`,
         },
         ...(builderDay
           ? [
               {
                 account: "builder" as const,
                 channel: "farcaster" as const,
-                template: `[Personal reflection / voter behavior insight / community observation — Day ${n}].\n\n@onchainworldcup`,
+                template: `[Personal reflection / voter behavior insight — Day ${n}].\n\n@onchainworldcup`,
               },
             ]
           : []),
@@ -469,7 +473,7 @@ function buildTimeline(): TimelineDay[] {
     })
   }
 
-  // Final Push May 17–31 (2× App + 1× Builder daily)
+  // Final Push May 17–30
   days.push({
     dateStr: ds(2026, 5, 17),
     phase: "qualification",
@@ -478,7 +482,7 @@ function buildTimeline(): TimelineDay[] {
       {
         account: "app",
         channel: "both",
-        template: `📊 Qualification Update — Day ${daysBetween(qualOrigin, new Date(2026, 4, 17)) + 1}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nUnique voters: [XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]`,
+        template: `📊 Qualification Update — Day ${daysBetween(qualOrigin, new Date(2026, 4, 17)) + 1}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]`,
       },
       {
         account: "app",
@@ -490,7 +494,7 @@ function buildTimeline(): TimelineDay[] {
         account: "builder",
         channel: "farcaster",
         template:
-          "14 days left. @onchainworldcup qualification closes May 31.\n\n[Personal take on the standings / what's at stake in the final weeks].",
+          "14 days left. @onchainworldcup qualification closes May 31.\n\n[Personal take on the standings / what's at stake in the final stretch].",
       },
     ],
   })
@@ -508,42 +512,14 @@ function buildTimeline(): TimelineDay[] {
       posts:
         i === 30
           ? [
-              {
-                account: "app" as const,
-                channel: "both" as const,
-                template:
-                  "24 HOURS LEFT.\n\nCountries ranked #46–#52 are separated by [X] votes.\n\nIf your country is on the bubble: now is the time.\n[app link]",
-              },
-              {
-                account: "app" as const,
-                channel: "both" as const,
-                template:
-                  "24 HOURS LEFT. (evening reminder)\n\nAfter tonight, these rankings are locked forever.\n\n[X] countries still fighting for the last spots. Check the live leaderboard.\n[app link]",
-                note: "Post again in the evening",
-              },
-              {
-                account: "builder" as const,
-                channel: "farcaster" as const,
-                template:
-                  "24 hours until @onchainworldcup qualification closes.\n\n[Personal take on the drama / standings / what's at stake for the final day].",
-              },
+              { account: "app" as const, channel: "both" as const, template: "24 HOURS LEFT.\n\nCountries ranked #46–#52 are separated by [X] votes.\n\nIf your country is on the bubble: now is the time.\n[app link]" },
+              { account: "app" as const, channel: "both" as const, template: "24 HOURS LEFT. (evening reminder)\n\nAfter tonight, these rankings are locked forever.\n\n[X] countries still fighting for the last spots.\n[app link]", note: "Post again in the evening" },
+              { account: "builder" as const, channel: "farcaster" as const, template: "24 hours until @onchainworldcup qualification closes.\n\n[Personal take on the drama / standings / what's at stake for the final day]." },
             ]
           : [
-              {
-                account: "app" as const,
-                channel: "both" as const,
-                template: `📊 Qualification Update — Day ${n}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]`,
-              },
-              {
-                account: "app" as const,
-                channel: "both" as const,
-                template: `⚠️ ${daysLeft} days left\n\nBubble countries:\n#46 [Country] — [X] votes\n#47 [Country] — [X] votes\n#48 [Country] — [X] votes (IN)\n#49 [Country] — [X] votes (OUT)\n\n[X] votes between qualification and elimination.\n[app link]`,
-              },
-              {
-                account: "builder" as const,
-                channel: "farcaster" as const,
-                template: `${daysLeft} days left. [Urgency post / personal take on standings].\n\n@onchainworldcup [app link]`,
-              },
+              { account: "app" as const, channel: "both" as const, template: `📊 Qualification Update — Day ${n}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]` },
+              { account: "app" as const, channel: "both" as const, template: `⚠️ ${daysLeft} days left\n\nBubble countries:\n#46 [Country] — [X] votes\n#47 [Country] — [X] votes\n#48 [Country] — [X] votes (IN)\n#49 [Country] — [X] votes (OUT)\n[app link]` },
+              { account: "builder" as const, channel: "farcaster" as const, template: `${daysLeft} days left. [Urgency post / personal take].\n\n@onchainworldcup [app link]` },
             ],
     })
   }
@@ -558,111 +534,153 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "6 HOURS.\n\nAfter this, qualification closes and the top 48 are locked forever.\n\nIf your country is close to the bubble — this is your last window.\n[app link]",
+          "6 HOURS.\n\nAfter this, qualification closes and the top 48 are locked forever.\n[app link]",
         note: "Post 6 hours before voting deadline",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "Qualification is closed.\n\nThe top 48 are locked. No more votes. No more changes.\n\nPrize pool: [X.XX] ETH\nUnique voters: [X,XXX]\nTotal votes: [X,XXX]\n\n[Qualified countries list]\n\nIf you backed a qualified country: claim your share at [link].",
+          "Qualification is closed.\n\nThe top 48 are locked. No more votes.\n\nPrize pool: [X.XX] ETH\nUnique voters: [X,XXX]\nTotal votes: [X,XXX]\n\n[Qualified countries list]\n\nClaim your share at [link].",
         note: "Post immediately when voting closes",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "It's done. @onchainworldcup qualification is closed.\n\n[X.XX] ETH in the prize pool. 48 countries qualified.\n\n[Personal reflection on the qualification phase].",
+          "It's done. @onchainworldcup qualification is closed.\n\n[X.XX] ETH in the prize pool. 48 countries qualified.\n\nNext: group draw on June 6. World Cup 1 starts June 11.\n\n[Personal reflection on the qualification phase].",
       },
     ],
   })
 
-  // Claim period Jun 1–10 (bridge between Phase 1 and Phase 2)
+  // ────────────────────────────────────────────────────────────────────────────
+  // PHASE 2 — GROUP DRAW  Jun 1 – Jun 10
+  // Claim ETH rewards + groups seeded from qualification standings
+  // ────────────────────────────────────────────────────────────────────────────
+
   days.push({
     dateStr: ds(2026, 6, 1),
-    phase: "qualification",
+    phase: "group-draw",
     label: "Claim Period Opens",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Qualification is over. Here are your 48 qualified countries.\n\n[List of 48 with flags]\n\nIf your country qualified: claim your ETH at [link].\nFormula: (your qualified votes / total qualified votes) × [prize pool] ETH",
+          "Qualification is over. Here are your 48 qualified countries.\n\n[List of 48 with flags — ranked by vote count]\n\nIf your country qualified: claim your ETH at [link].\nFormula: (your qualified votes / total qualified votes) × [prize pool] ETH\n\nRankings by qualification position will seed the group draw.",
       },
     ],
   })
   days.push({
     dateStr: ds(2026, 6, 3),
-    phase: "qualification",
+    phase: "group-draw",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Claim is live.\n\n[X] ETH waiting to be claimed by voters who backed qualified countries.\n\nCheck your claimable amount at [claim link].",
+          "Claim is live.\n\n[X] ETH waiting to be claimed by voters who backed qualified countries.\n\nCheck your claimable amount at [claim link].\n\nGroup draw announcement coming June 6.",
+      },
+    ],
+  })
+  days.push({
+    dateStr: ds(2026, 6, 6),
+    phase: "group-draw",
+    label: "🎲 Group Draw",
+    posts: [
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "The groups are set.\n\nGenerated from qualification standings — higher ranked countries are seeded in different groups.\n\nWorld Cup 1 groups:\n\nGroup A: [Country 1] [Country 25] [Country 37] [Country 49]\nGroup B: [Country 2] [Country 26] [Country 38] [Country 50]\n...\n\nFull draw at [link]\n\nWorld Cup 1 starts June 11.",
+        note: "Fill in groups from actual qualification standings",
+      },
+      {
+        account: "builder",
+        channel: "farcaster",
+        template:
+          "Groups are drawn for @onchainworldcup World Cup 1.\n\nSeeded from qualification positions — top-ranked countries spread across groups.\n\nThis is the bracket we built with 48 countries the community voted in.\n\n[Personal reaction to the groups / interesting matchups].",
       },
     ],
   })
   days.push({
     dateStr: ds(2026, 6, 7),
-    phase: "qualification",
+    phase: "group-draw",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "[X] ETH claimed so far. [X] wallets have claimed their share.\n\nIf you backed a qualified country and haven't claimed yet — don't leave ETH on the table.\n\nClaim at [link]. Open until [date].",
+          "[X] ETH claimed so far. [X] wallets have claimed their share.\n\nIf you backed a qualified country and haven't claimed yet — don't leave ETH on the table.\n\nClaim at [link]. Open until [date].\n\n4 days until World Cup 1 kicks off.",
+      },
+    ],
+  })
+  days.push({
+    dateStr: ds(2026, 6, 9),
+    phase: "group-draw",
+    posts: [
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "Group stage matchups for World Cup 1:\n\n[Group A matchup preview]\n[Group B matchup preview]\n...\n\nVoting opens June 11. Prices start at the floor.\n\n[app link]",
+      },
+      {
+        account: "builder",
+        channel: "farcaster",
+        template:
+          "2 days to @onchainworldcup World Cup 1.\n\nThis is the tournament we built from scratch — 48 countries qualified by the community, groups seeded from their votes.\n\nJune 11. First match is live.",
       },
     ],
   })
   days.push({
     dateStr: ds(2026, 6, 10),
-    phase: "qualification",
-    label: "Eve of Group Stage",
+    phase: "group-draw",
+    label: "Eve of World Cup 1",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Group stage starts tomorrow.\n\n48 countries. 12 groups. ETH on every match.\n\nJune 11. Same day as the real World Cup kicks off.\n[app link]",
+          "Tomorrow.\n\nWorld Cup 1 kicks off — 48 countries, 12 groups, ETH on every match.\n\nVoting opens at kickoff. Prices start at the floor for every match.\n\n[app link]",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "Qualification is behind us. Tomorrow @onchainworldcup launches the group stage — same day as the real World Cup.\n\n[Personal reflection on the journey from qualification to group stage].",
+          "Shipping @onchainworldcup World Cup 1 tomorrow.\n\nQualification → Group draw → Group stage. All onchain. All ETH.\n\nThe community chose 48 countries. Tomorrow we find out who's best.",
       },
     ],
   })
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 2 — GROUP STAGE  Jun 11 – Jun 26
-  // 48 teams · 12 groups of 4 · top 2 from each group advance
+  // PHASE 3 — WORLD CUP 1  Jun 11 – Jun 26
+  // Our onchain group stage — 48 teams, 12 groups, qualification-derived seedings
   // ────────────────────────────────────────────────────────────────────────────
 
   days.push({
     dateStr: ds(2026, 6, 11),
-    phase: "group-stage",
-    label: "🏟️ Group Stage Opens",
+    phase: "world-cup-1",
+    label: "🏟️ World Cup 1 Opens",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "IT BEGINS.\n\nGroup stage is live. 48 countries. 12 groups. 36 matches.\n\nVote on today's matches with ETH. Prize pools form per match.\nEarly votes get linear pricing.\n\n[Today's matches]\n[app link]",
+          "WORLD CUP 1 IS LIVE.\n\n48 countries. 12 groups. The tournament the community built.\n\nVote on today's matches with ETH. Prize pools form per match.\nEarly votes get linear pricing.\n\n[Today's matches]\n[app link]",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "🗓️ Today's Group Stage Matches:\n\n[Group A] [Country] vs [Country] — [Time] UTC\n[Group B] [Country] vs [Country] — [Time] UTC\n[Group C] [Country] vs [Country] — [Time] UTC\n[Group D] [Country] vs [Country] — [Time] UTC\n\nVote on each match at [app link]",
-        note: "Pull from live FIFA match schedule",
+          "🗓️ World Cup 1 — Match Day 1:\n\n[Group A] [Country] vs [Country] — [Time] UTC\n[Group B] [Country] vs [Country] — [Time] UTC\n[Group C] [Country] vs [Country] — [Time] UTC\n[Group D] [Country] vs [Country] — [Time] UTC\n\nVote on each match at [app link]",
+        note: "Pull from live World Cup 1 match schedule",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "Group stage day one. @onchainworldcup is live for the World Cup.\n\n[Personal observation about first matches, voter behavior, prize pool growth].",
+          "World Cup 1 day one. @onchainworldcup\n\nThis is the tournament we built — 48 countries voted in by the community, groups drawn from their qualification positions.\n\n[Personal observation / excitement about the first matches].",
       },
     ],
   })
@@ -674,30 +692,32 @@ function buildTimeline(): TimelineDay[] {
     const builderDay = i % 3 === 0
     days.push({
       dateStr: ds(2026, 6, i),
-      phase: "group-stage",
-      label: isLastDay ? "🏁 Final Group Stage Day" : undefined,
+      phase: "world-cup-1",
+      label: isLastDay ? "🏁 World Cup 1 — Final Group Day" : undefined,
       posts: [
         {
           account: "app",
           channel: "both",
           template: isLastDay
-            ? "Final group stage matches today.\n\nAfter today, the top 2 from each group advance.\n24 countries through. 24 eliminated.\n\n[Today's matches — decisive group results]\n[app link]"
-            : `🗓️ Match Day ${matchDay}\n\n[Group X] [Country] vs [Country] — [Time] UTC\n[Group Y] [Country] vs [Country] — [Time] UTC\n[Group Z] [Country] vs [Country] — [Time] UTC\n\nVote on each match at [app link]`,
-          note: isLastDay ? undefined : "Pull today's fixtures from FIFA schedule",
+            ? "Final group stage matches today.\n\nAfter today, top 2 from each group advance to the Real World Cup.\n24 countries through. 24 eliminated from World Cup 1.\n\n[Today's decisive matches]\n[app link]"
+            : `🗓️ World Cup 1 — Match Day ${matchDay}\n\n[Group X] [Country] vs [Country] — [Time] UTC\n[Group Y] [Country] vs [Country] — [Time] UTC\n[Group Z] [Country] vs [Country] — [Time] UTC\n\nVote on each match at [app link]`,
+          note: isLastDay ? undefined : "Pull today's fixtures from World Cup 1 schedule",
         },
         {
           account: "app",
           channel: "both",
           template: isLastDay
-            ? "🏆 Group Stage Complete — 24 qualifiers confirmed:\n\n[Group A: 1st, 2nd]\n[Group B: 1st, 2nd]\n...\n\nKnockout stage begins June 27.\nVote on Round of 16 matches starting tomorrow.\n[app link]"
-            : `📊 Yesterday's results + standings\n\nGroup [X] after [Y] matches:\n1. [Country] — [pts]\n2. [Country] — [pts]\n3. [Country] — [pts]\n4. [Country] — [pts]\n\nPrize pool from yesterday's matches: [X.XX] ETH distributed.\n[app link]`,
+            ? "🏆 World Cup 1 Group Stage Complete.\n\n24 countries advance to the Real World Cup (starting June 27).\n\n[Group stage final standings per group]\n\nPrize pool distributed: [X.XX] ETH to correct voters across all group matches.\n[app link]"
+            : `📊 World Cup 1 — Yesterday's results\n\nGroup [X] standings:\n1. [Country] — [pts] pts\n2. [Country] — [pts] pts\n3. [Country] — [pts] pts\n4. [Country] — [pts] pts\n\nPrize pool distributed: [X.XX] ETH.\n[app link]`,
         },
         ...(builderDay
           ? [
               {
                 account: "builder" as const,
                 channel: "farcaster" as const,
-                template: `Match Day ${matchDay} thoughts. [Personal observation — surprising results, community reactions, ETH prize pools].\n\n@onchainworldcup`,
+                template: isLastDay
+                  ? "World Cup 1 group stage is done. @onchainworldcup\n\n24 countries advance. The Real World Cup starts June 27 — same teams, same groups as actual FIFA 2026.\n\n[Personal reaction / which teams advanced / thoughts on the Real WC]."
+                  : `World Cup 1 — Match Day ${matchDay}. @onchainworldcup\n\n[Personal observation — surprising results, community reactions, prize pools].\n\nReal World Cup starts June 27 with the same teams as actual FIFA 2026.`,
               },
             ]
           : []),
@@ -706,134 +726,148 @@ function buildTimeline(): TimelineDay[] {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 3 — ROUND OF 16  Jun 27 – Jul 1
-  // Seeded directly from group stage results
+  // PHASE 4 — REAL WORLD CUP  Jun 27 – Jul 19
+  // Mirrors actual FIFA 2026 — same teams, same groups, real match results
   // ────────────────────────────────────────────────────────────────────────────
 
-  // Round of 16: Jun 27–28, Jun 30, Jul 1
-  const r16 = [
-    { date: ds(2026, 6, 27), label: "🔥 Round of 16 — Day 1", builder: true },
-    { date: ds(2026, 6, 28), label: "Round of 16 — Day 2", builder: false },
-    { date: ds(2026, 6, 30), label: "Round of 16 — Day 3", builder: true },
-    { date: ds(2026, 7, 1), label: "Round of 16 — Day 4", builder: false },
+  days.push({
+    dateStr: ds(2026, 6, 27),
+    phase: "real-world-cup",
+    label: "🌍 Real World Cup — Knockout Opens",
+    posts: [
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "THE REAL WORLD CUP BEGINS.\n\nSame teams. Same groups. Same results as actual FIFA 2026.\n\nKnockout stage is live. 32 teams. Single elimination.\n\nEvery match is live on @onchainworldcup. Vote with ETH.\n[app link]",
+      },
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "🔥 Real World Cup — Round of 32 starts today.\n\nThe bracket is set by the actual FIFA 2026 group stage results.\n\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nVote on each real match at [app link]",
+        note: "Pull bracket from actual FIFA 2026 results",
+      },
+      {
+        account: "builder",
+        channel: "farcaster",
+        template:
+          "The Real World Cup is here. @onchainworldcup now mirrors actual FIFA 2026.\n\nSame teams. Same groups. Same bracket.\n\nEvery real match is voteable onchain. This is what we built it for.\n\n[Personal reaction to the Real WC starting].",
+      },
+    ],
+  })
+
+  // Round of 32 / early knockout: Jun 28 – Jul 4
+  const earlyKO = [
+    { d: ds(2026, 6, 28), label: "Round of 32 — Day 2" },
+    { d: ds(2026, 6, 30), label: "Round of 32 — Day 3" },
+    { d: ds(2026, 7, 1), label: "Round of 32 — Day 4" },
+    { d: ds(2026, 7, 2), label: "Round of 16 — Day 1" },
+    { d: ds(2026, 7, 3), label: "Round of 16 — Day 2" },
+    { d: ds(2026, 7, 4), label: "Round of 16 — Day 3" },
   ]
-  r16.forEach(({ date, label, builder }, idx) => {
+  earlyKO.forEach(({ d: date, label }) => {
     days.push({
       dateStr: date,
-      phase: "round-of-16",
+      phase: "real-world-cup",
       label,
       posts: [
         {
           account: "app",
           channel: "both",
-          template: `🔥 Round of 16 — Day ${idx + 1}\n\nToday's knockout matches:\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nSingle elimination. One loss and you're out.\n\nVote with ETH on each match.\n[app link]`,
-          note: "Pull fixtures from FIFA schedule",
+          template: `🌍 Real World Cup — ${label}\n\nToday's real FIFA 2026 matches:\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nVote with ETH on real match outcomes.\n[app link]`,
+          note: "Pull from actual FIFA 2026 match schedule",
         },
         {
           account: "app",
           channel: "both",
-          template: `Round of 16 results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to voters who picked correctly.\n\nRemaining fixtures → [link]\n[app link]`,
+          template: `Real World Cup results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to voters who picked correctly.\n\nNext matches → [link]`,
           note: "Post after matches finish",
         },
-        ...(builder
-          ? [
-              {
-                account: "builder" as const,
-                channel: "farcaster" as const,
-                template:
-                  "Round of 16 is here — seeded straight from the group stage. @onchainworldcup\n\nSingle elimination. One wrong pick and your ETH is gone.\n\n[Personal pick / reaction for today's matches].",
-              },
-            ]
-          : []),
       ],
     })
   })
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 4 — KNOCKOUT  Jul 3 – Jul 19
-  // The real bracket: QF → SF → Third place → Final
-  // ────────────────────────────────────────────────────────────────────────────
-
-  // Quarter-finals: Jul 3–4
+  // Quarter-finals: Jul 7–8
   ;[
-    { d: 3, label: "⚡ Quarter-finals — Day 1" },
-    { d: 4, label: "⚡ Quarter-finals — Day 2" },
+    { d: 7, label: "⚡ Quarter-finals — Day 1" },
+    { d: 8, label: "⚡ Quarter-finals — Day 2" },
   ].forEach(({ d: day, label }) => {
     days.push({
       dateStr: ds(2026, 7, day),
-      phase: "knockout",
+      phase: "real-world-cup",
       label,
       posts: [
         {
           account: "app",
           channel: "both",
-          template: `⚡ Quarter-final\n\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nThe last 8 standing. Four winners advance to the semi-finals.\n\nVote with ETH at [app link]`,
+          template: `⚡ Real World Cup — Quarter-final\n\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nFour teams left in each half. Real FIFA matches. Real ETH.\n\nVote at [app link]`,
           note: "Pull fixtures from FIFA schedule",
         },
         {
           account: "app",
           channel: "both",
-          template: `Quarter-final results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n\nSemi-finalists confirmed → [link]\n[app link]`,
+          template: `Quarter-final results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n[app link]`,
           note: "Post after matches finish",
         },
         {
           account: "builder",
           channel: "farcaster",
-          template: `Quarter-finals. @onchainworldcup\n\n[Personal reaction to QF results — surprises, elimination of favorites, semi-final predictions].`,
+          template: `Real World Cup quarter-finals. @onchainworldcup\n\n[Personal reaction to QF results — same matches as real FIFA, onchain stakes].\n\n[Prediction for the semi-finals].`,
         },
       ],
     })
   })
 
-  // Semi-finals: Jul 8–9
+  // Semi-finals: Jul 14–15
   ;[
-    { d: 8, label: "🏆 Semi-final 1" },
-    { d: 9, label: "🏆 Semi-final 2" },
+    { d: 14, label: "🏆 Semi-final 1" },
+    { d: 15, label: "🏆 Semi-final 2" },
   ].forEach(({ d: day, label }) => {
     days.push({
       dateStr: ds(2026, 7, day),
-      phase: "knockout",
+      phase: "real-world-cup",
       label,
       posts: [
         {
           account: "app",
           channel: "both",
-          template: `🏆 Semi-final\n\n[Country A] vs [Country B] — [Time] UTC\n\nOne match. Two countries fighting for the Final.\n\nVote with ETH at [app link]`,
+          template: `🏆 Real World Cup — Semi-final\n\n[Country A] vs [Country B] — [Time] UTC\n\nOne real match. Two countries fighting for the Final.\n\nVote with ETH at [app link]`,
           note: "Pull fixture from FIFA schedule",
         },
         {
           account: "app",
           channel: "both",
-          template: `Semi-final result:\n\n[Country A] [score] [Country B]\n\n[Winner] advances to the Final on July 19.\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n[app link]`,
+          template: `Semi-final result:\n\n[Country A] [score] [Country B]\n\n[Winner] advances to the Real World Cup Final on July 19.\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n[app link]`,
           note: "Post after the match",
         },
         {
           account: "builder",
           channel: "farcaster",
-          template: `Semi-final done. [Country] is through to the Final.\n\n[Personal reaction / prediction for the Final].\n\n@onchainworldcup`,
+          template: `Semi-final done. [Country] is through to the Final.\n\n[Personal reaction / who I'm picking for the Final].\n\n@onchainworldcup`,
         },
       ],
     })
   })
 
-  // Third place playoff: Jul 18
+  // Third place: Jul 18
   days.push({
     dateStr: ds(2026, 7, 18),
-    phase: "knockout",
+    phase: "real-world-cup",
     label: "Third Place Playoff",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Third place playoff today.\n\n[Country A] vs [Country B] — [Time] UTC\n\nVote with ETH at [app link]",
+          "Real World Cup — Third place playoff.\n\n[Country A] vs [Country B] — [Time] UTC\n\nVote with ETH at [app link]",
         note: "Pull fixture from FIFA schedule",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "Tomorrow: The Final.\n\n[Finalist A] vs [Finalist B] — [Time] UTC\n\nThe last match of Onchain World Cup 2026.\n\nVote with ETH at [app link]",
+          "Tomorrow: The Real World Cup Final.\n\n[Finalist A] vs [Finalist B] — [Time] UTC\n\nThe last match. Vote with ETH.\n[app link]",
       },
     ],
   })
@@ -841,27 +875,27 @@ function buildTimeline(): TimelineDay[] {
   // The Final: Jul 19
   days.push({
     dateStr: ds(2026, 7, 19),
-    phase: "knockout",
+    phase: "real-world-cup",
     label: "🏆 THE FINAL — Jul 19",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "THE FINAL.\n\n[Country A] 🏳️ vs 🏳️ [Country B]\nKickoff: [Time] UTC\n\nVote now. This is the last match.\nEarly voters get linear pricing.\n\n[app link]",
+          "THE REAL WORLD CUP FINAL.\n\n[Country A] 🏳️ vs 🏳️ [Country B]\nKickoff: [Time] UTC\n\nSame match as actual FIFA 2026. Vote now. Last chance.\nEarly voters get linear pricing.\n\n[app link]",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "FINAL RESULT.\n\n[Country A] [score] [Country B]\n\n🏆 [Winner] are the Onchain World Cup 2026 champions.\n\nPrize pool distributed: [X.XX] ETH to winning voters.\n\nThank you for being part of this. See you in 2030. 🌍\n[app link]",
+          "FINAL RESULT.\n\n[Country A] [score] [Country B]\n\n🏆 [Winner] are the FIFA World Cup 2026 champions.\n\nPrize pool distributed: [X.XX] ETH to winning voters across Onchain World Cup.\n\nThank you for being part of this. See you in 2030. 🌍\n[app link]",
         note: "Post immediately after the final whistle",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "That's it. @onchainworldcup 2026 is over.\n\n[Country] won. [X.XX] ETH distributed to voters across all phases.\n\n[Personal reflection — from building the qualification contract to the Final].\n\nThank you to everyone who voted, shared, and built with us.",
+          "That's it. @onchainworldcup World Cup 2026 is over.\n\n[Country] won. [X.XX] ETH distributed to voters across both World Cup 1 and the Real World Cup.\n\n[Personal reflection — from building the qualification contract to the Final].\n\nThank you to everyone who voted, shared, and built with us.",
       },
     ],
   })
@@ -929,20 +963,14 @@ function DayRow({ day, isToday, isPast }: { day: TimelineDay; isToday: boolean; 
       >
         <span
           className={`text-xs font-mono w-28 shrink-0 ${
-            isToday
-              ? "text-[var(--cm-highlight)] font-bold"
-              : isPast
-              ? "text-muted-foreground/40"
-              : "text-muted-foreground"
+            isToday ? "text-[var(--cm-highlight)] font-bold" : isPast ? "text-muted-foreground/40" : "text-muted-foreground"
           }`}
         >
           {isToday ? "TODAY" : formatDate(day.dateStr)}
         </span>
-
         {day.label && (
           <span className={`text-[10px] font-semibold shrink-0 ${meta.textColor}`}>{day.label}</span>
         )}
-
         <span className="flex gap-1 ml-auto shrink-0">
           {appCount > 0 && (
             <span className="text-[10px] px-1.5 py-0.5 bg-[var(--nav-purple)]/40 border border-[var(--cm-highlight)]/30 text-[var(--cm-highlight)]">
@@ -955,10 +983,8 @@ function DayRow({ day, isToday, isPast }: { day: TimelineDay; isToday: boolean; 
             </span>
           )}
         </span>
-
         <span className="text-muted-foreground/40 text-xs shrink-0">{open ? "▲" : "▼"}</span>
       </button>
-
       {open && (
         <div className="px-3 pb-3 space-y-2">
           {day.posts.map((post, i) => (
@@ -978,18 +1004,18 @@ const ALL_PHASES: Array<Phase | "all"> = [
   "all",
   "pre-launch",
   "qualification",
-  "group-stage",
-  "round-of-16",
-  "knockout",
+  "group-draw",
+  "world-cup-1",
+  "real-world-cup",
 ]
 
 const FILTER_LABELS: Record<string, string> = {
   all: "All phases",
   "pre-launch": "Pre-Launch",
   qualification: "Phase 1 — Qualification",
-  "group-stage": "Phase 2 — Group Stage",
-  "round-of-16": "Phase 3 — Round of 16",
-  knockout: "Phase 4 — Knockout",
+  "group-draw": "Phase 2 — Group Draw",
+  "world-cup-1": "Phase 3 — World Cup 1",
+  "real-world-cup": "Phase 4 — Real World Cup",
 }
 
 type RowItem =
@@ -1020,7 +1046,6 @@ export function ContentTimeline() {
   const todayDay = (timeline as TimelineDay[]).find((d: TimelineDay) => d.dateStr === todayStr)
   const nextScheduled = (timeline as TimelineDay[]).find((d: TimelineDay) => d.dateStr > todayStr)
 
-  // Insert phase divider rows whenever phase changes
   const rows = useMemo<RowItem[]>(() => {
     const result: RowItem[] = []
     let lastPhase: Phase | null = null
