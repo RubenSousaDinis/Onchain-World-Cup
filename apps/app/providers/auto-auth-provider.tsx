@@ -1,10 +1,16 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAccount, useSwitchChain } from "wagmi"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useNotifications } from "@/components/notifications"
 import { useFarcaster } from "@/lib/farcaster-provider"
+
+/** Returns true when running on a mobile/tablet browser (client-side only). */
+function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
+}
 
 /**
  * Auto-Authentication Provider
@@ -17,12 +23,13 @@ import { useFarcaster } from "@/lib/farcaster-provider"
  * This ensures the authenticated session always matches the connected wallet.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
-  const { address, isConnected, isReconnecting, status, chain } = useAccount()
+  const { address, isConnected, isReconnecting, status, chain, connector } = useAccount()
   const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet, defaultChainId, defaultChain } = useSIWEAuth()
   const { switchChain } = useSwitchChain()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp, isLoading: isFarcasterLoading } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
+  const [showMobileSignPrompt, setShowMobileSignPrompt] = useState(false)
 
   // Sign out when wallet disconnects (but not during reconnection/connection)
   useEffect(() => {
@@ -178,16 +185,34 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     console.log("[AutoAuth] Wallet connected and not authenticated → Triggering authentication")
     hasTriggeredAuth.current = true
 
-    // Trigger authentication after a short delay to allow UI to settle
+    // On mobile, WalletConnect-based wallets (e.g. MetaMask) receive the sign
+    // request silently — the user must manually switch back to their wallet app.
+    const mobile = isMobileBrowser()
+    // Detect WalletConnect-based connection (MetaMask mobile, etc.)
+    const isWalletConnect = connector?.type === "walletConnect" || connector?.id === "walletConnect"
+
+    // Trigger authentication after a short delay to allow UI to settle.
+    // Mobile WalletConnect connections need a longer settling time.
+    const delay = mobile && isWalletConnect ? 2000 : 1000
     const timer = setTimeout(async () => {
       console.log("[AutoAuth] Executing authentication flow")
-      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp })
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect })
 
       try {
         // In Farcaster, authentication is automatic (no user interaction needed)
         // In desktop, user needs to sign a message
         if (!isFarcasterMiniApp) {
-          info("Authentication Required", "Please sign the message to authenticate with your wallet")
+          if (mobile && isWalletConnect) {
+            // On mobile WalletConnect wallets the sign request is sent to the
+            // wallet app in the background. Tell the user to switch apps.
+            info(
+              "Signature Required",
+              "Please open your wallet app (e.g. MetaMask) to sign the authentication message"
+            )
+            setShowMobileSignPrompt(true)
+          } else {
+            info("Authentication Required", "Please sign the message to authenticate with your wallet")
+          }
         }
 
         console.log("[AutoAuth] Calling login()...")
@@ -200,6 +225,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           url: result?.url,
           error: result?.error,
         })
+
+        setShowMobileSignPrompt(false)
 
         // Show success message
         if (isFarcasterMiniApp) {
@@ -253,14 +280,70 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           error("Authentication Failed", errorMessage)
         }
 
+        setShowMobileSignPrompt(false)
         // Reset so they can try again
         hasTriggeredAuth.current = false
       }
-    }, 1000) // 1 second delay to let wallet connection settle
+    }, delay)
 
     return () => clearTimeout(timer)
   }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, isFarcasterLoading, login, info, success, error, isFarcasterMiniApp])
 
-  // This provider doesn't render anything, just manages authentication
-  return <>{children}</>
+  const handleRetrySign = async () => {
+    if (hasTriggeredAuth.current) return
+    hasTriggeredAuth.current = true
+    setShowMobileSignPrompt(false)
+    try {
+      info("Signature Required", "Please open your wallet app to sign the authentication message")
+      setShowMobileSignPrompt(true)
+      await login()
+      setShowMobileSignPrompt(false)
+      success("Authenticated Successfully", "You're now signed in and can place votes")
+    } catch (err) {
+      setShowMobileSignPrompt(false)
+      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+      if (!errorMessage.includes("rejected") && !errorMessage.includes("denied")) {
+        error("Authentication Failed", errorMessage)
+      }
+      hasTriggeredAuth.current = false
+    }
+  }
+
+  return (
+    <>
+      {children}
+      {/* Mobile wallet sign prompt — shown when a WalletConnect sign request has
+          been dispatched and the user needs to switch back to their wallet app. */}
+      {showMobileSignPrompt && (
+        <div
+          style={{ zIndex: 9998 }}
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-background border-2 border-accent rounded-sm p-4 shadow-xl"
+        >
+          <p className="text-sm font-bold text-foreground mb-1">Sign In Required</p>
+          <p className="text-xs text-muted-foreground mb-3">
+            A signature request has been sent to your wallet. Switch to your wallet app (e.g.
+            MetaMask) to approve it, then return here.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRetrySign}
+              disabled={hasTriggeredAuth.current}
+              className="cm-nav-tab flex-1 py-1.5 text-xs font-bold rounded-sm disabled:opacity-50"
+            >
+              RETRY
+            </button>
+            <button
+              onClick={() => {
+                setShowMobileSignPrompt(false)
+                hasTriggeredAuth.current = false
+              }}
+              className="flex-1 py-1.5 text-xs font-bold rounded-sm border border-border text-muted-foreground"
+            >
+              DISMISS
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
