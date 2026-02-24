@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useChainId, useReadContract } from "wagmi"
 import { formatEther, isAddress, Address } from "viem"
 import {
@@ -109,6 +109,66 @@ const NFT_SUPPLY_ABI = [
   { inputs: [], name: "MINT_PRICE", outputs: [{ type: "uint256" }], stateMutability: "view", type: "function" },
 ] as const
 
+function MigrationPanel() {
+  const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle")
+  const [output, setOutput] = useState<string | null>(null)
+  const outputRef = useRef<HTMLPreElement>(null)
+
+  async function runMigrations() {
+    setStatus("running")
+    setOutput(null)
+    try {
+      const res = await fetch("/api/admin/migrate", { method: "POST" })
+      const json = await res.json()
+      if (res.ok) {
+        setStatus("success")
+        setOutput(json.output || "No output.")
+      } else {
+        setStatus("error")
+        setOutput(json.details || json.error || "Unknown error.")
+      }
+    } catch (err) {
+      setStatus("error")
+      setOutput(String(err))
+    }
+  }
+
+  useEffect(() => {
+    if (output && outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight
+    }
+  }, [output])
+
+  return (
+    <div className="cm-panel p-4">
+      <h3 className="cm-section-header px-3 py-2 mb-4">Database Migrations</h3>
+      <div className="flex items-center gap-4 mb-3">
+        <button
+          onClick={runMigrations}
+          disabled={status === "running"}
+          className="cm-highlight bg-[var(--nav-purple)] border border-border/50 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+        >
+          {status === "running" ? "Running..." : "Run Pending Migrations"}
+        </button>
+        {status === "success" && (
+          <span className="text-green-400 text-sm">Migrations applied successfully.</span>
+        )}
+        {status === "error" && (
+          <span className="text-red-400 text-sm">Migration failed. See output below.</span>
+        )}
+      </div>
+      {output && (
+        <pre
+          ref={outputRef}
+          className="bg-black/40 border border-border/30 p-3 text-xs font-mono text-muted-foreground whitespace-pre-wrap max-h-48 overflow-y-auto"
+        >
+          {output}
+        </pre>
+      )}
+    </div>
+  )
+}
+
 export function OverviewTab() {
   const chainId = useChainId()
   const [matches, setMatches] = useState<MatchRow[]>([])
@@ -197,6 +257,9 @@ export function OverviewTab() {
 
   return (
     <div className="space-y-6">
+      {/* Database migrations */}
+      <MigrationPanel />
+
       {/* Qualification summary */}
       <div className="cm-panel p-4">
         <h3 className="cm-section-header px-3 py-2 mb-4">Qualification Contract</h3>
