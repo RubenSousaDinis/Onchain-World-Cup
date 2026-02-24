@@ -14,11 +14,11 @@ This document provides instructions and timelines for AI-generated content cover
 | Pre-launch content begins | Week of March 2, 2026 |
 | **Qualification Phase Opens** | **April 1, 2026** *(flexible — see note below)* |
 | **Qualification Phase Closes** | **End of May 2026** *(hard deadline)* |
-| Post-qualification / claim period | June 2026 (TBD based on close date) |
-| Main tournament begins | TBD (targeting early June 2026) |
+| Post-qualification / claim period | June 1–10, 2026 |
+| **Main tournament begins** | **June 11, 2026** |
 | Real FIFA World Cup | June 11 – July 19, 2026 |
 
-> **Note on launch flexibility**: Qualification can open on April 1 or later — the hard constraint is that it must close by end of May 2026 to allow time for post-qualification payouts before the main tournament. If the April 1 date is pushed, adjust all pre-launch content dates proportionally. User feedback is still being collected and may inform the final launch date.
+> **Note on launch flexibility**: Qualification can open on April 1 or later — the hard constraint is that it must close by end of May 2026 to allow time for post-qualification payouts before the main tournament starts on **June 11, 2026**. If the April 1 date is pushed, adjust all pre-launch content dates proportionally. User feedback is still being collected and may inform the final launch date.
 
 **Minimum qualification phase duration: 3 weeks**
 **Maximum window available: April 1 – May 31 (up to 8 weeks)**
@@ -499,14 +499,16 @@ If you backed a qualified country: claim your share at [link].
 
 ---
 
-## Post-Qualification: April 22 – April 30
+## Post-Qualification: June 1–10 (10 days before main tournament)
 
-**Goal**: Retain winners, acknowledge losers, preview main tournament.
+**Goal**: Retain winners, acknowledge losers, build hype for June 11 main tournament launch.
+
+> **Date note**: Post-qualification period runs from end-of-May close through June 10. The main tournament begins on **June 11, 2026** — aligned with the real FIFA World Cup kickoff.
 
 ```
 App account:
 
-Day 1 (April 22):
+Day 1 (June 1 — ~1 day after close):
 Qualification is over. Here are your 48 qualified countries.
 
 [List of 48 with flags]
@@ -516,7 +518,7 @@ Formula: (your qualified votes / total qualified votes) × [prize pool] ETH
 
 ---
 
-Day 3 (April 24):
+Day 3 (June 3):
 Winners: claim is live.
 
 [X] ETH waiting to be claimed by voters who backed qualified countries.
@@ -525,7 +527,7 @@ Check your claimable amount at [claim link].
 
 ---
 
-Day 7 (April 28):
+Day 7 (June 7):
 [X] ETH claimed so far.
 [X] wallets have claimed their share.
 
@@ -535,12 +537,13 @@ Claim at [link]. Open until [date].
 
 ---
 
-Day 10 (May 1):
-Main tournament is coming.
+Day 10 (June 10 — eve of main tournament):
+Main tournament starts tomorrow.
 
 48 countries. Knockout matches. ETH on the line.
 
-We'll announce the format soon. Stay tuned.
+June 11. Same day as the real World Cup kicks off.
+[app link]
 ```
 
 ---
@@ -559,7 +562,8 @@ When generating content for this project, follow these rules:
 ### What to Always Include
 - App link in every post
 - Specific numbers when available (prize pool, votes, days remaining)
-- The qualification end date (April 21) when urgency is relevant
+- The qualification close date (end of May) when urgency is relevant
+- The main tournament start date (June 11) when building anticipation
 - Clarification that only top 48 qualify
 
 ### What to Never Write
@@ -671,4 +675,5 @@ Update the following fields as they become available:
 **Status**: Ready — content begins week of March 2, 2026
 **Qualification opens**: April 1, 2026 (flexible)
 **Qualification closes**: End of May 2026 (hard deadline)
-**Launch date note**: Final launch date TBD pending user feedback collection
+**Main tournament begins**: June 11, 2026 (confirmed — aligned with real FIFA World Cup)
+**Launch date note**: Qualification launch date TBD pending user feedback collection; main tournament date is fixed at June 11
