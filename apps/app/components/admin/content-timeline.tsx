@@ -8,10 +8,10 @@ import { useState, useMemo } from "react"
  * Five sequential phases of the Onchain World Cup:
  *
  * pre-launch    Mar 1–31       Building hype before qualification
- * qualification Apr 1–May 31   48 countries qualify via ETH voting
- * group-draw    Jun 1–10       Claim ETH + groups seeded from qual standings
- * world-cup-1   Jun 11–Jun 26  Our onchain tournament (qualification groups)
- * real-world-cup Jun 27–Jul 19 Mirrors actual FIFA 2026 — same teams & groups
+ * qualification Apr 1–May 10   48 countries qualify via ETH voting (40 days)
+ * group-draw    May 11–May 20  Claim ETH + groups seeded from qual standings
+ * world-cup-1   May 21–Jun 10  Our onchain tournament (qualification groups)
+ * real-world-cup Jun 11–Jul 19 Mirrors actual FIFA 2026 — same teams & groups
  */
 type Phase = "pre-launch" | "qualification" | "group-draw" | "world-cup-1" | "real-world-cup"
 
@@ -45,21 +45,21 @@ const PHASE_META: Record<
   qualification: {
     title: "Phase 1 — Qualification",
     subtitle: "48 countries qualify from 211 FIFA members via ETH voting",
-    dateRange: "Apr 1 – May 31, 2026",
+    dateRange: "Apr 1 – May 10, 2026",
     textColor: "text-[var(--cm-highlight)]",
     borderCls: "border-l-[var(--cm-highlight)]/50",
   },
   "group-draw": {
     title: "Phase 2 — Group Draw",
     subtitle: "Claim ETH rewards · Groups seeded from qualification standings",
-    dateRange: "Jun 1 – Jun 10, 2026",
+    dateRange: "May 11 – May 20, 2026",
     textColor: "text-violet-400",
     borderCls: "border-l-violet-500/50",
   },
   "world-cup-1": {
     title: "Phase 3 — World Cup 1",
     subtitle: "Onchain World Cup with our qualification-derived groups",
-    dateRange: "Jun 11 – Jun 26, 2026",
+    dateRange: "May 21 – Jun 10, 2026",
     textColor: "text-emerald-400",
     borderCls: "border-l-emerald-500/50",
   },
@@ -348,7 +348,7 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "6 days. Here's the full timeline:\n\n→ April 1: Qualification opens — 48 countries compete\n→ End of May: Top 48 locked, claim ETH\n→ June 11: World Cup 1 starts (our groups, our tournament)\n→ June 27: Real World Cup — same teams & groups as actual FIFA 2026\n→ July 19: The Final\n\n48 countries. 163 eliminated. All onchain.",
+          "6 days. Here's the full timeline:\n\n→ April 1: Qualification opens — 48 countries compete\n→ May 10: Top 48 locked, claim ETH\n→ May 21: World Cup 1 starts (our groups, our tournament)\n→ June 11: Real World Cup — same teams & groups as actual FIFA 2026\n→ July 19: The Final\n\n48 countries. 163 eliminated. All onchain.",
       },
     ],
   })
@@ -391,7 +391,7 @@ function buildTimeline(): TimelineDay[] {
   })
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 1 — QUALIFICATION  Apr 1 – May 31
+  // PHASE 1 — QUALIFICATION  Apr 1 – May 10
   // 48 countries qualify via ETH voting — top 48 by vote count
   // ────────────────────────────────────────────────────────────────────────────
 
@@ -412,7 +412,7 @@ function buildTimeline(): TimelineDay[] {
         account: "builder",
         channel: "farcaster",
         template:
-          "We're live.\n\n@onchainworldcup qualification just opened.\nUp to 8 weeks. 48 spots. Prize pool at 0 ETH right now.\n\nGo back your country.\n[app link]",
+          "We're live.\n\n@onchainworldcup qualification just opened.\n6 weeks. 48 spots. Prize pool at 0 ETH right now.\n\nGo back your country.\n[app link]",
       },
     ],
   })
@@ -444,8 +444,8 @@ function buildTimeline(): TimelineDay[] {
     })
   }
 
-  // Mid-qualification Apr 8 – May 16 (App daily, Builder Mon/Wed/Fri)
-  const midEnd = new Date(2026, 4, 16)
+  // Mid-qualification Apr 8 – Apr 30 (App daily, Builder Mon/Wed/Fri)
+  const midEnd = new Date(2026, 3, 30)
   for (let dt = new Date(2026, 3, 8); dt <= midEnd; dt = addDays(dt, 1)) {
     const n = daysBetween(qualOrigin, dt) + 1
     const dow = dt.getDay()
@@ -473,44 +473,44 @@ function buildTimeline(): TimelineDay[] {
     })
   }
 
-  // Final Push May 17–30
+  // Final Push May 1–9
   days.push({
-    dateStr: ds(2026, 5, 17),
+    dateStr: ds(2026, 5, 1),
     phase: "qualification",
-    label: "⚠️ Final Push — 14 days left",
+    label: "⚠️ Final Push — 9 days left",
     posts: [
       {
         account: "app",
         channel: "both",
-        template: `📊 Qualification Update — Day ${daysBetween(qualOrigin, new Date(2026, 4, 17)) + 1}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]`,
+        template: `📊 Qualification Update — Day ${daysBetween(qualOrigin, new Date(2026, 4, 1)) + 1}\n\nPrize pool: [X.XX] ETH\nTotal votes: [X,XXX]\nTop country: [Country] 🏳️\n\n[Leaderboard link]`,
       },
       {
         account: "app",
         channel: "both",
         template:
-          "⚠️ 14 DAYS LEFT.\n\nCountries on the bubble:\n#46 [Country] — [X] votes\n#47 [Country] — [X] votes\n#48 [Country] — [X] votes (IN)\n#49 [Country] — [X] votes (OUT)\n\n[X] votes between qualification and elimination.\n[app link]",
+          "⚠️ 9 DAYS LEFT.\n\nCountries on the bubble:\n#46 [Country] — [X] votes\n#47 [Country] — [X] votes\n#48 [Country] — [X] votes (IN)\n#49 [Country] — [X] votes (OUT)\n\n[X] votes between qualification and elimination.\n[app link]",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "14 days left. @onchainworldcup qualification closes May 31.\n\n[Personal take on the standings / what's at stake in the final stretch].",
+          "9 days left. @onchainworldcup qualification closes May 10.\n\n[Personal take on the standings / what's at stake in the final stretch].",
       },
     ],
   })
-  for (let i = 18; i <= 30; i++) {
-    const daysLeft = 31 - i
+  for (let i = 2; i <= 9; i++) {
+    const daysLeft = 10 - i
     const n = daysBetween(qualOrigin, new Date(2026, 4, i)) + 1
     let label: string | undefined
-    if (i === 24) label = "7 Days Left"
-    if (i === 29) label = "2 Days Left"
-    if (i === 30) label = "⏰ 24 Hours Left"
+    if (i === 5) label = "5 Days Left"
+    if (i === 8) label = "2 Days Left"
+    if (i === 9) label = "⏰ 24 Hours Left"
     days.push({
       dateStr: ds(2026, 5, i),
       phase: "qualification",
       label,
       posts:
-        i === 30
+        i === 9
           ? [
               { account: "app" as const, channel: "both" as const, template: "24 HOURS LEFT.\n\nCountries ranked #46–#52 are separated by [X] votes.\n\nIf your country is on the bubble: now is the time.\n[app link]" },
               { account: "app" as const, channel: "both" as const, template: "24 HOURS LEFT. (evening reminder)\n\nAfter tonight, these rankings are locked forever.\n\n[X] countries still fighting for the last spots.\n[app link]", note: "Post again in the evening" },
@@ -524,9 +524,9 @@ function buildTimeline(): TimelineDay[] {
     })
   }
 
-  // Qualification closes May 31
+  // Qualification closes May 10
   days.push({
-    dateStr: ds(2026, 5, 31),
+    dateStr: ds(2026, 5, 10),
     phase: "qualification",
     label: "🔒 Qualification Closes",
     posts: [
@@ -548,18 +548,18 @@ function buildTimeline(): TimelineDay[] {
         account: "builder",
         channel: "farcaster",
         template:
-          "It's done. @onchainworldcup qualification is closed.\n\n[X.XX] ETH in the prize pool. 48 countries qualified.\n\nNext: group draw on June 6. World Cup 1 starts June 11.\n\n[Personal reflection on the qualification phase].",
+          "It's done. @onchainworldcup qualification is closed.\n\n[X.XX] ETH in the prize pool. 48 countries qualified.\n\nNext: group draw on May 16. World Cup 1 starts May 21.\n\n[Personal reflection on the qualification phase].",
       },
     ],
   })
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 2 — GROUP DRAW  Jun 1 – Jun 10
+  // PHASE 2 — GROUP DRAW  May 11 – May 20
   // Claim ETH rewards + groups seeded from qualification standings
   // ────────────────────────────────────────────────────────────────────────────
 
   days.push({
-    dateStr: ds(2026, 6, 1),
+    dateStr: ds(2026, 5, 11),
     phase: "group-draw",
     label: "Claim Period Opens",
     posts: [
@@ -572,19 +572,19 @@ function buildTimeline(): TimelineDay[] {
     ],
   })
   days.push({
-    dateStr: ds(2026, 6, 3),
+    dateStr: ds(2026, 5, 13),
     phase: "group-draw",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Claim is live.\n\n[X] ETH waiting to be claimed by voters who backed qualified countries.\n\nCheck your claimable amount at [claim link].\n\nGroup draw announcement coming June 6.",
+          "Claim is live.\n\n[X] ETH waiting to be claimed by voters who backed qualified countries.\n\nCheck your claimable amount at [claim link].\n\nGroup draw announcement coming May 16.",
       },
     ],
   })
   days.push({
-    dateStr: ds(2026, 6, 6),
+    dateStr: ds(2026, 5, 16),
     phase: "group-draw",
     label: "🎲 Group Draw",
     posts: [
@@ -592,7 +592,7 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "The groups are set.\n\nGenerated from qualification standings — higher ranked countries are seeded in different groups.\n\nWorld Cup 1 groups:\n\nGroup A: [Country 1] [Country 25] [Country 37] [Country 49]\nGroup B: [Country 2] [Country 26] [Country 38] [Country 50]\n...\n\nFull draw at [link]\n\nWorld Cup 1 starts June 11.",
+          "The groups are set.\n\nGenerated from qualification standings — higher ranked countries are seeded in different groups.\n\nWorld Cup 1 groups:\n\nGroup A: [Country 1] [Country 25] [Country 37] [Country 49]\nGroup B: [Country 2] [Country 26] [Country 38] [Country 50]\n...\n\nFull draw at [link]\n\nWorld Cup 1 starts May 21.",
         note: "Fill in groups from actual qualification standings",
       },
       {
@@ -604,7 +604,7 @@ function buildTimeline(): TimelineDay[] {
     ],
   })
   days.push({
-    dateStr: ds(2026, 6, 7),
+    dateStr: ds(2026, 5, 17),
     phase: "group-draw",
     posts: [
       {
@@ -616,25 +616,25 @@ function buildTimeline(): TimelineDay[] {
     ],
   })
   days.push({
-    dateStr: ds(2026, 6, 9),
+    dateStr: ds(2026, 5, 19),
     phase: "group-draw",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "Group stage matchups for World Cup 1:\n\n[Group A matchup preview]\n[Group B matchup preview]\n...\n\nVoting opens June 11. Prices start at the floor.\n\n[app link]",
+          "Group stage matchups for World Cup 1:\n\n[Group A matchup preview]\n[Group B matchup preview]\n...\n\nVoting opens May 21. Prices start at the floor.\n\n[app link]",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "2 days to @onchainworldcup World Cup 1.\n\nThis is the tournament we built from scratch — 48 countries qualified by the community, groups seeded from their votes.\n\nJune 11. First match is live.",
+          "2 days to @onchainworldcup World Cup 1.\n\nThis is the tournament we built from scratch — 48 countries qualified by the community, groups seeded from their votes.\n\nMay 21. First match is live.",
       },
     ],
   })
   days.push({
-    dateStr: ds(2026, 6, 10),
+    dateStr: ds(2026, 5, 20),
     phase: "group-draw",
     label: "Eve of World Cup 1",
     posts: [
@@ -654,12 +654,12 @@ function buildTimeline(): TimelineDay[] {
   })
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 3 — WORLD CUP 1  Jun 11 – Jun 26
+  // PHASE 3 — WORLD CUP 1  May 21 – Jun 10
   // Our onchain group stage — 48 teams, 12 groups, qualification-derived seedings
   // ────────────────────────────────────────────────────────────────────────────
 
   days.push({
-    dateStr: ds(2026, 6, 11),
+    dateStr: ds(2026, 5, 21),
     phase: "world-cup-1",
     label: "🏟️ World Cup 1 Opens",
     posts: [
@@ -685,13 +685,14 @@ function buildTimeline(): TimelineDay[] {
     ],
   })
 
-  // Match days Jun 12–26
-  for (let i = 12; i <= 26; i++) {
-    const matchDay = i - 10
-    const isLastDay = i === 26
-    const builderDay = i % 3 === 0
+  // Match days May 22 – Jun 10
+  const wc1Origin = new Date(2026, 4, 21)
+  for (let dt = new Date(2026, 4, 22); dt <= new Date(2026, 5, 10); dt = addDays(dt, 1)) {
+    const matchDay = daysBetween(wc1Origin, dt) + 1
+    const isLastDay = toDs(dt) === ds(2026, 6, 10)
+    const builderDay = matchDay % 3 === 0
     days.push({
-      dateStr: ds(2026, 6, i),
+      dateStr: toDs(dt),
       phase: "world-cup-1",
       label: isLastDay ? "🏁 World Cup 1 — Final Group Day" : undefined,
       posts: [
@@ -707,7 +708,7 @@ function buildTimeline(): TimelineDay[] {
           account: "app",
           channel: "both",
           template: isLastDay
-            ? "🏆 World Cup 1 Group Stage Complete.\n\n24 countries advance to the Real World Cup (starting June 27).\n\n[Group stage final standings per group]\n\nPrize pool distributed: [X.XX] ETH to correct voters across all group matches.\n[app link]"
+            ? "🏆 World Cup 1 Group Stage Complete.\n\n24 countries advance to the Real World Cup (starting June 11).\n\n[Group stage final standings per group]\n\nPrize pool distributed: [X.XX] ETH to correct voters across all group matches.\n[app link]"
             : `📊 World Cup 1 — Yesterday's results\n\nGroup [X] standings:\n1. [Country] — [pts] pts\n2. [Country] — [pts] pts\n3. [Country] — [pts] pts\n4. [Country] — [pts] pts\n\nPrize pool distributed: [X.XX] ETH.\n[app link]`,
         },
         ...(builderDay
@@ -716,8 +717,8 @@ function buildTimeline(): TimelineDay[] {
                 account: "builder" as const,
                 channel: "farcaster" as const,
                 template: isLastDay
-                  ? "World Cup 1 group stage is done. @onchainworldcup\n\n24 countries advance. The Real World Cup starts June 27 — same teams, same groups as actual FIFA 2026.\n\n[Personal reaction / which teams advanced / thoughts on the Real WC]."
-                  : `World Cup 1 — Match Day ${matchDay}. @onchainworldcup\n\n[Personal observation — surprising results, community reactions, prize pools].\n\nReal World Cup starts June 27 with the same teams as actual FIFA 2026.`,
+                  ? "World Cup 1 group stage is done. @onchainworldcup\n\n24 countries advance. The Real World Cup starts June 11 — same teams, same groups as actual FIFA 2026.\n\n[Personal reaction / which teams advanced / thoughts on the Real WC]."
+                  : `World Cup 1 — Match Day ${matchDay}. @onchainworldcup\n\n[Personal observation — surprising results, community reactions, prize pools].\n\nReal World Cup starts June 11 with the same teams as actual FIFA 2026.`,
               },
             ]
           : []),
@@ -727,162 +728,332 @@ function buildTimeline(): TimelineDay[] {
 
   // ────────────────────────────────────────────────────────────────────────────
   // PHASE 4 — REAL WORLD CUP  Jun 11 – Jul 19
-  // Mirrors actual FIFA 2026 — same teams, same groups, real match results
-  // Runs concurrently with World Cup 1 (Jun 11–26), then continues solo
+  // Mirrors actual FIFA 2026 — exact match schedule from official data
+  // Sequential after World Cup 1 ends Jun 10
   // ────────────────────────────────────────────────────────────────────────────
 
-  // Opening day — same day as World Cup 1 but separate track
+  // Helper to build a daily Real WC entry from real fixture data
+  function rwcDay(
+    dateStr: string,
+    label: string | undefined,
+    matchLines: string,
+    builderNote?: string,
+  ): TimelineDay {
+    return {
+      dateStr,
+      phase: "real-world-cup",
+      label,
+      posts: [
+        {
+          account: "app",
+          channel: "both",
+          template: `🌍 Real World Cup${label ? ` — ${label}` : ""}\n\n${matchLines}\n\nVote on each real FIFA 2026 match at [app link]`,
+        },
+        {
+          account: "app",
+          channel: "both",
+          template: `Real World Cup results:\n\n${matchLines.replace(/ — \d\d:\d\d UTC/g, "").split("\n").map((l) => `${l} — [score] ✅`).join("\n")}\n\nPrize pool: [X.XX] ETH distributed to correct voters.\n[app link]`,
+          note: "Post after matches finish",
+        },
+        ...(builderNote
+          ? [{ account: "builder" as const, channel: "farcaster" as const, template: builderNote }]
+          : []),
+      ],
+    }
+  }
+
+  // ── Group Stage Matchday 1 ──────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 6, 11),
+      "🌍 Real World Cup Opens — Matchday 1",
+      "Mexico vs South Africa — 19:00 UTC\n(Estadio Azteca)",
+      "THE REAL WORLD CUP IS LIVE.\n\nFIFA 2026 just kicked off. @onchainworldcup mirrors every match — same teams, same results.\n\nMexico 🇲🇽 vs South Africa 🇿🇦 — 19:00 UTC. Vote with ETH.\n\n[Personal pick].",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 13),
+      "Matchday 1 — Day 3",
+      "USA vs Paraguay — 01:00 UTC (SoFi Stadium)\nQatar vs Switzerland — 19:00 UTC\nBrazil vs Morocco — 22:00 UTC (MetLife Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 14),
+      "Matchday 1 — Day 4",
+      "Haiti vs Scotland — 01:00 UTC (Gillette Stadium)\nGermany vs Curaçao — 17:00 UTC (NRG Stadium)\nNetherlands vs Japan — 20:00 UTC\nIvory Coast vs Ecuador — 23:00 UTC (Lincoln Financial Field)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 15),
+      "Matchday 1 — Day 5",
+      "Spain vs Cape Verde Islands — 16:00 UTC (Mercedes-Benz Stadium)\nBelgium vs Egypt — 19:00 UTC (Lumen Field)\nSaudi Arabia vs Uruguay — 22:00 UTC (Hard Rock Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 16),
+      "Matchday 1 — Day 6",
+      "Iran vs New Zealand — 01:00 UTC (SoFi Stadium)\nFrance vs Senegal — 19:00 UTC (MetLife Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 17),
+      "Matchday 1 — Day 7",
+      "Argentina vs Algeria — 01:00 UTC (Arrowhead Stadium)\nAustria vs Jordan — 04:00 UTC\nEngland vs Croatia — 20:00 UTC\nGhana vs Panama — 23:00 UTC (BMO Field)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 18),
+      "Matchday 1 closes / Matchday 2 opens",
+      "Uzbekistan vs Colombia — 02:00 UTC (Estadio Azteca)\nCanada vs Qatar — 22:00 UTC (BC Place)",
+    ),
+  )
+
+  // ── Group Stage Matchday 2 ──────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 6, 19),
+      "Matchday 2",
+      "Mexico vs South Korea — 01:00 UTC (Estadio Akron)\nUSA vs Australia — 19:00 UTC (Lumen Field)\nScotland vs Morocco — 22:00 UTC (Gillette Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 20),
+      "Matchday 2",
+      "Brazil vs Haiti — 01:00 UTC (Lincoln Financial Field)\nGermany vs Ivory Coast — 20:00 UTC (BMO Field)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 21),
+      "Matchday 2",
+      "Ecuador vs Curaçao — 00:00 UTC (Arrowhead Stadium)\nTunisia vs Japan — 04:00 UTC (Estadio BBVA Bancomer)\nSpain vs Saudi Arabia — 16:00 UTC (Mercedes-Benz Stadium)\nBelgium vs Iran — 19:00 UTC (SoFi Stadium)\nUruguay vs Cape Verde Islands — 22:00 UTC (Hard Rock Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 22),
+      "Matchday 2",
+      "New Zealand vs Egypt — 01:00 UTC (BC Place)\nArgentina vs Austria — 17:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 23),
+      "Matchday 2 closes",
+      "Norway vs Senegal — 00:00 UTC (MetLife Stadium)\nJordan vs Algeria — 03:00 UTC\nPortugal vs Uzbekistan — 17:00 UTC (NRG Stadium)\nEngland vs Ghana — 20:00 UTC (Gillette Stadium)\nPanama vs Croatia — 23:00 UTC (BMO Field)",
+    ),
+  )
+
+  // ── Group Stage Matchday 3 ──────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 6, 24),
+      "Matchday 3",
+      "Switzerland vs Canada — 19:00 UTC (BC Place)\nMorocco vs Haiti — 22:00 UTC (Mercedes-Benz Stadium)\nScotland vs Brazil — 22:00 UTC (Hard Rock Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 25),
+      "Matchday 3",
+      "South Africa vs South Korea — 01:00 UTC (Estadio BBVA Bancomer)\nCuraçao vs Ivory Coast — 20:00 UTC (Lincoln Financial Field)\nEcuador vs Germany — 20:00 UTC (MetLife Stadium)\nTunisia vs Netherlands — 23:00 UTC (Arrowhead Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 26),
+      "Matchday 3",
+      "Paraguay vs Australia — 02:00 UTC\nNorway vs France — 19:00 UTC (Gillette Stadium)",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 27),
+      "Matchday 3 — Final Group Day",
+      "Cape Verde Islands vs Saudi Arabia — 00:00 UTC (NRG Stadium)\nUruguay vs Spain — 00:00 UTC (Estadio Akron)\nEgypt vs Iran — 03:00 UTC (Lumen Field)\nNew Zealand vs Belgium — 03:00 UTC (BC Place)\nCroatia vs Ghana — 21:00 UTC (Lincoln Financial Field)\nPanama vs England — 21:00 UTC (MetLife Stadium)\nColombia vs Portugal — 23:30 UTC (Hard Rock Stadium)",
+      "Last group stage matches today. Bracket will be set for the Round of 32.\n\n@onchainworldcup — vote on all 7 real FIFA matches. ETH on the line.\n\n[Personal take on who advances].",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 28),
+      "Final Group Day / Round of 32 opens",
+      "Algeria vs Austria — 02:00 UTC (Arrowhead Stadium)\nJordan vs Argentina — 02:00 UTC\nRound of 32 #1 — 19:00 UTC",
+      "Group stage is over. Knockout starts tonight.\n\nRound of 32 #1 kicks off at 19:00 UTC. @onchainworldcup\n\n[Reaction to group standings / teams eliminated].",
+    ),
+  )
+
+  // ── Round of 32 ────────────────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 6, 29),
+      "⚔️ Round of 32",
+      "Round of 32 #2 — 17:00 UTC\nRound of 32 #3 — 20:30 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 6, 30),
+      "⚔️ Round of 32",
+      "Round of 32 #4 — 01:00 UTC\nRound of 32 #5 — 17:00 UTC\nRound of 32 #6 — 21:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 1),
+      "⚔️ Round of 32",
+      "Round of 32 #7 — 01:00 UTC\nRound of 32 #8 — 16:00 UTC\nRound of 32 #9 — 20:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 2),
+      "⚔️ Round of 32",
+      "Round of 32 #10 — 00:00 UTC\nRound of 32 #11 — 19:00 UTC\nRound of 32 #12 — 23:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 3),
+      "⚔️ Round of 32",
+      "Round of 32 #13 — 03:00 UTC\nRound of 32 #14 — 18:00 UTC\nRound of 32 #15 — 22:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 4),
+      "⚔️ Round of 32 — Final matches / Round of 16 opens",
+      "Round of 32 #16 — 01:30 UTC\nRound of 16 #1 — 17:00 UTC\nRound of 16 #2 — 21:00 UTC",
+    ),
+  )
+
+  // ── Round of 16 ────────────────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 7, 5),
+      "⚔️ Round of 16",
+      "Round of 16 #3 — 20:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 6),
+      "⚔️ Round of 16",
+      "Round of 16 #4 — 00:00 UTC\nRound of 16 #5 — 19:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 7),
+      "⚔️ Round of 16 — Final matches",
+      "Round of 16 #6 — 00:00 UTC\nRound of 16 #7 — 16:00 UTC\nRound of 16 #8 — 20:00 UTC",
+      "Round of 16 done after today. Quarter-finalists set.\n\n@onchainworldcup — real FIFA 2026 knockouts. Vote with ETH.\n\n[Personal picks for QF].",
+    ),
+  )
+
+  // ── Quarter-finals ─────────────────────────────────────────────────────────
+
+  days.push(
+    rwcDay(
+      ds(2026, 7, 9),
+      "⚡ Quarter-finals",
+      "Quarter-finals #1 — 20:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 10),
+      "⚡ Quarter-finals",
+      "Quarter-finals #2 — 19:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 11),
+      "⚡ Quarter-finals",
+      "Quarter-finals #3 — 21:00 UTC",
+    ),
+  )
+  days.push(
+    rwcDay(
+      ds(2026, 7, 12),
+      "⚡ Quarter-finals — Final match",
+      "Quarter-finals #4 — 01:00 UTC",
+      "QFs are done. Four teams left.\n\n@onchainworldcup semi-finals incoming.\n\n[Personal reaction / picks for the semis].",
+    ),
+  )
+
+  // ── Semi-finals ────────────────────────────────────────────────────────────
+
   days.push({
-    dateStr: ds(2026, 6, 11),
+    dateStr: ds(2026, 7, 14),
     phase: "real-world-cup",
-    label: "🌍 Real World Cup Opens",
+    label: "🏆 Semi-final 1",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "THE REAL WORLD CUP IS LIVE.\n\nSame teams, same groups, same schedule as actual FIFA 2026.\n\nVote on every real match with ETH — from the group stage through the Final.\n\n[Today's real FIFA matches]\n[app link]",
+          "🏆 Real World Cup — Semi-final 1\n\nTBD vs TBD — 19:00 UTC\n\nTwo teams. One spot in the Final.\n\nVote with ETH at [app link]",
+        note: "Fill in real teams when bracket is confirmed",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "🌍 Real World Cup — Group Stage Day 1:\n\n[Real Group A] [Country] vs [Country] — [Time] UTC (actual FIFA match)\n[Real Group B] [Country] vs [Country] — [Time] UTC (actual FIFA match)\n\nThese are the real FIFA 2026 matches. Vote on real outcomes.\n[app link]",
-        note: "Pull from official FIFA 2026 match schedule",
+          "Semi-final 1 result:\n\n[Country A] [score] [Country B]\n\n[Winner] is through to the Final on July 19.\n\nPrize pool: [X.XX] ETH distributed.\n[app link]",
+        note: "Post after the match",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "Two tournaments, one app. @onchainworldcup\n\nWorld Cup 1: our onchain tournament with qualification groups.\nReal World Cup: mirrors actual FIFA 2026 — same teams, same groups.\n\nBoth live today. Vote on either. ETH on the line in both.\n\n[Personal pick for the real matches].",
+          "Semi-final 1 done. [Country] is in the Final.\n\n@onchainworldcup — see you July 19 for the last match.\n\n[Personal take].",
+      },
+    ],
+  })
+  days.push({
+    dateStr: ds(2026, 7, 15),
+    phase: "real-world-cup",
+    label: "🏆 Semi-final 2",
+    posts: [
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "🏆 Real World Cup — Semi-final 2\n\nTBD vs TBD — 19:00 UTC\n\nThe second finalist is decided tonight.\n\nVote with ETH at [app link]",
+        note: "Fill in real teams when bracket is confirmed",
+      },
+      {
+        account: "app",
+        channel: "both",
+        template:
+          "Semi-final 2 result:\n\n[Country A] [score] [Country B]\n\n[Winner] completes the Final lineup.\n\n[Finalist A] vs [Finalist B] — July 19.\n\nPrize pool: [X.XX] ETH distributed.\n[app link]",
+        note: "Post after the match",
+      },
+      {
+        account: "builder",
+        channel: "farcaster",
+        template:
+          "Final is set. [Country A] vs [Country B]. July 19.\n\n@onchainworldcup — vote now before kickoff. Last match. ETH on the line.\n\n[Personal prediction for the Final].",
       },
     ],
   })
 
-  // Real World Cup group stage: Jun 12–26 (concurrent with World Cup 1)
-  for (let i = 12; i <= 26; i++) {
-    const matchDay = i - 10
-    const isLastGroupDay = i === 26
-    days.push({
-      dateStr: ds(2026, 6, i),
-      phase: "real-world-cup",
-      label: isLastGroupDay ? "🏁 Real WC — Final Group Day" : undefined,
-      posts: [
-        {
-          account: "app",
-          channel: "both",
-          template: isLastGroupDay
-            ? "Real World Cup — Final group stage matches today (actual FIFA 2026).\n\nAfter today, the knockout bracket is set.\n\n[Today's decisive real FIFA matches]\n[app link]"
-            : `🌍 Real World Cup — Match Day ${matchDay} (actual FIFA 2026)\n\n[Real Group X] [Country] vs [Country] — [Time] UTC\n[Real Group Y] [Country] vs [Country] — [Time] UTC\n\nVote on real match outcomes at [app link]`,
-          note: "Pull from official FIFA 2026 match schedule",
-        },
-        {
-          account: "app",
-          channel: "both",
-          template: isLastGroupDay
-            ? "Real World Cup group stage complete.\n\nKnockout bracket set from actual FIFA 2026 results.\n\n[Real group standings]\n\nPrize pool from all group stage votes: [X.XX] ETH distributed.\n[app link]"
-            : `🌍 Real World Cup results — yesterday's actual FIFA matches:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool: [X.XX] ETH distributed to correct voters.\n[app link]`,
-          note: "Post after real FIFA matches finish",
-        },
-      ],
-    })
-  }
+  // ── Third Place / Final ────────────────────────────────────────────────────
 
-  // Knockout stage: Jun 27 onwards (only Real World Cup continues)
-  const rwcKO = [
-    { d: ds(2026, 6, 27), label: "⚔️ Knockout Stage — Round of 32 Day 1" },
-    { d: ds(2026, 6, 28), label: "Round of 32 — Day 2" },
-    { d: ds(2026, 6, 30), label: "Round of 32 — Day 3" },
-    { d: ds(2026, 7, 1), label: "Round of 32 — Day 4" },
-    { d: ds(2026, 7, 2), label: "Round of 16 — Day 1" },
-    { d: ds(2026, 7, 3), label: "Round of 16 — Day 2" },
-    { d: ds(2026, 7, 4), label: "Round of 16 — Day 3" },
-  ]
-  rwcKO.forEach(({ d: date, label }) => {
-    days.push({
-      dateStr: date,
-      phase: "real-world-cup",
-      label,
-      posts: [
-        {
-          account: "app",
-          channel: "both",
-          template: `🌍 Real World Cup — ${label}\n\nToday's real FIFA 2026 matches:\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nSingle elimination. Real results. Vote with ETH.\n[app link]`,
-          note: "Pull from official FIFA 2026 match schedule",
-        },
-        {
-          account: "app",
-          channel: "both",
-          template: `Real World Cup results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to voters who picked correctly.\n\nNext matches → [link]`,
-          note: "Post after real FIFA matches finish",
-        },
-      ],
-    })
-  })
-
-  // Quarter-finals: Jul 7–8
-  ;[
-    { d: 7, label: "⚡ Quarter-finals — Day 1" },
-    { d: 8, label: "⚡ Quarter-finals — Day 2" },
-  ].forEach(({ d: day, label }) => {
-    days.push({
-      dateStr: ds(2026, 7, day),
-      phase: "real-world-cup",
-      label,
-      posts: [
-        {
-          account: "app",
-          channel: "both",
-          template: `⚡ Real World Cup — Quarter-final\n\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nFour teams left in each half. Real FIFA matches. Real ETH.\n\nVote at [app link]`,
-          note: "Pull fixtures from FIFA schedule",
-        },
-        {
-          account: "app",
-          channel: "both",
-          template: `Quarter-final results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n[app link]`,
-          note: "Post after matches finish",
-        },
-        {
-          account: "builder",
-          channel: "farcaster",
-          template: `Real World Cup quarter-finals. @onchainworldcup\n\n[Personal reaction to QF results — same matches as real FIFA, onchain stakes].\n\n[Prediction for the semi-finals].`,
-        },
-      ],
-    })
-  })
-
-  // Semi-finals: Jul 14–15
-  ;[
-    { d: 14, label: "🏆 Semi-final 1" },
-    { d: 15, label: "🏆 Semi-final 2" },
-  ].forEach(({ d: day, label }) => {
-    days.push({
-      dateStr: ds(2026, 7, day),
-      phase: "real-world-cup",
-      label,
-      posts: [
-        {
-          account: "app",
-          channel: "both",
-          template: `🏆 Real World Cup — Semi-final\n\n[Country A] vs [Country B] — [Time] UTC\n\nOne real match. Two countries fighting for the Final.\n\nVote with ETH at [app link]`,
-          note: "Pull fixture from FIFA schedule",
-        },
-        {
-          account: "app",
-          channel: "both",
-          template: `Semi-final result:\n\n[Country A] [score] [Country B]\n\n[Winner] advances to the Real World Cup Final on July 19.\n\nPrize pool distributed: [X.XX] ETH to correct voters.\n[app link]`,
-          note: "Post after the match",
-        },
-        {
-          account: "builder",
-          channel: "farcaster",
-          template: `Semi-final done. [Country] is through to the Final.\n\n[Personal reaction / who I'm picking for the Final].\n\n@onchainworldcup`,
-        },
-      ],
-    })
-  })
-
-  // Third place: Jul 18
   days.push({
     dateStr: ds(2026, 7, 18),
     phase: "real-world-cup",
@@ -892,19 +1063,17 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "Real World Cup — Third place playoff.\n\n[Country A] vs [Country B] — [Time] UTC\n\nVote with ETH at [app link]",
-        note: "Pull fixture from FIFA schedule",
+          "Real World Cup — Third place playoff\n\nTBD vs TBD — 21:00 UTC\n\nVote with ETH at [app link]",
+        note: "Pull teams from FIFA schedule",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "Tomorrow: The Real World Cup Final.\n\n[Finalist A] vs [Finalist B] — [Time] UTC\n\nThe last match. Vote with ETH.\n[app link]",
+          "Tomorrow: THE REAL WORLD CUP FINAL.\n\n[Finalist A] vs [Finalist B] — 19:00 UTC\n\nThe last match. Vote with ETH.\n[app link]",
       },
     ],
   })
-
-  // The Final: Jul 19
   days.push({
     dateStr: ds(2026, 7, 19),
     phase: "real-world-cup",
@@ -914,7 +1083,7 @@ function buildTimeline(): TimelineDay[] {
         account: "app",
         channel: "both",
         template:
-          "THE REAL WORLD CUP FINAL.\n\n[Country A] 🏳️ vs 🏳️ [Country B]\nKickoff: [Time] UTC\n\nSame match as actual FIFA 2026. Vote now. Last chance.\nEarly voters get linear pricing.\n\n[app link]",
+          "THE REAL WORLD CUP FINAL.\n\n[Country A] vs [Country B] — 19:00 UTC\n\nSame match as actual FIFA 2026. Vote now. Last chance.\nEarly voters get linear pricing.\n\n[app link]",
       },
       {
         account: "app",
@@ -1153,7 +1322,7 @@ export function ContentTimeline() {
             row.type === "divider" ? (
               <PhaseDivider key={`d-${row.phase}-${i}`} phase={row.phase} />
             ) : (
-              <DayRow key={`${row.day.dateStr}-${row.day.phase}`} day={row.day} isToday={row.isToday} isPast={row.isPast} />
+              <DayRow key={row.day.dateStr} day={row.day} isToday={row.isToday} isPast={row.isPast} />
             )
           )
         )}
