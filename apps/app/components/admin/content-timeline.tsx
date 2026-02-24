@@ -4,7 +4,7 @@ import { useState, useMemo } from "react"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Phase = "pre-launch" | "qualification" | "group-stage" | "knockout"
+type Phase = "pre-launch" | "qualification" | "group-stage" | "round-of-16" | "knockout"
 
 interface ScheduledPost {
   account: "app" | "builder"
@@ -50,13 +50,21 @@ const PHASE_META: Record<
     badgeCls: "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400",
     borderCls: "border-l-emerald-500/40",
   },
-  knockout: {
-    title: "Phase 3 — Knockout",
-    subtitle: "Round of 16 through the Final",
-    dateRange: "Jun 27 – Jul 19, 2026",
+  "round-of-16": {
+    title: "Phase 3 — Round of 16",
+    subtitle: "Seeded from group stage results — 16 matches, single elimination",
+    dateRange: "Jun 27 – Jul 1, 2026",
     textColor: "text-orange-400",
     badgeCls: "bg-orange-500/10 border border-orange-500/30 text-orange-400",
     borderCls: "border-l-orange-500/40",
+  },
+  knockout: {
+    title: "Phase 4 — Knockout",
+    subtitle: "Quarter-finals · Semi-finals · Final — the real bracket",
+    dateRange: "Jul 3 – Jul 19, 2026",
+    textColor: "text-red-400",
+    badgeCls: "bg-red-500/10 border border-red-500/30 text-red-400",
+    borderCls: "border-l-red-500/40",
   },
 }
 
@@ -698,21 +706,21 @@ function buildTimeline(): TimelineDay[] {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 3 — KNOCKOUT  Jun 27 – Jul 19
-  // Round of 16 → Quarter-finals → Semi-finals → Third place → Final
+  // PHASE 3 — ROUND OF 16  Jun 27 – Jul 1
+  // Seeded directly from group stage results
   // ────────────────────────────────────────────────────────────────────────────
 
   // Round of 16: Jun 27–28, Jun 30, Jul 1
   const r16 = [
-    { date: ds(2026, 6, 27), label: "Round of 16 — Day 1", builder: true },
-    { date: ds(2026, 6, 28), label: undefined, builder: false },
-    { date: ds(2026, 6, 30), label: undefined, builder: false },
-    { date: ds(2026, 7, 1), label: undefined, builder: false },
+    { date: ds(2026, 6, 27), label: "🔥 Round of 16 — Day 1", builder: true },
+    { date: ds(2026, 6, 28), label: "Round of 16 — Day 2", builder: false },
+    { date: ds(2026, 6, 30), label: "Round of 16 — Day 3", builder: true },
+    { date: ds(2026, 7, 1), label: "Round of 16 — Day 4", builder: false },
   ]
   r16.forEach(({ date, label, builder }, idx) => {
     days.push({
       dateStr: date,
-      phase: "knockout",
+      phase: "round-of-16",
       label,
       posts: [
         {
@@ -733,13 +741,18 @@ function buildTimeline(): TimelineDay[] {
                 account: "builder" as const,
                 channel: "farcaster" as const,
                 template:
-                  "Knockout stage is here. @onchainworldcup Round of 16.\n\nSingle elimination. One wrong pick and your ETH is gone.\n\n[Personal pick / reaction for today's matches].",
+                  "Round of 16 is here — seeded straight from the group stage. @onchainworldcup\n\nSingle elimination. One wrong pick and your ETH is gone.\n\n[Personal pick / reaction for today's matches].",
               },
             ]
           : []),
       ],
     })
   })
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // PHASE 4 — KNOCKOUT  Jul 3 – Jul 19
+  // The real bracket: QF → SF → Third place → Final
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Quarter-finals: Jul 3–4
   ;[
@@ -961,14 +974,22 @@ function DayRow({ day, isToday, isPast }: { day: TimelineDay; isToday: boolean; 
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const ALL_PHASES: Array<Phase | "all"> = ["all", "pre-launch", "qualification", "group-stage", "knockout"]
+const ALL_PHASES: Array<Phase | "all"> = [
+  "all",
+  "pre-launch",
+  "qualification",
+  "group-stage",
+  "round-of-16",
+  "knockout",
+]
 
 const FILTER_LABELS: Record<string, string> = {
   all: "All phases",
   "pre-launch": "Pre-Launch",
   qualification: "Phase 1 — Qualification",
   "group-stage": "Phase 2 — Group Stage",
-  knockout: "Phase 3 — Knockout",
+  "round-of-16": "Phase 3 — Round of 16",
+  knockout: "Phase 4 — Knockout",
 }
 
 type RowItem =
