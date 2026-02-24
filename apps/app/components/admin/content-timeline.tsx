@@ -66,7 +66,7 @@ const PHASE_META: Record<
   "real-world-cup": {
     title: "Phase 4 — Real World Cup",
     subtitle: "Mirrors actual FIFA 2026 — same teams, same groups, real results",
-    dateRange: "Jun 27 – Jul 19, 2026",
+    dateRange: "Jun 11 – Jul 19, 2026",
     textColor: "text-red-400",
     borderCls: "border-l-red-500/50",
   },
@@ -726,39 +726,71 @@ function buildTimeline(): TimelineDay[] {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // PHASE 4 — REAL WORLD CUP  Jun 27 – Jul 19
+  // PHASE 4 — REAL WORLD CUP  Jun 11 – Jul 19
   // Mirrors actual FIFA 2026 — same teams, same groups, real match results
+  // Runs concurrently with World Cup 1 (Jun 11–26), then continues solo
   // ────────────────────────────────────────────────────────────────────────────
 
+  // Opening day — same day as World Cup 1 but separate track
   days.push({
-    dateStr: ds(2026, 6, 27),
+    dateStr: ds(2026, 6, 11),
     phase: "real-world-cup",
-    label: "🌍 Real World Cup — Knockout Opens",
+    label: "🌍 Real World Cup Opens",
     posts: [
       {
         account: "app",
         channel: "both",
         template:
-          "THE REAL WORLD CUP BEGINS.\n\nSame teams. Same groups. Same results as actual FIFA 2026.\n\nKnockout stage is live. 32 teams. Single elimination.\n\nEvery match is live on @onchainworldcup. Vote with ETH.\n[app link]",
+          "THE REAL WORLD CUP IS LIVE.\n\nSame teams, same groups, same schedule as actual FIFA 2026.\n\nVote on every real match with ETH — from the group stage through the Final.\n\n[Today's real FIFA matches]\n[app link]",
       },
       {
         account: "app",
         channel: "both",
         template:
-          "🔥 Real World Cup — Round of 32 starts today.\n\nThe bracket is set by the actual FIFA 2026 group stage results.\n\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nVote on each real match at [app link]",
-        note: "Pull bracket from actual FIFA 2026 results",
+          "🌍 Real World Cup — Group Stage Day 1:\n\n[Real Group A] [Country] vs [Country] — [Time] UTC (actual FIFA match)\n[Real Group B] [Country] vs [Country] — [Time] UTC (actual FIFA match)\n\nThese are the real FIFA 2026 matches. Vote on real outcomes.\n[app link]",
+        note: "Pull from official FIFA 2026 match schedule",
       },
       {
         account: "builder",
         channel: "farcaster",
         template:
-          "The Real World Cup is here. @onchainworldcup now mirrors actual FIFA 2026.\n\nSame teams. Same groups. Same bracket.\n\nEvery real match is voteable onchain. This is what we built it for.\n\n[Personal reaction to the Real WC starting].",
+          "Two tournaments, one app. @onchainworldcup\n\nWorld Cup 1: our onchain tournament with qualification groups.\nReal World Cup: mirrors actual FIFA 2026 — same teams, same groups.\n\nBoth live today. Vote on either. ETH on the line in both.\n\n[Personal pick for the real matches].",
       },
     ],
   })
 
-  // Round of 32 / early knockout: Jun 28 – Jul 4
-  const earlyKO = [
+  // Real World Cup group stage: Jun 12–26 (concurrent with World Cup 1)
+  for (let i = 12; i <= 26; i++) {
+    const matchDay = i - 10
+    const isLastGroupDay = i === 26
+    days.push({
+      dateStr: ds(2026, 6, i),
+      phase: "real-world-cup",
+      label: isLastGroupDay ? "🏁 Real WC — Final Group Day" : undefined,
+      posts: [
+        {
+          account: "app",
+          channel: "both",
+          template: isLastGroupDay
+            ? "Real World Cup — Final group stage matches today (actual FIFA 2026).\n\nAfter today, the knockout bracket is set.\n\n[Today's decisive real FIFA matches]\n[app link]"
+            : `🌍 Real World Cup — Match Day ${matchDay} (actual FIFA 2026)\n\n[Real Group X] [Country] vs [Country] — [Time] UTC\n[Real Group Y] [Country] vs [Country] — [Time] UTC\n\nVote on real match outcomes at [app link]`,
+          note: "Pull from official FIFA 2026 match schedule",
+        },
+        {
+          account: "app",
+          channel: "both",
+          template: isLastGroupDay
+            ? "Real World Cup group stage complete.\n\nKnockout bracket set from actual FIFA 2026 results.\n\n[Real group standings]\n\nPrize pool from all group stage votes: [X.XX] ETH distributed.\n[app link]"
+            : `🌍 Real World Cup results — yesterday's actual FIFA matches:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool: [X.XX] ETH distributed to correct voters.\n[app link]`,
+          note: "Post after real FIFA matches finish",
+        },
+      ],
+    })
+  }
+
+  // Knockout stage: Jun 27 onwards (only Real World Cup continues)
+  const rwcKO = [
+    { d: ds(2026, 6, 27), label: "⚔️ Knockout Stage — Round of 32 Day 1" },
     { d: ds(2026, 6, 28), label: "Round of 32 — Day 2" },
     { d: ds(2026, 6, 30), label: "Round of 32 — Day 3" },
     { d: ds(2026, 7, 1), label: "Round of 32 — Day 4" },
@@ -766,7 +798,7 @@ function buildTimeline(): TimelineDay[] {
     { d: ds(2026, 7, 3), label: "Round of 16 — Day 2" },
     { d: ds(2026, 7, 4), label: "Round of 16 — Day 3" },
   ]
-  earlyKO.forEach(({ d: date, label }) => {
+  rwcKO.forEach(({ d: date, label }) => {
     days.push({
       dateStr: date,
       phase: "real-world-cup",
@@ -775,14 +807,14 @@ function buildTimeline(): TimelineDay[] {
         {
           account: "app",
           channel: "both",
-          template: `🌍 Real World Cup — ${label}\n\nToday's real FIFA 2026 matches:\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nVote with ETH on real match outcomes.\n[app link]`,
-          note: "Pull from actual FIFA 2026 match schedule",
+          template: `🌍 Real World Cup — ${label}\n\nToday's real FIFA 2026 matches:\n[Country A] vs [Country B] — [Time] UTC\n[Country C] vs [Country D] — [Time] UTC\n\nSingle elimination. Real results. Vote with ETH.\n[app link]`,
+          note: "Pull from official FIFA 2026 match schedule",
         },
         {
           account: "app",
           channel: "both",
           template: `Real World Cup results:\n\n[Country A] [score] [Country B] ✅\n[Country C] [score] [Country D] ✅\n\nPrize pool distributed: [X.XX] ETH to voters who picked correctly.\n\nNext matches → [link]`,
-          note: "Post after matches finish",
+          note: "Post after real FIFA matches finish",
         },
       ],
     })
@@ -1121,7 +1153,7 @@ export function ContentTimeline() {
             row.type === "divider" ? (
               <PhaseDivider key={`d-${row.phase}-${i}`} phase={row.phase} />
             ) : (
-              <DayRow key={row.day.dateStr} day={row.day} isToday={row.isToday} isPast={row.isPast} />
+              <DayRow key={`${row.day.dateStr}-${row.day.phase}`} day={row.day} isToday={row.isToday} isPast={row.isPast} />
             )
           )
         )}
