@@ -139,17 +139,18 @@ export function useSIWEAuth() {
       throw new Error(error)
     }
 
-    // Check if user is on the correct chain, if not, switch them
+    // Best-effort chain switch — SIWE signatures are chain-agnostic so auth
+    // works regardless of the wallet's current chain. If switching fails (e.g.
+    // connector chain mismatch on reconnect), we log the error and continue.
+    // The AutoAuthProvider will handle chain switching after authentication.
     if (chain?.id !== defaultChainId) {
-      console.log(`[SIWE Auth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}...`)
+      console.log(`[SIWE Auth] Wrong chain detected (${chain?.id}), attempting switch to ${defaultChainId}...`)
       try {
         await switchChain({ chainId: defaultChainId })
         console.log(`[SIWE Auth] Successfully switched to chain ${defaultChainId}`)
-        // Give the wallet a moment to update
         await new Promise(resolve => setTimeout(resolve, 500))
       } catch (error) {
-        console.error("[SIWE Auth] Failed to switch chain:", error)
-        throw new Error(`Please switch your wallet to ${defaultChain.name} to continue`)
+        console.warn("[SIWE Auth] Chain switch failed (will retry after auth):", error)
       }
     }
 
