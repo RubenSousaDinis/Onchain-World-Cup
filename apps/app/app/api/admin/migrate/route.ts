@@ -2,14 +2,19 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { isAdminAddress } from "@/lib/admin"
+import { isAuthenticated } from "@/lib/api-auth"
 import { execSync } from "child_process"
 import path from "path"
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // Allow either a valid API key or an admin session
+    const hasApiKey = isAuthenticated(request)
+    if (!hasApiKey) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
     }
 
     const appDir = path.resolve(process.cwd())
