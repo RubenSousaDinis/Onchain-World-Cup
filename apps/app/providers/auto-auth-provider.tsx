@@ -150,21 +150,17 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         success("Authenticated Successfully", "You're now signed in and can place votes")
       }
 
-      // Check if user is on the correct chain and switch if needed
+      // Try to switch to the correct chain after login, but don't alarm the user
+      // if it fails — voting enforcement handles this separately.
       if (chain?.id !== defaultChainId) {
-        console.log(`[AutoAuth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}`)
+        console.log(`[AutoAuth] Post-login: on chain ${chain?.id}, attempting switch to ${defaultChainId}`)
         try {
-          info("Switching Network", `Switching to ${defaultChain.name}...`)
           await switchChain({ chainId: defaultChainId })
-          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+          console.log("[AutoAuth] Post-login chain switch successful")
         } catch (switchErr) {
-          console.error("[AutoAuth] Failed to switch chain:", switchErr)
-          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : JSON.stringify(switchErr)
-          if (switchErrorMessage.includes("rejected") || switchErrorMessage.includes("denied")) {
-            info("Network Switch Required", `Please switch your wallet to ${defaultChain.name} to place votes`)
-          } else {
-            error("Network Switch Failed", `Unable to switch to ${defaultChain.name}. ${switchErrorMessage}`)
-          }
+          console.warn("[AutoAuth] Post-login chain switch failed (non-blocking):", switchErr)
+          // Soft notification — they'll be prompted again when they try to vote
+          info("Network Note", `Switch to ${defaultChain.name} when you're ready to vote`)
         }
       }
     } catch (err) {
