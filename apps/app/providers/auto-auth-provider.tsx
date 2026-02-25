@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { useAccount, useSwitchChain } from "wagmi"
+import { useAccount } from "wagmi"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useNotifications } from "@/components/notifications"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -28,8 +28,7 @@ function isMobileBrowser(): boolean {
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected, isReconnecting, status, chain, connector } = useAccount()
-  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet, defaultChainId, defaultChain } = useSIWEAuth()
-  const { switchChain } = useSwitchChain()
+  const { isAuthenticated, login, isLoading, logout, session, walletAddress: sessionWallet, defaultChainId } = useSIWEAuth()
   const { info, success, error } = useNotifications()
   const { isFarcasterMiniApp, isLoading: isFarcasterLoading } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
@@ -78,50 +77,16 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [address, isConnected, isAuthenticated, sessionWallet, logout, isFarcasterMiniApp])
 
-  // Auto-switch chain when authenticated and on wrong chain
+  // Log when authenticated on a non-default chain — no auto-switch.
+  // Chain enforcement is handled by the vote modal when the user actually votes.
   useEffect(() => {
-    // Wait for all states to be ready
     if (!isAuthenticated || !chain || !defaultChainId || isLoading || isFarcasterLoading) {
       return
     }
-
-    // Skip during reconnection
-    if (isReconnecting) {
-      return
-    }
-
-    // Only proceed if wallet is fully connected
-    if (!isConnected || status !== 'connected') {
-      return
-    }
-
-    // If on wrong chain, switch automatically
     if (chain.id !== defaultChainId) {
-      console.log(`[AutoAuth] Authenticated but on wrong chain (${chain.id}), switching to ${defaultChainId}`)
-
-      // Use a small delay to avoid conflicting with the auth flow
-      const switchTimer = setTimeout(async () => {
-        try {
-          console.log(`[AutoAuth] Switching to ${defaultChain.name}...`)
-          await switchChain({ chainId: defaultChainId })
-          console.log("[AutoAuth] Chain switched successfully")
-        } catch (switchErr) {
-          console.error("[AutoAuth] Failed to auto-switch chain:", switchErr)
-          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : JSON.stringify(switchErr)
-
-          // Only show error if it's not a user rejection
-          if (!switchErrorMessage.includes("rejected") && !switchErrorMessage.includes("denied")) {
-            info(
-              "Network Switch Required",
-              `Please switch to ${defaultChain.name} to place votes`
-            )
-          }
-        }
-      }, 500)
-
-      return () => clearTimeout(switchTimer)
+      console.log(`[AutoAuth] Authenticated on chain ${chain.id} (default: ${defaultChainId}) — chain switch deferred to vote time`)
     }
-  }, [isAuthenticated, chain, defaultChainId, defaultChain, isLoading, isFarcasterLoading, isReconnecting, status, isConnected, switchChain, info])
+  }, [isAuthenticated, chain, defaultChainId, isLoading, isFarcasterLoading])
 
   /**
    * Shared sign-in logic used by both auto-trigger and manual prompt.
@@ -150,18 +115,11 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         success("Authenticated Successfully", "You're now signed in and can place votes")
       }
 
-      // Try to switch to the correct chain after login, but don't alarm the user
-      // if it fails — voting enforcement handles this separately.
+      // Don't switch chains here — let the vote modal handle it when the user
+      // actually tries to vote. This avoids confusing WalletConnect popups
+      // right after sign-in.
       if (chain?.id !== defaultChainId) {
-        console.log(`[AutoAuth] Post-login: on chain ${chain?.id}, attempting switch to ${defaultChainId}`)
-        try {
-          await switchChain({ chainId: defaultChainId })
-          console.log("[AutoAuth] Post-login chain switch successful")
-        } catch (switchErr) {
-          console.warn("[AutoAuth] Post-login chain switch failed (non-blocking):", switchErr)
-          // Soft notification — they'll be prompted again when they try to vote
-          info("Network Note", `Switch to ${defaultChain.name} when you're ready to vote`)
-        }
+        console.log(`[AutoAuth] Post-login: on chain ${chain?.id} (default: ${defaultChainId}) — will switch when voting`)
       }
     } catch (err) {
       console.error("[AutoAuth] Authentication failed:", err)
@@ -185,7 +143,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsSigningInProgress(false)
     }
-  }, [login, isFarcasterMiniApp, chain, defaultChainId, defaultChain, switchChain, info, success, error, isSigningInProgress])
+  }, [login, isFarcasterMiniApp, chain, defaultChainId, success, error, isSigningInProgress])
 
   // Trigger authentication when wallet connects
   useEffect(() => {

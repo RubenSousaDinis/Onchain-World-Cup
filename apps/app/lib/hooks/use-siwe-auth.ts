@@ -139,21 +139,12 @@ export function useSIWEAuth() {
       throw new Error(error)
     }
 
-    // Try to switch to the correct chain, but don't block sign-in if it fails.
-    // SIWE uses personal_sign which is chain-agnostic — the wallet doesn't need
-    // to be on Base to sign the authentication message. The chain switch for
-    // voting is enforced separately in the vote modal and auto-auth provider.
+    // NOTE: We intentionally do NOT switch chains here. SIWE uses personal_sign
+    // which is chain-agnostic — the wallet can be on any chain (including mainnet)
+    // to sign the auth message. Chain enforcement for voting is handled separately
+    // in the vote modal's handleVote function.
     if (chain?.id !== defaultChainId) {
-      console.log(`[SIWE Auth] Wrong chain detected (${chain?.id}), attempting switch to ${defaultChainId}...`)
-      try {
-        await switchChain({ chainId: defaultChainId })
-        console.log(`[SIWE Auth] Successfully switched to chain ${defaultChainId}`)
-        await new Promise(resolve => setTimeout(resolve, 500))
-      } catch (error) {
-        console.warn("[SIWE Auth] Chain switch failed, proceeding with sign-in anyway:", error)
-        // Don't throw — sign-in works on any chain. The auto-auth provider
-        // and vote modal will handle switching to Base when needed.
-      }
+      console.log(`[SIWE Auth] Wallet on chain ${chain?.id} (default: ${defaultChainId}) — proceeding with sign-in without switching`)
     }
 
     // Fetch nonce from server
