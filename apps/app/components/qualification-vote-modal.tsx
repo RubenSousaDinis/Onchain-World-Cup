@@ -433,7 +433,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         return
       } catch (err) {
         console.error("[Vote Modal] Failed to switch chain:", err)
-        const errorMessage = err instanceof Error ? err.message : String(err)
+        const errorMessage = err instanceof Error ? err.message : JSON.stringify(err)
 
         // User rejected the switch request
         if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
