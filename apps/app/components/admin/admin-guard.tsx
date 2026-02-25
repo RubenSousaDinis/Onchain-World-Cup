@@ -56,7 +56,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       try {
         await login()
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error"
+        const msg = err instanceof Error ? err.message : String(err)
         if (!msg.includes("rejected") && !msg.includes("denied")) {
           setSignError(msg)
         }
