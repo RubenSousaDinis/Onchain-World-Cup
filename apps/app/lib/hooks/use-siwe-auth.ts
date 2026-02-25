@@ -1,7 +1,7 @@
 "use client"
 
 import { useAccount, useSignMessage, useSwitchChain } from "wagmi"
-import { getAddress } from "viem"
+import { getAddress, toHex } from "viem"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { SiweMessage } from "siwe"
 import { useState } from "react"
@@ -24,7 +24,7 @@ import { getDefaultChainId, getDefaultChain } from "@/lib/chain-config"
  * ```
  */
 export function useSIWEAuth() {
-  const { address, chain } = useAccount()
+  const { address, chain, connector } = useAccount()
   const { signMessageAsync } = useSignMessage()
   const { switchChain } = useSwitchChain()
   const { data: session, status } = useSession()
@@ -183,10 +183,30 @@ export function useSIWEAuth() {
     })
     console.log("[SIWE Auth] Requesting signature from wallet...")
 
-    // Sign message with wallet
-    const signature = await signMessageAsync({
-      message: message.prepareMessage(),
-    })
+    // Sign message with wallet.
+    // wagmi v2 validates the connector chain before signing. When the wallet
+    // is on an unconfigured chain (e.g. Ethereum mainnet), this validation
+    // throws. Fall back to signing via the raw EIP-1193 provider which skips
+    // wagmi's chain check entirely.
+    const preparedMessage = message.prepareMessage()
+    let signature: `0x${string}`
+    try {
+      signature = await signMessageAsync({ message: preparedMessage })
+    } catch (signError: unknown) {
+      const msg = signError instanceof Error ? signError.message : String(signError)
+      if (connector && msg.includes("does not match")) {
+        console.warn("[SIWE Auth] wagmi sign blocked by chain mismatch, using raw provider")
+        const provider = (await connector.getProvider()) as {
+          request(args: { method: string; params: unknown[] }): Promise<`0x${string}`>
+        }
+        signature = await provider.request({
+          method: "personal_sign",
+          params: [toHex(preparedMessage), checksummedAddress],
+        })
+      } else {
+        throw signError
+      }
+    }
 
     console.log("[SIWE Auth] Signature received:", signature.slice(0, 20) + "...")
     console.log("[SIWE Auth] Calling signIn with credentials...")
