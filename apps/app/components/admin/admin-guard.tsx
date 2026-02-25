@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useAccount } from "wagmi"
 import { isAdminAddress } from "@/lib/admin"
 import { modal } from "@/lib/reown-config"
@@ -8,6 +9,8 @@ import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { address, isConnected } = useAccount()
   const { isAuthenticated, isLoading, login } = useSIWEAuth()
+  const [isSigning, setIsSigning] = useState(false)
+  const [signError, setSignError] = useState<string | null>(null)
 
   if (!isConnected || !address) {
     return (
@@ -47,6 +50,21 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
+    const handleSign = async () => {
+      setIsSigning(true)
+      setSignError(null)
+      try {
+        await login()
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error"
+        if (!msg.includes("rejected") && !msg.includes("denied")) {
+          setSignError(msg)
+        }
+      } finally {
+        setIsSigning(false)
+      }
+    }
+
     return (
       <div className="cm-panel max-w-md mx-auto mt-20 text-center">
         <h2 className="cm-section-header mb-4">Admin Access</h2>
@@ -54,11 +72,15 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           Sign in with your wallet to access the admin dashboard.
         </p>
         <button
-          onClick={login}
-          className="cm-highlight px-6 py-2 font-semibold"
+          onClick={handleSign}
+          disabled={isSigning}
+          className="cm-highlight px-6 py-2 font-semibold disabled:opacity-50"
         >
-          Sign In with Wallet
+          {isSigning ? "Waiting for signature..." : "Sign In with Wallet"}
         </button>
+        {signError && (
+          <p className="text-red-500 text-sm mt-4">{signError}</p>
+        )}
       </div>
     )
   }
