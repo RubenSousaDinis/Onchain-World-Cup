@@ -107,7 +107,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           console.log("[AutoAuth] Chain switched successfully")
         } catch (switchErr) {
           console.error("[AutoAuth] Failed to auto-switch chain:", switchErr)
-          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
+          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : JSON.stringify(switchErr)
 
           // Only show error if it's not a user rejection
           if (!switchErrorMessage.includes("rejected") && !switchErrorMessage.includes("denied")) {
@@ -159,7 +159,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           success("Network Switched", `Successfully switched to ${defaultChain.name}`)
         } catch (switchErr) {
           console.error("[AutoAuth] Failed to switch chain:", switchErr)
-          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
+          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : JSON.stringify(switchErr)
           if (switchErrorMessage.includes("rejected") || switchErrorMessage.includes("denied")) {
             info("Network Switch Required", `Please switch your wallet to ${defaultChain.name} to place votes`)
           } else {
@@ -169,7 +169,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error("[AutoAuth] Authentication failed:", err)
-      const errorMessage = err instanceof Error ? err.message : String(err)
+      const errorMessage = err instanceof Error ? err.message : JSON.stringify(err)
 
       if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
         console.log("[AutoAuth] User rejected authentication")
