@@ -169,7 +169,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error("[AutoAuth] Authentication failed:", err)
-      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+      const errorMessage = err instanceof Error ? err.message : String(err)
 
       if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
         console.log("[AutoAuth] User rejected authentication")
