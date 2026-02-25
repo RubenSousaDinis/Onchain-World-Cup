@@ -183,12 +183,34 @@ export function useSIWEAuth() {
     if (!connector) {
       throw new Error("No wallet connector available")
     }
-    const provider = await connector.getProvider() as { request: (args: { method: string; params: unknown[] }) => Promise<string> }
+
     const rawMessage = message.prepareMessage()
-    const signature = await provider.request({
-      method: "personal_sign",
-      params: [rawMessage, address],
-    })
+    let signature: string
+
+    try {
+      const provider = await connector.getProvider() as { request: (args: { method: string; params: unknown[] }) => Promise<string> }
+      signature = await provider.request({
+        method: "personal_sign",
+        params: [rawMessage, address],
+      })
+    } catch (providerError: unknown) {
+      const errMsg = providerError instanceof Error ? providerError.message : String(providerError)
+
+      // WalletConnect sessions can go stale after page reload — the provider
+      // throws "Please call connect() before request()". Re-establish the
+      // session and retry.
+      if (errMsg.includes("connect()") || errMsg.includes("session")) {
+        console.warn("[SIWE Auth] Provider session stale, reconnecting connector...", errMsg)
+        await connector.connect({ chainId: chain?.id ?? defaultChainId })
+        const freshProvider = await connector.getProvider() as { request: (args: { method: string; params: unknown[] }) => Promise<string> }
+        signature = await freshProvider.request({
+          method: "personal_sign",
+          params: [rawMessage, address],
+        })
+      } else {
+        throw providerError
+      }
+    }
 
     console.log("[SIWE Auth] Signature received:", signature.slice(0, 20) + "...")
     console.log("[SIWE Auth] Calling signIn with credentials...")
