@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { useAccount, useSwitchChain } from "wagmi"
 import { useSIWEAuth } from "@/lib/hooks/use-siwe-auth"
 import { useNotifications } from "@/components/notifications"
@@ -21,6 +21,10 @@ function isMobileBrowser(): boolean {
  *
  * Simple rule: No wallet connection = No authentication
  * This ensures the authenticated session always matches the connected wallet.
+ *
+ * On mobile (non-Farcaster) with external wallets (WalletConnect),
+ * auto-sign is attempted first. If it fails (rejected / error), a
+ * manual "Sign In" prompt is shown so the user can retry.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected, isReconnecting, status, chain, connector } = useAccount()
@@ -30,6 +34,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { isFarcasterMiniApp, isLoading: isFarcasterLoading } = useFarcaster()
   const hasTriggeredAuth = useRef(false)
   const [showMobileSignPrompt, setShowMobileSignPrompt] = useState(false)
+  const [isSigningInProgress, setIsSigningInProgress] = useState(false)
 
   // Sign out when wallet disconnects (but not during reconnection/connection)
   useEffect(() => {
@@ -46,6 +51,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       console.log("[AutoAuth] Wallet fully disconnected → Signing out")
       logout()
       hasTriggeredAuth.current = false
+      setShowMobileSignPrompt(false)
     }
   }, [isConnected, isReconnecting, status, isAuthenticated, logout])
 
@@ -117,6 +123,74 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, chain, defaultChainId, defaultChain, isLoading, isFarcasterLoading, isReconnecting, status, isConnected, switchChain, info])
 
+  /**
+   * Shared sign-in logic used by both auto-trigger and manual prompt.
+   * When `showPromptOnFailure` is true, a failed attempt will surface the
+   * mobile sign-in prompt instead of silently resetting.
+   */
+  const executeSignIn = useCallback(async (opts?: { showPromptOnFailure?: boolean }) => {
+    if (isSigningInProgress) return
+    setIsSigningInProgress(true)
+
+    try {
+      console.log("[AutoAuth] Executing authentication flow")
+
+      const result = await login()
+
+      console.log("[AutoAuth] Authentication successful:", {
+        ok: result?.ok,
+        status: result?.status,
+      })
+
+      setShowMobileSignPrompt(false)
+
+      if (isFarcasterMiniApp) {
+        success("Authenticated", "You can now place votes!")
+      } else {
+        success("Authenticated Successfully", "You're now signed in and can place votes")
+      }
+
+      // Check if user is on the correct chain and switch if needed
+      if (chain?.id !== defaultChainId) {
+        console.log(`[AutoAuth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}`)
+        try {
+          info("Switching Network", `Switching to ${defaultChain.name}...`)
+          await switchChain({ chainId: defaultChainId })
+          success("Network Switched", `Successfully switched to ${defaultChain.name}`)
+        } catch (switchErr) {
+          console.error("[AutoAuth] Failed to switch chain:", switchErr)
+          const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
+          if (switchErrorMessage.includes("rejected") || switchErrorMessage.includes("denied")) {
+            info("Network Switch Required", `Please switch your wallet to ${defaultChain.name} to place votes`)
+          } else {
+            error("Network Switch Failed", `Unable to switch to ${defaultChain.name}. ${switchErrorMessage}`)
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[AutoAuth] Authentication failed:", err)
+      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+
+      if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
+        console.log("[AutoAuth] User rejected authentication")
+      } else {
+        error("Authentication Failed", errorMessage)
+      }
+
+      // If auto-sign failed on mobile, show the manual prompt as fallback
+      if (opts?.showPromptOnFailure) {
+        console.log("[AutoAuth] Auto-sign failed — showing manual sign prompt")
+        setShowMobileSignPrompt(true)
+      } else {
+        setShowMobileSignPrompt(false)
+      }
+      // Reset so they can try again
+      hasTriggeredAuth.current = false
+    } finally {
+      setIsSigningInProgress(false)
+    }
+  }, [login, isFarcasterMiniApp, chain, defaultChainId, defaultChain, switchChain, info, success, error, isSigningInProgress])
+
   // Trigger authentication when wallet connects
   useEffect(() => {
     console.log("[AutoAuth] Effect triggered - State:", {
@@ -185,152 +259,56 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     console.log("[AutoAuth] Wallet connected and not authenticated → Triggering authentication")
     hasTriggeredAuth.current = true
 
-    // On mobile, WalletConnect-based wallets (e.g. MetaMask) receive the sign
-    // request silently — the user must manually switch back to their wallet app.
     const mobile = isMobileBrowser()
     // Detect WalletConnect-based connection (MetaMask mobile, etc.)
     const isWalletConnect = connector?.type === "walletConnect" || connector?.id === "walletConnect"
+    // On mobile WalletConnect: try auto-sign, but show a manual prompt if it fails
+    const isMobileWalletConnect = mobile && isWalletConnect && !isFarcasterMiniApp
 
-    // Trigger authentication after a short delay to allow UI to settle.
-    // Mobile WalletConnect connections need a longer settling time.
-    const delay = mobile && isWalletConnect ? 2000 : 1000
+    // Use a longer delay for mobile WalletConnect to let the connection settle
+    const delay = isMobileWalletConnect ? 2000 : 1000
     const timer = setTimeout(async () => {
-      console.log("[AutoAuth] Executing authentication flow")
       console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect })
 
-      try {
-        // In Farcaster, authentication is automatic (no user interaction needed)
-        // In desktop, user needs to sign a message
-        if (!isFarcasterMiniApp) {
-          if (mobile && isWalletConnect) {
-            // On mobile WalletConnect wallets the sign request is sent to the
-            // wallet app in the background. Tell the user to switch apps.
-            info(
-              "Signature Required",
-              "Please open your wallet app (e.g. MetaMask) to sign the authentication message"
-            )
-            setShowMobileSignPrompt(true)
-          } else {
-            info("Authentication Required", "Please sign the message to authenticate with your wallet")
-          }
-        }
-
-        console.log("[AutoAuth] Calling login()...")
-        const result = await login()
-
-        console.log("[AutoAuth] Authentication successful:", result)
-        console.log("[AutoAuth] Result details:", {
-          ok: result?.ok,
-          status: result?.status,
-          url: result?.url,
-          error: result?.error,
-        })
-
-        setShowMobileSignPrompt(false)
-
-        // Show success message
-        if (isFarcasterMiniApp) {
-          success("Authenticated", "You can now place votes!")
-        } else {
-          success("Authenticated Successfully", "You're now signed in and can place votes")
-        }
-
-        // Check if user is on the correct chain and switch if needed
-        if (chain?.id !== defaultChainId) {
-          console.log(`[AutoAuth] Wrong chain detected (${chain?.id}), switching to ${defaultChainId}`)
-
-          try {
-            info("Switching Network", `Switching to ${defaultChain.name}...`)
-            await switchChain({ chainId: defaultChainId })
-            success("Network Switched", `Successfully switched to ${defaultChain.name}`)
-            console.log("[AutoAuth] Chain switched successfully")
-          } catch (switchErr) {
-            console.error("[AutoAuth] Failed to switch chain:", switchErr)
-            const switchErrorMessage = switchErr instanceof Error ? switchErr.message : "Unknown error"
-
-            // User rejected the switch request
-            if (switchErrorMessage.includes("rejected") || switchErrorMessage.includes("denied")) {
-              info(
-                "Network Switch Required",
-                `Please switch your wallet to ${defaultChain.name} to place votes`
-              )
-            } else {
-              error(
-                "Network Switch Failed",
-                `Unable to switch to ${defaultChain.name}. ${switchErrorMessage}`
-              )
-            }
-          }
-        } else {
-          console.log(`[AutoAuth] Already on correct chain (${chain?.id})`)
-        }
-      } catch (err) {
-        console.error("[AutoAuth] Authentication failed:", err)
-        console.error("[AutoAuth] Error details:", {
-          name: err instanceof Error ? err.name : "Unknown",
-          message: err instanceof Error ? err.message : "Unknown error",
-          stack: err instanceof Error ? err.stack : undefined,
-        })
-        const errorMessage = err instanceof Error ? err.message : "Unknown error"
-
-        // Don't show error if user rejected (they might want to skip auth)
-        if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
-          console.log("[AutoAuth] User rejected authentication")
-        } else {
-          error("Authentication Failed", errorMessage)
-        }
-
-        setShowMobileSignPrompt(false)
-        // Reset so they can try again
-        hasTriggeredAuth.current = false
+      if (!isFarcasterMiniApp) {
+        info("Authentication Required", "Please sign the message to authenticate with your wallet")
       }
+
+      await executeSignIn({ showPromptOnFailure: isMobileWalletConnect })
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, isFarcasterLoading, login, info, success, error, isFarcasterMiniApp])
+  }, [isConnected, isReconnecting, status, isAuthenticated, address, sessionWallet, isLoading, isFarcasterLoading, isFarcasterMiniApp, connector, executeSignIn, info])
 
-  const handleRetrySign = async () => {
-    if (hasTriggeredAuth.current) return
-    hasTriggeredAuth.current = true
-    setShowMobileSignPrompt(false)
-    try {
-      info("Signature Required", "Please open your wallet app to sign the authentication message")
-      setShowMobileSignPrompt(true)
-      await login()
-      setShowMobileSignPrompt(false)
-      success("Authenticated Successfully", "You're now signed in and can place votes")
-    } catch (err) {
-      setShowMobileSignPrompt(false)
-      const errorMessage = err instanceof Error ? err.message : "Unknown error"
-      if (!errorMessage.includes("rejected") && !errorMessage.includes("denied")) {
-        error("Authentication Failed", errorMessage)
-      }
-      hasTriggeredAuth.current = false
-    }
-  }
+  /** Handle tapping the "Sign In" button on the mobile prompt. */
+  const handleMobileSign = useCallback(async () => {
+    if (isSigningInProgress) return
+    info("Signature Required", "Please approve the sign request in your wallet app")
+    await executeSignIn()
+  }, [executeSignIn, info, isSigningInProgress])
 
   return (
     <>
       {children}
-      {/* Mobile wallet sign prompt — shown when a WalletConnect sign request has
-          been dispatched and the user needs to switch back to their wallet app. */}
+      {/* Mobile wallet sign prompt — shown only when auto-sign failed,
+          so the user can retry at their own pace. */}
       {showMobileSignPrompt && (
         <div
           style={{ zIndex: 9998 }}
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-background border-2 border-accent rounded-sm p-4 shadow-xl"
+          className="fixed bottom-16 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-background border-2 border-accent rounded-sm p-4 shadow-xl"
         >
           <p className="text-sm font-bold text-foreground mb-1">Sign In Required</p>
           <p className="text-xs text-muted-foreground mb-3">
-            A signature request has been sent to your wallet. Switch to your wallet app (e.g.
-            MetaMask) to approve it, then return here.
+            Automatic sign-in didn&apos;t complete. Tap below to try again — you&apos;ll need to
+            approve the request in your wallet app, then return here.
           </p>
           <div className="flex gap-2">
             <button
-              onClick={handleRetrySign}
-              disabled={hasTriggeredAuth.current}
+              onClick={handleMobileSign}
+              disabled={isSigningInProgress}
               className="cm-nav-tab flex-1 py-1.5 text-xs font-bold rounded-sm disabled:opacity-50"
             >
-              RETRY
+              {isSigningInProgress ? "SIGNING..." : "SIGN IN"}
             </button>
             <button
               onClick={() => {

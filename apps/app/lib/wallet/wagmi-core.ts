@@ -9,7 +9,6 @@
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi"
 import { base, baseSepolia } from "@reown/appkit/networks"
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
-import { coinbaseWallet } from "wagmi/connectors"
 import { http } from "wagmi"
 
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
@@ -24,11 +23,10 @@ export const wagmiAdapter = new WagmiAdapter({
   ssr: true,
   connectors: [
     farcasterMiniApp(),
-    // Exposes both Coinbase Smart Wallet (new Base app) and classic Coinbase Wallet app
-    coinbaseWallet({
-      appName: "Onchain World Cup",
-      preference: "all",
-    }),
+    // Coinbase Wallet is NOT added here — Reown AppKit discovers it
+    // automatically via its modal. Adding it explicitly caused wagmi's
+    // auto-reconnect to redirect users to keys.coinbase.com on page load,
+    // even when they weren't logged in.
   ],
   transports: {
     [base.id]: http(baseMainnetRpcUrl),
