@@ -1,6 +1,7 @@
 "use client"
 
 import { useAccount, useSignMessage, useSwitchChain } from "wagmi"
+import { getAddress } from "viem"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { SiweMessage } from "siwe"
 import { useState } from "react"
@@ -160,9 +161,12 @@ export function useSIWEAuth() {
     const { nonce } = nonceData
 
     // Create SIWE message with default chain ID
+    // Use checksummed address (EIP-55) - some wallets return lowercase addresses
+    // but the SIWE library requires checksummed format for verification
+    const checksummedAddress = getAddress(address)
     const message = new SiweMessage({
       domain: window.location.host,
-      address,
+      address: checksummedAddress,
       statement: "Sign in to Onchain World Cup with your wallet",
       uri: window.location.origin,
       version: "1",
