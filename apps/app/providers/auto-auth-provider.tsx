@@ -23,9 +23,8 @@ function isMobileBrowser(): boolean {
  * This ensures the authenticated session always matches the connected wallet.
  *
  * On mobile (non-Farcaster) with external wallets (WalletConnect),
- * auto-sign is NOT triggered. Instead a prompt is shown so the user
- * can initiate the sign request themselves — this avoids confusing
- * app-switches and lost sign requests.
+ * auto-sign is attempted first. If it fails (rejected / error), a
+ * manual "Sign In" prompt is shown so the user can retry.
  */
 export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const { address, isConnected, isReconnecting, status, chain, connector } = useAccount()
@@ -124,8 +123,12 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, chain, defaultChainId, defaultChain, isLoading, isFarcasterLoading, isReconnecting, status, isConnected, switchChain, info])
 
-  /** Shared sign-in logic used by both auto-trigger and manual prompt. */
-  const executeSignIn = useCallback(async () => {
+  /**
+   * Shared sign-in logic used by both auto-trigger and manual prompt.
+   * When `showPromptOnFailure` is true, a failed attempt will surface the
+   * mobile sign-in prompt instead of silently resetting.
+   */
+  const executeSignIn = useCallback(async (opts?: { showPromptOnFailure?: boolean }) => {
     if (isSigningInProgress) return
     setIsSigningInProgress(true)
 
@@ -174,7 +177,13 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         error("Authentication Failed", errorMessage)
       }
 
-      setShowMobileSignPrompt(false)
+      // If auto-sign failed on mobile, show the manual prompt as fallback
+      if (opts?.showPromptOnFailure) {
+        console.log("[AutoAuth] Auto-sign failed — showing manual sign prompt")
+        setShowMobileSignPrompt(true)
+      } else {
+        setShowMobileSignPrompt(false)
+      }
       // Reset so they can try again
       hasTriggeredAuth.current = false
     } finally {
@@ -253,28 +262,19 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     const mobile = isMobileBrowser()
     // Detect WalletConnect-based connection (MetaMask mobile, etc.)
     const isWalletConnect = connector?.type === "walletConnect" || connector?.id === "walletConnect"
-    // On mobile with external wallets (WalletConnect), show a manual prompt
-    // instead of auto-triggering. Auto-triggering causes the browser to switch
-    // to the wallet app for signing, which is disorienting right after connecting.
-    const needsManualPrompt = mobile && isWalletConnect && !isFarcasterMiniApp
+    // On mobile WalletConnect: try auto-sign, but show a manual prompt if it fails
+    const isMobileWalletConnect = mobile && isWalletConnect && !isFarcasterMiniApp
 
-    if (needsManualPrompt) {
-      console.log("[AutoAuth] Mobile WalletConnect detected — showing manual sign prompt")
-      setShowMobileSignPrompt(true)
-      // Don't auto-trigger; the user taps the prompt button instead.
-      return
-    }
-
-    // Desktop / injected wallets / Farcaster: auto-trigger after a short delay
-    const delay = 1000
+    // Use a longer delay for mobile WalletConnect to let the connection settle
+    const delay = isMobileWalletConnect ? 2000 : 1000
     const timer = setTimeout(async () => {
-      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile })
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect })
 
       if (!isFarcasterMiniApp) {
         info("Authentication Required", "Please sign the message to authenticate with your wallet")
       }
 
-      await executeSignIn()
+      await executeSignIn({ showPromptOnFailure: isMobileWalletConnect })
     }, delay)
 
     return () => clearTimeout(timer)
@@ -290,8 +290,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {/* Mobile wallet sign prompt — shown on mobile with WalletConnect wallets
-          so the user can initiate the sign request at their own pace. */}
+      {/* Mobile wallet sign prompt — shown only when auto-sign failed,
+          so the user can retry at their own pace. */}
       {showMobileSignPrompt && (
         <div
           style={{ zIndex: 9998 }}
@@ -299,8 +299,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         >
           <p className="text-sm font-bold text-foreground mb-1">Sign In Required</p>
           <p className="text-xs text-muted-foreground mb-3">
-            Tap below to sign in. You&apos;ll need to approve a signature request in your wallet app,
-            then return here.
+            Automatic sign-in didn&apos;t complete. Tap below to try again — you&apos;ll need to
+            approve the request in your wallet app, then return here.
           </p>
           <div className="flex gap-2">
             <button
