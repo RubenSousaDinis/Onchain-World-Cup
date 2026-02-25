@@ -1,6 +1,6 @@
 "use client"
 
-import { useAccount, useSignMessage, useSwitchChain } from "wagmi"
+import { useAccount, useSwitchChain } from "wagmi"
 import { getAddress } from "viem"
 import { signIn, signOut, useSession } from "next-auth/react"
 import { SiweMessage } from "siwe"
@@ -24,8 +24,7 @@ import { getDefaultChainId, getDefaultChain } from "@/lib/chain-config"
  * ```
  */
 export function useSIWEAuth() {
-  const { address, chain } = useAccount()
-  const { signMessageAsync } = useSignMessage()
+  const { address, chain, connector } = useAccount()
   const { switchChain } = useSwitchChain()
   const { data: session, status } = useSession()
   const { isFarcasterMiniApp, fid, displayName, pfpUrl } = useFarcaster()
@@ -176,9 +175,19 @@ export function useSIWEAuth() {
     })
     console.log("[SIWE Auth] Requesting signature from wallet...")
 
-    // Sign message with wallet
-    const signature = await signMessageAsync({
-      message: message.prepareMessage(),
+    // Sign directly via the connector's provider using personal_sign.
+    // We bypass wagmi's signMessageAsync because it calls getConnectorClient
+    // which throws "connector chain does not match" when the wallet is on a
+    // chain (e.g. mainnet) that differs from wagmi's expected chain.
+    // personal_sign is chain-agnostic so this is safe.
+    if (!connector) {
+      throw new Error("No wallet connector available")
+    }
+    const provider = await connector.getProvider() as { request: (args: { method: string; params: unknown[] }) => Promise<string> }
+    const rawMessage = message.prepareMessage()
+    const signature = await provider.request({
+      method: "personal_sign",
+      params: [rawMessage, address],
     })
 
     console.log("[SIWE Auth] Signature received:", signature.slice(0, 20) + "...")
