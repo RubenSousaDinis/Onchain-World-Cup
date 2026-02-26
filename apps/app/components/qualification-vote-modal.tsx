@@ -1,6 +1,11 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
+
+function isMobileBrowser(): boolean {
+  if (typeof navigator === "undefined") return false
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
+}
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
@@ -32,6 +37,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const [voteCount, setVoteCount] = useState(1)
   const [isIndexing, setIsIndexing] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false) // Track if we're processing a vote (confirmed but not indexed yet)
+  const [isWaitingForWallet, setIsWaitingForWallet] = useState(false) // Waiting for sign/chain-switch approval in wallet app
   const processedTxRef = useRef<string | null>(null) // Track which tx we're currently processing
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
@@ -151,6 +157,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setVoteCount(1)
       setIsIndexing(false)
       setIsProcessing(false)
+      setIsWaitingForWallet(false)
       // Do NOT null-out processedTxRef / indexedTxRef here.
       // wagmi's hash is still set to the previous tx on the first render after open.
       // Keeping refs pointed at the old hash ensures the dedup guards in the
@@ -368,7 +375,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   }, [isReceiptError, receiptError, hash, error])
 
   const handleVote = async () => {
-    console.log("[Vote Modal] handleVote called", { isConnected, isAuthenticated, address })
+    console.log("[Vote Modal] handleVote called", { isConnected, isAuthenticated, address, chainId: chain?.id, defaultChainId })
 
     if (voteCount < 1) return
 
@@ -404,50 +411,56 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       return
     }
 
-    // Step 2: Check authentication (handled by AutoAuthProvider)
-    // This should not happen if AutoAuthProvider works correctly
+    // Step 2: Check authentication.
+    // If not yet authenticated, trigger sign-in. On success we fall through to
+    // the chain check immediately — one fewer tap for the user.
     if (!isAuthenticated) {
-      console.log("[Vote Modal] Not authenticated - this shouldn't happen with AutoAuthProvider")
-      error("Not Authenticated", "Please sign the authentication message that appeared after connecting your wallet")
-      // Manual fallback (should rarely be needed)
+      console.log("[Vote Modal] Not authenticated — triggering sign-in")
+      const mobile = isMobileBrowser()
+      if (mobile) {
+        info("Signature Required", "Check your wallet app for the sign request, then return here")
+      }
+      setIsWaitingForWallet(true)
       try {
         await login()
+        // login() succeeded — fall through to chain check below
+        console.log("[Vote Modal] Sign-in successful, continuing to chain check")
       } catch (err) {
-        console.error("Manual authentication failed:", err)
+        console.error("[Vote Modal] Sign-in failed:", err)
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!msg.includes("rejected") && !msg.includes("denied")) {
+          error("Sign In Failed", "Please try again")
+        } else {
+          info("Sign In Cancelled", "Approve the sign request in your wallet to vote")
+        }
+        return
+      } finally {
+        setIsWaitingForWallet(false)
       }
-      return
     }
 
-    // Step 2.5: Check if user is on the correct chain
+    // Step 2.5: Check if user is on the correct chain.
+    // This runs whether the user was already authenticated or just signed in above.
     if (chain?.id !== defaultChainId) {
-      console.log(`[Vote Modal] Wrong chain detected (${chain?.id}), need to switch to ${defaultChainId}`)
-
-      // Use wagmi switchChain for both Farcaster and desktop
-      // In Farcaster, this triggers the wallet to switch networks via viem
+      console.log(`[Vote Modal] Wrong chain (${chain?.id}), switching to ${defaultChainId}`)
+      setIsWaitingForWallet(true)
       try {
         info("Switching Network", `Switching to ${defaultChain.name}...`)
         await switchChain({ chainId: defaultChainId })
-        success("Network Switched", `Successfully switched to ${defaultChain.name}. Click Vote again to continue.`)
-
-        // Return so user can click vote button again after chain updates
+        success("Network Switched", `Now on ${defaultChain.name}. Click Vote to continue.`)
+        // Return so React re-renders with the new chain before the transaction
         return
       } catch (err) {
         console.error("[Vote Modal] Failed to switch chain:", err)
         const errorMessage = err instanceof Error ? err.message : JSON.stringify(err)
-
-        // User rejected the switch request
         if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
-          error(
-            "Network Switch Required",
-            `Please switch your wallet to ${defaultChain.name} to continue`
-          )
+          error("Network Switch Required", `Please switch your wallet to ${defaultChain.name} to continue`)
         } else {
-          error(
-            "Network Switch Failed",
-            `Unable to switch to ${defaultChain.name}. ${errorMessage}`
-          )
+          error("Network Switch Failed", `Unable to switch to ${defaultChain.name}. ${errorMessage}`)
         }
         return
+      } finally {
+        setIsWaitingForWallet(false)
       }
     }
 
@@ -679,12 +692,44 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           {isConnected && !isAuthenticated && (
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-sm p-3 text-center">
               <p className="text-sm text-yellow-500">
-                Please authenticate with your wallet to vote
+                Tap &ldquo;Vote&rdquo; below to sign in and vote — you&apos;ll be prompted in your wallet app
               </p>
             </div>
           )}
 
-          {address && isAuthenticated && (
+          {/* Wrong network warning — shown as soon as the wallet is connected on the wrong chain */}
+          {isConnected && chain?.id !== defaultChainId && (
+            <div className="bg-orange-500/10 border border-orange-500/30 rounded-sm p-3">
+              <p className="text-sm font-bold text-orange-500">Wrong Network</p>
+              <p className="text-xs text-orange-400 mt-1">
+                Your wallet is on <strong>{chain?.name || "an unsupported network"}</strong>.
+                You need <strong>{defaultChain.name}</strong> to vote.
+              </p>
+              <button
+                onClick={async () => {
+                  setIsWaitingForWallet(true)
+                  try {
+                    info("Switching Network", `Switching to ${defaultChain.name}...`)
+                    await switchChain({ chainId: defaultChainId })
+                    success("Network Switched", `Now on ${defaultChain.name}. Click Vote to continue.`)
+                  } catch (err) {
+                    const msg = err instanceof Error ? err.message : String(err)
+                    if (!msg.includes("rejected") && !msg.includes("denied")) {
+                      error("Switch Failed", `Unable to switch to ${defaultChain.name}`)
+                    }
+                  } finally {
+                    setIsWaitingForWallet(false)
+                  }
+                }}
+                disabled={isWaitingForWallet}
+                className="mt-2 px-3 py-1.5 text-xs font-bold bg-orange-500 text-white rounded-sm disabled:opacity-50 hover:bg-orange-600 transition-colors"
+              >
+                {isWaitingForWallet ? "Switching..." : `Switch to ${defaultChain.name}`}
+              </button>
+            </div>
+          )}
+
+          {address && isAuthenticated && chain?.id === defaultChainId && (
             <div className="text-xs lg:text-sm text-muted-foreground text-center">
               Voting from: {address.slice(0, 6)}...{address.slice(-4)} <span className="text-green-500">✓ Authenticated</span>
             </div>
@@ -726,19 +771,23 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               </button>
               <button
                 onClick={handleVote}
-                disabled={isPending || isProcessing || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0) || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
+                disabled={isPending || isProcessing || isWaitingForWallet || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0) || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
                 className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending
                   ? "Confirming..."
                   : isProcessing
                   ? isIndexing ? "Indexing..." : "Processing..."
+                  : isWaitingForWallet
+                  ? "Open wallet app..."
                   : isAutoConnecting
                   ? "Connecting Wallet..."
                   : !isConnected
                   ? "Connect Wallet"
                   : !isAuthenticated
                   ? "Sign In to Vote"
+                  : chain?.id !== defaultChainId
+                  ? `Switch to ${defaultChain.name}`
                   : (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)
                   ? "Insufficient Balance"
                   : (!useMockPricing && totalCost <= 0)

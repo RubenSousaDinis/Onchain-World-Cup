@@ -90,12 +90,19 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Shared sign-in logic used by both auto-trigger and manual prompt.
-   * When `showPromptOnFailure` is true, a failed attempt will surface the
-   * mobile sign-in prompt instead of silently resetting.
+   * - `showPromptBeforeSign`: immediately show the wallet prompt before the
+   *   sign request is sent (mobile UX — user needs to switch to wallet app).
+   * - `showPromptOnFailure`: show the prompt only if the attempt fails.
    */
-  const executeSignIn = useCallback(async (opts?: { showPromptOnFailure?: boolean }) => {
+  const executeSignIn = useCallback(async (opts?: { showPromptOnFailure?: boolean; showPromptBeforeSign?: boolean }) => {
     if (isSigningInProgress) return
     setIsSigningInProgress(true)
+
+    // On mobile WalletConnect, surface the prompt BEFORE sending the sign
+    // request so the user knows to switch to their wallet app immediately.
+    if (opts?.showPromptBeforeSign) {
+      setShowMobileSignPrompt(true)
+    }
 
     try {
       console.log("[AutoAuth] Executing authentication flow")
@@ -127,16 +134,17 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
 
       if (errorMessage.includes("rejected") || errorMessage.includes("denied")) {
         console.log("[AutoAuth] User rejected authentication")
+        // User explicitly dismissed — hide the prompt; don't re-show automatically
+        setShowMobileSignPrompt(false)
       } else {
         error("Authentication Failed", errorMessage)
-      }
-
-      // If auto-sign failed on mobile, show the manual prompt as fallback
-      if (opts?.showPromptOnFailure) {
-        console.log("[AutoAuth] Auto-sign failed — showing manual sign prompt")
-        setShowMobileSignPrompt(true)
-      } else {
-        setShowMobileSignPrompt(false)
+        // Show (or keep showing) the manual prompt so the user can retry
+        if (opts?.showPromptOnFailure || opts?.showPromptBeforeSign) {
+          console.log("[AutoAuth] Auto-sign failed — showing manual sign prompt")
+          setShowMobileSignPrompt(true)
+        } else {
+          setShowMobileSignPrompt(false)
+        }
       }
       // Reset so they can try again
       hasTriggeredAuth.current = false
@@ -228,7 +236,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
         info("Authentication Required", "Please sign the message to authenticate with your wallet")
       }
 
-      await executeSignIn({ showPromptOnFailure: isMobileWalletConnect })
+      await executeSignIn({ showPromptOnFailure: isMobileWalletConnect, showPromptBeforeSign: isMobileWalletConnect })
     }, delay)
 
     return () => clearTimeout(timer)
@@ -251,10 +259,13 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
           style={{ zIndex: 9998 }}
           className="fixed bottom-16 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-background border-2 border-accent rounded-sm p-4 shadow-xl"
         >
-          <p className="text-sm font-bold text-foreground mb-1">Sign In Required</p>
+          <p className="text-sm font-bold text-foreground mb-1">
+            {isSigningInProgress ? "Sign Request Sent" : "Sign In Required"}
+          </p>
           <p className="text-xs text-muted-foreground mb-3">
-            Automatic sign-in didn&apos;t complete. Tap below to try again — you&apos;ll need to
-            approve the request in your wallet app, then return here.
+            {isSigningInProgress
+              ? "Open your wallet app and approve the sign request, then come back here."
+              : "Didn\u2019t see the sign request? Tap below to try again — approve it in your wallet app, then return here."}
           </p>
           <div className="flex gap-2">
             <button
@@ -262,14 +273,15 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
               disabled={isSigningInProgress}
               className="cm-nav-tab flex-1 py-1.5 text-xs font-bold rounded-sm disabled:opacity-50"
             >
-              {isSigningInProgress ? "SIGNING..." : "SIGN IN"}
+              {isSigningInProgress ? "WAITING..." : "SIGN IN"}
             </button>
             <button
               onClick={() => {
                 setShowMobileSignPrompt(false)
                 hasTriggeredAuth.current = false
               }}
-              className="flex-1 py-1.5 text-xs font-bold rounded-sm border border-border text-muted-foreground"
+              disabled={isSigningInProgress}
+              className="flex-1 py-1.5 text-xs font-bold rounded-sm border border-border text-muted-foreground disabled:opacity-50"
             >
               DISMISS
             </button>
