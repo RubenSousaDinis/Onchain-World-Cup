@@ -172,7 +172,50 @@ export async function POST(req: NextRequest) {
       model: "gemini-2.0-flash",
       generationConfig: { responseMimeType: "application/json" } as object,
     })
-    const result = await model.generateContent(prompt)
+
+    let result
+    const maxRetries = 3
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        result = await model.generateContent(prompt)
+        break
+      } catch (aiErr: unknown) {
+        const isRateLimit =
+          typeof aiErr === "object" &&
+          aiErr !== null &&
+          "status" in aiErr &&
+          (aiErr as { status: number }).status === 429
+
+        if (isRateLimit) {
+          // Extract retry delay from the error message if available
+          const errMessage = aiErr instanceof Error ? aiErr.message : String(aiErr)
+          const retryMatch = errMessage.match(/retry[^0-9]*(\d+)/)
+          const retryAfterSeconds = retryMatch ? parseInt(retryMatch[1], 10) : null
+
+          if (attempt < maxRetries && retryAfterSeconds !== null && retryAfterSeconds <= 10) {
+            // Only auto-retry if the suggested wait is short (≤10s)
+            await new Promise((resolve) => setTimeout(resolve, retryAfterSeconds * 1000))
+            continue
+          }
+
+          const retryMsg = retryAfterSeconds
+            ? `Please try again in ${retryAfterSeconds} seconds.`
+            : "Please try again in a few moments."
+
+          return NextResponse.json(
+            { error: `Gemini API quota exceeded. ${retryMsg}` },
+            { status: 429 }
+          )
+        }
+
+        throw aiErr
+      }
+    }
+
+    if (!result) {
+      return NextResponse.json({ error: "Generation failed after retries" }, { status: 500 })
+    }
+
     const rawContent = result.response.text()
 
     // Extract JSON from the response (handles both raw JSON and markdown fences)
