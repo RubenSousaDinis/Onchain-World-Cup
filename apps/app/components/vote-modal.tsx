@@ -3,7 +3,8 @@
 import { useState, useEffect, type KeyboardEvent } from "react"
 import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi"
-import { parseEther } from "viem"
+import { parseEther, zeroAddress } from "viem"
+import { useReferral } from "@/hooks/use-referral"
 import { useFarcaster } from "@/lib/farcaster-provider"
 import { modal } from "@/lib/reown-config"
 import { ShareModal } from "./share-modal"
@@ -41,7 +42,7 @@ export function VoteModal({
   const [votePlaced, setVotePlaced] = useState(false)
   const [isDemoVote, setIsDemoVote] = useState(false)
 
-  const { address: _address, isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
   const { data: hash, writeContract, isPending, error: writeError } = useWriteContract()
   const { isLoading: isConfirming, isSuccess, isError: isConfirmError } = useWaitForTransactionReceipt({
@@ -49,6 +50,7 @@ export function VoteModal({
   })
   const { isFrameContext, isAutoConnecting } = useFarcaster()
   const { success, error, info } = useNotifications()
+  const { referrerAddress } = useReferral()
 
   const basePrice = 0.001 // Starting price in ETH
   const pricePerVote =
@@ -149,12 +151,16 @@ export function VoteModal({
             name: "vote",
             type: "function",
             stateMutability: "payable",
-            inputs: [{ name: "teamIndex", type: "uint8" }],
+            inputs: [
+              { name: "teamIndex", type: "uint8" },
+              { name: "numVotes", type: "uint256" },
+              { name: "referrer", type: "address" },
+            ],
             outputs: [],
           },
         ],
         functionName: "vote",
-        args: [teamIndex],
+        args: [teamIndex, BigInt(voteCount), referrerAddress && referrerAddress !== address ? referrerAddress : zeroAddress],
         value: parseEther(totalCost.toString()),
       })
     } catch (err) {

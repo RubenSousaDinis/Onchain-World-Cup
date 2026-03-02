@@ -31,6 +31,7 @@ export interface WorldCupQualificationInterface extends Interface {
       | "MAX_VOTES_PER_TX"
       | "PRICE_INCREMENT"
       | "QUALIFICATION_SPOTS"
+      | "REFERRAL_FEE_BPS"
       | "addCountries"
       | "addCountry"
       | "allCountries"
@@ -54,6 +55,7 @@ export interface WorldCupQualificationInterface extends Interface {
       | "qualificationFinalized"
       | "qualificationStartTime"
       | "qualifiedCountries"
+      | "referrerEarnings"
       | "removeCountry"
       | "renounceOwnership"
       | "setPlatformFee"
@@ -82,6 +84,7 @@ export interface WorldCupQualificationInterface extends Interface {
       | "PrizesDistributed"
       | "QualificationEnded"
       | "QualificationFinalized"
+      | "ReferralPaid"
       | "Unpaused"
       | "VotePlaced"
       | "WinningsClaimed"
@@ -105,6 +108,10 @@ export interface WorldCupQualificationInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "QUALIFICATION_SPOTS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "REFERRAL_FEE_BPS",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -188,6 +195,10 @@ export interface WorldCupQualificationInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "referrerEarnings",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "removeCountry",
     values: [BytesLike]
   ): string;
@@ -238,7 +249,7 @@ export interface WorldCupQualificationInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "vote",
-    values: [BytesLike, BigNumberish]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "votePrice",
@@ -260,6 +271,10 @@ export interface WorldCupQualificationInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "QUALIFICATION_SPOTS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "REFERRAL_FEE_BPS",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -328,6 +343,10 @@ export interface WorldCupQualificationInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "qualifiedCountries",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "referrerEarnings",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -486,6 +505,24 @@ export namespace QualificationFinalizedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace ReferralPaidEvent {
+  export type InputTuple = [
+    referrer: AddressLike,
+    voter: AddressLike,
+    amount: BigNumberish
+  ];
+  export type OutputTuple = [referrer: string, voter: string, amount: bigint];
+  export interface OutputObject {
+    referrer: string;
+    voter: string;
+    amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace UnpausedEvent {
   export type InputTuple = [account: AddressLike];
   export type OutputTuple = [account: string];
@@ -592,6 +629,8 @@ export interface WorldCupQualification extends BaseContract {
 
   QUALIFICATION_SPOTS: TypedContractMethod<[], [bigint], "view">;
 
+  REFERRAL_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
+
   addCountries: TypedContractMethod<
     [countries: BytesLike[]],
     [void],
@@ -670,6 +709,8 @@ export interface WorldCupQualification extends BaseContract {
     "view"
   >;
 
+  referrerEarnings: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+
   removeCountry: TypedContractMethod<
     [country: BytesLike],
     [void],
@@ -713,7 +754,7 @@ export interface WorldCupQualification extends BaseContract {
   validCountry: TypedContractMethod<[arg0: BytesLike], [boolean], "view">;
 
   vote: TypedContractMethod<
-    [country: BytesLike, votes: BigNumberish],
+    [country: BytesLike, votes: BigNumberish, referrer: AddressLike],
     [void],
     "payable"
   >;
@@ -738,6 +779,9 @@ export interface WorldCupQualification extends BaseContract {
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "QUALIFICATION_SPOTS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "REFERRAL_FEE_BPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "addCountries"
@@ -833,6 +877,9 @@ export interface WorldCupQualification extends BaseContract {
     nameOrSignature: "qualifiedCountries"
   ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
+    nameOrSignature: "referrerEarnings"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "removeCountry"
   ): TypedContractMethod<[country: BytesLike], [void], "nonpayable">;
   getFunction(
@@ -878,7 +925,7 @@ export interface WorldCupQualification extends BaseContract {
   getFunction(
     nameOrSignature: "vote"
   ): TypedContractMethod<
-    [country: BytesLike, votes: BigNumberish],
+    [country: BytesLike, votes: BigNumberish, referrer: AddressLike],
     [void],
     "payable"
   >;
@@ -948,6 +995,13 @@ export interface WorldCupQualification extends BaseContract {
     QualificationFinalizedEvent.InputTuple,
     QualificationFinalizedEvent.OutputTuple,
     QualificationFinalizedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReferralPaid"
+  ): TypedContractEvent<
+    ReferralPaidEvent.InputTuple,
+    ReferralPaidEvent.OutputTuple,
+    ReferralPaidEvent.OutputObject
   >;
   getEvent(
     key: "Unpaused"
@@ -1069,6 +1123,17 @@ export interface WorldCupQualification extends BaseContract {
       QualificationFinalizedEvent.InputTuple,
       QualificationFinalizedEvent.OutputTuple,
       QualificationFinalizedEvent.OutputObject
+    >;
+
+    "ReferralPaid(address,address,uint256)": TypedContractEvent<
+      ReferralPaidEvent.InputTuple,
+      ReferralPaidEvent.OutputTuple,
+      ReferralPaidEvent.OutputObject
+    >;
+    ReferralPaid: TypedContractEvent<
+      ReferralPaidEvent.InputTuple,
+      ReferralPaidEvent.OutputTuple,
+      ReferralPaidEvent.OutputObject
     >;
 
     "Unpaused(address)": TypedContractEvent<

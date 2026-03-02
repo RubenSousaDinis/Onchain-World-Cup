@@ -164,6 +164,29 @@ export async function fetchWinningsClaimedEvents(
 }
 
 /**
+ * Fetch ReferralPaid events
+ */
+export async function fetchReferralPaidEvents(
+  chainId: number,
+  fromBlock: bigint,
+  toBlock: bigint
+): Promise<Log[]> {
+  const client = createIndexerClient(chainId)
+  const contractAddress = getQualificationAddress(chainId)
+
+  console.log(`[Indexer] Fetching ReferralPaid events from block ${fromBlock} to ${toBlock}`)
+
+  const logs = await client.getLogs({
+    address: contractAddress,
+    event: parseAbiItem("event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount)"),
+    fromBlock,
+    toBlock,
+  })
+
+  return logs
+}
+
+/**
  * Fetch CountryAdded events
  */
 export async function fetchCountryAddedEvents(
@@ -209,22 +232,25 @@ export async function indexEvents(chainId: number) {
       qualificationFinalizedEvents: [],
       winningsClaimedEvents: [],
       countryAddedEvents: [],
+      referralPaidEvents: [],
     }
   }
 
   // Fetch all events in parallel
-  const [votePlacedEvents, qualificationFinalizedEvents, winningsClaimedEvents, countryAddedEvents] =
+  const [votePlacedEvents, qualificationFinalizedEvents, winningsClaimedEvents, countryAddedEvents, referralPaidEvents] =
     await Promise.all([
       fetchVotePlacedEvents(chainId, lastIndexedBlock + 1n, currentBlock),
       fetchQualificationFinalizedEvents(chainId, lastIndexedBlock + 1n, currentBlock),
       fetchWinningsClaimedEvents(chainId, lastIndexedBlock + 1n, currentBlock),
       fetchCountryAddedEvents(chainId, lastIndexedBlock + 1n, currentBlock),
+      fetchReferralPaidEvents(chainId, lastIndexedBlock + 1n, currentBlock),
     ])
 
   console.log(`[Indexer] Found ${votePlacedEvents.length} VotePlaced events`)
   console.log(`[Indexer] Found ${qualificationFinalizedEvents.length} QualificationFinalized events`)
   console.log(`[Indexer] Found ${winningsClaimedEvents.length} WinningsClaimed events`)
   console.log(`[Indexer] Found ${countryAddedEvents.length} CountryAdded events`)
+  console.log(`[Indexer] Found ${referralPaidEvents.length} ReferralPaid events`)
 
   // Save the last indexed block
   await saveLastIndexedBlock(chainId, currentBlock)
@@ -237,6 +263,7 @@ export async function indexEvents(chainId: number) {
     qualificationFinalizedEvents,
     winningsClaimedEvents,
     countryAddedEvents,
+    referralPaidEvents,
   }
 }
 

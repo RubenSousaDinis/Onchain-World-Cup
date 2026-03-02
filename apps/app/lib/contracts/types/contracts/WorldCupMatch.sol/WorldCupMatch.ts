@@ -31,6 +31,7 @@ export interface WorldCupMatchInterface extends Interface {
       | "MAX_FEE_PERCENT"
       | "MAX_VOTES_PER_TX"
       | "PHASE_1_DURATION"
+      | "REFERRAL_FEE_BPS"
       | "TOTAL_VOTING_DURATION"
       | "calculateVotePrice"
       | "calculateVotePriceAt"
@@ -53,6 +54,7 @@ export interface WorldCupMatchInterface extends Interface {
       | "phase1Ended"
       | "platformAddress"
       | "platformFeePercent"
+      | "referrerEarnings"
       | "renounceOwnership"
       | "setPlatformAddress"
       | "setPlatformFee"
@@ -84,6 +86,7 @@ export interface WorldCupMatchInterface extends Interface {
       | "PlatformAddressUpdated"
       | "PlatformFeeTransferred"
       | "PlatformFeeUpdated"
+      | "ReferralPaid"
       | "Unpaused"
       | "VotesPlaced"
       | "WinningsWithdrawn"
@@ -107,6 +110,10 @@ export interface WorldCupMatchInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "PHASE_1_DURATION",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "REFERRAL_FEE_BPS",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -186,6 +193,10 @@ export interface WorldCupMatchInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "referrerEarnings",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
@@ -242,7 +253,7 @@ export interface WorldCupMatchInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "vote",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "voters",
@@ -276,6 +287,10 @@ export interface WorldCupMatchInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "PHASE_1_DURATION",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "REFERRAL_FEE_BPS",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -349,6 +364,10 @@ export interface WorldCupMatchInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "platformFeePercent",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "referrerEarnings",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -501,6 +520,24 @@ export namespace PlatformFeeUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace ReferralPaidEvent {
+  export type InputTuple = [
+    referrer: AddressLike,
+    voter: AddressLike,
+    amount: BigNumberish
+  ];
+  export type OutputTuple = [referrer: string, voter: string, amount: bigint];
+  export interface OutputObject {
+    referrer: string;
+    voter: string;
+    amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace UnpausedEvent {
   export type InputTuple = [];
   export type OutputTuple = [];
@@ -613,6 +650,8 @@ export interface WorldCupMatch extends BaseContract {
 
   PHASE_1_DURATION: TypedContractMethod<[], [bigint], "view">;
 
+  REFERRAL_FEE_BPS: TypedContractMethod<[], [bigint], "view">;
+
   TOTAL_VOTING_DURATION: TypedContractMethod<[], [bigint], "view">;
 
   calculateVotePrice: TypedContractMethod<
@@ -721,6 +760,8 @@ export interface WorldCupMatch extends BaseContract {
 
   platformFeePercent: TypedContractMethod<[], [bigint], "view">;
 
+  referrerEarnings: TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   setPlatformAddress: TypedContractMethod<
@@ -774,7 +815,7 @@ export interface WorldCupMatch extends BaseContract {
   >;
 
   vote: TypedContractMethod<
-    [teamIndex: BigNumberish, numVotes: BigNumberish],
+    [teamIndex: BigNumberish, numVotes: BigNumberish, referrer: AddressLike],
     [void],
     "payable"
   >;
@@ -805,6 +846,9 @@ export interface WorldCupMatch extends BaseContract {
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "PHASE_1_DURATION"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "REFERRAL_FEE_BPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "TOTAL_VOTING_DURATION"
@@ -929,6 +973,9 @@ export interface WorldCupMatch extends BaseContract {
     nameOrSignature: "platformFeePercent"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "referrerEarnings"
+  ): TypedContractMethod<[arg0: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
@@ -987,7 +1034,7 @@ export interface WorldCupMatch extends BaseContract {
   getFunction(
     nameOrSignature: "vote"
   ): TypedContractMethod<
-    [teamIndex: BigNumberish, numVotes: BigNumberish],
+    [teamIndex: BigNumberish, numVotes: BigNumberish, referrer: AddressLike],
     [void],
     "payable"
   >;
@@ -1045,6 +1092,13 @@ export interface WorldCupMatch extends BaseContract {
     PlatformFeeUpdatedEvent.InputTuple,
     PlatformFeeUpdatedEvent.OutputTuple,
     PlatformFeeUpdatedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReferralPaid"
+  ): TypedContractEvent<
+    ReferralPaidEvent.InputTuple,
+    ReferralPaidEvent.OutputTuple,
+    ReferralPaidEvent.OutputObject
   >;
   getEvent(
     key: "Unpaused"
@@ -1133,6 +1187,17 @@ export interface WorldCupMatch extends BaseContract {
       PlatformFeeUpdatedEvent.InputTuple,
       PlatformFeeUpdatedEvent.OutputTuple,
       PlatformFeeUpdatedEvent.OutputObject
+    >;
+
+    "ReferralPaid(address,address,uint256)": TypedContractEvent<
+      ReferralPaidEvent.InputTuple,
+      ReferralPaidEvent.OutputTuple,
+      ReferralPaidEvent.OutputObject
+    >;
+    ReferralPaid: TypedContractEvent<
+      ReferralPaidEvent.InputTuple,
+      ReferralPaidEvent.OutputTuple,
+      ReferralPaidEvent.OutputObject
     >;
 
     "Unpaused()": TypedContractEvent<

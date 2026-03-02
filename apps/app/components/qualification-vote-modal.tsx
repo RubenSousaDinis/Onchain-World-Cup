@@ -16,6 +16,8 @@ import { useFarcaster } from "@/lib/farcaster-provider"
 import { modal } from "@/lib/reown-config"
 import { countryCodeToBytes8 } from "@/lib/contracts/qualification"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
+import { useReferral } from "@/hooks/use-referral"
+import { zeroAddress } from "viem"
 import { ShareModal } from "@/components/share-modal"
 import { AchievementUnlockedModal } from "@/components/achievement-unlocked-modal"
 import { type ComputedAchievement } from "@/lib/achievements"
@@ -53,6 +55,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { success, error, info } = useNotifications()
   const { isAuthenticated, login, defaultChainId, defaultChain, switchChain } = useSIWEAuth()
   const { isFrameContext, isAutoConnecting } = useFarcaster()
+  const { referrerAddress } = useReferral()
 
   // Contract interaction hooks
   const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContract()
@@ -281,6 +284,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         countryCode: country.code,
         voteCount: votes,
         totalCostEth: cost,
+        referrerAddress: referrerAddress && referrerAddress !== address ? referrerAddress : null,
         isFarcasterContext: isFrameContext, // Pass Farcaster context to skip session wallet check
       }),
     })
@@ -502,7 +506,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         address: contractAddress,
         abi: WORLD_CUP_QUALIFICATION_ABI,
         functionName: "vote",
-        args: [countryCodeToBytes8(country?.code || ""), BigInt(voteCount)],
+        args: [countryCodeToBytes8(country?.code || ""), BigInt(voteCount), referrerAddress && referrerAddress !== address ? referrerAddress : zeroAddress],
         value: parseEther(totalCost.toString()),
       })
     } catch (err) {

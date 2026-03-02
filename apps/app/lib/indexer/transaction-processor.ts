@@ -41,6 +41,14 @@ type CountryAddedLog = Log & {
     country: string
   }
 }
+
+type ReferralPaidLog = Log & {
+  args: {
+    referrer: string
+    voter: string
+    amount: bigint
+  }
+}
 import { formatEther } from "viem"
 import { bytes8ToCountryCode } from "./event-indexer"
 
@@ -332,6 +340,82 @@ export async function processCountryAddedEvents(events: CountryAddedLog[]) {
 }
 
 /**
+ * Process ReferralPaid events and update database
+ */
+export async function processReferralPaidEvents(events: ReferralPaidLog[]) {
+  console.log(`[Processor] Processing ${events.length} ReferralPaid events`)
+
+  for (const event of events) {
+    try {
+      const { referrer, voter, amount } = event.args
+
+      const referrerAddress = referrer.toLowerCase()
+      const referredAddress = voter.toLowerCase()
+      const referralAmountEth = formatEther(amount)
+      // 1% of vote cost = amount, so vote cost = amount * 100
+      const voteAmountEth = formatEther(amount * 100n)
+      const txHash = event.transactionHash!
+      const blockNumber = event.blockNumber!
+      const contractAddress = event.address.toLowerCase()
+
+      console.log(`[Processor] Referral: ${referrerAddress} earned ${referralAmountEth} ETH from ${referredAddress}`)
+
+      // Skip if already indexed
+      const existing = await prisma.referral.findUnique({ where: { txHash } })
+      if (existing) {
+        console.log(`[Processor] Referral tx ${txHash} already indexed, skipping`)
+        continue
+      }
+
+      await prisma.$transaction(async (tx) => {
+        // 1. Create referral record
+        await tx.referral.create({
+          data: {
+            referrerAddress,
+            referredAddress,
+            txHash,
+            voteAmountEth,
+            referralAmountEth,
+            contractAddress,
+            contractType: "qualification",
+            blockNumber,
+          },
+        })
+
+        // 2. Update referrer's UserStat
+        const existingUserStats = await tx.userStat.findUnique({
+          where: { walletAddress: referrerAddress },
+        })
+
+        if (existingUserStats) {
+          await tx.userStat.update({
+            where: { walletAddress: referrerAddress },
+            data: {
+              referralEarnedEth: (
+                parseFloat(existingUserStats.referralEarnedEth) + parseFloat(referralAmountEth)
+              ).toString(),
+              referralCount: { increment: 1 },
+            },
+          })
+        } else {
+          await tx.userStat.create({
+            data: {
+              walletAddress: referrerAddress,
+              referralEarnedEth: referralAmountEth,
+              referralCount: 1,
+            },
+          })
+        }
+      })
+
+      console.log(`[Processor] Successfully processed ReferralPaid event ${txHash}`)
+    } catch (error) {
+      console.error(`[Processor] Error processing ReferralPaid event:`, error)
+    }
+  }
+}
+
+/**
  * Recomputes and persists the rank for every user with at least one vote.
  * Rank is ordered by qualificationSpentEth DESC (mirrors the "successful" leaderboard).
  * Safe to call multiple times — always reflects the current state of the DB.
@@ -373,6 +457,7 @@ export async function processEvents(eventsData: {
   qualificationFinalizedEvents: Log[]
   winningsClaimedEvents: Log[]
   countryAddedEvents: Log[]
+  referralPaidEvents: Log[]
 }) {
   console.log(`[Processor] Starting event processing`)
 
@@ -382,6 +467,7 @@ export async function processEvents(eventsData: {
     await processVotePlacedEvents(eventsData.votePlacedEvents as VotePlacedLog[])
     await processQualificationFinalizedEvents(eventsData.qualificationFinalizedEvents as QualificationFinalizedLog[])
     await processWinningsClaimedEvents(eventsData.winningsClaimedEvents as WinningsClaimedLog[])
+    await processReferralPaidEvents(eventsData.referralPaidEvents as ReferralPaidLog[])
 
     console.log(`[Processor] Event processing completed successfully`)
 
@@ -392,6 +478,7 @@ export async function processEvents(eventsData: {
         qualifications: eventsData.qualificationFinalizedEvents.length,
         claims: eventsData.winningsClaimedEvents.length,
         countries: eventsData.countryAddedEvents.length,
+        referrals: eventsData.referralPaidEvents.length,
       },
     }
   } catch (error) {

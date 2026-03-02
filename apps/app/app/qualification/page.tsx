@@ -11,6 +11,7 @@ import { countries as countriesData } from "@/lib/countries"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
+import { useQualificationEndTime } from "@/lib/contracts/qualification"
 
 const QualificationVoteModal = dynamic(
   () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
@@ -58,6 +59,7 @@ export default function QualificationPage() {
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
+  const { data: endTimeFromContract, isLoading: isLoadingEndTime } = useQualificationEndTime(chainId)
 
   // Get contract address based on chain
   const contractAddress = (chainId === 84532
@@ -157,10 +159,7 @@ export default function QualificationPage() {
 
           setTotalPrizePool(newPrizePool)
 
-          // If qualification end time is available from contract
-          if (summaryData?.qualificationEndTime) {
-            setQualificationEndTime(summaryData.qualificationEndTime)
-          }
+          // End time is sourced from contract via useQualificationEndTime
         }
 
         // Fetch country statistics
@@ -290,32 +289,34 @@ export default function QualificationPage() {
     }
   }, [address]) // Only re-fetch user stats when address changes
 
+  // Sync end time from contract (source of truth)
+  useEffect(() => {
+    if (endTimeFromContract) {
+      setQualificationEndTime(Number(endTimeFromContract))
+    }
+  }, [endTimeFromContract])
+
   // Calculate countdown timer
   useEffect(() => {
-    if (!qualificationEndTime) {
-      // Default to 30 days from now if not set
-      const defaultEndTime = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60)
-      setQualificationEndTime(defaultEndTime)
+    if (!qualificationEndTime) return
+
+    const tick = () => {
+      const now = Math.floor(Date.now() / 1000)
+      const diff = qualificationEndTime - now
+      if (diff > 0) {
+        setTimeRemaining({
+          days: Math.floor(diff / (24 * 60 * 60)),
+          hours: Math.floor((diff % (24 * 60 * 60)) / (60 * 60)),
+          minutes: Math.floor((diff % (60 * 60)) / 60),
+          seconds: diff % 60,
+        })
+      } else {
+        setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+      }
     }
 
-    const timer = setInterval(() => {
-      if (qualificationEndTime) {
-        const now = Math.floor(Date.now() / 1000)
-        const diff = qualificationEndTime - now
-
-        if (diff > 0) {
-          const days = Math.floor(diff / (24 * 60 * 60))
-          const hours = Math.floor((diff % (24 * 60 * 60)) / (60 * 60))
-          const minutes = Math.floor((diff % (60 * 60)) / 60)
-          const seconds = diff % 60
-
-          setTimeRemaining({ days, hours, minutes, seconds })
-        } else {
-          setTimeRemaining({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-        }
-      }
-    }, 1000)
-
+    tick() // run immediately
+    const timer = setInterval(tick, 1000)
     return () => clearInterval(timer)
   }, [qualificationEndTime])
 
@@ -451,27 +452,33 @@ export default function QualificationPage() {
                   <p className="text-sm lg:text-base text-muted-foreground">Vote early for better prices</p>
                 </div>
               </div>
-              <div className="flex gap-2 lg:gap-4">
-                <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
-                  <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
+              {isLoadingEndTime || !qualificationEndTime ? (
+                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">--:--:--:--</div>
+              ) : Math.floor(Date.now() / 1000) >= qualificationEndTime ? (
+                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">Ended</div>
+              ) : (
+                <div className="flex gap-2 lg:gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
+                    <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                  <div className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
+                    <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                  <div className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
+                    <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
+                  </div>
+                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                  <div className="text-center">
+                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
+                    <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
+                  </div>
                 </div>
-                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
-                  <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
-                </div>
-                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
-                  <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
-                </div>
-                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                <div className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
-                  <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
