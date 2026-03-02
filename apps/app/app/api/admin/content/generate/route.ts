@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Groq from "groq-sdk"
 import { prisma } from "@/lib/server/prisma"
 
 const PLATFORM_CONTEXT = `
@@ -156,8 +156,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "type must be blog or twitter_thread" }, { status: 400 })
     }
 
-    if (!process.env.GOOGLE_AI_API_KEY) {
-      return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 })
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ error: "GROQ_API_KEY not configured" }, { status: 500 })
     }
 
     const memoryContext = await buildMemoryContext(type)
@@ -167,56 +167,13 @@ export async function POST(req: NextRequest) {
         ? getBlogPrompt(topic, customPrompt, memoryContext)
         : getTwitterThreadPrompt(topic, customPrompt, memoryContext)
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: { responseMimeType: "application/json" } as object,
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
     })
-
-    let result
-    const maxRetries = 3
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        result = await model.generateContent(prompt)
-        break
-      } catch (aiErr: unknown) {
-        const isRateLimit =
-          typeof aiErr === "object" &&
-          aiErr !== null &&
-          "status" in aiErr &&
-          (aiErr as { status: number }).status === 429
-
-        if (isRateLimit) {
-          // Extract retry delay from the error message if available
-          const errMessage = aiErr instanceof Error ? aiErr.message : String(aiErr)
-          const retryMatch = errMessage.match(/retry[^0-9]*(\d+)/)
-          const retryAfterSeconds = retryMatch ? parseInt(retryMatch[1], 10) : null
-
-          if (attempt < maxRetries && retryAfterSeconds !== null && retryAfterSeconds <= 10) {
-            // Only auto-retry if the suggested wait is short (≤10s)
-            await new Promise((resolve) => setTimeout(resolve, retryAfterSeconds * 1000))
-            continue
-          }
-
-          const retryMsg = retryAfterSeconds
-            ? `Please try again in ${retryAfterSeconds} seconds.`
-            : "Please try again in a few moments."
-
-          return NextResponse.json(
-            { error: `Gemini API quota exceeded. ${retryMsg}` },
-            { status: 429 }
-          )
-        }
-
-        throw aiErr
-      }
-    }
-
-    if (!result) {
-      return NextResponse.json({ error: "Generation failed after retries" }, { status: 500 })
-    }
-
-    const rawContent = result.response.text()
+    const rawContent = completion.choices[0].message.content ?? ""
 
     // Extract JSON from the response (handles both raw JSON and markdown fences)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
