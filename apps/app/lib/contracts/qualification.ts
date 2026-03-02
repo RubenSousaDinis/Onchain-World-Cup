@@ -345,7 +345,8 @@ export function useVote() {
     chainId: number,
     countryCode: string,
     votes: number,
-    value: bigint
+    value: bigint,
+    referrer: `0x${string}` = "0x0000000000000000000000000000000000000000"
   ) => {
     const address = getQualificationAddress(chainId)
     const countryBytes = countryCodeToBytes8(countryCode)
@@ -354,7 +355,7 @@ export function useVote() {
       address,
       abi: WORLD_CUP_QUALIFICATION_ABI,
       functionName: "vote",
-      args: [countryBytes, BigInt(votes)],
+      args: [countryBytes, BigInt(votes), referrer],
       value,
     })
   }
