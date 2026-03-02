@@ -284,6 +284,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         countryCode: country.code,
         voteCount: votes,
         totalCostEth: cost,
+        referrerAddress: referrerAddress && referrerAddress !== address ? referrerAddress : null,
         isFarcasterContext: isFrameContext, // Pass Farcaster context to skip session wallet check
       }),
     })

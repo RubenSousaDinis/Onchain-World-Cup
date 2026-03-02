@@ -36,6 +36,7 @@ export interface WorldCupEventHubInterface extends Interface {
       | "logMatchCreated"
       | "logMatchFinalized"
       | "logPlatformFeeTransferred"
+      | "logReferralPaid"
       | "logVotePlaced"
       | "logWinningsWithdrawn"
       | "owner"
@@ -48,6 +49,7 @@ export interface WorldCupEventHubInterface extends Interface {
       | "GlobalMatchCreated"
       | "GlobalMatchFinalized"
       | "GlobalPlatformFeeTransferred"
+      | "GlobalReferralPaid"
       | "GlobalVotePlaced"
       | "GlobalWinningsWithdrawn"
       | "MatchAuthorized"
@@ -94,6 +96,10 @@ export interface WorldCupEventHubInterface extends Interface {
   encodeFunctionData(
     functionFragment: "logPlatformFeeTransferred",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "logReferralPaid",
+    values: [AddressLike, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "logVotePlaced",
@@ -155,6 +161,10 @@ export interface WorldCupEventHubInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "logPlatformFeeTransferred",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "logReferralPaid",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -246,6 +256,31 @@ export namespace GlobalPlatformFeeTransferredEvent {
   export interface OutputObject {
     matchAddress: string;
     platformAddress: string;
+    amount: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace GlobalReferralPaidEvent {
+  export type InputTuple = [
+    contractAddress: AddressLike,
+    referrer: AddressLike,
+    voter: AddressLike,
+    amount: BigNumberish
+  ];
+  export type OutputTuple = [
+    contractAddress: string,
+    referrer: string,
+    voter: string,
+    amount: bigint
+  ];
+  export interface OutputObject {
+    contractAddress: string;
+    referrer: string;
+    voter: string;
     amount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
@@ -446,6 +481,12 @@ export interface WorldCupEventHub extends BaseContract {
     "nonpayable"
   >;
 
+  logReferralPaid: TypedContractMethod<
+    [referrer: AddressLike, voter: AddressLike, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   logVotePlaced: TypedContractMethod<
     [
       voter: AddressLike,
@@ -527,6 +568,13 @@ export interface WorldCupEventHub extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "logReferralPaid"
+  ): TypedContractMethod<
+    [referrer: AddressLike, voter: AddressLike, amount: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "logVotePlaced"
   ): TypedContractMethod<
     [
@@ -577,6 +625,13 @@ export interface WorldCupEventHub extends BaseContract {
     GlobalPlatformFeeTransferredEvent.InputTuple,
     GlobalPlatformFeeTransferredEvent.OutputTuple,
     GlobalPlatformFeeTransferredEvent.OutputObject
+  >;
+  getEvent(
+    key: "GlobalReferralPaid"
+  ): TypedContractEvent<
+    GlobalReferralPaidEvent.InputTuple,
+    GlobalReferralPaidEvent.OutputTuple,
+    GlobalReferralPaidEvent.OutputObject
   >;
   getEvent(
     key: "GlobalVotePlaced"
@@ -646,6 +701,17 @@ export interface WorldCupEventHub extends BaseContract {
       GlobalPlatformFeeTransferredEvent.InputTuple,
       GlobalPlatformFeeTransferredEvent.OutputTuple,
       GlobalPlatformFeeTransferredEvent.OutputObject
+    >;
+
+    "GlobalReferralPaid(address,address,address,uint256)": TypedContractEvent<
+      GlobalReferralPaidEvent.InputTuple,
+      GlobalReferralPaidEvent.OutputTuple,
+      GlobalReferralPaidEvent.OutputObject
+    >;
+    GlobalReferralPaid: TypedContractEvent<
+      GlobalReferralPaidEvent.InputTuple,
+      GlobalReferralPaidEvent.OutputTuple,
+      GlobalReferralPaidEvent.OutputObject
     >;
 
     "GlobalVotePlaced(address,address,uint8,uint256,uint256,uint256,uint256)": TypedContractEvent<

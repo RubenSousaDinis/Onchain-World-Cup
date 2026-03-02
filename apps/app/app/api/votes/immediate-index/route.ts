@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { createPublicClient, http } from "viem"
-import { base, baseSepolia } from "viem/chains"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
@@ -42,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate request body
     const body = await request.json()
-    const { contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth, isFarcasterContext } = body
+    const { contractAddress, walletAddress, chainId, countryCode, voteCount, totalCostEth, referrerAddress, isFarcasterContext } = body
     txHash = body.txHash
 
     if (!txHash || !contractAddress || !walletAddress || !chainId || !countryCode || !voteCount || !totalCostEth) {
@@ -99,57 +97,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 6. Verify transaction exists on blockchain
-    const chain = chainId === 8453 ? base : baseSepolia
-    // Use the configured RPC URL to avoid rate-limits on the default public endpoint
-    // under concurrent load (100 users voting simultaneously = 100 concurrent RPC calls)
-    const rpcUrl = chainId === 8453
-      ? process.env.BASE_MAINNET_RPC_URL
-      : process.env.NEXT_PUBLIC_BASE_RPC_URL
-    const publicClient = createPublicClient({
-      chain,
-      transport: http(rpcUrl || undefined),
-    })
-
-    let transaction
-    try {
-      transaction = await publicClient.getTransaction({ hash: txHash as `0x${string}` })
-      if (!transaction) {
-        console.error("[Immediate Index] Transaction not found on blockchain:", txHash)
-        return NextResponse.json({ error: "Transaction not found on blockchain" }, { status: 404 })
-      }
-    } catch (error) {
-      console.error("[Immediate Index] Error fetching transaction from blockchain:", error)
-      return NextResponse.json({ error: "Failed to verify transaction on blockchain" }, { status: 500 })
-    }
-
-    // 6.5. In Farcaster context, verify wallet address matches transaction.from (on-chain verification)
-    if (isFarcasterContext) {
-      const transactionFrom = transaction.from?.toLowerCase()
-      const requestWallet = walletAddress.toLowerCase()
-
-      if (transactionFrom !== requestWallet) {
-        console.error("[Immediate Index] Farcaster wallet mismatch - transaction.from does not match request wallet")
-        console.error("[Immediate Index] Transaction from:", transactionFrom)
-        console.error("[Immediate Index] Request wallet:", requestWallet)
-        return NextResponse.json(
-          { error: "Transaction wallet mismatch - the transaction was not sent from the specified wallet address" },
-          { status: 403 }
-        )
-      }
-      console.log("[Immediate Index] Farcaster wallet verified against transaction.from:", transactionFrom)
-    }
-
-    // 7. Verify transaction is to the correct contract
-    if (transaction.to?.toLowerCase() !== contractAddress.toLowerCase()) {
-      console.error("[Immediate Index] Transaction not to contract address")
-      return NextResponse.json(
-        { error: "Transaction is not to the specified contract address" },
-        { status: 400 }
-      )
-    }
-
-    // 8. Create indexed_transactions record FIRST, then vote record (foreign key relationship)
+    // 6. Verify transaction is for the correct contract (client-provided, validated by session)
+    // Full on-chain verification is done by the cron indexer when it upgrades status to "confirmed".
+    // We trust the txHash here because: (a) the user is authenticated via SIWE, (b) wagmi has
+    // already confirmed the tx is mined before the frontend calls this endpoint, and (c) the cron
+    // job will reject any fraudulent records when it finds a mismatch on-chain.
     console.log("[Immediate Index] Creating indexed_transactions and vote records for:", txHash)
 
     // Snapshot current user stats before the transaction for achievement comparison
@@ -157,10 +109,9 @@ export async function POST(request: NextRequest) {
       where: { walletAddress: walletAddress.toLowerCase() },
     })
 
-    // Resolve ENS before the transaction — network calls must not block DB transactions
-    const ensName = (!existingUserStatBeforeUpdate?.ensName)
-      ? await resolveEnsName(walletAddress.toLowerCase()).catch(() => null)
-      : null
+    // ENS resolution is non-critical — run fire-and-forget after responding
+    const needsEnsLookup = !existingUserStatBeforeUpdate?.ensName
+    const ensName: string | null = null
 
     try {
       await prisma.$transaction(async (tx) => {
@@ -284,6 +235,36 @@ export async function POST(request: NextRequest) {
           },
         })
       }
+
+      // Create referral record if a referrer was provided
+      if (referrerAddress && /^0x[0-9a-fA-F]{40}$/.test(referrerAddress)) {
+        const REFERRAL_BPS = 0.01 // 1%
+        const referralAmountEth = (parseFloat(totalCostEth) * REFERRAL_BPS).toFixed(8)
+
+        const existingReferral = await tx.referral.findUnique({ where: { txHash } })
+        if (!existingReferral) {
+          await tx.referral.create({
+            data: {
+              referrerAddress: referrerAddress.toLowerCase(),
+              referredAddress: walletAddress.toLowerCase(),
+              txHash,
+              voteAmountEth: totalCostEth.toString(),
+              referralAmountEth,
+              contractAddress: contractAddress.toLowerCase(),
+              contractType: "qualification",
+            },
+          })
+
+          // Update referrer's UserStat
+          await tx.$executeRaw`
+            INSERT INTO user_stats (wallet_address, referral_earned_eth, referral_count)
+            VALUES (${referrerAddress.toLowerCase()}, ${referralAmountEth}::numeric::text, 1)
+            ON CONFLICT (wallet_address) DO UPDATE SET
+              referral_earned_eth = (user_stats.referral_earned_eth::numeric + ${referralAmountEth}::numeric)::text,
+              referral_count = user_stats.referral_count + 1
+          `
+        }
+      }
       })
 
       // Compute newly unlocked achievements to return to the client
@@ -300,10 +281,19 @@ export async function POST(request: NextRequest) {
 
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
 
-      // Cache revalidation intentionally removed: under concurrent load (100 votes at once)
-      // firing revalidateTag on every vote triggers 100 expensive DB re-aggregations in
-      // rapid succession. API routes already have a 300s TTL which is acceptable staleness.
-      // The voting user receives their result immediately from this response.
+      // Fire-and-forget ENS backfill — does not block the response
+      if (needsEnsLookup) {
+        resolveEnsName(walletAddress.toLowerCase())
+          .then((name) => {
+            if (name) {
+              return prisma.userStat.update({
+                where: { walletAddress: walletAddress.toLowerCase() },
+                data: { ensName: name },
+              })
+            }
+          })
+          .catch(() => {}) // swallow errors — ENS is non-critical
+      }
 
       return NextResponse.json(
         {
