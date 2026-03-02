@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import Groq from "groq-sdk"
 
 const MARKETING_PLAN_PROMPT = `You are a growth marketing strategist for Onchain World Cup, a Web3 application where users vote on World Cup 2026 matches using ETH on the Base blockchain network.
 
@@ -102,17 +102,17 @@ Make the plan specific to World Cup 2026 timing, the Farcaster ecosystem, Base n
 
 export async function POST(req: NextRequest) {
   try {
-    if (!process.env.GOOGLE_AI_API_KEY) {
-      return NextResponse.json({ error: "GOOGLE_AI_API_KEY not configured" }, { status: 500 })
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ error: "GROQ_API_KEY not configured" }, { status: 500 })
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      generationConfig: { responseMimeType: "application/json" } as object,
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: MARKETING_PLAN_PROMPT }],
+      response_format: { type: "json_object" },
     })
-    const result = await model.generateContent(MARKETING_PLAN_PROMPT)
-    const rawContent = result.response.text()
+    const rawContent = completion.choices[0].message.content ?? ""
 
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
