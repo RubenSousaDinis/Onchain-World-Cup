@@ -12,6 +12,7 @@ import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { TooltipProvider } from "@radix-ui/react-tooltip"
+import { ReferralCapture } from "@/components/referral-capture"
 import { generateMiniAppMetadata } from "@/lib/utils/miniapp-metadata"
 import { Barlow_Condensed } from "next/font/google"
 
@@ -145,6 +146,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         {/* End Google Tag Manager (noscript) */}
         <FarcasterReady />
+        <ReferralCapture />
         <SkipToContent />
         <QueryProvider>
           <SessionProvider>

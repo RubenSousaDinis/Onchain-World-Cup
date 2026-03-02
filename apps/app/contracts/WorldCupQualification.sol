@@ -24,6 +24,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     uint256 public constant MAX_PLATFORM_FEE_BPS = 2000; // Max 20%
     uint256 public constant MAX_VOTES_PER_TX = 100;
     uint256 public constant QUALIFICATION_SPOTS = 48;
+    uint256 public constant REFERRAL_FEE_BPS = 100; // 1%
 
     /*//////////////////////////////////////////////////////////////
                                 IMMUTABLES
@@ -61,6 +62,9 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     mapping(address => mapping(bytes8 => uint256)) public userVotes;
     mapping(address => bool) public hasClaimed;
 
+    // Referral data
+    mapping(address => uint256) public referrerEarnings;
+
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -72,6 +76,8 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         uint256 cost,
         uint256 timestamp
     );
+
+    event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount);
 
     event CountryAdded(bytes8 country);
     event CountryRemoved(bytes8 country);
@@ -264,7 +270,7 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
                                 VOTING
     //////////////////////////////////////////////////////////////*/
 
-    function vote(bytes8 country, uint256 votes)
+    function vote(bytes8 country, uint256 votes, address referrer)
         external
         payable
         onlyAfterStart
@@ -279,14 +285,28 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
         require(msg.value >= cost, "Insufficient ETH");
 
         uint256 fee = (cost * platformFeeBps) / 10_000;
-        uint256 net = cost - fee;
+        uint256 net = cost - fee; // Prize pool amount — unaffected by referral
+
+        // Apply referral: 1% of cost paid to referrer, deducted from platform fee
+        bool hasReferral = referrer != address(0) &&
+            referrer != msg.sender &&
+            platformFeeBps >= REFERRAL_FEE_BPS;
+
+        if (hasReferral) {
+            uint256 referralFee = (cost * REFERRAL_FEE_BPS) / 10_000;
+            fee -= referralFee;
+            referrerEarnings[referrer] += referralFee;
+            (bool refOk,) = referrer.call{value: referralFee}("");
+            require(refOk, "Referral transfer failed");
+            emit ReferralPaid(referrer, msg.sender, referralFee);
+        }
 
         totalETHCollected += cost;
         totalPlatformFeesCollected += fee;
         totalPrizePool += net;
 
         countryVotes[country] += votes;
-        countryETH[country] += cost; // Track total ETH per country
+        countryETH[country] += cost;
         userVotes[msg.sender][country] += votes;
 
         totalVotes += votes;

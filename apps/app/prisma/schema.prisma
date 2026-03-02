@@ -55,6 +55,8 @@ model UserStat {
   qualificationWonEth   String    @default("0") @map("qualification_won_eth")
   ensName               String?   @map("ens_name")
   userId                String?   @unique @map("user_id") @db.Uuid
+  referralEarnedEth     String    @default("0") @map("referral_earned_eth")
+  referralCount         Int       @default(0) @map("referral_count")
   user                  User?     @relation(fields: [userId], references: [id])
 
   @@index([walletAddress])
@@ -249,6 +251,23 @@ model GroupStanding {
   @@index([countryCode])
   @@index([qualRank])
   @@map("group_standings")
+}
+
+model Referral {
+  id                String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  referrerAddress   String   @map("referrer_address")
+  referredAddress   String   @map("referred_address")
+  txHash            String   @unique @map("tx_hash")
+  voteAmountEth     String   @map("vote_amount_eth")
+  referralAmountEth String   @map("referral_amount_eth")
+  contractAddress   String   @map("contract_address")
+  contractType      String   @map("contract_type")
+  blockNumber       BigInt?  @map("block_number")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([referrerAddress])
+  @@index([referredAddress])
+  @@map("referrals")
 }
 
 model ContentPost {

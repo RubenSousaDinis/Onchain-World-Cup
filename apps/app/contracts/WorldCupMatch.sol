@@ -58,6 +58,9 @@ contract WorldCupMatch is Ownable {
     // Platform fee tracking
     uint256 public totalPlatformFeesCollected;
 
+    // Referral earnings
+    mapping(address => uint256) public referrerEarnings;
+
     // Voter tracking
     address[] public voters;
     mapping(address => bool) public hasVoted;
@@ -82,6 +85,7 @@ contract WorldCupMatch is Ownable {
     uint256 public constant LINEAR_INCREMENT = 0.0001 ether;
     uint256 public constant MAX_VOTES_PER_TX = 100;
     uint256 public constant MAX_FEE_PERCENT = 2000; // Max 20%
+    uint256 public constant REFERRAL_FEE_BPS = 100; // 1%
 
     // Winner tracking
     bool public matchFinalized;
@@ -96,6 +100,7 @@ contract WorldCupMatch is Ownable {
         uint256 platformFee,
         uint256 prizePoolAmount
     );
+    event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount);
     event MatchFinalized(uint8 indexed winningTeam, uint256 team1Total, uint256 team2Total);
     event WinningsWithdrawn(address indexed voter, uint256 amount, uint256 voteCount);
     event PlatformFeeTransferred(address indexed platform, uint256 amount);
@@ -189,8 +194,9 @@ contract WorldCupMatch is Ownable {
      * @dev Place multiple votes for a team
      * @param teamIndex 0 for team1, 1 for team2
      * @param numVotes Number of votes to purchase (1-100)
+     * @param referrer Address of referrer (address(0) for none)
      */
-    function vote(uint8 teamIndex, uint256 numVotes) external payable whenNotPaused {
+    function vote(uint8 teamIndex, uint256 numVotes, address referrer) external payable whenNotPaused {
         require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
         require(getCurrentPhase() > 0, "Voting is closed");
         require(!matchFinalized, "Match already finalized");
@@ -218,11 +224,27 @@ contract WorldCupMatch is Ownable {
 
         // Calculate fees
         uint256 platformFee = (totalCost * platformFeePercent) / 10000; // Basis points
-        uint256 prizePoolAmount = totalCost - platformFee;
+        uint256 prizePoolAmount = totalCost - platformFee; // Prize pool unaffected by referral
+
+        // Apply referral: 1% of cost to referrer, deducted from platform fee
+        bool hasReferral = referrer != address(0) &&
+            referrer != msg.sender &&
+            platformFeePercent >= REFERRAL_FEE_BPS;
+
+        if (hasReferral) {
+            uint256 referralFee = (totalCost * REFERRAL_FEE_BPS) / 10000;
+            platformFee -= referralFee;
+            referrerEarnings[referrer] += referralFee;
+            (bool refOk, ) = referrer.call{value: referralFee}("");
+            require(refOk, "Referral transfer failed");
+            emit ReferralPaid(referrer, msg.sender, referralFee);
+        }
 
         // Transfer platform fee immediately
-        (bool feeSuccess, ) = platformAddress.call{value: platformFee}("");
-        require(feeSuccess, "Platform fee transfer failed");
+        if (platformFee > 0) {
+            (bool feeSuccess, ) = platformAddress.call{value: platformFee}("");
+            require(feeSuccess, "Platform fee transfer failed");
+        }
         totalPlatformFeesCollected += platformFee;
 
         // Track voter

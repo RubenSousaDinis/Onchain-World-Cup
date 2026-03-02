@@ -54,6 +54,13 @@ contract WorldCupEventHub is Ownable {
         uint256 amount
     );
 
+    event GlobalReferralPaid(
+        address indexed contractAddress,
+        address indexed referrer,
+        address indexed voter,
+        uint256 amount
+    );
+
     event MatchAuthorized(address indexed matchAddress);
     event MatchDeauthorized(address indexed matchAddress);
 
@@ -175,6 +182,20 @@ contract WorldCupEventHub is Ownable {
         require(authorizedMatches[msg.sender], "Not authorized");
 
         emit GlobalPlatformFeeTransferred(msg.sender, platformAddress, amount);
+    }
+
+    /**
+     * @dev Log referral payment
+     * Called by match/qualification contract when referral fee is paid
+     */
+    function logReferralPaid(
+        address referrer,
+        address voter,
+        uint256 amount
+    ) external {
+        require(authorizedMatches[msg.sender], "Not authorized");
+
+        emit GlobalReferralPaid(msg.sender, referrer, voter, amount);
     }
 
     /**
