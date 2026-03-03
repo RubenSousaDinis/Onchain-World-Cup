@@ -94,6 +94,31 @@ export async function saveLastIndexedBlock(chainId: number, blockNumber: bigint)
   console.log(`[Indexer] Saved last indexed block for chain ${chainId}: ${blockNumber}`)
 }
 
+// Coinbase RPC (and most providers) limit eth_getLogs to 1000 blocks per request
+const MAX_BLOCK_RANGE = 1000n
+
+/**
+ * Fetch logs across a large block range by splitting into chunks
+ */
+async function fetchLogsInChunks(
+  client: ReturnType<typeof createIndexerClient>,
+  params: { address: `0x${string}`; event: ReturnType<typeof parseAbiItem> },
+  fromBlock: bigint,
+  toBlock: bigint
+): Promise<Log[]> {
+  const results: Log[] = []
+  let from = fromBlock
+
+  while (from <= toBlock) {
+    const to = from + MAX_BLOCK_RANGE - 1n < toBlock ? from + MAX_BLOCK_RANGE - 1n : toBlock
+    const chunk = await client.getLogs({ ...params, fromBlock: from, toBlock: to })
+    results.push(...chunk)
+    from = to + 1n
+  }
+
+  return results
+}
+
 /**
  * Fetch VotePlaced events from the contract
  */
@@ -104,17 +129,12 @@ export async function fetchVotePlacedEvents(
 ): Promise<Log[]> {
   const client = createIndexerClient(chainId)
   const contractAddress = getQualificationAddress(chainId)
-
   console.log(`[Indexer] Fetching VotePlaced events from block ${fromBlock} to ${toBlock}`)
-
-  const logs = await client.getLogs({
-    address: contractAddress,
-    event: parseAbiItem("event VotePlaced(address indexed voter, bytes8 indexed country, uint256 votes, uint256 cost, uint256 timestamp)"),
-    fromBlock,
-    toBlock,
-  })
-
-  return logs
+  return fetchLogsInChunks(
+    client,
+    { address: contractAddress, event: parseAbiItem("event VotePlaced(address indexed voter, bytes8 indexed country, uint256 votes, uint256 cost, uint256 timestamp)") },
+    fromBlock, toBlock
+  )
 }
 
 /**
@@ -127,17 +147,12 @@ export async function fetchQualificationFinalizedEvents(
 ): Promise<Log[]> {
   const client = createIndexerClient(chainId)
   const contractAddress = getQualificationAddress(chainId)
-
   console.log(`[Indexer] Fetching QualificationFinalized events from block ${fromBlock} to ${toBlock}`)
-
-  const logs = await client.getLogs({
-    address: contractAddress,
-    event: parseAbiItem("event QualificationFinalized(bytes8[] qualifiedCountries)"),
-    fromBlock,
-    toBlock,
-  })
-
-  return logs
+  return fetchLogsInChunks(
+    client,
+    { address: contractAddress, event: parseAbiItem("event QualificationFinalized(bytes8[] qualifiedCountries)") },
+    fromBlock, toBlock
+  )
 }
 
 /**
@@ -150,17 +165,12 @@ export async function fetchWinningsClaimedEvents(
 ): Promise<Log[]> {
   const client = createIndexerClient(chainId)
   const contractAddress = getQualificationAddress(chainId)
-
   console.log(`[Indexer] Fetching WinningsClaimed events from block ${fromBlock} to ${toBlock}`)
-
-  const logs = await client.getLogs({
-    address: contractAddress,
-    event: parseAbiItem("event WinningsClaimed(address indexed user, uint256 amount)"),
-    fromBlock,
-    toBlock,
-  })
-
-  return logs
+  return fetchLogsInChunks(
+    client,
+    { address: contractAddress, event: parseAbiItem("event WinningsClaimed(address indexed user, uint256 amount)") },
+    fromBlock, toBlock
+  )
 }
 
 /**
@@ -173,17 +183,12 @@ export async function fetchReferralPaidEvents(
 ): Promise<Log[]> {
   const client = createIndexerClient(chainId)
   const contractAddress = getQualificationAddress(chainId)
-
   console.log(`[Indexer] Fetching ReferralPaid events from block ${fromBlock} to ${toBlock}`)
-
-  const logs = await client.getLogs({
-    address: contractAddress,
-    event: parseAbiItem("event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount)"),
-    fromBlock,
-    toBlock,
-  })
-
-  return logs
+  return fetchLogsInChunks(
+    client,
+    { address: contractAddress, event: parseAbiItem("event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount)") },
+    fromBlock, toBlock
+  )
 }
 
 /**
@@ -196,17 +201,12 @@ export async function fetchCountryAddedEvents(
 ): Promise<Log[]> {
   const client = createIndexerClient(chainId)
   const contractAddress = getQualificationAddress(chainId)
-
   console.log(`[Indexer] Fetching CountryAdded events from block ${fromBlock} to ${toBlock}`)
-
-  const logs = await client.getLogs({
-    address: contractAddress,
-    event: parseAbiItem("event CountryAdded(bytes8 country)"),
-    fromBlock,
-    toBlock,
-  })
-
-  return logs
+  return fetchLogsInChunks(
+    client,
+    { address: contractAddress, event: parseAbiItem("event CountryAdded(bytes8 country)") },
+    fromBlock, toBlock
+  )
 }
 
 /**
