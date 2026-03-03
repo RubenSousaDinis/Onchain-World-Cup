@@ -85,7 +85,7 @@ export function NoClaimablePayouts() {
       description="You don't have any payouts to claim right now. Keep voting and you might win!"
       action={{
         label: "View Active Votes",
-        href: "/my-bets"
+        href: "/profile"
       }}
     />
   )

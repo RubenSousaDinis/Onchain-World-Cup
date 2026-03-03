@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, Info, Link2 } from "lucide-react"
+import { Trophy, Calendar, Users, Wallet, Info } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -15,7 +15,7 @@ const navItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
-  { icon: Link2, label: "Referrals", href: "/referrals" },
+  { icon: Wallet, label: "My Profile", href: "/profile" },
   { icon: Info, label: "How It Works", href: "/how-it-works" },
 ]
 

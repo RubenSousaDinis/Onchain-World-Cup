@@ -442,7 +442,7 @@ export function HomePageClient() {
               icon={Zap}
               title="My Votes"
               description="View your voting history and active positions"
-              href="/my-bets"
+              href="/profile"
             />
             <QuickActionCard
               icon={Clock}

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Calendar, Users, HelpCircle, Wallet, Trophy, Link2 } from "lucide-react"
+import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -14,8 +14,7 @@ const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
-  { icon: Wallet, label: "My Votes", href: "/my-bets" },
-  { icon: Link2, label: "Referrals", href: "/referrals" },
+  { icon: Wallet, label: "My Profile", href: "/profile" },
   { icon: HelpCircle, label: "How it Works", href: "/how-it-works" },
 ]
 

@@ -6,6 +6,8 @@ export interface AchievementStats {
   countriesVotedFor: number
   rank: number | null
   createdAt: Date
+  referralCount: number
+  referralEarnedEth: number // pre-parsed float
 }
 
 export interface ComputedAchievement {
@@ -246,6 +248,71 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
       }
     },
   },
+  {
+    id: 'talent-scout',
+    title: 'Talent Scout',
+    description: 'Referred your first vote',
+    icon: '🔭',
+    rarity: 'common',
+    points: 15,
+    compute: (stats) => ({
+      progress: Math.min(stats.referralCount, 1),
+      progressTotal: 1,
+      unlocked: stats.referralCount >= 1,
+    }),
+  },
+  {
+    id: 'recruiter',
+    title: 'Recruiter',
+    description: 'Referred 5 votes',
+    icon: '🤝',
+    rarity: 'rare',
+    points: 40,
+    compute: (stats) => ({
+      progress: Math.min(stats.referralCount, 5),
+      progressTotal: 5,
+      unlocked: stats.referralCount >= 5,
+    }),
+  },
+  {
+    id: 'head-of-recruitment',
+    title: 'Head of Recruitment',
+    description: 'Referred 25 votes',
+    icon: '📋',
+    rarity: 'epic',
+    points: 100,
+    compute: (stats) => ({
+      progress: Math.min(stats.referralCount, 25),
+      progressTotal: 25,
+      unlocked: stats.referralCount >= 25,
+    }),
+  },
+  {
+    id: 'transfer-maestro',
+    title: 'Transfer Maestro',
+    description: 'Referred 100 votes',
+    icon: '🏆',
+    rarity: 'legendary',
+    points: 200,
+    compute: (stats) => ({
+      progress: Math.min(stats.referralCount, 100),
+      progressTotal: 100,
+      unlocked: stats.referralCount >= 100,
+    }),
+  },
+  {
+    id: 'commission-earner',
+    title: 'Commission Earner',
+    description: 'Earned 0.005 ETH from referrals',
+    icon: '💰',
+    rarity: 'rare',
+    points: 50,
+    compute: (stats) => ({
+      progress: Math.min(Math.round((stats.referralEarnedEth / 0.005) * 100), 100),
+      progressTotal: 100,
+      unlocked: stats.referralEarnedEth >= 0.005,
+    }),
+  },
 ]
 
 export const ACHIEVEMENTS = ACHIEVEMENT_DEFS
@@ -263,12 +330,18 @@ export function computeAchievementStats(apiData: {
   rank?: number | null
   created_at?: string
   createdAt?: string | Date
+  referral_count?: number
+  referralCount?: number
+  referral_earned_eth?: string
+  referralEarnedEth?: string
 }): AchievementStats {
   const votes = apiData.qualification_votes ?? apiData.qualificationVotes ?? 0
   const ethStr = apiData.qualification_spent_eth ?? apiData.qualificationSpentEth ?? '0'
   const countries = apiData.countries_voted_for ?? apiData.countriesVotedFor ?? 0
   const rank = apiData.rank ?? null
   const createdAtRaw = apiData.created_at ?? apiData.createdAt ?? new Date().toISOString()
+  const referralCount = apiData.referral_count ?? apiData.referralCount ?? 0
+  const referralEarnedEthStr = apiData.referral_earned_eth ?? apiData.referralEarnedEth ?? '0'
 
   return {
     qualificationVotes: votes,
@@ -276,6 +349,8 @@ export function computeAchievementStats(apiData: {
     countriesVotedFor: countries,
     rank,
     createdAt: new Date(createdAtRaw as string),
+    referralCount,
+    referralEarnedEth: parseFloat(referralEarnedEthStr as string),
   }
 }
 
