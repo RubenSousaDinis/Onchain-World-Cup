@@ -3,7 +3,7 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
-import { Link2, Copy, Check, ExternalLink } from "lucide-react"
+import { Link2, Copy, Check, ExternalLink, Share2 } from "lucide-react"
 import { useAccount, useChainId } from "wagmi"
 import { useState, useEffect, useRef } from "react"
 import { baseSepolia } from "wagmi/chains"
@@ -49,7 +49,7 @@ export default function ReferralsPage() {
 
   const referralLink =
     typeof window !== "undefined" && address
-      ? `${window.location.origin}?ref=${address}`
+      ? `${window.location.origin}/r/${address}`
       : ""
 
   const handleCopy = async () => {
@@ -57,6 +57,19 @@ export default function ReferralsPage() {
     await navigator.clipboard.writeText(referralLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const shareText = "Join me on Onchain World Cup — back your country with ETH and share the prize pool! 🌍⚽"
+
+  const handleShareTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(referralLink)}`
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
+  const handleShareFarcaster = () => {
+    const text = `${shareText}\n\n${referralLink}`
+    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`
+    window.open(url, "_blank", "noopener,noreferrer")
   }
 
   useEffect(() => {
@@ -125,8 +138,36 @@ export default function ReferralsPage() {
                     {copied ? "Copied!" : "Copy"}
                   </button>
                 </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <Share2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-xs text-muted-foreground">Share on:</span>
+                  <button
+                    onClick={handleShareTwitter}
+                    disabled={!referralLink}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-black text-white rounded-sm hover:bg-black/80 transition-colors disabled:opacity-50"
+                  >
+                    {/* X (Twitter) logo */}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                    X / Twitter
+                  </button>
+                  <button
+                    onClick={handleShareFarcaster}
+                    disabled={!referralLink}
+                    className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-[#7c3aed] text-white rounded-sm hover:bg-[#6d28d9] transition-colors disabled:opacity-50"
+                  >
+                    {/* Farcaster logo */}
+                    <svg width="12" height="12" viewBox="0 0 1000 1000" fill="currentColor">
+                      <path d="M257.778 155.556H742.222V844.444H671.111V528.889H670.414C662.554 441.677 589.258 373.333 500 373.333C410.742 373.333 337.446 441.677 329.586 528.889H328.889V844.444H257.778V155.556Z" />
+                      <path d="M128.889 253.333L157.778 351.111H182.222V746.667C169.949 746.667 160 756.616 160 768.889V795.556H155.556C143.283 795.556 133.333 805.505 133.333 817.778V844.444H382.222V817.778C382.222 805.505 372.273 795.556 360 795.556H355.556V768.889C355.556 756.616 345.606 746.667 333.333 746.667H306.667V253.333H128.889Z" />
+                      <path d="M675.556 746.667C663.283 746.667 653.333 756.616 653.333 768.889V795.556H648.889C636.616 795.556 626.667 805.505 626.667 817.778V844.444H875.556V817.778C875.556 805.505 865.606 795.556 853.333 795.556H848.889V768.889C848.889 756.616 838.939 746.667 826.667 746.667V351.111H851.111L880 253.333H702.222V746.667H675.556Z" />
+                    </svg>
+                    Warpcast
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Share this link. When someone votes after following it, you earn 1% of their vote cost automatically on-chain.
+                  When someone votes after following your link, you earn 1% of their vote cost automatically on-chain.
                 </p>
               </div>
 
