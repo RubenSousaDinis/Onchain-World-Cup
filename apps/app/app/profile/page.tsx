@@ -3,7 +3,7 @@
 import { Suspense } from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Clock, Trophy, Wallet, Link2, Copy, Check, ExternalLink, Share2 } from "lucide-react"
+import { Trophy, Copy, Check, ExternalLink, Share2 } from "lucide-react"
 import { useAccount, useChainId } from "wagmi"
 import { useSearchParams, useRouter } from "next/navigation"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
@@ -12,6 +12,7 @@ import { ShareModal } from "@/components/share-modal"
 import { useState, useEffect, useRef } from "react"
 import { NoVotesEmpty, InlineLoader } from "@/components/states"
 import { ClaimSection } from "@/components/claim-section"
+import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import Link from "next/link"
 import { base, baseSepolia } from "wagmi/chains"
@@ -295,30 +296,14 @@ function MyBetsContent() {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border mb-6">
-              <button
-                onClick={() => setTab("votes")}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b-2 -mb-px ${
-                  activeTab === "votes"
-                    ? "border-accent text-accent"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Wallet className="w-4 h-4" />
-                Votes
-              </button>
-              <button
-                onClick={() => setTab("referrals")}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b-2 -mb-px ${
-                  activeTab === "referrals"
-                    ? "border-accent text-accent"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Link2 className="w-4 h-4" />
-                Referrals
-              </button>
-            </div>
+            <RetroNavTabs
+              tabs={[
+                { label: "Votes", value: "votes" },
+                { label: "Referrals", value: "referrals" },
+              ]}
+              activeTab={activeTab}
+              onTabChange={(tab) => setTab(tab as Tab)}
+            />
 
             {/* ── VOTES TAB ── */}
             {activeTab === "votes" && (
