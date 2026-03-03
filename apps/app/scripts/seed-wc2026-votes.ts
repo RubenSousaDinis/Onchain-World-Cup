@@ -14,10 +14,8 @@
  */
 
 import hre from "hardhat"
-import dotenv from "dotenv"
-import path from "path"
 
-dotenv.config({ path: path.resolve(__dirname, "../.env.local") })
+// Env vars are loaded by hardhat.config.js via dotenv
 
 // ---------------------------------------------------------------------------
 // FIFA World Cup 2026 — 48 qualified countries
