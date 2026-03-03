@@ -144,7 +144,6 @@ async function main() {
     await sleep(5000)
   }
 
-  await hre.changeNetwork(networkName)
   const [signer] = await hre.ethers.getSigners()
   const balance = await hre.ethers.provider.getBalance(signer.address)
 
