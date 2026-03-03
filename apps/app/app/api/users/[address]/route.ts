@@ -43,6 +43,8 @@ export async function GET(
           total_spent_eth: '0',
           total_won_eth: '0',
           rank: null,
+          referral_count: 0,
+          referral_earned_eth: '0',
           votes: [],
         },
       })
@@ -100,6 +102,8 @@ export async function GET(
       total_spent_eth: stats.totalSpentEth,
       total_won_eth: stats.totalWonEth,
       rank: stats.rank,
+      referral_count: stats.referralCount,
+      referral_earned_eth: stats.referralEarnedEth,
       onboarding_completed_at: stats.onboardingCompletedAt?.toISOString() || null,
       created_at: stats.createdAt.toISOString(),
       updated_at: stats.updatedAt.toISOString(),
