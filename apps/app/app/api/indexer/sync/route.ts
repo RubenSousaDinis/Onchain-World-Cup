@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { indexEvents } from "@/lib/indexer/event-indexer"
-import { processEvents } from "@/lib/indexer/transaction-processor"
+import { processEvents, upgradePendingTransactions } from "@/lib/indexer/transaction-processor"
 import { prisma } from "@/lib/prisma"
 import { jsonResponse, handleOptions, applyRateLimit, requireAuth } from "@/lib/api-utils"
 import { RATE_LIMITS } from "@/lib/rate-limit"
@@ -69,6 +69,9 @@ export async function POST(request: NextRequest) {
     // Step 2: Process events and update database
     const processResult = await processEvents(eventsData)
 
+    // Step 3: Upgrade any pending immediate-index transactions that are missing block numbers
+    const upgradeResult = await upgradePendingTransactions(chainId)
+
     console.log(`[Indexer API] Sync completed successfully`)
 
     return jsonResponse({
@@ -79,6 +82,7 @@ export async function POST(request: NextRequest) {
         to: eventsData.toBlock.toString(),
       },
       processed: processResult.processed,
+      pendingUpgraded: upgradeResult.upgraded,
       message: `Successfully indexed ${
         processResult.processed.votes +
         processResult.processed.qualifications +

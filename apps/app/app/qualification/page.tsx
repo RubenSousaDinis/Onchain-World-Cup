@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment, useRef, useMemo } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search, AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
@@ -56,10 +56,29 @@ export default function QualificationPage() {
   const isFetchingRef = useRef(false)
   const isFetchingUserStatsRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
   const { data: endTimeFromContract, isLoading: isLoadingEndTime } = useQualificationEndTime(chainId)
+
+  const handleForceRefresh = async () => {
+    if (isSyncing || isRefreshing) return
+    setIsSyncing(true)
+    try {
+      await fetch("/api/indexer/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chainId }),
+      })
+    } catch {
+      // sync is best-effort
+    } finally {
+      setIsSyncing(false)
+    }
+    // Reuse the existing refresh flow
+    window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: Date.now() } }))
+  }
 
   // Get contract address based on chain
   const contractAddress = (chainId === 84532
@@ -376,14 +395,30 @@ export default function QualificationPage() {
                 </div>
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">Qualification Phase</h2>
               </div>
-              <button
-                onClick={() => setShowShareModal(true)}
-                className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 flex-shrink-0"
-                aria-label="Share leaderboard"
-              >
-                <Share2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Share</span>
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={handleForceRefresh}
+                  disabled={isSyncing || isRefreshing}
+                  className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Force refresh leaderboard"
+                  title="Sync latest on-chain data and refresh"
+                >
+                  {isSyncing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">{isSyncing ? "Syncing..." : "Refresh"}</span>
+                </button>
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 flex-shrink-0"
+                  aria-label="Share leaderboard"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+              </div>
             </div>
             <p className="text-sm lg:text-base text-foreground/80 mb-2">
               Onchain users decide who qualifies - No matches yet, pure community voting
