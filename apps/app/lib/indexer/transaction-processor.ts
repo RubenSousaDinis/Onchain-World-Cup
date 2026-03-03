@@ -12,6 +12,7 @@
 
 import { prisma } from "@/lib/server/prisma"
 import { type Log } from "viem"
+import { createIndexerClient } from "./event-indexer"
 
 type VotePlacedLog = Log & {
   args: {
@@ -447,6 +448,57 @@ export async function syncRanks() {
 
   console.log(`[Processor] Ranks synced for ${users.length} users`)
   return { updated: users.length }
+}
+
+/**
+ * Upgrades pending immediate-index transactions that were created without a block number.
+ * Fetches the transaction receipt from the chain for each pending record and fills in
+ * the real blockNumber on both indexed_transactions and qualification_votes.
+ *
+ * This is needed because the cron indexer only processes NEW blocks going forward —
+ * pending records in already-processed blocks would otherwise never get upgraded.
+ */
+export async function upgradePendingTransactions(chainId: number): Promise<{ upgraded: number }> {
+  const pendingTxs = await prisma.indexedTransaction.findMany({
+    where: { status: "pending", syncType: "immediate", chainId },
+    select: { txHash: true },
+  })
+
+  if (pendingTxs.length === 0) {
+    console.log("[Processor] No pending transactions to upgrade")
+    return { upgraded: 0 }
+  }
+
+  console.log(`[Processor] Upgrading ${pendingTxs.length} pending transactions`)
+  const client = createIndexerClient(chainId)
+  let upgraded = 0
+
+  for (const { txHash } of pendingTxs) {
+    try {
+      const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` })
+      if (!receipt?.blockNumber) continue
+
+      await prisma.$transaction(async (tx) => {
+        await tx.indexedTransaction.update({
+          where: { txHash },
+          data: { status: "confirmed", blockNumber: receipt.blockNumber, confirmedAt: new Date() },
+        })
+        // qualificationVote may not exist if immediate-index failed partway — use updateMany to be safe
+        await tx.qualificationVote.updateMany({
+          where: { txHash },
+          data: { blockNumber: receipt.blockNumber },
+        })
+      })
+
+      upgraded++
+      console.log(`[Processor] Upgraded pending tx ${txHash} → block ${receipt.blockNumber}`)
+    } catch (error) {
+      console.error(`[Processor] Failed to upgrade pending tx ${txHash}:`, error)
+    }
+  }
+
+  console.log(`[Processor] Upgraded ${upgraded}/${pendingTxs.length} pending transactions`)
+  return { upgraded }
 }
 
 /**
