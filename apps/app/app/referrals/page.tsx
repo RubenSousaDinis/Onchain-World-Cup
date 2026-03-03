@@ -21,6 +21,8 @@ type ReferralEntry = {
 type ReferralData = {
   totalEarnedEth: string
   totalReferrals: number
+  hasMore: boolean
+  page: number
   referrals: ReferralEntry[]
 }
 
@@ -40,6 +42,7 @@ export default function ReferralsPage() {
   const [copied, setCopied] = useState(false)
   const [data, setData] = useState<ReferralData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const isFetchingRef = useRef(false)
 
   const getExplorerUrl = (txHash: string) => {
@@ -72,13 +75,34 @@ export default function ReferralsPage() {
     window.open(url, "_blank", "noopener,noreferrer")
   }
 
+  const loadMore = async () => {
+    if (!address || !data?.hasMore || isLoadingMore) return
+    setIsLoadingMore(true)
+    try {
+      const nextPage = data.page + 1
+      const res = await fetch(`/api/referrals?address=${address}&page=${nextPage}`)
+      if (res.ok) {
+        const next: ReferralData = await res.json()
+        setData((prev) =>
+          prev
+            ? { ...next, referrals: [...prev.referrals, ...next.referrals] }
+            : next
+        )
+      }
+    } catch (err) {
+      console.error("[Referrals] load more error:", err)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       if (!address || isFetchingRef.current) return
       isFetchingRef.current = true
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/referrals?address=${address}`)
+        const res = await fetch(`/api/referrals?address=${address}&page=1`)
         if (res.ok) {
           setData(await res.json())
         }
@@ -194,8 +218,9 @@ export default function ReferralsPage() {
               {/* Activity Table */}
               {!isLoading && data && data.referrals.length > 0 && (
                 <div className="cm-panel border border-border overflow-hidden">
-                  <div className="bg-secondary/40 px-4 py-3 border-b border-border">
+                  <div className="bg-secondary/40 px-4 py-3 border-b border-border flex items-center justify-between">
                     <h2 className="text-sm font-bold cm-highlight uppercase tracking-wide">Activity</h2>
+                    <span className="text-xs text-muted-foreground">{data.referrals.length} of {data.totalReferrals}</span>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -235,6 +260,17 @@ export default function ReferralsPage() {
                       </tbody>
                     </table>
                   </div>
+                  {data.hasMore && (
+                    <div className="px-4 py-3 border-t border-border text-center">
+                      <button
+                        onClick={loadMore}
+                        disabled={isLoadingMore}
+                        className="text-sm text-accent hover:text-accent/80 font-bold transition-colors disabled:opacity-50"
+                      >
+                        {isLoadingMore ? "Loading..." : "Load more"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
