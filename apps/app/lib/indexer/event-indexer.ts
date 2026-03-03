@@ -14,7 +14,7 @@
  * - CountryAdded/CountryRemoved: Country list changes
  */
 
-import { createPublicClient, http, type Log, parseAbiItem } from "viem"
+import { createPublicClient, http, type Log, parseAbiItem, type AbiEvent } from "viem"
 import { base, baseSepolia } from "viem/chains"
 import { getQualificationAddress } from "@/lib/contracts/qualification"
 import { prisma } from "@/lib/prisma"
@@ -102,7 +102,7 @@ const MAX_BLOCK_RANGE = 1000n
  */
 async function fetchLogsInChunks(
   client: ReturnType<typeof createIndexerClient>,
-  params: { address: `0x${string}`; event: ReturnType<typeof parseAbiItem> },
+  params: { address: `0x${string}`; event: AbiEvent },
   fromBlock: bigint,
   toBlock: bigint
 ): Promise<Log[]> {
@@ -132,7 +132,7 @@ export async function fetchVotePlacedEvents(
   console.log(`[Indexer] Fetching VotePlaced events from block ${fromBlock} to ${toBlock}`)
   return fetchLogsInChunks(
     client,
-    { address: contractAddress, event: parseAbiItem("event VotePlaced(address indexed voter, bytes8 indexed country, uint256 votes, uint256 cost, uint256 timestamp)") },
+    { address: contractAddress, event: parseAbiItem("event VotePlaced(address indexed voter, bytes8 indexed country, uint256 votes, uint256 cost, uint256 timestamp)") as AbiEvent },
     fromBlock, toBlock
   )
 }
@@ -150,7 +150,7 @@ export async function fetchQualificationFinalizedEvents(
   console.log(`[Indexer] Fetching QualificationFinalized events from block ${fromBlock} to ${toBlock}`)
   return fetchLogsInChunks(
     client,
-    { address: contractAddress, event: parseAbiItem("event QualificationFinalized(bytes8[] qualifiedCountries)") },
+    { address: contractAddress, event: parseAbiItem("event QualificationFinalized(bytes8[] qualifiedCountries)") as AbiEvent },
     fromBlock, toBlock
   )
 }
@@ -168,7 +168,7 @@ export async function fetchWinningsClaimedEvents(
   console.log(`[Indexer] Fetching WinningsClaimed events from block ${fromBlock} to ${toBlock}`)
   return fetchLogsInChunks(
     client,
-    { address: contractAddress, event: parseAbiItem("event WinningsClaimed(address indexed user, uint256 amount)") },
+    { address: contractAddress, event: parseAbiItem("event WinningsClaimed(address indexed user, uint256 amount)") as AbiEvent },
     fromBlock, toBlock
   )
 }
@@ -186,7 +186,7 @@ export async function fetchReferralPaidEvents(
   console.log(`[Indexer] Fetching ReferralPaid events from block ${fromBlock} to ${toBlock}`)
   return fetchLogsInChunks(
     client,
-    { address: contractAddress, event: parseAbiItem("event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount)") },
+    { address: contractAddress, event: parseAbiItem("event ReferralPaid(address indexed referrer, address indexed voter, uint256 amount)") as AbiEvent },
     fromBlock, toBlock
   )
 }
@@ -204,7 +204,7 @@ export async function fetchCountryAddedEvents(
   console.log(`[Indexer] Fetching CountryAdded events from block ${fromBlock} to ${toBlock}`)
   return fetchLogsInChunks(
     client,
-    { address: contractAddress, event: parseAbiItem("event CountryAdded(bytes8 country)") },
+    { address: contractAddress, event: parseAbiItem("event CountryAdded(bytes8 country)") as AbiEvent },
     fromBlock, toBlock
   )
 }
