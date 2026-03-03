@@ -182,7 +182,8 @@ async function main() {
         continue
       }
 
-      const tx = await contract.vote(countryBytes, votes, { value: cost })
+      const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+      const tx = await contract.vote(countryBytes, votes, ZERO_ADDRESS, { value: cost })
       console.log(`   Tx:   ${tx.hash}`)
 
       const receipt = await tx.wait()
