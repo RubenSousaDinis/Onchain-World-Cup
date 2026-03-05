@@ -63,10 +63,11 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
   )
 
   // Calculate projected earnings based on current top 48
+  // Pass already-fetched votes to avoid a redundant /api/users/[address] call
   const {
     projectedEarnings,
     isLoading: isLoadingProjected,
-  } = useProjectedEarnings(address)
+  } = useProjectedEarnings(address, userData?.votes)
 
   // Compute achievements and level for this user
   const { level, totalPoints } = useAchievements(address)

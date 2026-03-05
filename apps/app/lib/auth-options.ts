@@ -4,6 +4,35 @@ import { SiweMessage } from "siwe"
 import { revalidateTag } from "next/cache"
 import { prisma } from "@/lib/server/prisma"
 
+// secp256k1 curve order
+const SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n
+
+/**
+ * Normalize the s component of an ECDSA signature to its low-s canonical form
+ * (EIP-2). Some wallets produce high-s signatures that ethers v6 rejects.
+ * If s > n/2, replace s with (n - s) and flip the low bit of v.
+ */
+function normalizeSignatureS(signature: string): string {
+  try {
+    const raw = signature.startsWith("0x") ? signature.slice(2) : signature
+    if (raw.length !== 130) return signature // not a standard 65-byte sig
+
+    const r = raw.slice(0, 64)
+    const s = BigInt("0x" + raw.slice(64, 128))
+    const v = parseInt(raw.slice(128, 130), 16)
+
+    if (s > SECP256K1_N / 2n) {
+      const normalizedS = (SECP256K1_N - s).toString(16).padStart(64, "0")
+      const normalizedV = (v % 2 === 0 ? v + 1 : v - 1).toString(16).padStart(2, "0")
+      return "0x" + r + normalizedS + normalizedV
+    }
+
+    return signature
+  } catch {
+    return signature
+  }
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -51,7 +80,7 @@ export const authOptions: NextAuthOptions = {
           if (authType === "farcaster") {
             try {
               const siwe = new SiweMessage(credentials.message)
-              const result = await siwe.verify({ signature: credentials.signature })
+              const result = await siwe.verify({ signature: normalizeSignatureS(credentials.signature) })
               if (!result.success) return null
               walletAddress = siwe.address.toLowerCase()
             } catch {
@@ -60,7 +89,7 @@ export const authOptions: NextAuthOptions = {
           } else {
             try {
               const siwe = new SiweMessage(JSON.parse(credentials.message))
-              const result = await siwe.verify({ signature: credentials.signature })
+              const result = await siwe.verify({ signature: normalizeSignatureS(credentials.signature) })
               if (!result.success) return null
               walletAddress = siwe.address.toLowerCase()
             } catch {

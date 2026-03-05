@@ -203,7 +203,7 @@ function MyBetsContent() {
   const countriesVoted = userStats?.countries_voted_for || 0
   const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei, isLoading: isLoadingClaimable } = useClaimable(chainId, address)
-  const { projectedEarnings, isLoading: isLoadingProjected } = useProjectedEarnings(address)
+  const { projectedEarnings, isLoading: isLoadingProjected } = useProjectedEarnings(address, userVotes)
   const actualEarnings = claimableWei ? parseFloat(formatEther(claimableWei)) : 0
   const currentEarnings = actualEarnings > 0 ? actualEarnings : projectedEarnings
   const isProjected = actualEarnings === 0 && projectedEarnings > 0

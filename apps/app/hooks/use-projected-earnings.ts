@@ -20,10 +20,21 @@ type UserVote = {
 /**
  * Calculate projected earnings for a user based on current standings
  * Formula: (userVotesOnTop48 * totalPrizePool) / totalVotesOnTop48
+ *
+ * @param userAddress - The user's wallet address
+ * @param prefetchedVotes - Pre-fetched votes to avoid a redundant API call. When provided,
+ *   the hook skips fetching /api/users/[address] and uses these instead. Pass all vote
+ *   transactions (not just the display page) for accurate calculations.
  */
-export function useProjectedEarnings(userAddress: string | undefined) {
+export function useProjectedEarnings(
+  userAddress: string | undefined,
+  prefetchedVotes?: UserVote[]
+) {
   const [projectedEarnings, setProjectedEarnings] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Stable dependency: only re-run when address changes or votes first become available
+  const votesLength = prefetchedVotes?.length
 
   useEffect(() => {
     async function calculateEarnings() {
@@ -36,85 +47,55 @@ export function useProjectedEarnings(userAddress: string | undefined) {
       try {
         setIsLoading(true)
 
-        // Fetch summary data to get prize pool
-        const summaryRes = await fetch('/api/qualification/summary')
-        if (!summaryRes.ok) {
-          console.error('[ProjectedEarnings] Failed to fetch summary:', summaryRes.status)
+        // Fetch summary and top-48 countries in parallel — they're independent
+        const [summaryRes, countriesRes] = await Promise.all([
+          fetch('/api/qualification/summary'),
+          fetch('/api/qualification/countries?limit=48'),
+        ])
+
+        if (!summaryRes.ok || !countriesRes.ok) {
           setProjectedEarnings(0)
           return
         }
-        const summaryData = await summaryRes.json()
-        console.log('[ProjectedEarnings] Summary API response:', summaryData)
+
+        const [summaryData, countriesData] = await Promise.all([
+          summaryRes.json(),
+          countriesRes.json(),
+        ])
+
         const prizePool = parseFloat(summaryData.data?.total_eth || '0')
-        console.log('[ProjectedEarnings] Prize pool from API:', prizePool, 'ETH', 'Raw value:', summaryData.data?.total_eth)
-
-        // Fetch top 48 countries
-        const countriesRes = await fetch('/api/qualification/countries?limit=48')
-        if (!countriesRes.ok) {
-          console.error('[ProjectedEarnings] Failed to fetch countries:', countriesRes.status)
-          setProjectedEarnings(0)
-          return
-        }
-        const countriesData = await countriesRes.json()
         const top48Countries: CountryStats[] = countriesData.data || []
-        console.log('[ProjectedEarnings] Fetched top 48 countries:', top48Countries.length)
 
-        // Fetch ALL user's votes (not just 20 most recent)
-        const userRes = await fetch(`/api/users/${userAddress}?limit=1000`)
-        if (!userRes.ok) {
-          console.error('[ProjectedEarnings] Failed to fetch user data:', userRes.status)
-          setProjectedEarnings(0)
-          return
+        // Use prefetched votes when available to avoid a redundant API round-trip
+        let userVotes: UserVote[]
+        if (prefetchedVotes !== undefined) {
+          userVotes = prefetchedVotes
+        } else {
+          const userRes = await fetch(`/api/users/${userAddress}?limit=1000`)
+          if (!userRes.ok) {
+            setProjectedEarnings(0)
+            return
+          }
+          userVotes = (await userRes.json()).data?.votes || []
         }
-        const userData = await userRes.json()
-        const userVotes: UserVote[] = userData.data?.votes || []
-        console.log('[ProjectedEarnings] User has', userVotes.length, 'vote transactions')
 
-        // Calculate total votes across all transactions
-        const totalUserVotes = userVotes.reduce((sum, vote) => sum + vote.vote_count, 0)
-        console.log('[ProjectedEarnings] Total vote count:', totalUserVotes)
-
-        // Create a Set of top 48 country codes for fast lookup
+        // Create a Set of top-48 country codes for O(1) lookup
         const top48Codes = new Set(top48Countries.map(c => c.country_code.toLowerCase()))
-        console.log('[ProjectedEarnings] Top 48 country codes:', Array.from(top48Codes))
 
-        // Calculate user's votes on top 48 countries
+        // Sum user's votes that land on qualifying countries
         let userQualifiedVotes = 0
-        const matchedVotes: string[] = []
-        const unmatchedVotes: string[] = []
-
         for (const vote of userVotes) {
-          const countryCode = vote.country_code.toLowerCase()
-          if (top48Codes.has(countryCode)) {
+          if (top48Codes.has(vote.country_code.toLowerCase())) {
             userQualifiedVotes += vote.vote_count
-            matchedVotes.push(`${vote.country_code}: ${vote.vote_count}`)
-          } else {
-            unmatchedVotes.push(`${vote.country_code}: ${vote.vote_count}`)
           }
         }
 
-        console.log('[ProjectedEarnings] Matched votes (counted):', matchedVotes)
-        console.log('[ProjectedEarnings] Unmatched votes (NOT counted):', unmatchedVotes)
+        // Sum total votes across top-48 countries
+        const totalQualifiedVotes = top48Countries.reduce((sum, c) => sum + c.total_votes, 0)
 
-        // Calculate total votes on top 48 countries
-        let totalQualifiedVotes = 0
-        for (const country of top48Countries) {
-          totalQualifiedVotes += country.total_votes
-        }
-
-        console.log('[ProjectedEarnings] Calculation:', {
-          userQualifiedVotes,
-          totalQualifiedVotes,
-          prizePoolETH: prizePool,
-        })
-
-        // Calculate projected earnings
         if (userQualifiedVotes > 0 && totalQualifiedVotes > 0 && prizePool > 0) {
-          const projected = (userQualifiedVotes / totalQualifiedVotes) * prizePool
-          console.log('[ProjectedEarnings] Projected earnings:', projected, 'ETH')
-          setProjectedEarnings(projected)
+          setProjectedEarnings((userQualifiedVotes / totalQualifiedVotes) * prizePool)
         } else {
-          console.log('[ProjectedEarnings] No earnings - missing data or no qualified votes')
           setProjectedEarnings(0)
         }
       } catch (error) {
@@ -126,7 +107,8 @@ export function useProjectedEarnings(userAddress: string | undefined) {
     }
 
     calculateEarnings()
-  }, [userAddress])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userAddress, votesLength])
 
   return {
     projectedEarnings,

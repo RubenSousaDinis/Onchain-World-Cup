@@ -77,17 +77,20 @@ export async function GET(
       created_at: vote.createdAt.toISOString(),
     }))
 
-    // Lazy ENS resolution for existing users without a stored ENS name and no Farcaster
-    let ensName = stats.ensName ?? null
+    // Use stored ENS name if available; otherwise kick off resolution in the background
+    // so it's cached for future requests without blocking this response.
+    const ensName = stats.ensName ?? null
     if (!ensName && !stats.user?.name) {
-      ensName = await resolveEnsName(normalizedAddress).catch(() => null)
-      if (ensName) {
-        // Save for future requests — fire and forget
-        prisma.userStat.update({
-          where: { walletAddress: normalizedAddress },
-          data: { ensName },
-        }).catch(() => {})
-      }
+      resolveEnsName(normalizedAddress)
+        .then((name) => {
+          if (name) {
+            prisma.userStat.update({
+              where: { walletAddress: normalizedAddress },
+              data: { ensName: name },
+            }).catch(() => {})
+          }
+        })
+        .catch(() => {})
     }
 
     // Transform stats to match the expected format
