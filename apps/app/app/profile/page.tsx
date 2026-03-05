@@ -251,7 +251,7 @@ function MyBetsContent() {
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
                 <div className="text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
-                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{totalSpent.toFixed(4)}</div>
+                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{formatEthDisplay(totalSpent)}</div>
                 <div className="text-xs text-muted-foreground">ETH total</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-accent">
@@ -267,11 +267,11 @@ function MyBetsContent() {
                   {isLoadingClaimable || isLoadingProjected ? (
                     <span className="text-sm">...</span>
                   ) : currentEarnings > 0 ? (
-                    currentEarnings.toFixed(4)
+                    formatEthDisplay(currentEarnings)
                   ) : !isContractAvailable ? (
                     <span className="text-sm">N/A</span>
                   ) : (
-                    "0.0000"
+                    "0"
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -363,7 +363,7 @@ function MyBetsContent() {
                               </div>
                               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
                                 <span className="font-mono text-accent font-bold">
-                                  {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                                  {formatEthDisplay(vote.total_cost_eth)} ETH
                                 </span>
                                 <span>
                                   {date.toLocaleDateString()}{" "}
@@ -419,7 +419,7 @@ function MyBetsContent() {
                                     {vote.vote_count}
                                   </td>
                                   <td className="px-4 py-3 text-right font-mono text-accent font-bold text-sm">
-                                    {parseFloat(vote.total_cost_eth).toFixed(4)} ETH
+                                    {formatEthDisplay(vote.total_cost_eth)} ETH
                                   </td>
                                   <td className="px-4 py-3 text-right text-muted-foreground text-sm">
                                     <div>{date.toLocaleDateString()}</div>

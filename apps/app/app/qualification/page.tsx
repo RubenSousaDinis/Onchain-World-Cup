@@ -468,7 +468,7 @@ export default function QualificationPage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
                 </div>
                 <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
-                  {totalPrizePool >= 0.01 ? totalPrizePool.toFixed(4) : totalPrizePool.toFixed(6)} ETH
+                  {parseFloat(totalPrizePool.toFixed(6)).toString()} ETH
                 </div>
               </div>
 
@@ -482,7 +482,7 @@ export default function QualificationPage() {
                       {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
                     </div>
                     <div className="text-xl lg:text-2xl font-bold text-foreground/70">
-                      {userSpentEth >= 0.01 ? userSpentEth.toFixed(4) : userSpentEth.toFixed(6)} ETH
+                      {parseFloat(userSpentEth.toFixed(6)).toString()} ETH
                     </div>
                   </div>
                 </>
