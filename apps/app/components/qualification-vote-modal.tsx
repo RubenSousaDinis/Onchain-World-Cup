@@ -189,9 +189,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   // Refresh leaderboard when modal closes IF user voted
   useEffect(() => {
     if (!isOpen && hasVotedRef.current) {
-      const eventTime = Date.now()
-      console.log(`[Vote Modal] ⏱️ Modal closed after voting at ${new Date().toISOString()} - dispatching refresh event`)
-      window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: eventTime } }))
+      window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: Date.now() } }))
       hasVotedRef.current = false
     }
   }, [isOpen])
@@ -206,27 +204,12 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     return () => window.removeEventListener("keydown", handleEscape as any)
   }, [isOpen, isPending, isProcessing, onClose])
 
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log("[Vote Modal] State changed:", {
-      isPending,
-      isProcessing,
-      isIndexing,
-      isConfirmed,
-      hasHash: !!hash,
-      processedTx: processedTxRef.current?.slice(0, 10),
-      buttonDisabled: isPending || isProcessing,
-    })
-  }, [isPending, isProcessing, isIndexing, isConfirmed, hash])
-
   // Process new transaction hash from writeContract
   // Set isProcessing immediately to keep button disabled
   useEffect(() => {
     if (hash && hash !== processedTxRef.current) {
-      console.log("[Vote Modal] New transaction hash:", hash)
       processedTxRef.current = hash
-      setIsProcessing(true) // Immediately disable button while waiting for confirmations
-      console.log("[Vote Modal] Set isProcessing = true - waiting for confirmations")
+      setIsProcessing(true)
     }
   }, [hash])
 
@@ -241,12 +224,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       return
     }
 
-    const startTime = Date.now()
-    console.log(`[Vote Modal] ⏱️ TIMING START - Transaction confirmed at ${new Date().toISOString()}`)
-
     indexedTxRef.current = hash
     hasVotedRef.current = true // Mark that user has voted this session
-    // isProcessing already set to true when hash was received, no need to set again
 
     const countryName = country.name
     const votes = voteCount
@@ -264,13 +243,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     // Capture vote data for share modal / achievement modal before resetting state
     lastVoteDataRef.current = { votes, amount: formatEth(parseFloat(cost)), countryCode: country.code }
 
-    // Index in background (don't block UI)
-    // Transaction has 2 confirmations at this point, should be visible on RPC nodes
     setIsIndexing(true)
-    console.log("[Vote Modal] Transaction confirmed with 2 blocks - starting indexing...")
-
-    const indexingStartTime = Date.now()
-    console.log(`[Vote Modal] ⏱️ Starting indexing API call (${indexingStartTime - startTime}ms since confirmation)`)
 
     fetch("/api/votes/immediate-index", {
       method: "POST",
@@ -284,73 +257,45 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         voteCount: votes,
         totalCostEth: cost,
         referrerAddress: referrerAddress && referrerAddress !== address ? referrerAddress : null,
-        isFarcasterContext: isFrameContext, // Pass Farcaster context to skip session wallet check
+        isFarcasterContext: isFrameContext,
       }),
     })
-      .then((res) => {
-        const fetchEndTime = Date.now()
-        console.log(`[Vote Modal] ⏱️ Indexing API responded (took ${fetchEndTime - indexingStartTime}ms)`)
-        return res.json()
-      })
+      .then((res) => res.json())
       .then((data) => {
-        const parseEndTime = Date.now()
-        console.log(`[Vote Modal] ⏱️ Response parsed (took ${parseEndTime - indexingStartTime}ms total)`)
 
         if (data.success) {
-          console.log("[Vote Modal] Vote indexed successfully")
-          console.log(`[Vote Modal] ⏱️ TOTAL TIME: ${Date.now() - startTime}ms from confirmation to indexing complete`)
+          // Settle modal state immediately — no blocking waits — to avoid mid-transition
+          // re-renders caused by wagmi refetch loading states.
+          setIsIndexing(false)
+          setIsProcessing(false)
+          setVotedSuccessfully(true)
 
-          // Refetch vote prices and balance to get updated data for next vote
-          console.log("[Vote Modal] Refetching vote prices and balance with updated counts...")
+          // Kick off refetches in the background so the next vote sees fresh data.
+          // These must NOT be awaited here; awaiting them blocks state settlement and
+          // causes isPriceLoading/isBalanceLoading to flash through the UI.
+          refetchVotePrice().catch(() => {})
+          refetchBalance().catch(() => {})
 
-          // Dispatch refresh event immediately so the leaderboard updates while the modal is still open
-          const refreshTimestamp = Date.now()
-          window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: refreshTimestamp } }))
-
-          // Wait for both refetches to complete before re-enabling button
-          Promise.all([
-            refetchVotePrice(),
-            refetchBalance(),
-          ]).then(() => {
-            // Re-enable button for next vote ONLY after balance is updated
-            console.log("[Vote Modal] Setting isIndexing = false, isProcessing = false")
-            setIsIndexing(false)
-            setIsProcessing(false)
-            // Note: We DON'T clear processedTxRef here - wagmi will clear hash on next transaction
-
-            console.log("[Vote Modal] Ready for next vote - button should be enabled now")
-            setVotedSuccessfully(true)
-
-            // Show achievement modal if any new achievements were unlocked, then share modal
-            const unlocked: ComputedAchievement[] = data.newAchievements ?? []
-            if (unlocked.length > 0) {
-              setNewAchievements(unlocked)
-            } else {
-              setShareData(lastVoteDataRef.current)
-              shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 300)
-            }
-          }).catch((err) => {
-            console.error("[Vote Modal] Error refetching data:", err)
-            // Re-enable anyway even if refetch fails
-            setIsIndexing(false)
-            setIsProcessing(false)
-          })
+          // Show achievement modal if any new achievements were unlocked, then share modal
+          const unlocked: ComputedAchievement[] = data.newAchievements ?? []
+          if (unlocked.length > 0) {
+            setNewAchievements(unlocked)
+          } else {
+            setShareData(lastVoteDataRef.current)
+            shareModalTimerRef.current = setTimeout(() => setShowShareModal(true), 300)
+          }
         } else {
           console.error("[Vote Modal] Indexing failed:", data.error)
           error("Indexing Failed", data.error || "Failed to index vote. It will be indexed by the daily cron job.")
-          console.log("[Vote Modal] Indexing failed - resetting state")
           setIsIndexing(false)
           setIsProcessing(false)
-          console.log("[Vote Modal] State reset after indexing failure")
         }
       })
       .catch((err) => {
         console.error("Failed to index vote:", err)
         error("Indexing Failed", "Failed to index vote. It will be indexed by the daily cron job.")
-        console.log("[Vote Modal] Indexing error - resetting state")
         setIsIndexing(false)
         setIsProcessing(false)
-        console.log("[Vote Modal] State reset after indexing error")
       })
   }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, refetchVotePrice, refetchBalance])  // Include all dependencies
 
