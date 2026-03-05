@@ -271,8 +271,8 @@ export async function indexEvents(chainId: number) {
  * Helper to convert bytes8 to string (country code)
  */
 export function bytes8ToCountryCode(bytes: string): string {
-  // Remove 0x prefix and trailing zeros
-  const hex = bytes.replace("0x", "").replace(/0+$/, "")
+  // Remove 0x prefix and trailing null bytes (pairs of "00")
+  const hex = bytes.replace("0x", "").replace(/(00)+$/, "")
   if (hex.length === 0) return ""
   return Buffer.from(hex, "hex").toString("utf8")
 }
