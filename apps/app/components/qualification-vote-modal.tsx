@@ -273,8 +273,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           // Kick off refetches in the background so the next vote sees fresh data.
           // These must NOT be awaited here; awaiting them blocks state settlement and
           // causes isPriceLoading/isBalanceLoading to flash through the UI.
-          refetchVotePrice().catch(() => {})
-          refetchBalance().catch(() => {})
+          void refetchVotePrice()
+          void refetchBalance()
 
           // Show achievement modal if any new achievements were unlocked, then share modal
           const unlocked: ComputedAchievement[] = data.newAchievements ?? []
