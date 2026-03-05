@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server"
+import { revalidateTag } from "next/cache"
 import { indexEvents } from "@/lib/indexer/event-indexer"
 import { processEvents, upgradePendingTransactions } from "@/lib/indexer/transaction-processor"
 import { prisma } from "@/lib/prisma"
@@ -73,6 +74,11 @@ export async function POST(request: NextRequest) {
     const upgradeResult = await upgradePendingTransactions(chainId)
 
     console.log(`[Indexer API] Sync completed successfully`)
+
+    // Invalidate cached API responses so the next fetch returns fresh data
+    revalidateTag("qualification-countries", {})
+    revalidateTag("qualification-summary", {})
+    revalidateTag("qualification-votes", {})
 
     return jsonResponse({
       success: true,

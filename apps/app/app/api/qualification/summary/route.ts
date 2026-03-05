@@ -158,7 +158,7 @@ export async function GET(_request: NextRequest) {
     const result = await getSummary()
 
     const response = NextResponse.json({ data: result })
-    response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600")
+    response.headers.set("Cache-Control", "private, no-store")
     return response
   } catch (error) {
     console.error("Unexpected error in GET /api/qualification/summary:", error)

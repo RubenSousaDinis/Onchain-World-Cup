@@ -304,6 +304,10 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           // Refetch vote prices and balance to get updated data for next vote
           console.log("[Vote Modal] Refetching vote prices and balance with updated counts...")
 
+          // Dispatch refresh event immediately so the leaderboard updates while the modal is still open
+          const refreshTimestamp = Date.now()
+          window.dispatchEvent(new CustomEvent("vote-recorded", { detail: { modalClosed: true, timestamp: refreshTimestamp } }))
+
           // Wait for both refetches to complete before re-enabling button
           Promise.all([
             refetchVotePrice(),
