@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { formatEth } from "@/lib/utils"
 import { Trophy, Users, TrendingUp, Clock, Zap, ChevronRight, Award, BarChart3, Loader2, Wallet } from "lucide-react"
 import Link from "next/link"
 import { countries as countriesDataStatic } from "@/lib/countries"
@@ -189,7 +190,7 @@ export function HomePageClient() {
                     {isProjected ? "Projected Earnings" : "Your Earnings"}
                   </div>
                   <h2 className="text-2xl lg:text-3xl font-bold text-green-400 font-mono">
-                    {currentEarnings.toFixed(4)} ETH
+                    {formatEth(currentEarnings)} ETH
                   </h2>
                   <p className="text-xs lg:text-sm text-muted-foreground mt-1">
                     {isProjected
@@ -251,7 +252,7 @@ export function HomePageClient() {
         <StatCard
           icon={Trophy}
           label="Prize Pool"
-          value={isLoading ? "..." : `${stats.totalPrizePool.toFixed(4)} ETH`}
+          value={isLoading ? "..." : `${formatEth(stats.totalPrizePool)} ETH`}
           valueColor="accent"
           className="col-span-2 lg:col-span-1"
         />

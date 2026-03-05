@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { X, ChevronLeft, ChevronRight, TrendingUp, Clock, Trophy, Zap, DollarSign, Flag, Target, Award } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Trophy, Clock, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { countries } from "@/lib/countries"
 
 interface OnboardingStep {
   title: string
@@ -20,6 +21,31 @@ interface OnboardingProps {
 export function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
+  const [countrySearch, setCountrySearch] = useState("")
+  const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string; flagEmoji: string } | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return countries
+    const q = countrySearch.toLowerCase()
+    return countries.filter((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+  }, [countrySearch])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        searchRef.current && !searchRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -43,7 +69,10 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
-      router.push("/qualification")
+      const dest = selectedCountry
+        ? `/qualification?vote=${selectedCountry.code}`
+        : "/qualification"
+      router.push(dest)
       handleClose()
     }
   }
@@ -56,194 +85,105 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   const steps: OnboardingStep[] = [
     {
-      title: "Welcome to Onchain World Cup!",
+      title: "Welcome to Onchain World Cup",
       description: "Community-driven football decided by your votes",
       icon: Trophy,
       content: (
-        <div className="space-y-4">
-          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-sm text-foreground/80">
-              <strong className="text-accent">Not based on real football!</strong> Results are 100% decided by community votes, not what happens on the pitch.
-            </p>
-          </div>
+        <div className="space-y-5">
+          <p className="text-base text-foreground/80">
+            Results are 100% decided by community votes — not what happens on the pitch.
+          </p>
 
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground">How it works in 3 steps:</p>
-            <ol className="space-y-2 text-sm">
-              <li className="flex gap-2">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  1
-                </span>
-                <div>
-                  <strong>Connect wallet</strong> - Use Coinbase, MetaMask, or any crypto wallet
-                </div>
-              </li>
-              <li className="flex gap-2">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  2
-                </span>
-                <div>
-                  <strong>Buy votes</strong> - Support your favorite countries with ETH
-                </div>
-              </li>
-              <li className="flex gap-2">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  3
-                </span>
-                <div>
-                  <strong>Win prizes</strong> - Share the prize pool if your countries qualify
-                </div>
-              </li>
-            </ol>
-          </div>
-
-          <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-5 h-5 text-green-400" />
-              <span className="text-sm font-bold text-green-400">CURRENT: QUALIFICATION</span>
-            </div>
-            <p className="text-sm text-green-300">
-              192 countries compete for 48 tournament spots. Vote for your favorites - top 48 by vote count qualify!
-            </p>
-          </div>
+          <ol className="space-y-3">
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                1
+              </span>
+              <span className="text-base pt-0.5"><strong>Connect your wallet</strong></span>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                2
+              </span>
+              <span className="text-base pt-0.5"><strong>Pick a country</strong> to support</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                3
+              </span>
+              <span className="text-base pt-0.5"><strong>Buy votes</strong> — top 48 countries qualify for the tournament</span>
+            </li>
+          </ol>
         </div>
       ),
     },
     {
-      title: "Vote Early, Pay Less",
-      description: "Earlier voters get more votes for less ETH",
+      title: "Vote early, pay less",
+      description: "The earlier you vote, the cheaper it is",
       icon: Clock,
       content: (
-        <div className="space-y-4">
-          <div className="bg-secondary/50 rounded-sm p-4 border border-border">
-            <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-green-400">0.001 ETH</div>
-              <div className="text-sm text-foreground/70">First vote</div>
-              <div className="my-2">
-                <TrendingUp className="w-6 h-6 mx-auto text-muted-foreground" />
-              </div>
-              <div className="text-2xl font-bold text-orange-400">+0.0005 ETH</div>
-              <div className="text-sm text-foreground/70">Per additional vote</div>
-            </div>
-          </div>
-
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Each country has its own vote count and pricing</span>
+        <div className="space-y-5">
+          <ul className="space-y-3 text-base">
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+              <span>The earlier you vote, the cheaper each vote costs</span>
             </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>More popular countries = higher prices</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-              <span>Early voters get more votes for their money</span>
+            <li className="flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+              <span>If your country finishes in the top 48, you share the prize pool</span>
             </li>
           </ul>
 
-          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-sm text-foreground/80">
-              <strong className="text-accent">After qualification:</strong> Two parallel tournaments - Onchain World Cup with 48 qualified countries, plus a tournament mirroring the real 2026 World Cup format!
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Winning & Prizes",
-      description: "Share the prize pool when your countries qualify",
-      icon: Trophy,
-      content: (
-        <div className="space-y-4">
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex-1 h-10 bg-green-500 rounded-sm flex items-center justify-center text-sm font-bold text-white">
-                90% Prize Pool
+          {/* Country picker */}
+          <div className="space-y-2 pt-1">
+            <label className="text-sm font-bold cm-highlight">Pick your country to vote for</label>
+
+            {selectedCountry ? (
+              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/40 rounded-sm">
+                <span className="text-2xl">{selectedCountry.flagEmoji}</span>
+                <span className="text-base font-bold flex-1">{selectedCountry.name}</span>
+                <button
+                  onClick={() => { setSelectedCountry(null); setCountrySearch("") }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear selection"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="w-20 h-10 bg-muted rounded-sm flex items-center justify-center text-sm font-bold text-foreground/70">
-                10% Fee
-              </div>
-            </div>
-            <p className="text-sm text-foreground/70 mt-2">
-              All 48 qualified countries share one unified prize pool
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Your payout depends on:</p>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                <span>Your total votes for any of the top 48 countries</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                <span>Total votes across all qualified countries</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-green-900/20 border border-green-500/30 rounded-sm p-3">
-            <p className="text-sm text-green-300">
-              <strong>Formula:</strong> Your payout = (Your qualified votes / Total qualified votes) × Prize pool
-            </p>
-          </div>
-
-          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-sm text-foreground/80">
-              <strong className="text-accent">Tip:</strong> Vote for multiple countries to increase your chances!
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Earn Levels & Achievements",
-      description: "Unlock milestones and climb the rankings",
-      icon: Award,
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-foreground/80">
-            Every action you take earns <strong>achievement points</strong>. Points unlock levels — from <strong>Youth Player</strong> all the way to <strong>World Class</strong>.
-          </p>
-
-          {/* Level ladder */}
-          <div className="grid grid-cols-2 gap-1.5">
-            {[
-              { lv: 1, name: "Youth Player", pts: "0–49 pts",    border: "border-gray-500",   bg: "bg-gray-500/10",   text: "text-gray-400" },
-              { lv: 2, name: "Reserve",       pts: "50–149 pts",  border: "border-green-500",  bg: "bg-green-500/10",  text: "text-green-400" },
-              { lv: 3, name: "Regular",        pts: "150–299 pts", border: "border-blue-500",   bg: "bg-blue-500/10",   text: "text-blue-400" },
-              { lv: 4, name: "Key Player",     pts: "300–599 pts", border: "border-purple-500", bg: "bg-purple-500/10", text: "text-purple-400" },
-              { lv: 5, name: "Star Player",    pts: "600–999 pts", border: "border-orange-500", bg: "bg-orange-500/10", text: "text-orange-400" },
-              { lv: 6, name: "World Class",    pts: "1000+ pts",   border: "border-yellow-500", bg: "bg-yellow-500/10", text: "text-yellow-400" },
-            ].map(({ lv, name, pts, border, bg, text }) => (
-              <div key={lv} className={`flex items-center gap-2 rounded-sm border px-2 py-1.5 ${border} ${bg}`}>
-                <span className={`text-xs font-bold flex-shrink-0 ${text}`}>Lv.{lv}</span>
-                <div className="min-w-0">
-                  <div className={`text-xs font-bold truncate ${text}`}>{name}</div>
-                  <div className="text-xs text-muted-foreground">{pts}</div>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center gap-2 bg-input border border-border rounded-sm px-3 py-2">
+                  <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    placeholder="Type to search countries..."
+                    value={countrySearch}
+                    onChange={(e) => { setCountrySearch(e.target.value); setDropdownOpen(true) }}
+                    onFocus={() => setDropdownOpen(true)}
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
+                  />
                 </div>
+                {dropdownOpen && filteredCountries.length > 0 && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-sm shadow-lg z-20 max-h-48 overflow-y-auto"
+                  >
+                    {filteredCountries.map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => { setSelectedCountry(c); setCountrySearch(""); setDropdownOpen(false) }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/50 flex items-center gap-3 border-b border-border/50 last:border-0 transition-colors"
+                      >
+                        <span className="text-lg">{c.flagEmoji}</span>
+                        <span className="font-medium">{c.name}</span>
+                        <span className="text-xs text-muted-foreground ml-auto font-mono">{c.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-
-          {/* Example achievements */}
-          <div className="bg-secondary/50 rounded-sm p-3 border border-border space-y-1">
-            <p className="text-xs font-bold text-muted-foreground uppercase mb-2">How to earn points</p>
-            <div className="grid grid-cols-1 gap-1 text-sm">
-              <span>⚽ First Vote <span className="text-accent font-bold">+10 pts</span></span>
-              <span>🔥 Vote Collector — 10 votes <span className="text-accent font-bold">+20 pts</span></span>
-              <span>🌍 Globetrotter — 5 countries <span className="text-accent font-bold">+50 pts</span></span>
-              <span>🐦 Early Bird — vote in week 1 <span className="text-accent font-bold">+75 pts</span></span>
-              <span>👑 Top 10 leaderboard <span className="text-accent font-bold">+200 pts</span></span>
-            </div>
-          </div>
-
-          <div className="bg-accent/20 rounded-sm p-3 border border-accent/30">
-            <p className="text-sm text-foreground/80">
-              Your level badge appears on every leaderboard row and your public profile. Check the <strong className="text-accent">Achievements tab</strong> on the leaderboard to see the rankings.
-            </p>
+            )}
           </div>
         </div>
       ),
@@ -300,17 +240,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
         <div className="p-6 min-h-[400px]">{currentStepData.content}</div>
 
         {/* Footer */}
-        <div className="border-t border-border p-4 flex items-center justify-between bg-secondary/50 sticky bottom-0">
-          <div>
-            {currentStep === 0 && (
-              <button
-                onClick={handleClose}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Skip tour
-              </button>
-            )}
-          </div>
+        <div className="border-t border-border p-4 flex items-center justify-end bg-secondary/50 sticky bottom-0">
           <div className="flex items-center gap-2">
             {currentStep > 0 && (
               <Button onClick={handlePrevious} variant="outline" size="sm">
@@ -320,7 +250,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             )}
             <Button onClick={handleNext} size="sm">
               {isLastStep ? (
-                "Get Started"
+                selectedCountry ? `Vote for ${selectedCountry.flagEmoji} ${selectedCountry.name}` : "Let's go"
               ) : (
                 <>
                   Next

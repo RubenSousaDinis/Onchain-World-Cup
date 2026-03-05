@@ -6,7 +6,7 @@ function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
-import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
+import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
@@ -21,6 +21,7 @@ import { zeroAddress } from "viem"
 import { ShareModal } from "@/components/share-modal"
 import { AchievementUnlockedModal } from "@/components/achievement-unlocked-modal"
 import { type ComputedAchievement } from "@/lib/achievements"
+import { formatEth } from "@/lib/utils"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -43,6 +44,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const processedTxRef = useRef<string | null>(null) // Track which tx we're currently processing
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
+  const [showPricingInfo, setShowPricingInfo] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareData, setShareData] = useState<{votes: number, amount: string, countryCode: string} | null>(null)
   const shareModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -149,10 +151,6 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     }
   }, [maxVotesPossible, voteCount])
 
-  // Helper to format ETH values without trailing zeros
-  const formatETH = (value: number): string => {
-    return parseFloat(value.toFixed(6)).toString()
-  }
 
   // Reset state when modal opens or closes
   useEffect(() => {
@@ -161,6 +159,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setIsIndexing(false)
       setIsProcessing(false)
       setIsWaitingForWallet(false)
+      setShowPricingInfo(false)
       // Do NOT null-out processedTxRef / indexedTxRef here.
       // wagmi's hash is still set to the previous tx on the first render after open.
       // Keeping refs pointed at the old hash ensures the dedup guards in the
@@ -263,7 +262,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     setVoteCount(1)
 
     // Capture vote data for share modal / achievement modal before resetting state
-    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)), countryCode: country.code }
+    lastVoteDataRef.current = { votes, amount: formatEth(parseFloat(cost)), countryCode: country.code }
 
     // Index in background (don't block UI)
     // Transaction has 2 confirmations at this point, should be visible on RPC nodes
@@ -485,7 +484,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (walletBalance < totalCost) {
       error(
         "Insufficient Balance",
-        `You need ${formatETH(totalCost)} ETH but only have ${formatETH(walletBalance)} ETH`
+        `You need ${formatEth(totalCost)} ETH but only have ${formatEth(walletBalance)} ETH`
       )
       return
     }
@@ -495,7 +494,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (walletBalance < totalCost + balanceBuffer) {
       error(
         "Insufficient Balance (including gas)",
-        `You need at least ${formatETH(totalCost + balanceBuffer)} ETH (including gas) but only have ${formatETH(walletBalance)} ETH`
+        `You need at least ${formatEth(totalCost + balanceBuffer)} ETH (including gas) but only have ${formatEth(walletBalance)} ETH`
       )
       return
     }
@@ -581,7 +580,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   <Wallet className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Wallet Balance:</span>
                 </div>
-                <span className="font-bold cm-highlight">{formatETH(walletBalance)} ETH</span>
+                <span className="font-bold cm-highlight">{formatEth(walletBalance)} ETH</span>
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Network: <span className="text-accent font-semibold">{chain?.name || "Unknown"}</span>
@@ -657,7 +656,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
               <span className="text-accent">
-                {isPriceLoading && !useMockPricing ? "..." : `${formatETH(totalCost)} ETH`}
+                {isPriceLoading && !useMockPricing ? "..." : `${formatEth(totalCost)} ETH`}
               </span>
             </div>
             {useMockPricing && (
@@ -670,22 +669,27 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             {isConnected && maxVotesPossible > 0 && totalCost > walletBalance && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-2">
                 <p className="text-xs text-destructive">
-                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatETH(walletBalance)} ETH available).
+                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatEth(walletBalance)} ETH available).
                 </p>
               </div>
             )}
           </div>
 
-          {/* Info Box */}
-          <div className="bg-secondary/20 border border-accent/30 rounded-sm p-3 space-y-2">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-              <div className="text-xs lg:text-sm text-muted-foreground space-y-1">
-                <p><Zap className="w-3 h-3 inline text-accent" /> <strong>Early voters get better prices</strong> - Price increases with each vote</p>
-                <p><TrendingUp className="w-3 h-3 inline text-green-500" /> Help {country.name} qualify for the tournament!</p>
-                <p><AlertTriangle className="w-3 h-3 inline text-yellow-500" /> Top 48 countries qualify</p>
+          {/* Collapsible pricing info */}
+          <div>
+            <button
+              onClick={() => setShowPricingInfo((v) => !v)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              How pricing works {showPricingInfo ? "▴" : "▾"}
+            </button>
+            {showPricingInfo && (
+              <div className="mt-2 bg-secondary/20 border border-accent/30 rounded-sm p-3 space-y-1">
+                <p className="text-xs lg:text-sm text-muted-foreground"><Zap className="w-3 h-3 inline text-accent" /> <strong>Early voters get better prices</strong> - Price increases with each vote</p>
+                <p className="text-xs lg:text-sm text-muted-foreground"><TrendingUp className="w-3 h-3 inline text-green-500" /> Help {country.name} qualify for the tournament!</p>
+                <p className="text-xs lg:text-sm text-muted-foreground"><AlertTriangle className="w-3 h-3 inline text-yellow-500" /> Top 48 countries qualify</p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Wallet & Auth Status */}
@@ -800,7 +804,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   ? "Insufficient Balance"
                   : (!useMockPricing && totalCost <= 0)
                   ? "Loading price..."
-                  : `Vote ${formatETH(totalCost)} ETH`}
+                  : `Vote ${formatEth(totalCost)} ETH`}
               </button>
             </div>
           )}

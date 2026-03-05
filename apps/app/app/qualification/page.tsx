@@ -8,6 +8,7 @@ import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search
 import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
+import { formatEth } from "@/lib/utils"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
@@ -57,6 +58,7 @@ export default function QualificationPage() {
   const isFetchingUserStatsRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const autoVoteHandledRef = useRef(false)
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
@@ -130,6 +132,20 @@ export default function QualificationPage() {
       (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
     )
   }, [allCountries, searchQuery])
+
+  // Auto-open vote modal when arriving from onboarding with ?vote=CODE
+  useEffect(() => {
+    if (autoVoteHandledRef.current || allCountries.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const voteCode = params.get("vote")
+    if (!voteCode) return
+    autoVoteHandledRef.current = true
+    const country = allCountries.find((c) => c.code === voteCode.toUpperCase())
+    if (country) {
+      setSelectedCountry(country)
+      setVoteModalOpen(true)
+    }
+  }, [allCountries])
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
     hasMore: displayedCountries < filteredCountries.length,
@@ -453,7 +469,7 @@ export default function QualificationPage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
                 </div>
                 <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
-                  {totalPrizePool >= 0.01 ? totalPrizePool.toFixed(4) : totalPrizePool.toFixed(6)} ETH
+                  {formatEth(totalPrizePool)} ETH
                 </div>
               </div>
 
@@ -467,7 +483,7 @@ export default function QualificationPage() {
                       {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
                     </div>
                     <div className="text-xl lg:text-2xl font-bold text-foreground/70">
-                      {userSpentEth >= 0.01 ? userSpentEth.toFixed(4) : userSpentEth.toFixed(6)} ETH
+                      {formatEth(userSpentEth)} ETH
                     </div>
                   </div>
                 </>

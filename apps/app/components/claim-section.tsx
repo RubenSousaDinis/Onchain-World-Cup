@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { formatEth } from "@/lib/utils"
 import { useChainId, useWaitForTransactionReceipt } from "wagmi"
 import { formatEther } from "viem"
 import { Clock, CheckCircle, Trophy, Loader2, AlertCircle } from "lucide-react"
@@ -254,7 +255,7 @@ export function ClaimSection({ address, totalVotes }: ClaimSectionProps) {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <div className="text-xl font-bold font-mono text-green-400">
-              {claimableEth.toFixed(4)} ETH
+              {formatEth(claimableEth)} ETH
             </div>
             <div className="text-xs text-muted-foreground">claimable</div>
           </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, type KeyboardEvent } from "react"
+import { formatEth } from "@/lib/utils"
 import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi"
 import { parseEther, zeroAddress } from "viem"
@@ -312,12 +313,12 @@ export function VoteModal({
               </div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">Price per Vote:</span>
-                <span className="text-sm font-mono text-foreground">{pricePerVote.toFixed(4)} ETH</span>
+                <span className="text-sm font-mono text-foreground">{formatEth(pricePerVote)} ETH</span>
               </div>
               <div className="h-px bg-border my-2" />
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-foreground">Total Cost:</span>
-                <span className="text-lg font-mono font-bold cm-highlight">{totalCost.toFixed(4)} ETH</span>
+                <span className="text-lg font-mono font-bold cm-highlight">{formatEth(totalCost)} ETH</span>
               </div>
 
               <div className="mt-3 pt-3 border-t border-border/50">
@@ -376,7 +377,7 @@ export function VoteModal({
                 : isAutoConnecting
                   ? "Connecting Wallet..."
                   : isConnected
-                    ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${totalCost.toFixed(3)} ETH`
+                    ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${formatEth(totalCost)} ETH`
                     : "Connect Wallet"}
             </button>
           </div>
@@ -393,7 +394,7 @@ export function VoteModal({
           opponent,
           opponentFlag,
           votes: voteCount,
-          amount: totalCost.toFixed(4),
+          amount: formatEth(totalCost),
           matchId,
         }}
       />
