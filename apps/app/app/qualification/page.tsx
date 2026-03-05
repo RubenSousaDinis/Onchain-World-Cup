@@ -8,6 +8,7 @@ import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search
 import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
+import { formatEth } from "@/lib/utils"
 import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
@@ -468,7 +469,7 @@ export default function QualificationPage() {
                   <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
                 </div>
                 <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
-                  {parseFloat(totalPrizePool.toFixed(6)).toString()} ETH
+                  {formatEth(totalPrizePool)} ETH
                 </div>
               </div>
 
@@ -482,7 +483,7 @@ export default function QualificationPage() {
                       {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
                     </div>
                     <div className="text-xl lg:text-2xl font-bold text-foreground/70">
-                      {parseFloat(userSpentEth.toFixed(6)).toString()} ETH
+                      {formatEth(userSpentEth)} ETH
                     </div>
                   </div>
                 </>

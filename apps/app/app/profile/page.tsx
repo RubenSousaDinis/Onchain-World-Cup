@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense } from "react"
+import { formatEth } from "@/lib/utils"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Copy, Check, ExternalLink, Share2 } from "lucide-react"
@@ -63,11 +64,6 @@ function truncateAddress(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
-function formatEthDisplay(val: string | number) {
-  const n = typeof val === "string" ? parseFloat(val) : val
-  if (isNaN(n)) return "0"
-  return parseFloat(n.toFixed(6)).toString()
-}
 
 function MyBetsContent() {
   const { address, isConnected } = useAccount()
@@ -251,7 +247,7 @@ function MyBetsContent() {
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-purple-500">
                 <div className="text-xs text-foreground/70 mb-1 uppercase font-bold">ETH Spent</div>
-                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{formatEthDisplay(totalSpent)}</div>
+                <div className="text-lg lg:text-2xl font-bold text-purple-400 font-mono">{formatEth(totalSpent)}</div>
                 <div className="text-xs text-muted-foreground">ETH total</div>
               </div>
               <div className="cm-panel rounded-sm p-3 lg:p-4 bg-secondary/20 border-l-4 border-accent">
@@ -267,7 +263,7 @@ function MyBetsContent() {
                   {isLoadingClaimable || isLoadingProjected ? (
                     <span className="text-sm">...</span>
                   ) : currentEarnings > 0 ? (
-                    formatEthDisplay(currentEarnings)
+                    formatEth(currentEarnings)
                   ) : !isContractAvailable ? (
                     <span className="text-sm">N/A</span>
                   ) : (
@@ -363,7 +359,7 @@ function MyBetsContent() {
                               </div>
                               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
                                 <span className="font-mono text-accent font-bold">
-                                  {formatEthDisplay(vote.total_cost_eth)} ETH
+                                  {formatEth(vote.total_cost_eth)} ETH
                                 </span>
                                 <span>
                                   {date.toLocaleDateString()}{" "}
@@ -419,7 +415,7 @@ function MyBetsContent() {
                                     {vote.vote_count}
                                   </td>
                                   <td className="px-4 py-3 text-right font-mono text-accent font-bold text-sm">
-                                    {formatEthDisplay(vote.total_cost_eth)} ETH
+                                    {formatEth(vote.total_cost_eth)} ETH
                                   </td>
                                   <td className="px-4 py-3 text-right text-muted-foreground text-sm">
                                     <div>{date.toLocaleDateString()}</div>
@@ -505,7 +501,7 @@ function MyBetsContent() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="cm-panel p-4 border border-border text-center">
                       <div className="text-2xl lg:text-3xl font-bold cm-highlight">
-                        {referralData ? formatEthDisplay(referralData.totalEarnedEth) : "0"} ETH
+                        {referralData ? formatEth(referralData.totalEarnedEth) : "0"} ETH
                       </div>
                       <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">Total Earned</div>
                     </div>
@@ -546,9 +542,9 @@ function MyBetsContent() {
                               className="border-b border-border/50 hover:bg-secondary/20 transition-colors"
                             >
                               <td className="px-4 py-3 font-mono text-xs">{truncateAddress(r.referredAddress)}</td>
-                              <td className="px-4 py-3 text-right text-xs">{formatEthDisplay(r.voteAmountEth)} ETH</td>
+                              <td className="px-4 py-3 text-right text-xs">{formatEth(r.voteAmountEth)} ETH</td>
                               <td className="px-4 py-3 text-right text-green-500 font-bold text-xs">
-                                +{formatEthDisplay(r.referralAmountEth)} ETH
+                                +{formatEth(r.referralAmountEth)} ETH
                               </td>
                               <td className="px-4 py-3 text-xs capitalize text-muted-foreground hidden sm:table-cell">
                                 {r.contractType}

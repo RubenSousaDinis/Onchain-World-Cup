@@ -14,6 +14,7 @@ import { ShareModal } from "@/components/share-modal"
 import { LevelBadge } from "@/components/level-badge"
 import { computeLevel } from "@/lib/achievements"
 import { WalletName, useWalletDisplayName } from "@/components/wallet-name"
+import { formatEth } from "@/lib/utils"
 
 type LeaderboardCategory = "successful" | "largest" | "active" | "early" | "achievements"
 
@@ -385,9 +386,6 @@ export default function LeaderboardPage() {
   )
 }
 
-// Format ETH values without trailing zeros (e.g. 0.0055 not 0.005500)
-const formatEth = (val: string | number | null | undefined): string =>
-  parseFloat(parseFloat(String(val || '0')).toFixed(6)).toString()
 
 // Helper function to get category description
 function getCategoryDescription(category: LeaderboardCategory): string {

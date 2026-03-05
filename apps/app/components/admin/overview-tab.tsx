@@ -13,12 +13,11 @@ import { useMatchDetails } from "@/lib/contracts/match-admin"
 import { getCountryByCode } from "@/lib/countries"
 import { getAddressExplorerUrl, getTxExplorerUrl } from "@/lib/admin"
 import { getQualificationAddress, isQualificationContractAvailable } from "@/lib/contracts/qualification"
+import { formatEth } from "@/lib/utils"
 
-/** Strip trailing zeros: 0.001500 → 0.0015, 1.000000 → 1 */
 function trimEth(raw: string | number | bigint): string {
   const n = typeof raw === "bigint" ? Number(formatEther(raw)) : Number(raw)
-  if (n === 0) return "0"
-  return parseFloat(n.toFixed(8)).toString()
+  return formatEth(n, 8)
 }
 
 function EthAmount({ eth, price }: { eth: string | number | bigint; price: number | null }) {

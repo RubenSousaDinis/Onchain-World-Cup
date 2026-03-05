@@ -21,6 +21,7 @@ import { zeroAddress } from "viem"
 import { ShareModal } from "@/components/share-modal"
 import { AchievementUnlockedModal } from "@/components/achievement-unlocked-modal"
 import { type ComputedAchievement } from "@/lib/achievements"
+import { formatEth } from "@/lib/utils"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -150,10 +151,6 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     }
   }, [maxVotesPossible, voteCount])
 
-  // Helper to format ETH values without trailing zeros
-  const formatETH = (value: number): string => {
-    return parseFloat(value.toFixed(6)).toString()
-  }
 
   // Reset state when modal opens or closes
   useEffect(() => {
@@ -265,7 +262,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     setVoteCount(1)
 
     // Capture vote data for share modal / achievement modal before resetting state
-    lastVoteDataRef.current = { votes, amount: formatETH(parseFloat(cost)), countryCode: country.code }
+    lastVoteDataRef.current = { votes, amount: formatEth(parseFloat(cost)), countryCode: country.code }
 
     // Index in background (don't block UI)
     // Transaction has 2 confirmations at this point, should be visible on RPC nodes
@@ -487,7 +484,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (walletBalance < totalCost) {
       error(
         "Insufficient Balance",
-        `You need ${formatETH(totalCost)} ETH but only have ${formatETH(walletBalance)} ETH`
+        `You need ${formatEth(totalCost)} ETH but only have ${formatEth(walletBalance)} ETH`
       )
       return
     }
@@ -497,7 +494,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (walletBalance < totalCost + balanceBuffer) {
       error(
         "Insufficient Balance (including gas)",
-        `You need at least ${formatETH(totalCost + balanceBuffer)} ETH (including gas) but only have ${formatETH(walletBalance)} ETH`
+        `You need at least ${formatEth(totalCost + balanceBuffer)} ETH (including gas) but only have ${formatEth(walletBalance)} ETH`
       )
       return
     }
@@ -583,7 +580,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   <Wallet className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Wallet Balance:</span>
                 </div>
-                <span className="font-bold cm-highlight">{formatETH(walletBalance)} ETH</span>
+                <span className="font-bold cm-highlight">{formatEth(walletBalance)} ETH</span>
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Network: <span className="text-accent font-semibold">{chain?.name || "Unknown"}</span>
@@ -659,7 +656,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
               <span className="text-accent">
-                {isPriceLoading && !useMockPricing ? "..." : `${formatETH(totalCost)} ETH`}
+                {isPriceLoading && !useMockPricing ? "..." : `${formatEth(totalCost)} ETH`}
               </span>
             </div>
             {useMockPricing && (
@@ -672,7 +669,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             {isConnected && maxVotesPossible > 0 && totalCost > walletBalance && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-2">
                 <p className="text-xs text-destructive">
-                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatETH(walletBalance)} ETH available).
+                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatEth(walletBalance)} ETH available).
                 </p>
               </div>
             )}
@@ -807,7 +804,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   ? "Insufficient Balance"
                   : (!useMockPricing && totalCost <= 0)
                   ? "Loading price..."
-                  : `Vote ${formatETH(totalCost)} ETH`}
+                  : `Vote ${formatEth(totalCost)} ETH`}
               </button>
             </div>
           )}

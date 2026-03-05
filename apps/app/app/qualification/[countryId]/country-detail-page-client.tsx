@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
-const fmtEth = (n: string | number) => parseFloat(parseFloat(String(n)).toFixed(6)).toString()
+import { formatEth } from "@/lib/utils"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
@@ -290,7 +289,7 @@ export function CountryDetailPageClient({
               {countryStats && (
                 <div className="text-center">
                   <div className="text-2xl font-bold text-accent font-mono">
-                    {fmtEth(countryStats.totalEth)} ETH</div>
+                    {formatEth(countryStats.totalEth)} ETH</div>
                   <div className="text-xs text-muted-foreground">Total Staked</div>
                 </div>
               )}
@@ -425,7 +424,7 @@ export function CountryDetailPageClient({
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-sm font-mono font-bold cm-highlight">{voter.total_votes.toLocaleString()} votes</div>
-                      <div className="text-xs font-mono text-accent">{fmtEth(voter.total_eth)} ETH</div>
+                      <div className="text-xs font-mono text-accent">{formatEth(voter.total_eth)} ETH</div>
                     </div>
                   </Link>
                 ))}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useChainId, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { formatEther } from "viem"
+import { formatEth } from "@/lib/utils"
 import {
   getQualificationAddress,
   isQualificationContractAvailable,
@@ -179,7 +180,7 @@ export function QualificationTab() {
           <div>
             <span className="text-muted-foreground block">Prize Pool</span>
             <span className="cm-highlight text-lg">
-              {prizePool != null ? `${Number(formatEther(prizePool)).toFixed(4)} ETH` : "—"}
+              {prizePool != null ? `${formatEth(Number(formatEther(prizePool)))} ETH` : "—"}
             </span>
           </div>
           <div>

@@ -13,8 +13,7 @@ import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 import { useAchievements } from "@/hooks/use-achievements"
 import { LevelBadge } from "@/components/level-badge"
-
-const fmtEth = (n: string | number) => parseFloat(parseFloat(String(n)).toFixed(6)).toString()
+import { formatEth } from "@/lib/utils"
 
 type UserVote = {
   id: string
@@ -266,7 +265,7 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
               <div className="text-xs lg:text-sm text-muted-foreground uppercase">ETH Spent</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold cm-highlight font-mono">
-              {fmtEth(totalSpent)} ETH
+              {formatEth(totalSpent)} ETH
             </div>
             <div className="text-xs text-muted-foreground mt-1">
               During qualification phase
@@ -297,7 +296,7 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
               {isLoadingClaimable || isLoadingProjected ? (
                 <span className="text-base">Loading...</span>
               ) : currentEarnings > 0 ? (
-                <>{fmtEth(currentEarnings)} ETH</>
+                <>{formatEth(currentEarnings)} ETH</>
               ) : !isContractAvailable ? (
                 <span className="text-base text-muted-foreground">N/A</span>
               ) : (
@@ -323,7 +322,7 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
               <div className="text-xs lg:text-sm text-muted-foreground uppercase">Avg. Cost</div>
             </div>
             <div className="text-2xl lg:text-3xl font-bold text-accent font-mono">
-              {totalVotes > 0 ? fmtEth(totalSpent / totalVotes) : "0"}
+              {totalVotes > 0 ? formatEth(totalSpent / totalVotes) : "0"}
             </div>
             <div className="text-xs text-muted-foreground mt-1">ETH per vote</div>
           </div>
@@ -350,7 +349,7 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
                         {country.totalVotes} votes
                       </div>
                       <div className="text-xs lg:text-sm text-accent font-mono mt-1">
-                        {fmtEth(country.totalEth)} ETH
+                        {formatEth(country.totalEth)} ETH
                       </div>
                     </div>
                   </Link>
@@ -408,7 +407,7 @@ export function UserProfilePageClient({ address, shortAddress }: { address: stri
                             {vote.vote_count} votes
                           </div>
                           <div className="text-xs lg:text-sm text-accent font-mono">
-                            {fmtEth(vote.total_cost_eth)} ETH
+                            {formatEth(vote.total_cost_eth)} ETH
                           </div>
                         </div>
                       </div>

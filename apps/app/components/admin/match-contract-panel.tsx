@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useChainId } from "wagmi"
 import { Address, formatEther } from "viem"
+import { formatEth } from "@/lib/utils"
 import { getAddressExplorerUrl } from "@/lib/admin"
 import {
   useMatchDetails,
@@ -52,7 +53,7 @@ export function MatchContractPanel({ contractAddress }: { contractAddress: Addre
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <div>
           <span className="text-muted-foreground block">Prize Pool</span>
-          <span className="cm-highlight">{Number(formatEther(prizePool)).toFixed(4)} ETH</span>
+          <span className="cm-highlight">{formatEth(Number(formatEther(prizePool)))} ETH</span>
         </div>
         <div>
           <span className="text-muted-foreground block">Phase</span>

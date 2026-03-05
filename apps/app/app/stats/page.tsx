@@ -6,8 +6,7 @@ import { Trophy, Users, TrendingUp, Target, DollarSign, Activity, BarChart3, Pie
 import { type ChartDataPoint } from "@/lib/mock-data/statistics-data"
 import { StatCard } from "@/components/dashboard"
 import { useState, useEffect, useRef } from "react"
-
-const fmtEth = (n: string | number) => parseFloat(parseFloat(String(n)).toFixed(6)).toString()
+import { formatEth } from "@/lib/utils"
 import { InlineLoader } from "@/components/states"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 
@@ -113,13 +112,13 @@ export default function StatsPage() {
           <StatCard
             icon={DollarSign}
             label="Total ETH Spent"
-            value={`${fmtEth(totalETH)} ETH`}
+            value={`${formatEth(totalETH)} ETH`}
             valueColor="accent"
           />
           <StatCard
             icon={TrendingUp}
             label="Prize Pool (90%)"
-            value={`${fmtEth(totalETH * 0.9)} ETH`}
+            value={`${formatEth(totalETH * 0.9)} ETH`}
             valueColor="green"
           />
           <StatCard
@@ -144,7 +143,7 @@ export default function StatsPage() {
           <StatCard
             icon={Activity}
             label="Avg ETH per Voter"
-            value={`${fmtEth(averageVoteSize)} ETH`}
+            value={`${formatEth(averageVoteSize)} ETH`}
           />
           <StatCard
             icon={BarChart3}
@@ -198,7 +197,7 @@ export default function StatsPage() {
                           {vote.vote_count} votes
                         </div>
                         <div className="text-xs text-accent">
-                          {fmtEth(vote.total_cost_eth)} ETH
+                          {formatEth(vote.total_cost_eth)} ETH
                         </div>
                       </div>
                     </div>
@@ -231,7 +230,7 @@ export default function StatsPage() {
                   />
                   <StatRow
                     label="ETH Backing"
-                    value={`${fmtEth(summaryData.top_countries[0].total_eth)} ETH`}
+                    value={`${formatEth(summaryData.top_countries[0].total_eth)} ETH`}
                     valueClass="text-green-500"
                   />
                 </>
@@ -249,17 +248,17 @@ export default function StatsPage() {
             <div className="space-y-3">
               <StatRow
                 label="Total Prize Pool"
-                value={`${fmtEth(totalETH * 0.9)} ETH`}
+                value={`${formatEth(totalETH * 0.9)} ETH`}
                 valueClass="cm-highlight"
               />
               <StatRow
                 label="Platform Fees (10%)"
-                value={`${fmtEth(totalETH * 0.1)} ETH`}
+                value={`${formatEth(totalETH * 0.1)} ETH`}
                 valueClass="text-accent"
               />
               <StatRow
                 label="Avg per Country"
-                value={`${summaryData?.total_countries ? fmtEth(totalETH / summaryData.total_countries) : '0'} ETH`}
+                value={`${summaryData?.total_countries ? formatEth(totalETH / summaryData.total_countries) : '0'} ETH`}
                 valueClass="text-green-500"
               />
             </div>
