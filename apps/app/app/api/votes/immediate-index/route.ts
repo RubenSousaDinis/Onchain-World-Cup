@@ -283,9 +283,9 @@ export async function POST(request: NextRequest) {
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
 
       // Invalidate cached API responses so the next fetch returns fresh data
-      revalidateTag("qualification-countries")
-      revalidateTag("qualification-summary")
-      revalidateTag("qualification-votes")
+      revalidateTag("qualification-countries", {})
+      revalidateTag("qualification-summary", {})
+      revalidateTag("qualification-votes", {})
 
       // Fire-and-forget ENS backfill — does not block the response
       if (needsEnsLookup) {

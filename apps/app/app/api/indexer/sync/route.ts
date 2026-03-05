@@ -76,9 +76,9 @@ export async function POST(request: NextRequest) {
     console.log(`[Indexer API] Sync completed successfully`)
 
     // Invalidate cached API responses so the next fetch returns fresh data
-    revalidateTag("qualification-countries")
-    revalidateTag("qualification-summary")
-    revalidateTag("qualification-votes")
+    revalidateTag("qualification-countries", {})
+    revalidateTag("qualification-summary", {})
+    revalidateTag("qualification-votes", {})
 
     return jsonResponse({
       success: true,
