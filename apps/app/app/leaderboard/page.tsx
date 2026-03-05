@@ -3,7 +3,7 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2, Award } from "lucide-react"
+import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2, Award, RefreshCw, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -27,56 +27,69 @@ export default function LeaderboardPage() {
   const [totalCount, setTotalCount] = useState(0)
   const isFetchingRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const fetchLeaderboard = async () => {
+    if (isFetchingRef.current) return
+
+    isFetchingRef.current = true
+    setIsLoading(true)
+
+    try {
+      const res = await fetch(`/api/leaderboard?category=${activeCategory}&limit=100&offset=0`)
+      if (res.ok) {
+        const response = await res.json()
+        const data = response.data || []
+
+        // Format "largest" category data to include country names and flags
+        if (activeCategory === 'largest') {
+          const formattedData = data.map((entry: LeaderboardEntry) => {
+            if (entry.team) {
+              const countryName = getCountryName(entry.team)
+              const countryFlag = getCountryFlag(entry.team)
+              return {
+                ...entry,
+                matchName: `${countryFlag} ${countryName}`,
+                team: countryName,
+              }
+            }
+            return entry
+          })
+          setLeaderboardData(formattedData)
+        } else {
+          setLeaderboardData(data)
+        }
+
+        setTotalCount(response.count || 0)
+      } else {
+        console.error('Failed to fetch leaderboard:', res.statusText)
+        setLeaderboardData([])
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error)
+      setLeaderboardData([])
+    } finally {
+      setIsLoading(false)
+      isFetchingRef.current = false
+    }
+  }
+
+  const handleRefresh = async () => {
+    if (isRefreshing || isLoading) return
+    setIsRefreshing(true)
+    try {
+      await fetch('/api/leaderboard/revalidate', { method: 'POST' })
+    } catch (err) {
+      console.error('Failed to revalidate leaderboard cache:', err)
+    } finally {
+      setIsRefreshing(false)
+    }
+    await fetchLeaderboard()
+  }
 
   // Fetch leaderboard data from API
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      if (isFetchingRef.current) return
-
-      isFetchingRef.current = true
-      setIsLoading(true)
-
-      try {
-        const res = await fetch(`/api/leaderboard?category=${activeCategory}&limit=100&offset=0`)
-        if (res.ok) {
-          const response = await res.json()
-          const data = response.data || []
-
-          // Format "largest" category data to include country names and flags
-          if (activeCategory === 'largest') {
-            const formattedData = data.map((entry: LeaderboardEntry) => {
-              if (entry.team) {
-                const countryName = getCountryName(entry.team)
-                const countryFlag = getCountryFlag(entry.team)
-                return {
-                  ...entry,
-                  matchName: `${countryFlag} ${countryName}`,
-                  team: countryName,
-                }
-              }
-              return entry
-            })
-            setLeaderboardData(formattedData)
-          } else {
-            setLeaderboardData(data)
-          }
-
-          setTotalCount(response.count || 0)
-        } else {
-          console.error('Failed to fetch leaderboard:', res.statusText)
-          setLeaderboardData([])
-        }
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error)
-        setLeaderboardData([])
-      } finally {
-        setIsLoading(false)
-        isFetchingRef.current = false
-      }
-    }
-
-    fetchLeaderboard()
-  }, [activeCategory])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchLeaderboard() }, [activeCategory])
 
   const filteredLeaderboard = leaderboardData.filter(
     (entry) =>
@@ -122,16 +135,32 @@ export default function LeaderboardPage() {
                   Top performers ranked across different categories • Base Network
                 </p>
               </div>
-              {activeCategory === "largest" && (
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={() => setShowShareModal(true)}
-                  className="cm-nav-tab flex items-center gap-2 px-4 py-2 rounded-sm font-bold text-sm hover:scale-105 transition-transform flex-shrink-0"
-                  aria-label="Share leaderboard"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing || isLoading}
+                  className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Refresh leaderboard"
+                  title="Refresh leaderboard data"
                 >
-                  <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Share</span>
+                  {isRefreshing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">{isRefreshing ? "Refreshing..." : "Refresh"}</span>
                 </button>
-              )}
+                {activeCategory === "largest" && (
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="cm-nav-tab flex items-center gap-2 px-3 lg:px-4 py-2 rounded-sm font-bold text-sm hover:brightness-110 transition-colors duration-200 flex-shrink-0"
+                    aria-label="Share leaderboard"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Share</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
