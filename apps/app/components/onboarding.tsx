@@ -28,7 +28,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const filteredCountries = useMemo(() => {
-    if (!countrySearch.trim()) return []
+    if (!countrySearch.trim()) return countries.slice(0, 10)
     const q = countrySearch.toLowerCase()
     return countries.filter((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)).slice(0, 8)
   }, [countrySearch])
