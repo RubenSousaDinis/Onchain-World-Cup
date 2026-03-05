@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
 import { usePathname } from "next/navigation"
+import { useUserStats } from "@/hooks/use-leaderboard"
 
 const ONBOARDING_KEY = "onboardingCompleted"
 const ONBOARDING_SESSION_KEY = "onboardingShownThisSession"
@@ -19,27 +20,10 @@ export function useOnboarding() {
   const { address, isConnected } = useAccount()
   const pathname = usePathname()
 
-  // Fetch onboarding status from database
-  const fetchOnboardingStatus = async (walletAddress: string) => {
-    try {
-      const response = await fetch(`/api/users/${walletAddress}`, {
-        cache: 'no-store',
-      })
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-        console.warn('[Onboarding] Failed to fetch user data:', errorData)
-        // Fall back to localStorage on error
-        return typeof window !== "undefined" ? localStorage.getItem(ONBOARDING_KEY) === "true" : false
-      }
-      const { data } = await response.json()
-      // If timestamp exists (not null), onboarding is completed
-      return data?.onboarding_completed_at != null
-    } catch (error) {
-      console.warn('[Onboarding] Network error fetching onboarding status, using localStorage fallback')
-      // Fall back to localStorage on error
-      return typeof window !== "undefined" ? localStorage.getItem(ONBOARDING_KEY) === "true" : false
-    }
-  }
+  // Share the TanStack Query cache with useAchievements and the profile page.
+  // All three use the same ['user-stats', address] key, so only one HTTP request
+  // is made on mount regardless of how many components call this data.
+  const { data: userData, isLoading: isUserLoading } = useUserStats(isConnected && address ? address : "")
 
   // Update onboarding status in database
   const updateOnboardingStatus = async (walletAddress: string, completed: boolean) => {
@@ -70,8 +54,13 @@ export function useOnboarding() {
       setIsLoading(true)
 
       if (isConnected && address) {
-        // User is connected - check database
-        const dbCompleted = await fetchOnboardingStatus(address)
+        // Wait for the shared TanStack Query to resolve before reading the status
+        if (isUserLoading) return
+
+        // User is connected - read onboarding status from shared query cache
+        const dbCompleted = userData?.data
+          ? (userData.data as any).onboarding_completed_at != null
+          : false
 
         // Migration: If database says not completed, check localStorage
         if (!dbCompleted && typeof window !== "undefined") {
@@ -131,7 +120,7 @@ export function useOnboarding() {
     }
 
     checkOnboardingStatus()
-  }, [address, isConnected, pathname])
+  }, [address, isConnected, pathname, isUserLoading, userData])
 
   const showOnboarding = () => {
     setIsOnboardingOpen(true)

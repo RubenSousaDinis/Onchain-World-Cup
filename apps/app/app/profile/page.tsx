@@ -11,6 +11,8 @@ import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
 import { ShareModal } from "@/components/share-modal"
 import { useState, useEffect, useRef } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api-client"
 import { NoVotesEmpty, InlineLoader } from "@/components/states"
 import { ClaimSection } from "@/components/claim-section"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
@@ -74,10 +76,19 @@ function MyBetsContent() {
 
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [selectedBet, setSelectedBet] = useState<any | null>(null)
-  const [userStats, setUserStats] = useState<UserStats | null>(null)
-  const [userVotes, setUserVotes] = useState<UserVote[]>([])
-  const [isLoadingUser, setIsLoadingUser] = useState(false)
-  const isFetchingUserRef = useRef(false)
+
+  // Share the TanStack Query cache with useAchievements (UserMilestones) and
+  // useOnboarding so all three resolve from a single HTTP request on mount.
+  // staleTime: 0 ensures the profile page always sees fresh data on revisit.
+  const { data: profileData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ["user-stats", address ?? ""] as const,
+    queryFn: () => api.get<{ data: any }>(`/users/${address}`),
+    enabled: isConnected && !!address,
+    staleTime: 0,
+    refetchOnMount: true,
+  })
+  const userStats: UserStats | null = profileData?.data ?? null
+  const userVotes: UserVote[] = profileData?.data?.votes ?? []
 
   // Referrals state
   const [copied, setCopied] = useState(false)
@@ -94,42 +105,6 @@ function MyBetsContent() {
     const base = chainId === baseSepolia.id ? "https://sepolia.basescan.org" : "https://basescan.org"
     return `${base}/tx/${txHash}`
   }
-
-  // Fetch user stats
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!address || isFetchingUserRef.current) return
-      isFetchingUserRef.current = true
-      setIsLoadingUser(true)
-      try {
-        const res = await fetch(`/api/users/${address}`)
-        if (res.ok) {
-          const response = await res.json()
-          setUserStats({
-            qualification_votes: response.data.qualification_votes,
-            qualification_spent_eth: response.data.qualification_spent_eth,
-            countries_voted_for: response.data.countries_voted_for,
-            total_votes: response.data.total_votes,
-            total_spent_eth: response.data.total_spent_eth,
-            total_won_eth: response.data.total_won_eth,
-            referral_count: response.data.referral_count ?? 0,
-          })
-          setUserVotes(response.data.votes || [])
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error)
-      } finally {
-        setIsLoadingUser(false)
-        isFetchingUserRef.current = false
-      }
-    }
-    if (isConnected && address) {
-      fetchUserData()
-    } else {
-      setUserStats(null)
-      setUserVotes([])
-    }
-  }, [address, isConnected])
 
   // Fetch referrals when tab is active (lazy, once per session)
   useEffect(() => {
