@@ -63,11 +63,6 @@ export function Header() {
             </a>
           </Button>
           <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
-            <a href="https://zora.co/@onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Zora" className="flex items-center justify-center">
-              <Image src="/zora.png" alt="Zora" width={20} height={20} className="h-5 w-5 object-contain" />
-            </a>
-          </Button>
-          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
             <a href="mailto:onchainworldcup@gmail.com" aria-label="Email us">
               <Mail className="h-5 w-5" aria-hidden="true" />
             </a>

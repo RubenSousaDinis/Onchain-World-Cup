@@ -145,17 +145,6 @@ export default function AboutPage() {
               /onchainworldcup
             </a>
           </li>
-          <li>
-            Zora:{" "}
-            <a
-              href="https://zora.co/@onchainworldcup"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-foreground"
-            >
-              @onchainworldcup
-            </a>
-          </li>
         </ul>
       </section>
 

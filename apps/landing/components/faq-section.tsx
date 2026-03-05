@@ -60,7 +60,7 @@ export function FAQSection() {
     {
       question: "Where can I follow updates?",
       answer:
-        "Follow us on X (Twitter) at @OnchainC29697 for real-time announcements, phase updates, and leaderboard highlights. We are also active on Farcaster at /onchainworldcup for onchain-native discussions and Farcaster Mini App updates. Find our NFT drops and collectibles on Zora at @onchainworldcup. For direct enquiries or partnership proposals, email onchainworldcup@gmail.com. All major announcements (phase transitions, fee changes, new features) will be posted across all channels simultaneously.",
+        "Follow us on X (Twitter) at @OnchainC29697 for real-time announcements, phase updates, and leaderboard highlights. We are also active on Farcaster at /onchainworldcup for onchain-native discussions and Farcaster Mini App updates. For direct enquiries or partnership proposals, email onchainworldcup@gmail.com. All major announcements (phase transitions, fee changes, new features) will be posted across all channels simultaneously.",
     },
   ]
 

@@ -127,7 +127,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "email": "onchainworldcup@gmail.com",
               "sameAs": [
                 "https://x.com/OnchainC29697",
-                "https://zora.co/@onchainworldcup",
                 "https://warpcast.com/onchainworldcup",
               ],
             }),

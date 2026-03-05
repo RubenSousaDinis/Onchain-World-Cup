@@ -32,15 +32,6 @@ export function Footer() {
               <Image src="/farcaster.png" alt="Farcaster" width={24} height={24} className="h-6 w-6 object-contain" />
             </Link>
             <Link
-              href="https://zora.co/@onchainworldcup"
-              className="transition-opacity hover:opacity-70"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Follow us on Zora"
-            >
-              <Image src="/zora.png" alt="Zora" width={24} height={24} className="h-6 w-6 object-contain" />
-            </Link>
-            <Link
               href="mailto:onchainworldcup@gmail.com"
               className="text-foreground transition-opacity hover:opacity-70"
               aria-label="Email us"
