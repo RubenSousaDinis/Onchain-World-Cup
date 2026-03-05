@@ -6,7 +6,7 @@ function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
-import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Info, Wallet } from "lucide-react"
+import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
@@ -43,6 +43,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const processedTxRef = useRef<string | null>(null) // Track which tx we're currently processing
   const indexedTxRef = useRef<string | null>(null)
   const hasVotedRef = useRef(false) // Track if user has voted during this modal session
+  const [showPricingInfo, setShowPricingInfo] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareData, setShareData] = useState<{votes: number, amount: string, countryCode: string} | null>(null)
   const shareModalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -161,6 +162,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       setIsIndexing(false)
       setIsProcessing(false)
       setIsWaitingForWallet(false)
+      setShowPricingInfo(false)
       // Do NOT null-out processedTxRef / indexedTxRef here.
       // wagmi's hash is still set to the previous tx on the first render after open.
       // Keeping refs pointed at the old hash ensures the dedup guards in the
@@ -676,16 +678,21 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             )}
           </div>
 
-          {/* Info Box */}
-          <div className="bg-secondary/20 border border-accent/30 rounded-sm p-3 space-y-2">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-              <div className="text-xs lg:text-sm text-muted-foreground space-y-1">
-                <p><Zap className="w-3 h-3 inline text-accent" /> <strong>Early voters get better prices</strong> - Price increases with each vote</p>
-                <p><TrendingUp className="w-3 h-3 inline text-green-500" /> Help {country.name} qualify for the tournament!</p>
-                <p><AlertTriangle className="w-3 h-3 inline text-yellow-500" /> Top 48 countries qualify</p>
+          {/* Collapsible pricing info */}
+          <div>
+            <button
+              onClick={() => setShowPricingInfo((v) => !v)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              How pricing works {showPricingInfo ? "▴" : "▾"}
+            </button>
+            {showPricingInfo && (
+              <div className="mt-2 bg-secondary/20 border border-accent/30 rounded-sm p-3 space-y-1">
+                <p className="text-xs lg:text-sm text-muted-foreground"><Zap className="w-3 h-3 inline text-accent" /> <strong>Early voters get better prices</strong> - Price increases with each vote</p>
+                <p className="text-xs lg:text-sm text-muted-foreground"><TrendingUp className="w-3 h-3 inline text-green-500" /> Help {country.name} qualify for the tournament!</p>
+                <p className="text-xs lg:text-sm text-muted-foreground"><AlertTriangle className="w-3 h-3 inline text-yellow-500" /> Top 48 countries qualify</p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Wallet & Auth Status */}

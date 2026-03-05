@@ -8,14 +8,15 @@ export function HeroSection() {
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-7xl">Onchain World Cup</h1>
-          <p className="mb-4 text-2xl font-semibold text-primary md:text-3xl">World Cup 2026 Qualification Now Open</p>
-          <p className="mb-6 text-lg leading-relaxed text-muted-foreground md:text-xl">
+          <p className="mb-4 text-2xl font-semibold text-primary md:text-3xl">A World Cup decided by fans — not players</p>
+          <p className="mb-3 text-lg leading-relaxed text-muted-foreground md:text-xl">
             Early supporters shape the tournament.
             <br />
             Back your country with ETH. Top 48 qualify.
             <br />
             Vote now and be first to support your nation.
           </p>
+          <p className="mb-6 text-base font-semibold text-foreground/70">No odds. No bookmakers. Just community votes.</p>
 
           <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
             <span className="h-2 w-2 animate-pulse [animation-iteration-count:5] rounded-full bg-primary" />
