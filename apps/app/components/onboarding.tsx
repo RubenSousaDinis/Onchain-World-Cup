@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { X, ChevronLeft, ChevronRight, Trophy, Clock } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Trophy, Clock, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { countries } from "@/lib/countries"
 
 interface OnboardingStep {
   title: string
@@ -20,6 +21,31 @@ interface OnboardingProps {
 export function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
+  const [countrySearch, setCountrySearch] = useState("")
+  const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string; flagEmoji: string } | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return []
+    const q = countrySearch.toLowerCase()
+    return countries.filter((c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)).slice(0, 8)
+  }, [countrySearch])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        searchRef.current && !searchRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -43,7 +69,10 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
-      router.push("/qualification")
+      const dest = selectedCountry
+        ? `/qualification?vote=${selectedCountry.code}`
+        : "/qualification"
+      router.push(dest)
       handleClose()
     }
   }
@@ -103,11 +132,59 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
               <span>If your country finishes in the top 48, you share the prize pool</span>
             </li>
-            <li className="flex items-start gap-3">
-              <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-              <span>That&apos;s it — pick your country and go</span>
-            </li>
           </ul>
+
+          {/* Country picker */}
+          <div className="space-y-2 pt-1">
+            <label className="text-sm font-bold cm-highlight">Pick your country to vote for</label>
+
+            {selectedCountry ? (
+              <div className="flex items-center gap-3 p-3 bg-primary/10 border border-primary/40 rounded-sm">
+                <span className="text-2xl">{selectedCountry.flagEmoji}</span>
+                <span className="text-base font-bold flex-1">{selectedCountry.name}</span>
+                <button
+                  onClick={() => { setSelectedCountry(null); setCountrySearch("") }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear selection"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center gap-2 bg-input border border-border rounded-sm px-3 py-2">
+                  <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    placeholder="Type to search countries..."
+                    value={countrySearch}
+                    onChange={(e) => { setCountrySearch(e.target.value); setDropdownOpen(true) }}
+                    onFocus={() => setDropdownOpen(true)}
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                {dropdownOpen && filteredCountries.length > 0 && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-sm shadow-lg z-20 max-h-48 overflow-y-auto"
+                  >
+                    {filteredCountries.map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => { setSelectedCountry(c); setCountrySearch(""); setDropdownOpen(false) }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/50 flex items-center gap-3 border-b border-border/50 last:border-0 transition-colors"
+                      >
+                        <span className="text-lg">{c.flagEmoji}</span>
+                        <span className="font-medium">{c.name}</span>
+                        <span className="text-xs text-muted-foreground ml-auto font-mono">{c.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       ),
     },
@@ -173,7 +250,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
             )}
             <Button onClick={handleNext} size="sm">
               {isLastStep ? (
-                "Let's go"
+                selectedCountry ? `Vote for ${selectedCountry.flagEmoji} ${selectedCountry.name}` : "Let's go"
               ) : (
                 <>
                   Next

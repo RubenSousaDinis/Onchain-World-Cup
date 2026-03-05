@@ -57,6 +57,7 @@ export default function QualificationPage() {
   const isFetchingUserStatsRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const autoVoteHandledRef = useRef(false)
 
   const { chain, address } = useAccount()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
@@ -130,6 +131,20 @@ export default function QualificationPage() {
       (country) => country.name.toLowerCase().includes(searchQuery.toLowerCase()) || country.flag.includes(searchQuery),
     )
   }, [allCountries, searchQuery])
+
+  // Auto-open vote modal when arriving from onboarding with ?vote=CODE
+  useEffect(() => {
+    if (autoVoteHandledRef.current || allCountries.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const voteCode = params.get("vote")
+    if (!voteCode) return
+    autoVoteHandledRef.current = true
+    const country = allCountries.find((c) => c.code === voteCode.toUpperCase())
+    if (country) {
+      setSelectedCountry(country)
+      setVoteModalOpen(true)
+    }
+  }, [allCountries])
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
     hasMore: displayedCountries < filteredCountries.length,
