@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { revalidateTag } from "next/cache"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/server/prisma"
@@ -280,6 +281,11 @@ export async function POST(request: NextRequest) {
       )
 
       console.log("[Immediate Index] Successfully indexed transaction:", txHash)
+
+      // Invalidate cached API responses so the next fetch returns fresh data
+      revalidateTag("qualification-countries")
+      revalidateTag("qualification-summary")
+      revalidateTag("qualification-votes")
 
       // Fire-and-forget ENS backfill — does not block the response
       if (needsEnsLookup) {
