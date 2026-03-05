@@ -119,7 +119,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "description": "Community-driven football tournament on the Base blockchain. Vote with ETH to qualify countries for World Cup 2026.",
               "sameAs": [
                 "https://x.com/OnchainC29697",
-                "https://zora.co/@onchainworldcup",
                 "https://warpcast.com/onchainworldcup",
               ],
             }),

@@ -4,7 +4,7 @@ import { Twitter, Mail } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Contact | Onchain World Cup",
-  description: "Get in touch with the Onchain World Cup team. Reach us by email or on X, Farcaster, or Zora.",
+  description: "Get in touch with the Onchain World Cup team. Reach us by email or on X or Farcaster.",
   alternates: { canonical: "https://onchainworldcup.xyz/contact" },
   openGraph: {
     title: "Contact | Onchain World Cup",
@@ -84,23 +84,6 @@ export default function ContactPage() {
           </div>
         </a>
 
-        <a
-          href="https://zora.co/@onchainworldcup"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-4 rounded-sm border border-border p-5 hover:border-primary transition-colors"
-        >
-          <div className="h-6 w-6 shrink-0 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5 text-primary">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="4" fill="white"/>
-            </svg>
-          </div>
-          <div>
-            <p className="font-bold">Zora</p>
-            <p className="text-sm text-muted-foreground">@onchainworldcup on Zora</p>
-          </div>
-        </a>
       </div>
 
       <div className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">

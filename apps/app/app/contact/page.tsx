@@ -4,7 +4,7 @@ import { MobileNav } from "@/components/mobile-nav"
 
 export const metadata: Metadata = {
   title: "Contact | Onchain World Cup",
-  description: "Get in touch with the Onchain World Cup team. Reach us by email or on X, Farcaster, or Zora.",
+  description: "Get in touch with the Onchain World Cup team. Reach us by email or on X or Farcaster.",
   alternates: { canonical: "/contact" },
 }
 
@@ -81,20 +81,6 @@ export default function ContactPage() {
                   <div>
                     <p className="font-bold">Farcaster</p>
                     <p className="text-foreground/70">@onchainworldcup on Warpcast</p>
-                  </div>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://zora.co/@onchainworldcup"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground transition-colors flex items-center gap-3"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path fill="white" d="M8 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"/></svg>
-                  <div>
-                    <p className="font-bold">Zora</p>
-                    <p className="text-foreground/70">@onchainworldcup on Zora</p>
                   </div>
                 </a>
               </li>

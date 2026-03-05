@@ -30,5 +30,4 @@ This is not a prediction market — it is a community support mechanism.
 - App (vote here): https://app.onchainworldcup.xyz
 - X (Twitter): https://x.com/OnchainC29697
 - Farcaster: https://warpcast.com/onchainworldcup
-- Zora: https://zora.co/@onchainworldcup
 - Contact: onchainworldcup@gmail.com
