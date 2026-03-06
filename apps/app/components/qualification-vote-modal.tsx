@@ -6,7 +6,7 @@ function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
-import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet } from "lucide-react"
+import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet, CreditCard } from "lucide-react"
 import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseEther, formatEther } from "viem"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
@@ -611,11 +611,26 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                 </p>
               </div>
             )}
-            {isConnected && maxVotesPossible > 0 && totalCost > walletBalance && (
-              <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-2">
-                <p className="text-xs text-destructive">
-                  ⚠️ Insufficient balance. You can afford up to {maxVotesPossible} vote{maxVotesPossible !== 1 ? 's' : ''} ({formatEth(walletBalance)} ETH available).
+            {isConnected && walletBalance < totalCost && (
+              <div className="bg-secondary/30 border border-accent/30 rounded-sm p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-bold cm-highlight">
+                    {walletBalance === 0 ? "Your wallet has no ETH" : "Insufficient ETH balance"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {walletBalance === 0
+                    ? `You need ${formatEth(totalCost)} ETH to vote. Fund your wallet with a credit card to get started.`
+                    : `You have ${formatEth(walletBalance)} ETH but need ${formatEth(totalCost)} ETH. Top up with a credit card.`}
                 </p>
+                <button
+                  onClick={() => modal.open({ view: 'OnRampProviders' })}
+                  className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-2 rounded-sm text-sm font-bold hover:bg-accent/90 transition-colors"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Buy ETH with Credit Card
+                </button>
               </div>
             )}
           </div>
@@ -726,31 +741,40 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               >
                 Close
               </button>
-              <button
-                onClick={handleVote}
-                disabled={isPending || isProcessing || isWaitingForWallet || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0) || (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)}
-                className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isPending
-                  ? "Confirming..."
-                  : isProcessing
-                  ? isIndexing ? "Indexing..." : "Processing..."
-                  : isWaitingForWallet
-                  ? "Open wallet app..."
-                  : isAutoConnecting
-                  ? "Connecting Wallet..."
-                  : !isConnected
-                  ? "Connect Wallet"
-                  : !isAuthenticated
-                  ? "Sign In to Vote"
-                  : chain?.id !== defaultChainId
-                  ? `Switch to ${defaultChain.name}`
-                  : (isConnected && maxVotesPossible > 0 && totalCost > walletBalance)
-                  ? "Insufficient Balance"
-                  : (!useMockPricing && totalCost <= 0)
-                  ? "Loading price..."
-                  : `Vote ${formatEth(totalCost)} ETH`}
-              </button>
+              {isConnected && walletBalance < totalCost ? (
+                <button
+                  onClick={() => modal.open({ view: 'OnRampProviders' })}
+                  disabled={isPending || isProcessing}
+                  className="flex-1 flex items-center justify-center gap-2 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Fund Wallet
+                </button>
+              ) : (
+                <button
+                  onClick={handleVote}
+                  disabled={isPending || isProcessing || isWaitingForWallet || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0)}
+                  className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPending
+                    ? "Confirming..."
+                    : isProcessing
+                    ? isIndexing ? "Indexing..." : "Processing..."
+                    : isWaitingForWallet
+                    ? "Open wallet app..."
+                    : isAutoConnecting
+                    ? "Connecting Wallet..."
+                    : !isConnected
+                    ? "Connect Wallet"
+                    : !isAuthenticated
+                    ? "Sign In to Vote"
+                    : chain?.id !== defaultChainId
+                    ? `Switch to ${defaultChain.name}`
+                    : (!useMockPricing && totalCost <= 0)
+                    ? "Loading price..."
+                    : `Vote ${formatEth(totalCost)} ETH`}
+                </button>
+              )}
             </div>
           )}
         </div>

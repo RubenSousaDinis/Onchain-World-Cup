@@ -2,9 +2,9 @@
 
 import { useState, useEffect, type KeyboardEvent } from "react"
 import { formatEth } from "@/lib/utils"
-import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info } from "lucide-react"
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi"
-import { parseEther, zeroAddress } from "viem"
+import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info, Wallet, CreditCard } from "lucide-react"
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect, useBalance } from "wagmi"
+import { parseEther, formatEther, zeroAddress } from "viem"
 import { useReferral } from "@/hooks/use-referral"
 import { useFarcaster } from "@/lib/farcaster-provider"
 import { modal } from "@/lib/reown-config"
@@ -43,8 +43,14 @@ export function VoteModal({
   const [votePlaced, setVotePlaced] = useState(false)
   const [isDemoVote, setIsDemoVote] = useState(false)
 
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
+  const { data: balanceData } = useBalance({
+    address,
+    chainId: chain?.id,
+    query: { enabled: !!address && !!chain?.id && isOpen },
+  })
+  const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
   const { data: hash, writeContract, isPending, error: writeError } = useWriteContract()
   const { isLoading: isConfirming, isSuccess, isError: isConfirmError } = useWaitForTransactionReceipt({
     hash,
@@ -60,6 +66,7 @@ export function VoteModal({
       : basePrice * (1 + 0.03) // Simplified for demo - real price from contract
 
   const totalCost = pricePerVote * voteCount
+  const hasInsufficientBalance = isConnected && walletBalance < totalCost
 
   useEffect(() => {
     const handleEscape = (e: globalThis.KeyboardEvent) => {
@@ -356,6 +363,30 @@ export function VoteModal({
                 Total Winning Votes) × 90% Pool. You have 24 hours to vote!
               </p>
             </div>
+
+            {/* Fund Wallet */}
+            {hasInsufficientBalance && (
+              <div className="mt-4 bg-secondary/30 border border-accent/30 rounded-sm p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-bold cm-highlight">
+                    {walletBalance === 0 ? "Your wallet has no ETH" : "Insufficient ETH balance"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {walletBalance === 0
+                    ? `You need ${formatEth(totalCost)} ETH to vote. Fund your wallet with a credit card to get started.`
+                    : `You have ${formatEth(walletBalance)} ETH but need ${formatEth(totalCost)} ETH. Top up with a credit card.`}
+                </p>
+                <button
+                  onClick={() => modal.open({ view: 'OnRampProviders' })}
+                  className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-2 rounded-sm text-sm font-bold hover:bg-accent/90 transition-colors"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Buy ETH with Credit Card
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -367,19 +398,30 @@ export function VoteModal({
             >
               Cancel
             </button>
-            <button
-              onClick={handleVote}
-              disabled={isPending || isConfirming || isAutoConnecting || voteCount < 1}
-              className="flex-1 bg-primary text-primary-foreground py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100"
-            >
-              {isPending || isConfirming
-                ? "Voting..."
-                : isAutoConnecting
-                  ? "Connecting Wallet..."
-                  : isConnected
-                    ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${formatEth(totalCost)} ETH`
-                    : "Connect Wallet"}
-            </button>
+            {isConnected && hasInsufficientBalance ? (
+              <button
+                onClick={() => modal.open({ view: 'OnRampProviders' })}
+                disabled={isPending || isConfirming}
+                className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <CreditCard className="w-4 h-4" />
+                Fund Wallet
+              </button>
+            ) : (
+              <button
+                onClick={handleVote}
+                disabled={isPending || isConfirming || isAutoConnecting || voteCount < 1}
+                className="flex-1 bg-primary text-primary-foreground py-3 rounded-sm font-bold uppercase text-sm hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {isPending || isConfirming
+                  ? "Voting..."
+                  : isAutoConnecting
+                    ? "Connecting Wallet..."
+                    : isConnected
+                      ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${formatEth(totalCost)} ETH`
+                      : "Connect Wallet"}
+              </button>
+            )}
           </div>
         </div>
       </div>
