@@ -74,11 +74,11 @@ export function MobileNav() {
             <button
               onClick={() => open()}
               className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-3 rounded-sm transition-colors cm-nav-tab"
-              aria-label="Connect wallet"
+              aria-label="Login"
             >
               <Wallet className="w-5 h-5" aria-hidden="true" />
               <span className="text-xs font-medium text-center leading-tight text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border px-2 py-1 rounded-sm whitespace-nowrap pointer-events-none z-[60] shadow-lg">
-                CONNECT
+                LOGIN
               </span>
             </button>
           ) : isConnected ? (
