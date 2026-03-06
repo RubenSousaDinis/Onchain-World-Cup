@@ -21,7 +21,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
           onClick={() => modal.open()}
           className="cm-highlight px-6 py-2 font-semibold"
         >
-          Connect Wallet
+          Login
         </button>
       </div>
     )

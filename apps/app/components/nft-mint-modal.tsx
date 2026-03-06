@@ -91,7 +91,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
 
   const handleMint = async () => {
     if (!address) {
-      error("Wallet Not Connected", "Please connect your wallet to mint an NFT.")
+      error("Not Logged In", "Please login to mint an NFT.")
       return
     }
 

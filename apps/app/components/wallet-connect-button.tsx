@@ -49,7 +49,7 @@ export function WalletConnectButton() {
         className="cm-nav-tab px-4 py-2 rounded-sm text-sm font-bold flex items-center gap-2"
       >
         <Wallet className="w-4 h-4" />
-        <span>CONNECT WALLET</span>
+        <span>LOGIN</span>
       </button>
     )
   }

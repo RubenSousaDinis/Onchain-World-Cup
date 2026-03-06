@@ -91,7 +91,7 @@ export default async function HomePage() {
             <section aria-labelledby="how-heading">
               <h2 id="how-heading">How It Works</h2>
               <ol>
-                <li>Connect your wallet — use Coinbase Wallet, MetaMask, or any Base-compatible wallet.</li>
+                <li>Login — use email, Google, Coinbase Wallet, MetaMask, or any Base-compatible wallet.</li>
                 <li>Choose a country and vote with ETH — earlier votes are cheaper thanks to bonding-curve pricing.</li>
                 <li>Top 48 countries qualify for the tournament and advance to group stages and knockout rounds.</li>
                 <li>Winners share 90% of the prize pool proportionally to how many votes they cast.</li>
