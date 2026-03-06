@@ -34,8 +34,9 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     },
     features: {
       analytics: true,
-      email: false,
-      socials: false,
+      email: true,
+      socials: ['google', 'apple', 'github', 'x'],
+      onramp: true,
     },
     themeMode: "dark",
     themeVariables: {
