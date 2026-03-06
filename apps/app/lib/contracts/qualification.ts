@@ -100,6 +100,7 @@ export function useVotePrice(chainId: number, countryCode: string) {
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "votePrice",
     args: [countryBytes],
+    chainId,
     query: {
       enabled: !!address && !!countryCode,
     },
@@ -118,6 +119,7 @@ export function useCalculateVoteCost(chainId: number, countryCode: string, votes
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "calculateVoteCost",
     args: [countryBytes, BigInt(votes)],
+    chainId,
     query: {
       enabled: !!address && !!countryCode && votes > 0,
     },
@@ -136,6 +138,7 @@ export function useCountryVotes(chainId: number, countryCode: string) {
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "countryVotes",
     args: [countryBytes],
+    chainId,
     query: {
       enabled: !!address && !!countryCode,
     },
@@ -154,6 +157,7 @@ export function useCountryETH(chainId: number, countryCode: string) {
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "ethForCountry",
     args: [countryBytes],
+    chainId,
     query: {
       enabled: !!address && !!countryCode,
     },
@@ -172,6 +176,7 @@ export function useUserVotes(chainId: number, userAddress: Address | undefined, 
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "userVotes",
     args: [userAddress!, countryBytes],
+    chainId,
     query: {
       enabled: !!address && !!userAddress && !!countryCode,
     },
@@ -189,6 +194,7 @@ export function useGetUserVotes(chainId: number, userAddress: Address | undefine
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "getUserVotes",
     args: [userAddress!],
+    chainId,
     query: {
       enabled: !!address && !!userAddress,
     },
@@ -207,6 +213,7 @@ export function useIsQualified(chainId: number, countryCode: string) {
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "isQualified",
     args: [countryBytes],
+    chainId,
     query: {
       enabled: !!address && !!countryCode,
     },
@@ -223,6 +230,7 @@ export function useQualificationFinalized(chainId: number) {
     address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationFinalized",
+    chainId,
     query: { enabled: !!address },
   })
 }
@@ -237,6 +245,7 @@ export function useQualificationStartTime(chainId: number) {
     address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationStartTime",
+    chainId,
     query: { enabled: !!address },
   })
 }
@@ -251,6 +260,7 @@ export function useQualificationEndTime(chainId: number) {
     address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "qualificationEndTime",
+    chainId,
     query: { enabled: !!address },
   })
 }
@@ -279,6 +289,7 @@ export function useTotalPrizePool(chainId: number) {
     address: address!,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "totalPrizePool",
+    chainId,
   })
 }
 
@@ -308,6 +319,7 @@ export function useClaimable(chainId: number, userAddress: Address | undefined) 
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "claimable",
     args: [userAddress!],
+    chainId,
     query: {
       enabled: !!userAddress,
     },
@@ -324,6 +336,7 @@ export function usePaused(chainId: number) {
     address: address ?? ZERO_ADDRESS,
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "paused",
+    chainId,
     query: { enabled: !!address },
   })
 }
@@ -392,6 +405,7 @@ export function useHasClaimed(chainId: number, userAddress: Address | undefined)
     abi: WORLD_CUP_QUALIFICATION_ABI,
     functionName: "hasClaimed",
     args: [userAddress!],
+    chainId,
     query: {
       enabled: !!userAddress,
     },
