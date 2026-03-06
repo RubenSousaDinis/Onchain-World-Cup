@@ -6,9 +6,9 @@ import { revalidateTag } from 'next/cache'
  * Bust all qualification cache tags so the next request fetches fresh data.
  */
 export async function POST() {
-  revalidateTag('qualification-summary')
-  revalidateTag('qualification-countries')
-  revalidateTag('qualification-votes')
-  revalidateTag('qualification-leaderboard')
+  revalidateTag('qualification-summary', 'default')
+  revalidateTag('qualification-countries', 'default')
+  revalidateTag('qualification-votes', 'default')
+  revalidateTag('qualification-leaderboard', 'default')
   return NextResponse.json({ success: true })
 }
