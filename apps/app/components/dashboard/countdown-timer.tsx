@@ -45,6 +45,11 @@ export function CountdownTimer({
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         let { days, hours, minutes, seconds } = prev
+        // Guard: already at zero, don't go negative
+        if (days <= 0 && hours <= 0 && minutes <= 0 && seconds <= 0) {
+          clearInterval(timer)
+          return { days: 0, hours: 0, minutes: 0, seconds: 0 }
+        }
         seconds--
         if (seconds < 0) { seconds = 59; minutes-- }
         if (minutes < 0) { minutes = 59; hours-- }
