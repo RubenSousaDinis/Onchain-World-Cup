@@ -41,7 +41,7 @@ const nextConfig = {
             // unsafe-inline + unsafe-eval required by Next.js inline scripts and wagmi/viem
             // frame-ancestors * required for Farcaster Mini App embedding
             // connect-src https: wss: covers Base RPC, WalletConnect, analytics
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com; frame-ancestors *; worker-src blob:;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://auth.reown.com; frame-ancestors *; worker-src blob:;",
           },
         ],
       },
