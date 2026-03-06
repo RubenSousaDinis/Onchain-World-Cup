@@ -13,8 +13,10 @@ import { createAppKit } from "@reown/appkit/react"
 import { base, baseSepolia } from "@reown/appkit/networks"
 import { wagmiAdapter, projectId, networks } from "./wagmi-core"
 
-const isProduction = process.env.NODE_ENV === "production"
-const defaultChain = isProduction ? base : baseSepolia
+// Always default to Base mainnet — AppKit's embedded wallet (email login) requires
+// a mainnet chain to set up the MPC wallet. Using baseSepolia as the default causes
+// the embedded wallet creation to hang after OTP verification.
+const defaultChain = base
 
 let _modal: ReturnType<typeof createAppKit> | null = null
 
@@ -29,13 +31,18 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     metadata: {
       name: "Onchain World Cup",
       description: "Vote on World Cup 2026 matches with ETH on Base network",
+      // Must be a registered HTTPS domain in the Reown project dashboard.
+      // Reown checks the HTTP Origin header (localhost/prod) against allowed domains —
+      // both http://localhost:3101 and https://app.onchainworldcup.xyz must be added there.
       url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
       icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
     },
     features: {
       analytics: true,
       email: true,
-      socials: ['google', 'apple', 'github', 'x'],
+      // google removed: accounts.google.com sets COOP: same-origin which breaks
+      // the popup's window.opener reference — AppKit cannot detect popup close.
+      socials: ['apple', 'github', 'x'],
       onramp: true,
     },
     themeMode: "dark",
@@ -44,6 +51,17 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       "--w3m-border-radius-master": "2px",
     },
     allowUnsupportedChain: false,
+  })
+
+  // Subscribe to AppKit events and state for debugging email/social login issues.
+  // Uses console.warn so logs survive Next.js removeConsole stripping in production.
+  _modal.subscribeEvents((event) => {
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit event]', event.data.event, event.data)
+  })
+  _modal.subscribeState((state) => {
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit state]', state)
   })
 
   return _modal
