@@ -1,6 +1,6 @@
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Clock, Flag, Target, Vote, Award, Info } from "lucide-react"
+import { Trophy, Clock, Flag, Target, Vote, Award, Info, Users } from "lucide-react"
 import { TourGuideButton } from "./tour-guide-button"
 
 export default function HowItWorksPage() {
@@ -66,7 +66,7 @@ export default function HowItWorksPage() {
                 <div className="text-sm lg:text-base">
                   <div className="font-bold mb-1">Vote for Countries</div>
                   <div className="text-sm lg:text-base text-muted-foreground">
-                    64 countries compete for qualification. Users vote for their favorites with ETH. No matches yet -
+                    Any of 192 nations can compete for qualification. Users vote for their favorites with ETH. No matches yet —
                     just straight voting competition between nations.
                   </div>
                 </div>
@@ -176,6 +176,52 @@ export default function HowItWorksPage() {
             </div>
           </div>
 
+          {/* Referrals */}
+          <div className="cm-panel rounded-sm border border-border overflow-hidden">
+            <div className="soccer-field-bg px-4 py-6 border-b border-border">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
+                  <Users className="w-6 h-6 cm-highlight" />
+                </div>
+                <div>
+                  <div className="text-xs lg:text-sm text-accent font-bold uppercase">Across All Phases</div>
+                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Referrals</h2>
+                </div>
+              </div>
+              <p className="text-sm lg:text-base text-muted-foreground">
+                Earn ETH by inviting friends to vote
+              </p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Users className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Your Referral Link</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    Every account gets a unique referral link at <code className="text-accent">onchainworldcup.xyz/r/your-address</code>. Share it anywhere — when someone votes using your link, you earn instantly.
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Award className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">1% of Every Vote</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    You earn <strong>1% of the ETH spent</strong> on every vote your referrals make — paid automatically onchain at the moment they vote. No claiming needed.
+                  </div>
+                </div>
+              </div>
+              <div className="bg-accent/10 rounded-sm p-3 border border-accent/30 mt-4">
+                <div className="text-xs lg:text-sm font-bold text-accent mb-1">How to Get Started:</div>
+                <ul className="text-xs lg:text-sm text-foreground space-y-1 ml-4 list-disc">
+                  <li>Login and go to your Profile → Referrals tab</li>
+                  <li>Copy your referral link and share it</li>
+                  <li>Track earnings and referred voters in real time</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div className="cm-panel rounded-sm border border-border overflow-hidden opacity-70">
             <div className="soccer-field-bg px-4 py-6 border-b border-border">
               <div className="flex items-center gap-3 mb-2">
@@ -274,8 +320,8 @@ export default function HowItWorksPage() {
         {/* Quick Stats/Info */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 mb-20 lg:mb-0">
           <div className="cm-panel rounded-sm border border-border p-4">
-            <div className="text-2xl font-bold cm-highlight mb-1">64</div>
-            <div className="text-xs lg:text-sm text-muted-foreground">Countries competing in qualification</div>
+            <div className="text-2xl font-bold cm-highlight mb-1">192</div>
+            <div className="text-xs lg:text-sm text-muted-foreground">Nations eligible for qualification</div>
           </div>
           <div className="cm-panel rounded-sm border border-border p-4">
             <div className="text-2xl font-bold cm-highlight mb-1">48</div>
