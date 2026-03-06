@@ -76,10 +76,10 @@ export function RetroSidebar() {
           <button
             onClick={() => open()}
             className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
-            aria-label="Connect wallet"
+            aria-label="Login"
           >
             <Wallet className="w-5 h-5 mx-auto mb-1" aria-hidden="true" />
-            <div className="text-xs">CONNECT</div>
+            <div className="text-xs">LOGIN</div>
           </button>
         ) : isConnected ? (
           <button
