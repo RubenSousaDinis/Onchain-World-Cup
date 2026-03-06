@@ -226,7 +226,11 @@ export function HomePageClient() {
               </div>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <CountdownTimer endDate={qualEndDate} />
+              {qualEndDate ? (
+                <CountdownTimer endDate={qualEndDate} />
+              ) : (
+                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">--:--:--:--</div>
+              )}
               <Link
                 href="/qualification"
                 className="cm-nav-tab inline-flex items-center gap-2 px-4 py-2 rounded-sm font-bold uppercase text-sm hover:brightness-110 transition-colors duration-200"
