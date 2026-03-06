@@ -8,18 +8,18 @@ import { mainnet, base } from "viem/chains"
 const L2_REVERSE_REGISTRAR = "0x79ea96012eea67a83431f1701b3dff7e37f9e282" as const
 const L2_DEFAULT_RESOLVER = "0xC6d566A56A1aFf6508b41f6c90ff131615583BCD" as const
 
-// Always use Base mainnet for ENS/Basename resolution — never a testnet RPC.
-// A dedicated env var takes precedence; we never fall back to the app's
-// BASE_MAINNET_RPC_URL because that variable may point to a testnet endpoint.
-const baseClient = createPublicClient({
-  chain: base,
-  transport: http(process.env.BASE_MAINNET_ENS_RPC_URL || "https://mainnet.base.org"),
-})
+// ENS lookups must always use mainnet endpoints — hardcoded to prevent any
+// shell env var (e.g. BASE_MAINNET_RPC_URL pointing at a testnet) from
+// accidentally routing these calls to the wrong chain.
+// Clients are created inside the function (lazily) so they don't capture
+// env vars at import/module-init time.
+function createBaseClient() {
+  return createPublicClient({ chain: base, transport: http("https://mainnet.base.org") })
+}
 
-const ethClient = createPublicClient({
-  chain: mainnet,
-  transport: http(process.env.ETH_MAINNET_RPC_URL || "https://eth.llamarpc.com"),
-})
+function createEthClient() {
+  return createPublicClient({ chain: mainnet, transport: http("https://eth.llamarpc.com") })
+}
 
 /**
  * Resolves the best ENS/Basename for an address.
@@ -28,36 +28,31 @@ const ethClient = createPublicClient({
  * Returns null if no name is found.
  */
 export async function resolveEnsName(address: string): Promise<string | null> {
+  const baseClient = createBaseClient()
+  const ethClient = createEthClient()
+
   // 1. Base L2 primary name — query the reverse registrar directly on Base.
   //    This is how "Set as primary" in the Basenames app is stored.
-  try {
-    const node = await baseClient.readContract({
-      address: L2_REVERSE_REGISTRAR,
-      abi: [{ name: "node", type: "function", inputs: [{ name: "addr", type: "address" }], outputs: [{ type: "bytes32" }], stateMutability: "view" }],
-      functionName: "node",
-      args: [address as `0x${string}`],
-    }) as `0x${string}`
+  const node = await baseClient.readContract({
+    address: L2_REVERSE_REGISTRAR,
+    abi: [{ name: "node", type: "function", inputs: [{ name: "addr", type: "address" }], outputs: [{ type: "bytes32" }], stateMutability: "view" }],
+    functionName: "node",
+    args: [address as `0x${string}`],
+  }).catch(() => null) as `0x${string}` | null
 
+  if (node) {
     const baseName = await baseClient.readContract({
       address: L2_DEFAULT_RESOLVER,
       abi: [{ name: "name", type: "function", inputs: [{ name: "node", type: "bytes32" }], outputs: [{ type: "string" }], stateMutability: "view" }],
       functionName: "name",
       args: [node],
-    }) as string
+    }).catch(() => null) as string | null
 
     if (baseName) return baseName
-  } catch {
-    // No Basename set — fall through to L1
   }
 
   // 2. L1 ENS primary name
-  try {
-    const l1Name = await ethClient
-      .getEnsName({ address: address as `0x${string}` })
-      .catch(() => null)
-
-    return l1Name ?? null
-  } catch {
-    return null
-  }
+  return ethClient
+    .getEnsName({ address: address as `0x${string}` })
+    .catch(() => null)
 }

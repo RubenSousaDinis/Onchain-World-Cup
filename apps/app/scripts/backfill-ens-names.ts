@@ -12,12 +12,6 @@
  *   npx tsx scripts/backfill-ens-names.ts --concurrency 3
  */
 
-// Load .env.local / .env so DATABASE_URL and RPC URLs are available
-import { config } from "dotenv"
-import { resolve } from "path"
-config({ path: resolve(__dirname, "../.env.local") })
-config({ path: resolve(__dirname, "../.env") })
-
 import { PrismaClient } from "@prisma/client"
 import { resolveEnsName } from "../lib/server/ens"
 
