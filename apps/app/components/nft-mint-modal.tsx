@@ -75,8 +75,11 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
 
   const buildMetadataUrl = () => {
     if (!milestone) return ""
+    // Use the canonical app URL so the tokenURI stored on-chain always resolves
+    // correctly (window.location.origin would break in Farcaster mini-app contexts)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.onchainworldcup.xyz"
     return (
-      `${window.location.origin}/api/nft/metadata?` +
+      `${baseUrl}/api/nft/metadata?` +
       new URLSearchParams({
         title: milestone.title,
         description: milestone.description,
@@ -127,8 +130,9 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
       return
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.onchainworldcup.xyz"
     const imageUrl =
-      `${window.location.origin}/api/og/achievement-card?` +
+      `${baseUrl}/api/og/achievement-card?` +
       new URLSearchParams({
         title: milestone.title,
         description: milestone.description,
@@ -257,6 +261,9 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
 
           <p className="text-xs lg:text-sm text-muted-foreground text-center mt-4">
             Your NFT will be minted on Base network and visible in your wallet
+          </p>
+          <p className="text-xs text-muted-foreground/60 text-center mt-2">
+            Your wallet may show &quot;Unknown NFT&quot; during confirmation — this is normal for new mints and your achievement will appear correctly after.
           </p>
         </div>
       </div>
