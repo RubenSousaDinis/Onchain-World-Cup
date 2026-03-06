@@ -17,8 +17,9 @@ export { wagmiAdapter, wagmiConfig as config } from "./wallet/wagmi-core"
  * Safe to call from any "use client" component.
  */
 export const modal = {
-  open: async () => {
+  open: async (options?: { view?: string }) => {
     const { initAppKit } = await import("./wallet/appkit-modal")
-    return initAppKit().open()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return initAppKit().open(options as any)
   },
 }
