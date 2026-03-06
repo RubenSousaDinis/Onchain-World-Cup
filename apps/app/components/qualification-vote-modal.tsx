@@ -336,16 +336,16 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       // In Farcaster, wallet should auto-connect. If still connecting, wait.
       if (isFrameContext) {
         if (isAutoConnecting) {
-          info("Connecting Wallet", "Wallet is connecting automatically...")
+          info("Logging in", "Wallet is connecting automatically...")
           return
         }
         // Farcaster: use the Farcaster wagmi connector (wraps sdk.wallet.ethProvider)
         const farcasterConnector = connectors.find((c) => c.id === "farcaster")
         if (farcasterConnector) {
           try {
-            info("Connecting Wallet", "Connecting via Farcaster wallet...")
+            info("Logging in", "Connecting via Farcaster wallet...")
             await connect({ connector: farcasterConnector })
-            info("Wallet Connected", "Authentication prompt will appear shortly...")
+            info("Logged in", "Authentication prompt will appear shortly...")
           } catch (err) {
             console.error("Failed to connect Farcaster wallet:", err)
             error("Connection Failed", "Unable to connect wallet. Please try again.")
@@ -656,7 +656,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           {!isConnected && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-sm p-3 text-center">
               <p className="text-sm text-destructive-foreground">
-                Connect your wallet to vote
+                Login to vote
               </p>
             </div>
           )}
@@ -763,11 +763,11 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                     : isWaitingForWallet
                     ? "Open wallet app..."
                     : isAutoConnecting
-                    ? "Connecting Wallet..."
+                    ? "Logging in..."
                     : !isConnected
-                    ? "Connect Wallet"
+                    ? "Login"
                     : !isAuthenticated
-                    ? "Sign In to Vote"
+                    ? "Login to Vote"
                     : chain?.id !== defaultChainId
                     ? `Switch to ${defaultChain.name}`
                     : (!useMockPricing && totalCost <= 0)

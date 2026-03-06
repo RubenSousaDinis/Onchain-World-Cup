@@ -204,7 +204,7 @@ function MyBetsContent() {
 
         {!isConnected ? (
           <div className="cm-panel rounded-sm p-8 text-center space-y-4 border-2 border-accent bg-accent/10">
-            <p className="text-sm font-bold text-accent">Connect your wallet to view your profile</p>
+            <p className="text-sm font-bold text-accent">Login to view your profile</p>
             <WalletConnectButton />
           </div>
         ) : isLoadingUser ? (

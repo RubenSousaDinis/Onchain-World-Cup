@@ -99,7 +99,7 @@ export function Onboarding({ isOpen, onClose }: OnboardingProps) {
               <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                 1
               </span>
-              <span className="text-base pt-0.5"><strong>Connect your wallet</strong></span>
+              <span className="text-base pt-0.5"><strong>Login</strong></span>
             </li>
             <li className="flex gap-3">
               <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">

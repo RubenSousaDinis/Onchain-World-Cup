@@ -15,8 +15,8 @@ export const contentType = OG_IMAGE_CONTENT_TYPE
 const STEPS = [
   {
     number: '01',
-    title: 'Connect Wallet',
-    description: 'Link any EVM wallet on Base network',
+    title: 'Login',
+    description: 'Sign in with email, social, or any EVM wallet',
   },
   {
     number: '02',

@@ -93,7 +93,7 @@ export function AddAppCTA() {
         <Bell className="w-12 h-12 mx-auto mb-4 text-accent" />
         <h3 className="text-xl font-bold mb-2">Stay Updated</h3>
         <p className="text-muted-foreground mb-4">
-          Connect your wallet to get started with voting when qualification opens
+          Login to get started with voting when qualification opens
         </p>
       </div>
     )

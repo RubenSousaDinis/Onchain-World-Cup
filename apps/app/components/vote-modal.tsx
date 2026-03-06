@@ -124,14 +124,14 @@ export function VoteModal({
       // In Farcaster, wallet should auto-connect. If still connecting, wait.
       if (isFrameContext) {
         if (isAutoConnecting) {
-          info("Connecting Wallet", "Wallet is connecting automatically...")
+          info("Logging in", "Wallet is connecting automatically...")
           return
         }
         // Connect via the Farcaster wagmi connector (uses sdk.wallet.ethProvider)
         const farcasterConnector = connectors.find((c) => c.id === "farcaster")
         if (farcasterConnector) {
           try {
-            info("Connecting Wallet", "Connecting via Farcaster wallet...")
+            info("Logging in", "Connecting via Farcaster wallet...")
             await connect({ connector: farcasterConnector })
             return // Will vote on next click after connection settles
           } catch (err) {
@@ -416,10 +416,10 @@ export function VoteModal({
                 {isPending || isConfirming
                   ? "Voting..."
                   : isAutoConnecting
-                    ? "Connecting Wallet..."
+                    ? "Logging in..."
                     : isConnected
                       ? `Buy ${voteCount} Vote${voteCount !== 1 ? "s" : ""} for ${formatEth(totalCost)} ETH`
-                      : "Connect Wallet"}
+                      : "Login"}
               </button>
             )}
           </div>
