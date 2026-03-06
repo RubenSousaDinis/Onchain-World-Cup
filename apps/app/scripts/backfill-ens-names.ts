@@ -2,8 +2,8 @@
  * Backfill ENS names for users missing them in the database.
  *
  * Queries all UserStat rows where ensName is NULL and the user has no
- * manually-set name, resolves each address via the ensdata.net free API
- * (supports both ENS and Basenames), and writes the result back.
+ * manually-set name, resolves each address (Basenames on Base L2 first,
+ * then L1 ENS), and writes the result back.
  *
  * Usage (from apps/app):
  *   npx tsx scripts/backfill-ens-names.ts
@@ -12,13 +12,14 @@
  *   npx tsx scripts/backfill-ens-names.ts --concurrency 3
  */
 
-// Load .env.local so DATABASE_URL is available
+// Load .env.local / .env so DATABASE_URL and RPC URLs are available
 import { config } from "dotenv"
 import { resolve } from "path"
-config({ path: resolve(__dirname, "../.env.local"), quiet: true })
-config({ path: resolve(__dirname, "../.env"), quiet: true })
+config({ path: resolve(__dirname, "../.env.local") })
+config({ path: resolve(__dirname, "../.env") })
 
 import { PrismaClient } from "@prisma/client"
+import { resolveEnsName } from "../lib/server/ens"
 
 const prisma = new PrismaClient()
 
@@ -31,42 +32,6 @@ const CONCURRENCY = (() => {
   const idx = process.argv.indexOf("--concurrency")
   return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 3
 })()
-
-interface EnsDataResponse {
-  address?: string
-  name?: string           // primary ENS name (e.g. "example.eth")
-  displayName?: string    // display name (includes Basenames)
-}
-
-/**
- * Resolves the best ENS/Basename for an address via ensdata.net.
- * Returns null if no name is found.
- */
-async function resolveEns(address: string): Promise<{ name: string | null; error?: string }> {
-  try {
-    const res = await fetch(`https://ensdata.net/${address}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(10_000),
-    })
-
-    if (!res.ok) {
-      return { name: null, error: `HTTP ${res.status}` }
-    }
-
-    const data: EnsDataResponse = await res.json()
-
-    // Prefer `name` (primary ENS / Basename), fall back to `displayName`
-    const name = data.name || data.displayName || null
-
-    // Filter out anything that looks like a truncated address (e.g. "0x1234...abcd")
-    if (name && name.includes("...")) return { name: null }
-
-    return { name }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    return { name: null, error: msg }
-  }
-}
 
 /** Run up to `concurrency` async tasks at a time from an array. */
 async function pMap<T, R>(
@@ -115,7 +80,14 @@ async function main() {
     candidates,
     async (row, i) => {
       const { walletAddress } = row
-      const { name, error } = await resolveEns(walletAddress)
+      let name: string | null = null
+      let error: string | undefined
+
+      try {
+        name = await resolveEnsName(walletAddress)
+      } catch (err) {
+        error = err instanceof Error ? err.message : String(err)
+      }
 
       if (error) {
         failed++
