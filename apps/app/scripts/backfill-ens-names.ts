@@ -24,7 +24,11 @@ const LIMIT = (() => {
 })()
 const CONCURRENCY = (() => {
   const idx = process.argv.indexOf("--concurrency")
-  return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 3
+  return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 1
+})()
+const DELAY_MS = (() => {
+  const idx = process.argv.indexOf("--delay")
+  return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 300
 })()
 
 /** Run up to `concurrency` async tasks at a time from an array. */
@@ -36,9 +40,12 @@ async function pMap<T, R>(
   const results: R[] = []
   let index = 0
 
+  const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
   async function worker() {
     while (index < items.length) {
       const i = index++
+      if (i > 0) await delay(DELAY_MS)
       results[i] = await fn(items[i], i)
     }
   }
@@ -50,7 +57,7 @@ async function pMap<T, R>(
 
 async function main() {
   console.log(`Mode: ${DRY_RUN ? "DRY RUN (no changes written)" : "LIVE"}`)
-  console.log(`Concurrency: ${CONCURRENCY}`)
+  console.log(`Concurrency: ${CONCURRENCY} | Delay: ${DELAY_MS}ms`)
   if (LIMIT) console.log(`Limit: ${LIMIT}`)
 
   const rows = await prisma.userStat.findMany({
