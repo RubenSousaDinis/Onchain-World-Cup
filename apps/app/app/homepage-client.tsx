@@ -15,7 +15,8 @@ import {
   EmptyState,
 } from "@/components/dashboard"
 import { useClaimable, useQualificationEndTime, isQualificationContractAvailable } from "@/lib/contracts/qualification"
-import { useAccount, useChainId } from "wagmi"
+import { getDefaultChainId } from "@/lib/chain-config"
+import { useAccount } from "wagmi"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
@@ -61,8 +62,8 @@ export function HomePageClient() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isFetchingRef = useRef(false)
 
-  const { address: userAddress } = useAccount()
-  const chainId = useChainId()
+  const { address: userAddress, chain } = useAccount()
+  const chainId = chain?.id || getDefaultChainId()
   const isContractAvailable = isQualificationContractAvailable(chainId)
   const { data: claimableWei } = useClaimable(chainId, userAddress)
   const { projectedEarnings } = useProjectedEarnings(userAddress)
