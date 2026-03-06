@@ -12,7 +12,9 @@ const nextConfig = {
     ],
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    // Remove console.log in production but keep console.warn and console.error
+    // so debug instrumentation (e.g. AppKit event subscriptions) survives the build.
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["warn", "error"] } : false,
   },
   // Empty turbopack config to acknowledge we're using Turbopack (Next.js 16 default)
   // The webpack config below is only used in production builds

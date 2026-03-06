@@ -53,5 +53,16 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     allowUnsupportedChain: false,
   })
 
+  // Subscribe to AppKit events and state for debugging email/social login issues.
+  // Uses console.warn so logs survive Next.js removeConsole stripping in production.
+  _modal.subscribeEvents((event) => {
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit event]', event.data.event, event.data)
+  })
+  _modal.subscribeState((state) => {
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit state]', state)
+  })
+
   return _modal
 }
