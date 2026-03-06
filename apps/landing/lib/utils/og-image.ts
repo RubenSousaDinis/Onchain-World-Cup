@@ -12,13 +12,18 @@ export function getBaseUrl(): string {
     return process.env.NEXT_PUBLIC_APP_URL
   }
 
-  // On Vercel, use VERCEL_URL with https
+  // On Vercel, prefer the stable production URL over the per-deployment URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+
+  // Fallback to per-deployment Vercel URL (preview deployments)
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`
   }
 
   // Fallback to production URL
-  return 'https://app.onchainworldcup.xyz'
+  return 'https://onchainworldcup.xyz'
 }
 
 /**
