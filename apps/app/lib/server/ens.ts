@@ -28,17 +28,27 @@ function createEthClient() {
  * Returns null if no name is found.
  */
 export async function resolveEnsName(address: string): Promise<string | null> {
+  const DEBUG = process.env.ENS_DEBUG === "1"
+  const log = (msg: string) => { if (DEBUG) process.stderr.write(`[ens] ${msg}\n`) }
+
   const baseClient = createBaseClient()
   const ethClient = createEthClient()
 
+  log(`resolving ${address}`)
+  log(`NODE_OPTIONS=${process.env.NODE_OPTIONS}`)
+
   // 1. Base L2 primary name — query the reverse registrar directly on Base.
-  //    This is how "Set as primary" in the Basenames app is stored.
   const node = await baseClient.readContract({
     address: L2_REVERSE_REGISTRAR,
     abi: [{ name: "node", type: "function", inputs: [{ name: "addr", type: "address" }], outputs: [{ type: "bytes32" }], stateMutability: "view" }],
     functionName: "node",
     args: [address as `0x${string}`],
-  }).catch(() => null) as `0x${string}` | null
+  }).catch((e: unknown) => {
+    log(`node() error: ${e instanceof Error ? e.message.slice(0, 150) : e}`)
+    return null
+  }) as `0x${string}` | null
+
+  log(`node=${node}`)
 
   if (node) {
     const baseName = await baseClient.readContract({
@@ -46,13 +56,22 @@ export async function resolveEnsName(address: string): Promise<string | null> {
       abi: [{ name: "name", type: "function", inputs: [{ name: "node", type: "bytes32" }], outputs: [{ type: "string" }], stateMutability: "view" }],
       functionName: "name",
       args: [node],
-    }).catch(() => null) as string | null
+    }).catch((e: unknown) => {
+      log(`name() error: ${e instanceof Error ? e.message.slice(0, 150) : e}`)
+      return null
+    }) as string | null
 
+    log(`baseName=${baseName}`)
     if (baseName) return baseName
   }
 
   // 2. L1 ENS primary name
-  return ethClient
+  const l1Name = await ethClient
     .getEnsName({ address: address as `0x${string}` })
-    .catch(() => null)
+    .catch((e: unknown) => {
+      log(`getEnsName error: ${e instanceof Error ? e.message.slice(0, 150) : e}`)
+      return null
+    })
+  log(`l1Name=${l1Name}`)
+  return l1Name ?? null
 }
