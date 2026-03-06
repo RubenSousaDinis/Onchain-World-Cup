@@ -2,8 +2,8 @@
  * Backfill ENS names for users missing them in the database.
  *
  * Queries all UserStat rows where ensName is NULL and the user has no
- * manually-set name, resolves each address against ENS (Base L2 first,
- * then L1 mainnet), and writes the result back.
+ * manually-set name, resolves each address via the ensdata.net free API
+ * (supports both ENS and Basenames), and writes the result back.
  *
  * Usage (from apps/app):
  *   npx tsx scripts/backfill-ens-names.ts
@@ -12,8 +12,13 @@
  *   npx tsx scripts/backfill-ens-names.ts --concurrency 3
  */
 
+// Load .env.local so DATABASE_URL is available
+import { config } from "dotenv"
+import { resolve } from "path"
+config({ path: resolve(__dirname, "../.env.local"), quiet: true })
+config({ path: resolve(__dirname, "../.env"), quiet: true })
+
 import { PrismaClient } from "@prisma/client"
-import { resolveEnsName } from "../lib/server/ens"
 
 const prisma = new PrismaClient()
 
@@ -24,8 +29,44 @@ const LIMIT = (() => {
 })()
 const CONCURRENCY = (() => {
   const idx = process.argv.indexOf("--concurrency")
-  return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 5
+  return idx !== -1 ? parseInt(process.argv[idx + 1], 10) : 3
 })()
+
+interface EnsDataResponse {
+  address?: string
+  name?: string           // primary ENS name (e.g. "example.eth")
+  displayName?: string    // display name (includes Basenames)
+}
+
+/**
+ * Resolves the best ENS/Basename for an address via ensdata.net.
+ * Returns null if no name is found.
+ */
+async function resolveEns(address: string): Promise<{ name: string | null; error?: string }> {
+  try {
+    const res = await fetch(`https://ensdata.net/${address}`, {
+      headers: { Accept: "application/json" },
+      signal: AbortSignal.timeout(10_000),
+    })
+
+    if (!res.ok) {
+      return { name: null, error: `HTTP ${res.status}` }
+    }
+
+    const data: EnsDataResponse = await res.json()
+
+    // Prefer `name` (primary ENS / Basename), fall back to `displayName`
+    const name = data.name || data.displayName || null
+
+    // Filter out anything that looks like a truncated address (e.g. "0x1234...abcd")
+    if (name && name.includes("...")) return { name: null }
+
+    return { name }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { name: null, error: msg }
+  }
+}
 
 /** Run up to `concurrency` async tasks at a time from an array. */
 async function pMap<T, R>(
@@ -53,7 +94,6 @@ async function main() {
   console.log(`Concurrency: ${CONCURRENCY}`)
   if (LIMIT) console.log(`Limit: ${LIMIT}`)
 
-  // Fetch users with no ENS name and no manually-set name
   const rows = await prisma.userStat.findMany({
     where: { ensName: null },
     include: { user: { select: { name: true } } },
@@ -75,33 +115,32 @@ async function main() {
     candidates,
     async (row, i) => {
       const { walletAddress } = row
-      try {
-        const name = await resolveEnsName(walletAddress)
+      const { name, error } = await resolveEns(walletAddress)
 
-        if (!name) {
-          skipped++
-          process.stdout.write(`[${i + 1}/${candidates.length}] ${walletAddress} — no ENS name\n`)
-          return
-        }
-
-        process.stdout.write(
-          `[${i + 1}/${candidates.length}] ${walletAddress} — found: ${name}${DRY_RUN ? " (dry run)" : ""}\n`
-        )
-
-        if (!DRY_RUN) {
-          await prisma.userStat.update({
-            where: { walletAddress },
-            data: { ensName: name },
-          })
-        }
-
-        resolved++
-      } catch (err) {
+      if (error) {
         failed++
-        process.stdout.write(
-          `[${i + 1}/${candidates.length}] ${walletAddress} — ERROR: ${err instanceof Error ? err.message : String(err)}\n`
-        )
+        process.stdout.write(`[${i + 1}/${candidates.length}] ${walletAddress} — ERROR: ${error}\n`)
+        return
       }
+
+      if (!name) {
+        skipped++
+        process.stdout.write(`[${i + 1}/${candidates.length}] ${walletAddress} — no ENS name\n`)
+        return
+      }
+
+      process.stdout.write(
+        `[${i + 1}/${candidates.length}] ${walletAddress} — found: ${name}${DRY_RUN ? " (dry run)" : ""}\n`
+      )
+
+      if (!DRY_RUN) {
+        await prisma.userStat.update({
+          where: { walletAddress },
+          data: { ensName: name },
+        })
+      }
+
+      resolved++
     },
     CONCURRENCY
   )
