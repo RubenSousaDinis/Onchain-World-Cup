@@ -68,13 +68,16 @@ export default function QualificationPage() {
     if (isSyncing || isRefreshing) return
     setIsSyncing(true)
     try {
-      await fetch("/api/indexer/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chainId }),
-      })
+      await Promise.all([
+        fetch("/api/indexer/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chainId }),
+        }),
+        fetch("/api/qualification/revalidate", { method: "POST" }),
+      ])
     } catch {
-      // sync is best-effort
+      // sync and revalidate are best-effort
     } finally {
       setIsSyncing(false)
     }

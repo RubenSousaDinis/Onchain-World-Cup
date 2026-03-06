@@ -6,6 +6,6 @@ import { revalidateTag } from 'next/cache'
  * Bust all leaderboard cache tags so the next request fetches fresh data.
  */
 export async function POST() {
-  revalidateTag('leaderboard', 'default')
+  revalidateTag('leaderboard')
   return NextResponse.json({ success: true })
 }

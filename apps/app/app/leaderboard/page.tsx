@@ -30,14 +30,15 @@ export default function LeaderboardPage() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (bypassCache = false) => {
     if (isFetchingRef.current) return
 
     isFetchingRef.current = true
     setIsLoading(true)
 
     try {
-      const res = await fetch(`/api/leaderboard?category=${activeCategory}&limit=100&offset=0`)
+      const url = `/api/leaderboard?category=${activeCategory}&limit=100&offset=0${bypassCache ? `&t=${Date.now()}` : ''}`
+      const res = await fetch(url, bypassCache ? { cache: 'no-store' } : {})
       if (res.ok) {
         const response = await res.json()
         const data = response.data || []
@@ -85,7 +86,7 @@ export default function LeaderboardPage() {
     } finally {
       setIsRefreshing(false)
     }
-    await fetchLeaderboard()
+    await fetchLeaderboard(true)
   }
 
   // Fetch leaderboard data from API
