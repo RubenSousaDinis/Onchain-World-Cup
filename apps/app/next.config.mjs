@@ -52,7 +52,10 @@ const nextConfig = {
             // connect-src https: wss: covers Base RPC, WalletConnect, analytics
             // frame-src *.reown.com covers secure/auth/api subdomains used by
             //   AppKit's embedded wallet (MPC keys) and social OAuth iframes.
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://*.reown.com; frame-ancestors *; worker-src blob:;",
+            //   *.magic.link is required because Reown's embedded wallet uses Magic Link
+            //   SDK internally for MPC key management — without it the auth.magic.link
+            //   iframe is silently blocked by CSP and social login hangs forever.
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://*.reown.com https://*.magic.link; frame-ancestors *; worker-src blob:;",
           },
         ],
       },
