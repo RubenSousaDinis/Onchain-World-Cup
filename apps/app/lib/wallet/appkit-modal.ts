@@ -51,6 +51,16 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     allowUnsupportedChain: false,
   })
 
+  // ---------- Config validation ----------
+  // eslint-disable-next-line no-console
+  console.warn('[AppKit] initialized', {
+    projectId: projectId ? `${projectId.slice(0, 6)}…` : '⚠️ MISSING',
+    defaultNetwork: `${defaultChain.name} (${defaultChain.id})`,
+    networks: networks.map(n => `${n.name} (${n.id})`),
+    url: process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://app.onchainworldcup.xyz',
+    features: { email: true, socials: ['google', 'apple', 'github', 'x'], onramp: true },
+  })
+
   // Subscribe to AppKit events and state for debugging email/social login issues.
   // Uses console.warn so logs survive Next.js removeConsole stripping in production.
   _modal.subscribeEvents((event) => {

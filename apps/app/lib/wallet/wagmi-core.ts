@@ -43,3 +43,16 @@ export const wagmiAdapter = new WagmiAdapter({
 })
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig
+
+// ---------- Config validation (runs once at import time) ----------
+// Uses console.warn so logs survive Next.js removeConsole stripping in production.
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.warn('[wagmi-core] config loaded', {
+    projectId: projectId ? `${projectId.slice(0, 6)}…` : '⚠️ MISSING',
+    networks: networks.map(n => `${n.name} (${n.id})`),
+    baseMainnetRpc: baseMainnetRpcUrl,
+    baseSepoliaRpc: baseSepoliaRpcUrl,
+    connectors: wagmiConfig.connectors.map(c => c.name),
+  })
+}
