@@ -17,8 +17,8 @@ export function getDefaultChainId(): number {
       return parsed
     }
   }
-  // Default to Base Sepolia for development
-  return 84532
+  // Default to Base mainnet
+  return 8453
 }
 
 /**
