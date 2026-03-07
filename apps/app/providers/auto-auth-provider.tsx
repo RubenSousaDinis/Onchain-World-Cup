@@ -12,6 +12,16 @@ function isMobileBrowser(): boolean {
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
 
+/** Returns true when the connector is an AppKit embedded wallet (email/social login). */
+function isEmbeddedWalletConnector(connector: { id?: string; type?: string } | undefined): boolean {
+  if (!connector) return false
+  // AppKit embedded wallet connector uses "w3mAuth" as id/type.
+  // Also check for generic "auth" patterns for forward compatibility.
+  const id = connector.id?.toLowerCase() ?? ""
+  const type = connector.type?.toLowerCase() ?? ""
+  return id.includes("auth") || type.includes("auth")
+}
+
 /**
  * Auto-Authentication Provider
  *
@@ -222,15 +232,38 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
     hasTriggeredAuth.current = true
 
     const mobile = isMobileBrowser()
+    const isEmbedded = isEmbeddedWalletConnector(connector)
     // Detect WalletConnect-based connection (MetaMask mobile, etc.)
     const isWalletConnect = connector?.type === "walletConnect" || connector?.id === "walletConnect"
     // On mobile WalletConnect: try auto-sign, but show a manual prompt if it fails
     const isMobileWalletConnect = mobile && isWalletConnect && !isFarcasterMiniApp
 
-    // Use a longer delay for mobile WalletConnect to let the connection settle
-    const delay = isMobileWalletConnect ? 2000 : 1000
+    // Embedded wallets (social/email login) need a longer delay — the AppKit modal
+    // must finish its MPC wallet initialisation and close before we send a
+    // personal_sign request, otherwise the signing iframe conflicts with the
+    // still-open connection modal and the UI hangs.
+    const delay = isEmbedded ? 3000 : isMobileWalletConnect ? 2000 : 1000
     const timer = setTimeout(async () => {
-      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect })
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect, isEmbedded })
+
+      // Close the AppKit modal before triggering SIWE for embedded wallets.
+      // The modal may still be open from the social login flow — sending a
+      // personal_sign while the modal is open causes the embedded wallet's
+      // signing iframe to conflict with the connection UI, hanging the modal.
+      if (isEmbedded) {
+        try {
+          const { initAppKit } = await import("@/lib/wallet/appkit-modal")
+          const appKit = initAppKit()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if (typeof (appKit as any).close === "function") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (appKit as any).close()
+            console.log("[AutoAuth] Closed AppKit modal before SIWE sign")
+          }
+        } catch {
+          // Non-critical — proceed with sign-in even if modal close fails
+        }
+      }
 
       if (!isFarcasterMiniApp) {
         info("Authentication Required", "Please sign the message to authenticate with your wallet")
