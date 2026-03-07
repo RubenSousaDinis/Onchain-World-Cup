@@ -40,9 +40,7 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     features: {
       analytics: true,
       email: true,
-      // google removed: accounts.google.com sets COOP: same-origin which breaks
-      // the popup's window.opener reference — AppKit cannot detect popup close.
-      socials: ['apple', 'github', 'x'],
+      socials: ['google', 'apple', 'github', 'x'],
       onramp: true,
     },
     themeMode: "dark",

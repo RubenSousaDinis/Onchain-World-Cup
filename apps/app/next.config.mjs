@@ -34,10 +34,13 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // unsafe-none required for OAuth popup flow — AppKit polls popup.closed on
-          // a cross-origin Google/social window. same-origin-allow-popups still blocks
-          // cross-origin popups, so unsafe-none is the only option that works here.
-          { key: "Cross-Origin-Opener-Policy", value: "unsafe-none" },
+          // Reown docs mandate same-origin-allow-popups for social OAuth popups.
+          // This lets our page retain a reference to popups that set COOP: unsafe-none
+          // (e.g. auth.reown.com) while still isolating same-origin browsing contexts.
+          // See https://docs.reown.com/advanced/security/content-security-policy
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          // Required alongside COOP for AppKit social login (Reown docs).
+          { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
@@ -47,9 +50,9 @@ const nextConfig = {
             // unsafe-inline + unsafe-eval required by Next.js inline scripts and wagmi/viem
             // frame-ancestors * required for Farcaster Mini App embedding
             // connect-src https: wss: covers Base RPC, WalletConnect, analytics
-            // frame-src: secure.reown.com required for AppKit embedded wallet (social/email login)
-            //   MPC key operations happen inside a Reown-hosted iframe.
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://secure.reown.com https://auth.reown.com; frame-ancestors *; worker-src blob:;",
+            // frame-src *.reown.com covers secure/auth/api subdomains used by
+            //   AppKit's embedded wallet (MPC keys) and social OAuth iframes.
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://*.reown.com; frame-ancestors *; worker-src blob:;",
           },
         ],
       },
