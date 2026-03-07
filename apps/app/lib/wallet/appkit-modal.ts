@@ -40,12 +40,7 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     features: {
       analytics: true,
       email: true,
-      // Google excluded: accounts.google.com sets COOP: same-origin which blocks
-      // AppKit's popup.closed polling (setInterval in connectSocial). The OAuth
-      // completes (SOCIAL_LOGIN_REQUEST_USER_DATA fires) but MPC wallet creation
-      // hangs because the polling loop never resolves. This is an AppKit 1.8.19
-      // limitation — no header on our side can override Google's COOP.
-      socials: ['apple', 'github', 'x'],
+      socials: ['google', 'apple', 'github', 'x'],
       onramp: true,
     },
     themeMode: "dark",
