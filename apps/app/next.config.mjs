@@ -34,11 +34,14 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // Reown docs mandate same-origin-allow-popups for social OAuth popups.
-          // This lets our page retain a reference to popups that set COOP: unsafe-none
-          // (e.g. auth.reown.com) while still isolating same-origin browsing contexts.
-          // See https://docs.reown.com/advanced/security/content-security-policy
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          // COOP is intentionally NOT set (defaults to unsafe-none).
+          // Reown docs recommend same-origin-allow-popups, but the AppKit SDK's
+          // connectSocial() uses window.closed polling and window.close() to manage
+          // the OAuth popup. When the popup navigates to Google/Apple (which set their
+          // own COOP: same-origin), the opener relationship is severed and both
+          // window.closed and window.close are blocked by the browser. This causes
+          // the social login flow to hang forever after OAuth completes.
+          // The default unsafe-none allows the SDK's popup management to work correctly.
           // Required alongside COOP for AppKit social login (Reown docs).
           { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
