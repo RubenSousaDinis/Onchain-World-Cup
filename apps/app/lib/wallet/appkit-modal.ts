@@ -56,6 +56,10 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
       icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
     },
+    // Enable verbose logging for the secure iframe (w3m-iframe) that handles
+    // MPC wallet creation during social/email login. This surfaces errors from
+    // secure.walletconnect.org that are otherwise swallowed silently.
+    enableAuthLogger: true,
     features: {
       analytics: true,
       email: true,
@@ -85,8 +89,29 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
   // Subscribe to AppKit events and state for debugging email/social login issues.
   // Uses console.warn so logs survive Next.js removeConsole stripping in production.
   _modal.subscribeEvents((event) => {
+    const eventName = event.data.event
     // eslint-disable-next-line no-console
-    console.warn('[AppKit event]', event.data.event, event.data)
+    console.warn('[AppKit event]', eventName, event.data)
+
+    // Surface social login lifecycle for debugging the iframe hang.
+    // After SOCIAL_LOGIN_REQUEST_USER_DATA, the SDK sends APP_CONNECT_SOCIAL
+    // to the w3m-iframe (secure.walletconnect.org). If the iframe doesn't respond
+    // within 120s, the flow hangs silently.
+    if (eventName === 'SOCIAL_LOGIN_REQUEST_USER_DATA') {
+      // eslint-disable-next-line no-console
+      console.warn('[AppKit] Social login: waiting for secure iframe (w3m-iframe) to create MPC wallet…')
+      const iframe = document.getElementById('w3m-iframe') as HTMLIFrameElement | null
+      // eslint-disable-next-line no-console
+      console.warn('[AppKit] w3m-iframe present:', !!iframe, iframe?.src ? `src=${new URL(iframe.src).origin}${new URL(iframe.src).pathname}` : 'no src')
+    }
+    if (eventName === 'SOCIAL_LOGIN_SUCCESS') {
+      // eslint-disable-next-line no-console
+      console.warn('[AppKit] Social login: MPC wallet created successfully')
+    }
+    if (eventName === 'SOCIAL_LOGIN_ERROR') {
+      // eslint-disable-next-line no-console
+      console.warn('[AppKit] Social login: ERROR — check Reown Cloud dashboard domain verification', event.data)
+    }
   })
   _modal.subscribeState((state) => {
     // eslint-disable-next-line no-console
