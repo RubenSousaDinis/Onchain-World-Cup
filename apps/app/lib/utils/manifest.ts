@@ -140,7 +140,6 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     },
     miniapp: {
       requiredChains: ["eip155:8453", "eip155:84532"],
-      // Require Ethereum provider for wallet interactions
       requiredCapabilities: ["wallet.getEthereumProvider"],
     },
   }
@@ -229,7 +228,6 @@ export function validateManifest(manifest: unknown): string[] {
  */
 export function getManifestConfig(): ManifestConfig {
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'app.onchainworldcup.xyz'
-
   const baseUrl = appDomain.startsWith('http') ? appDomain : `https://${appDomain}`
 
   return {
@@ -237,8 +235,7 @@ export function getManifestConfig(): ManifestConfig {
     appDomain,
     buttonTitle: "⚽ Vote Now",
     splashBackgroundColor: "#0a1628",
-    // Account association should be set via environment variables
-    // These are generated using Farcaster's signing tool
+    // Account association — env var names match Vercel configuration
     accountAssociationHeader: process.env.FARCASTER_HEADER,
     accountAssociationPayload: process.env.FARCASTER_PAYLOAD,
     accountAssociationSignature: process.env.FARCASTER_SIGNATURE,

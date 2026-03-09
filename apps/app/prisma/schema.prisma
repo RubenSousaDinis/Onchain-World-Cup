@@ -9,12 +9,13 @@ datasource db {
 }
 
 model CountryStats {
-  countryCode String   @id @map("country_code")
-  totalVotes  Int      @default(0) @map("total_votes")
-  totalEth    String   @default("0") @map("total_eth")
-  qualified   Boolean  @default(false)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  countryCode     String   @id @map("country_code")
+  totalVotes      Int      @default(0) @map("total_votes")
+  totalEth        String   @default("0") @map("total_eth")
+  firstVoteBlock  BigInt?  @map("first_vote_block")
+  qualified       Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([totalVotes])
   @@index([qualified])

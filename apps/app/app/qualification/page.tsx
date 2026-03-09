@@ -29,6 +29,7 @@ type CountryStats = {
   country_code: string
   total_votes: number
   total_eth: string
+  first_vote_block: number | null
   qualified: boolean
 }
 
@@ -38,6 +39,8 @@ type Country = {
   flag: string
   code: string
   votes: number
+  eth: number
+  firstVoteBlock: number | null
   momentum: string
 }
 
@@ -104,6 +107,8 @@ export default function QualificationPage() {
     return countriesData.map((country) => {
       const stats = countryStats.find((s) => s.country_code === country.code)
       const votes = stats?.total_votes || 0
+      const eth = parseFloat(stats?.total_eth || "0")
+      const firstVoteBlock = stats?.first_vote_block ?? null
 
       // Calculate momentum based on votes relative to average
       let momentum = "stable"
@@ -125,10 +130,19 @@ export default function QualificationPage() {
         flag: country.flagEmoji,
         code: country.code,
         votes,
+        eth,
+        firstVoteBlock,
         momentum,
       }
     })
-      .sort((a, b) => b.votes - a.votes) // Sort by votes desc
+      .sort((a, b) => {
+        if (b.votes !== a.votes) return b.votes - a.votes
+        if (b.eth !== a.eth) return b.eth - a.eth
+        // Earlier first vote wins the tie (null = never voted, goes last)
+        const aBlock = a.firstVoteBlock ?? Number.MAX_SAFE_INTEGER
+        const bBlock = b.firstVoteBlock ?? Number.MAX_SAFE_INTEGER
+        return aBlock - bBlock
+      })
       .map((country, index) => ({
         ...country,
         rank: index + 1,
