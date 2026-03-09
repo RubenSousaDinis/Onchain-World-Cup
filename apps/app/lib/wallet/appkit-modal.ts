@@ -187,23 +187,30 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     // within 120s, the flow hangs silently.
     if (eventName === 'SOCIAL_LOGIN_REQUEST_USER_DATA') {
       // eslint-disable-next-line no-console
-      console.warn('[AppKit] Social login: waiting for secure iframe (w3m-iframe) to create MPC wallet…')
+      console.warn('[AppKit] Social login: APP_CONNECT_SOCIAL sent to w3m-iframe — waiting for FRAME_CONNECT_SOCIAL_SUCCESS…')
       const iframe = document.getElementById('w3m-iframe') as HTMLIFrameElement | null
       // eslint-disable-next-line no-console
       console.warn('[AppKit] w3m-iframe present:', !!iframe, iframe?.src ? `src=${new URL(iframe.src).origin}${new URL(iframe.src).pathname}` : 'no src')
 
       // The postMessage interceptor (installed above at init time) will capture
       // the @w3m-frame/CONNECT_SOCIAL_SUCCESS or _ERROR response from the iframe.
+      // If the iframe does not respond within 120s AppKit aborts with iframe_request_timeout.
+      // Schedule a diagnostic log at 30s so we know the iframe is still silent.
+      setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.warn('[AppKit] Social login: ⚠️ 30s elapsed — iframe still has not responded to APP_CONNECT_SOCIAL. Check DevTools → frame selector → w3m-iframe for errors.')
+      }, 30_000)
     }
     if (eventName === 'SOCIAL_LOGIN_SUCCESS') {
       // eslint-disable-next-line no-console
-      console.warn('[AppKit] Social login: MPC wallet created successfully')
+      console.warn('[AppKit] Social login: ✅ MPC wallet created successfully')
     }
     if (eventName === 'SOCIAL_LOGIN_ERROR') {
       // eslint-disable-next-line no-console
-      console.warn('[AppKit] Social login: ERROR — check Reown Cloud dashboard domain verification', event.data)
+      console.warn('[AppKit] Social login: ❌ ERROR', event.data)
     }
   })
+
   _modal.subscribeState((state) => {
     // eslint-disable-next-line no-console
     console.warn('[AppKit state]', state)
