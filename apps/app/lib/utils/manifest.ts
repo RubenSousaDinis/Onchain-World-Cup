@@ -21,6 +21,18 @@ export interface FrameManifest {
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
+  // Base Mini App discovery fields
+  tagline?: string
+  subtitle?: string
+  description?: string
+  primaryCategory?: string
+  tags?: string[]
+  heroImageUrl?: string
+  screenshotUrls?: string[]
+  ogTitle?: string
+  ogDescription?: string
+  ogImageUrl?: string
+  noindex?: boolean
 }
 
 export interface MiniAppManifest {
@@ -46,6 +58,18 @@ export interface ManifestConfig {
   accountAssociationHeader?: string
   accountAssociationPayload?: string
   accountAssociationSignature?: string
+  // Base Mini App discovery fields
+  tagline?: string
+  subtitle?: string
+  description?: string
+  primaryCategory?: string
+  tags?: string[]
+  heroImageUrl?: string
+  screenshotUrls?: string[]
+  ogTitle?: string
+  ogDescription?: string
+  ogImageUrl?: string
+  noindex?: boolean
 }
 
 /**
@@ -66,6 +90,17 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     accountAssociationHeader = "REPLACE_WITH_SIGNED_HEADER",
     accountAssociationPayload = "REPLACE_WITH_SIGNED_PAYLOAD",
     accountAssociationSignature = "REPLACE_WITH_SIGNATURE",
+    tagline,
+    subtitle,
+    description,
+    primaryCategory,
+    tags,
+    heroImageUrl,
+    screenshotUrls,
+    ogTitle,
+    ogDescription,
+    ogImageUrl,
+    noindex,
   } = config
 
   // Construct full URLs
@@ -91,10 +126,20 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
+      ...(tagline && { tagline }),
+      ...(subtitle && { subtitle }),
+      ...(description && { description }),
+      ...(primaryCategory && { primaryCategory }),
+      ...(tags && { tags }),
+      ...(heroImageUrl && { heroImageUrl }),
+      ...(screenshotUrls && { screenshotUrls }),
+      ...(ogTitle && { ogTitle }),
+      ...(ogDescription && { ogDescription }),
+      ...(ogImageUrl && { ogImageUrl }),
+      ...(noindex !== undefined && { noindex }),
     },
     miniapp: {
-      // Base Sepolia (testnet) is required for the app
-      requiredChains: ["eip155:84532"],
+      requiredChains: ["eip155:8453", "eip155:84532"],
       // Require Ethereum provider for wallet interactions
       requiredCapabilities: ["wallet.getEthereumProvider"],
     },
@@ -185,6 +230,8 @@ export function validateManifest(manifest: unknown): string[] {
 export function getManifestConfig(): ManifestConfig {
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'app.onchainworldcup.xyz'
 
+  const baseUrl = appDomain.startsWith('http') ? appDomain : `https://${appDomain}`
+
   return {
     appName: "Onchain World Cup",
     appDomain,
@@ -192,8 +239,23 @@ export function getManifestConfig(): ManifestConfig {
     splashBackgroundColor: "#0a1628",
     // Account association should be set via environment variables
     // These are generated using Farcaster's signing tool
-    accountAssociationHeader: process.env.FARCASTER_ACCOUNT_ASSOCIATION_HEADER,
-    accountAssociationPayload: process.env.FARCASTER_ACCOUNT_ASSOCIATION_PAYLOAD,
-    accountAssociationSignature: process.env.FARCASTER_ACCOUNT_ASSOCIATION_SIGNATURE,
+    accountAssociationHeader: process.env.FARCASTER_HEADER,
+    accountAssociationPayload: process.env.FARCASTER_PAYLOAD,
+    accountAssociationSignature: process.env.FARCASTER_SIGNATURE,
+    // Base Mini App discovery fields
+    tagline: "Vote on World Cup 2026 matches",
+    subtitle: "Onchain World Cup 2026",
+    description: "Vote on World Cup 2026 matches and win ETH on Base. Pick winners before kick-off, earn more for voting early. Fully onchain, no custody.",
+    primaryCategory: "games",
+    tags: ["soccer", "worldcup", "voting", "onchain", "sports"],
+    heroImageUrl: `${baseUrl}/splash_social.png`,
+    screenshotUrls: [
+      `${baseUrl}/screenshot_qualification.png`,
+      `${baseUrl}/screenshot_vote_modal.png`,
+      `${baseUrl}/screenshot_profile.png`,
+    ],
+    ogTitle: "Onchain World Cup",
+    ogDescription: "Vote on World Cup 2026 matches and win ETH on Base.",
+    ogImageUrl: `${baseUrl}/splash_social.png`,
   }
 }
