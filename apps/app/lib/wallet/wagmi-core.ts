@@ -16,13 +16,17 @@ export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ""
 // Networks for wagmi adapter (all supported chains including testnets)
 export const networks = [base, baseSepolia] as const
 
-// Networks for AppKit modal — mainnet only.
-// Reown's embedded wallet (social/email login) requires a mainnet chain for MPC
-// wallet creation. Including baseSepolia causes the embedded wallet flow to hang
-// after OAuth because the MPC service doesn't support testnets.
-// Base Sepolia remains in the wagmiAdapter so regular wallets (MetaMask, etc.)
-// can still interact with testnet contracts via wagmi's chain switching.
-export const appKitNetworks = [base] as const
+// Networks for AppKit modal.
+// Always includes base mainnet so social login (MPC embedded wallet) can
+// initialise — Reown's MPC service doesn't support testnets, so mainnet
+// must be present and set as defaultNetwork in createAppKit().
+// When NEXT_PUBLIC_DEFAULT_CHAIN_ID=84532 we also include baseSepolia so
+// AppKit recognises wallets already on Sepolia and shows it as a selectable
+// network, without breaking social login (defaultNetwork stays base mainnet).
+const configuredChainId = parseInt(process.env.NEXT_PUBLIC_DEFAULT_CHAIN_ID || "8453", 10)
+export const appKitNetworks = (
+  configuredChainId === 84532 ? [base, baseSepolia] : [base]
+) as [typeof base, typeof baseSepolia] | [typeof base]
 
 const baseSepoliaRpcUrl = process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org"
 const baseMainnetRpcUrl = process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL || "https://mainnet.base.org"
