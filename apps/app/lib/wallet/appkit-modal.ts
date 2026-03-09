@@ -137,6 +137,24 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       // eslint-disable-next-line no-console
       console.warn('[Reown Cloud] /projects/v1/origins FAILED:', err)
     })
+  // Fetch project usage limits — social login may stop working if limits are exceeded
+  fetch(`https://api.web3modal.org/appkit/v1/project-limits?${sdkParams}`)
+    .then(r => r.json())
+    .then(data => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /appkit/v1/project-limits response:', data)
+      if (data?.planLimits) {
+        const { tier, isAboveMauLimit, isAboveRpcLimit } = data.planLimits
+        if (isAboveMauLimit || isAboveRpcLimit) {
+          // eslint-disable-next-line no-console
+          console.warn(`[Reown Cloud] ⚠️ USAGE LIMITS EXCEEDED — tier: ${tier}, MAU exceeded: ${isAboveMauLimit}, RPC exceeded: ${isAboveRpcLimit}. Social login may be disabled.`)
+        }
+      }
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /appkit/v1/project-limits FAILED:', err)
+    })
 
   // ---------- postMessage interceptor ----------
   // Intercept ALL messages from the w3m-iframe (secure.walletconnect.org).
