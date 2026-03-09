@@ -249,7 +249,11 @@ export function getManifestConfig(): ManifestConfig {
     primaryCategory: "games",
     tags: ["soccer", "worldcup", "voting", "onchain", "sports"],
     heroImageUrl: `${baseUrl}/splash_social.png`,
-    // screenshotUrls: [] — add portrait screenshots (1284×2778px) when available
+    screenshotUrls: [
+      `${baseUrl}/screenshot_qualification.png`,
+      `${baseUrl}/screenshot_vote_modal.png`,
+      `${baseUrl}/screenshot_profile.png`,
+    ],
     ogTitle: "Onchain World Cup",
     ogDescription: "Vote on World Cup 2026 matches and win ETH on Base.",
     ogImageUrl: `${baseUrl}/splash_social.png`,
