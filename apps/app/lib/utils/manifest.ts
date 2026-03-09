@@ -11,17 +11,14 @@ export interface AccountAssociation {
   signature: string
 }
 
-export interface FrameManifest {
+export interface MiniAppManifest {
   version: "1"
   name: string
   iconUrl: string
   homeUrl: string
-  imageUrl?: string
-  buttonTitle?: string
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
-  // Base Mini App discovery fields
   tagline?: string
   subtitle?: string
   description?: string
@@ -33,33 +30,25 @@ export interface FrameManifest {
   ogDescription?: string
   ogImageUrl?: string
   noindex?: boolean
-}
-
-export interface MiniAppManifest {
-  version: "1"
-  requiredChains?: string[] // Array of CAIP-2 identifiers (e.g., ["eip155:84532", "eip155:8453"])
-  requiredCapabilities?: string[] // Array of SDK method paths (e.g., ["wallet.switchEthereumChain"])
+  requiredChains?: string[]
+  requiredCapabilities?: string[]
 }
 
 export interface FarcasterManifest {
   accountAssociation: AccountAssociation
-  frame: FrameManifest
-  miniapp?: MiniAppManifest
+  miniapp: MiniAppManifest
 }
 
 export interface ManifestConfig {
   appName: string
   appDomain: string
   iconUrl?: string
-  buttonTitle?: string
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
-  // Account association fields (must be generated using Farcaster signing tool)
   accountAssociationHeader?: string
   accountAssociationPayload?: string
   accountAssociationSignature?: string
-  // Base Mini App discovery fields
   tagline?: string
   subtitle?: string
   description?: string
@@ -76,15 +65,15 @@ export interface ManifestConfig {
 /**
  * Generate a Farcaster manifest object
  *
- * Note: Account association signature must be generated using the Farcaster
- * signing tool: https://farcaster.xyz/~/developers/hosted-manifests
+ * Spec: https://miniapps.farcaster.xyz/docs/specification#manifest
+ * All app metadata lives under the top-level "miniapp" key.
+ * The legacy "frame" key is no longer used.
  */
 export function generateManifest(config: ManifestConfig): FarcasterManifest {
   const {
     appName,
     appDomain,
     iconUrl,
-    buttonTitle = "Open App",
     splashImageUrl,
     splashBackgroundColor = "#0a1628",
     webhookUrl,
@@ -104,11 +93,9 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     noindex,
   } = config
 
-  // Construct full URLs
   const baseUrl = appDomain.startsWith('http') ? appDomain : `https://${appDomain}`
   const icon = iconUrl || `${baseUrl}/logo.jpg`
   const splash = splashImageUrl || `${baseUrl}/splash_social.png`
-  const home = baseUrl
   const webhook = webhookUrl || `${baseUrl}/api/farcaster/webhook`
 
   return {
@@ -117,16 +104,16 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       payload: accountAssociationPayload,
       signature: accountAssociationSignature,
     },
-    frame: {
+    miniapp: {
       version: "1",
       name: appName,
       iconUrl: icon,
-      homeUrl: home,
-      imageUrl: splash,
-      buttonTitle,
+      homeUrl: baseUrl,
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
+      requiredChains: ["eip155:8453", "eip155:84532"],
+      requiredCapabilities: ["wallet.getEthereumProvider"],
       ...(tagline && { tagline }),
       ...(subtitle && { subtitle }),
       ...(description && { description }),
@@ -138,11 +125,6 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       ...(ogDescription && { ogDescription }),
       ...(ogImageUrl && { ogImageUrl }),
       ...(noindex !== undefined && { noindex }),
-    },
-    miniapp: {
-      version: "1",
-      requiredChains: ["eip155:8453", "eip155:84532"],
-      requiredCapabilities: ["wallet.getEthereumProvider"],
     },
   }
 }
@@ -166,60 +148,21 @@ export function validateManifest(manifest: unknown): string[] {
     errors.push('Missing or invalid accountAssociation')
   } else {
     const aa = m.accountAssociation as Record<string, unknown>
-    if (!aa.header || typeof aa.header !== 'string') {
-      errors.push('accountAssociation.header must be a string')
-    }
-    if (!aa.payload || typeof aa.payload !== 'string') {
-      errors.push('accountAssociation.payload must be a string')
-    }
-    if (!aa.signature || typeof aa.signature !== 'string') {
-      errors.push('accountAssociation.signature must be a string')
-    }
-
-    // Check if placeholders are still present
-    if (aa.header === 'REPLACE_WITH_SIGNED_HEADER') {
-      errors.push('accountAssociation.header is still a placeholder - needs proper signature')
-    }
+    if (!aa.header || typeof aa.header !== 'string') errors.push('accountAssociation.header must be a string')
+    if (!aa.payload || typeof aa.payload !== 'string') errors.push('accountAssociation.payload must be a string')
+    if (!aa.signature || typeof aa.signature !== 'string') errors.push('accountAssociation.signature must be a string')
+    if (aa.header === 'REPLACE_WITH_SIGNED_HEADER') errors.push('accountAssociation.header is still a placeholder')
   }
 
-  // Validate frame
-  if (!m.frame || typeof m.frame !== 'object') {
-    errors.push('Missing or invalid frame')
+  // Validate miniapp
+  if (!m.miniapp || typeof m.miniapp !== 'object') {
+    errors.push('Missing or invalid miniapp')
   } else {
-    const f = m.frame as Record<string, unknown>
-
-    if (f.version !== '1') {
-      errors.push('frame.version must be "1" (string)')
-    }
-    if (!f.name || typeof f.name !== 'string') {
-      errors.push('frame.name must be a string')
-    }
-    if (!f.iconUrl || typeof f.iconUrl !== 'string') {
-      errors.push('frame.iconUrl must be a string URL')
-    }
-    if (!f.homeUrl || typeof f.homeUrl !== 'string') {
-      errors.push('frame.homeUrl must be a string URL')
-    }
-
-    // Validate URLs
-    const urlFields = ['iconUrl', 'homeUrl', 'imageUrl', 'splashImageUrl', 'webhookUrl']
-    for (const field of urlFields) {
-      if (f[field] && typeof f[field] === 'string') {
-        try {
-          new URL(f[field] as string)
-        } catch {
-          errors.push(`frame.${field} is not a valid URL`)
-        }
-      }
-    }
-
-    // Validate color format
-    if (f.splashBackgroundColor && typeof f.splashBackgroundColor === 'string') {
-      const colorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/
-      if (!colorRegex.test(f.splashBackgroundColor)) {
-        errors.push('frame.splashBackgroundColor must be a valid hex color (e.g., #0a1628)')
-      }
-    }
+    const a = m.miniapp as Record<string, unknown>
+    if (a.version !== '1') errors.push('miniapp.version must be "1"')
+    if (!a.name || typeof a.name !== 'string') errors.push('miniapp.name must be a string')
+    if (!a.iconUrl || typeof a.iconUrl !== 'string') errors.push('miniapp.iconUrl must be a string URL')
+    if (!a.homeUrl || typeof a.homeUrl !== 'string') errors.push('miniapp.homeUrl must be a string URL')
   }
 
   return errors
@@ -235,7 +178,6 @@ export function getManifestConfig(): ManifestConfig {
   return {
     appName: "Onchain World Cup",
     appDomain,
-    buttonTitle: "⚽ Vote Now",
     splashBackgroundColor: "#0a1628",
     // Account association — env var names match Vercel configuration
     accountAssociationHeader: process.env.FARCASTER_HEADER,
