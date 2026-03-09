@@ -9,6 +9,13 @@
  * this initialisation automatically, so callers need no changes.
  */
 
+/* eslint-disable @typescript-eslint/no-namespace */
+declare global {
+  interface Window {
+    __w3mMsgIntercepted?: boolean
+  }
+}
+
 import { createAppKit } from "@reown/appkit/react"
 import { base } from "@reown/appkit/networks"
 import { wagmiAdapter, projectId, appKitNetworks } from "./wagmi-core"
@@ -86,6 +93,87 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     features: { email: true, socials: ['google', 'apple', 'github', 'x'], onramp: true },
   })
 
+  // ---------- Reown Cloud project config verification ----------
+  // Directly call the same APIs the SDK uses to fetch project configuration.
+  // This reveals whether social login is enabled at the dashboard level and
+  // whether our domain is in the allowed origins list.
+  // API base: https://api.web3modal.org (same as CoreHelperUtil.getApiUrl())
+  const sdkParams = `projectId=${projectId}&st=appkit&sv=html-wagmi-4.2.2`
+  // eslint-disable-next-line no-console
+  console.warn('[Reown Cloud] Verifying project config for projectId:', projectId)
+  // Fetch project features (social_login config)
+  fetch(`https://api.web3modal.org/appkit/v1/config?${sdkParams}`)
+    .then(r => r.json())
+    .then(data => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /appkit/v1/config response:', JSON.stringify(data, null, 2))
+      // Highlight social_login specifically
+      const socialLoginFeature = data?.features?.find?.(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (f: any) => f.id === 'social_login'
+      )
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] social_login feature:', socialLoginFeature
+        ? { isEnabled: socialLoginFeature.isEnabled, config: socialLoginFeature.config }
+        : '⚠️ NOT FOUND in project config — social login is not configured in Reown dashboard')
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /appkit/v1/config FAILED:', err)
+    })
+  // Fetch allowed origins (domain verification)
+  fetch(`https://api.web3modal.org/projects/v1/origins?${sdkParams}`)
+    .then(r => r.json())
+    .then(data => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /projects/v1/origins response:', data)
+      const origins = data?.allowedOrigins || []
+      const currentOrigin = window.location.origin
+      const isAllowed = origins.some((o: string) => currentOrigin.includes(o) || o.includes(currentOrigin))
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] Current origin allowed?', isAllowed ? `✅ YES (${currentOrigin})` : `⚠️ NO — "${currentOrigin}" not in allowed origins: ${JSON.stringify(origins)}`)
+    })
+    .catch(err => {
+      // eslint-disable-next-line no-console
+      console.warn('[Reown Cloud] /projects/v1/origins FAILED:', err)
+    })
+
+  // ---------- postMessage interceptor ----------
+  // Intercept ALL messages from the w3m-iframe (secure.walletconnect.org).
+  // The SDK sends @w3m-app/* messages TO the iframe and receives @w3m-frame/* back.
+  // Key messages for social login:
+  //   → @w3m-app/CONNECT_SOCIAL (sent to iframe with OAuth URI)
+  //   ← @w3m-frame/CONNECT_SOCIAL_SUCCESS (wallet created)
+  //   ← @w3m-frame/CONNECT_SOCIAL_ERROR (failed — contains error details)
+  //   ← @w3m-frame/READY (iframe loaded and ready)
+  // If no CONNECT_SOCIAL_SUCCESS/ERROR comes back, the iframe silently hung.
+  if (!window.__w3mMsgIntercepted) {
+    window.__w3mMsgIntercepted = true
+    window.addEventListener('message', (e) => {
+      if (typeof e.data?.type !== 'string') return
+      const type = e.data.type as string
+      // Log all @w3m-frame/ messages (iframe → page)
+      if (type.startsWith('@w3m-frame/')) {
+        // eslint-disable-next-line no-console
+        console.warn(`[w3m-iframe → page] ${type}`, {
+          id: e.data.id,
+          payload: e.data.payload,
+          origin: e.origin,
+        })
+      }
+      // Also log @w3m-app/ messages (page → iframe, echoed back in some SDK versions)
+      if (type.startsWith('@w3m-app/')) {
+        // eslint-disable-next-line no-console
+        console.warn(`[page → w3m-iframe] ${type}`, {
+          id: e.data.id,
+          hasPayload: !!e.data.payload,
+        })
+      }
+    })
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit] postMessage interceptor installed — watching @w3m-frame/* and @w3m-app/* messages')
+  }
+
   // Subscribe to AppKit events and state for debugging email/social login issues.
   // Uses console.warn so logs survive Next.js removeConsole stripping in production.
   _modal.subscribeEvents((event) => {
@@ -103,6 +191,9 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       const iframe = document.getElementById('w3m-iframe') as HTMLIFrameElement | null
       // eslint-disable-next-line no-console
       console.warn('[AppKit] w3m-iframe present:', !!iframe, iframe?.src ? `src=${new URL(iframe.src).origin}${new URL(iframe.src).pathname}` : 'no src')
+
+      // The postMessage interceptor (installed above at init time) will capture
+      // the @w3m-frame/CONNECT_SOCIAL_SUCCESS or _ERROR response from the iframe.
     }
     if (eventName === 'SOCIAL_LOGIN_SUCCESS') {
       // eslint-disable-next-line no-console
