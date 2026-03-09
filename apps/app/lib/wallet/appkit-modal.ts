@@ -9,6 +9,13 @@
  * this initialisation automatically, so callers need no changes.
  */
 
+/* eslint-disable @typescript-eslint/no-namespace */
+declare global {
+  interface Window {
+    __w3mMsgIntercepted?: boolean
+  }
+}
+
 import { createAppKit } from "@reown/appkit/react"
 import { base } from "@reown/appkit/networks"
 import { wagmiAdapter, projectId, appKitNetworks } from "./wagmi-core"
@@ -86,6 +93,42 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
     features: { email: true, socials: ['google', 'apple', 'github', 'x'], onramp: true },
   })
 
+  // ---------- postMessage interceptor ----------
+  // Intercept ALL messages from the w3m-iframe (secure.walletconnect.org).
+  // The SDK sends @w3m-app/* messages TO the iframe and receives @w3m-frame/* back.
+  // Key messages for social login:
+  //   → @w3m-app/CONNECT_SOCIAL (sent to iframe with OAuth URI)
+  //   ← @w3m-frame/CONNECT_SOCIAL_SUCCESS (wallet created)
+  //   ← @w3m-frame/CONNECT_SOCIAL_ERROR (failed — contains error details)
+  //   ← @w3m-frame/READY (iframe loaded and ready)
+  // If no CONNECT_SOCIAL_SUCCESS/ERROR comes back, the iframe silently hung.
+  if (!window.__w3mMsgIntercepted) {
+    window.__w3mMsgIntercepted = true
+    window.addEventListener('message', (e) => {
+      if (typeof e.data?.type !== 'string') return
+      const type = e.data.type as string
+      // Log all @w3m-frame/ messages (iframe → page)
+      if (type.startsWith('@w3m-frame/')) {
+        // eslint-disable-next-line no-console
+        console.warn(`[w3m-iframe → page] ${type}`, {
+          id: e.data.id,
+          payload: e.data.payload,
+          origin: e.origin,
+        })
+      }
+      // Also log @w3m-app/ messages (page → iframe, echoed back in some SDK versions)
+      if (type.startsWith('@w3m-app/')) {
+        // eslint-disable-next-line no-console
+        console.warn(`[page → w3m-iframe] ${type}`, {
+          id: e.data.id,
+          hasPayload: !!e.data.payload,
+        })
+      }
+    })
+    // eslint-disable-next-line no-console
+    console.warn('[AppKit] postMessage interceptor installed — watching @w3m-frame/* and @w3m-app/* messages')
+  }
+
   // Subscribe to AppKit events and state for debugging email/social login issues.
   // Uses console.warn so logs survive Next.js removeConsole stripping in production.
   _modal.subscribeEvents((event) => {
@@ -103,6 +146,9 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       const iframe = document.getElementById('w3m-iframe') as HTMLIFrameElement | null
       // eslint-disable-next-line no-console
       console.warn('[AppKit] w3m-iframe present:', !!iframe, iframe?.src ? `src=${new URL(iframe.src).origin}${new URL(iframe.src).pathname}` : 'no src')
+
+      // The postMessage interceptor (installed above at init time) will capture
+      // the @w3m-frame/CONNECT_SOCIAL_SUCCESS or _ERROR response from the iframe.
     }
     if (eventName === 'SOCIAL_LOGIN_SUCCESS') {
       // eslint-disable-next-line no-console
