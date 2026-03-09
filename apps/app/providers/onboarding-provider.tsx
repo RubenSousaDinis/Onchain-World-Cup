@@ -2,12 +2,13 @@
 
 import { createContext, useContext, type ReactNode } from "react"
 import { Onboarding } from "@/components/onboarding"
-import { useOnboarding } from "@/hooks/useOnboarding"
+import { useOnboarding, type OnboardingCountry } from "@/hooks/useOnboarding"
 
 interface OnboardingContextType {
   isOnboardingOpen: boolean
   hasCompletedOnboarding: boolean
-  showOnboarding: () => void
+  onboardingCountry: OnboardingCountry | null
+  showOnboarding: (country?: OnboardingCountry) => void
   hideOnboarding: () => void
   resetOnboarding: () => void
 }
@@ -20,7 +21,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   return (
     <OnboardingContext.Provider value={onboarding}>
       {children}
-      <Onboarding isOpen={onboarding.isOnboardingOpen} onClose={onboarding.hideOnboarding} />
+      <Onboarding
+        isOpen={onboarding.isOnboardingOpen}
+        onClose={onboarding.hideOnboarding}
+        country={onboarding.onboardingCountry ?? undefined}
+      />
     </OnboardingContext.Provider>
   )
 }

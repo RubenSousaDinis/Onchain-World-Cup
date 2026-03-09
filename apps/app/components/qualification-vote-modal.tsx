@@ -22,6 +22,7 @@ import { ShareModal } from "@/components/share-modal"
 import { AchievementUnlockedModal } from "@/components/achievement-unlocked-modal"
 import { type ComputedAchievement } from "@/lib/achievements"
 import { formatEth } from "@/lib/utils"
+import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -58,6 +59,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const { isAuthenticated, login, defaultChainId, defaultChain, switchChain } = useSIWEAuth()
   const { isFrameContext, isAutoConnecting } = useFarcaster()
   const { referrerAddress } = useReferral()
+  const ethPrice = useEthPrice()
 
   // Contract interaction hooks
   const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContract()
@@ -472,7 +474,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const handleShareClose = () => {
     setShowShareModal(false)
     setShareData(null)
-    // Keep vote modal open so user can see Vote Again option
+    onClose()
   }
 
   if (!isOpen || !country) return null
@@ -600,9 +602,14 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
           <div className="space-y-2">
             <div className="flex items-center justify-between text-lg font-bold">
               <span className="cm-highlight">Total Cost:</span>
-              <span className="text-accent">
-                {isPriceLoading && !useMockPricing ? "..." : `${formatEth(totalCost)} ETH`}
-              </span>
+              <div className="text-right">
+                <span className="text-accent">
+                  {isPriceLoading && !useMockPricing ? "..." : `${formatEth(totalCost)} ETH`}
+                </span>
+                {!isPriceLoading && totalCost > 0 && ethToUsd(totalCost, ethPrice) && (
+                  <div className="text-xs text-muted-foreground font-normal">{ethToUsd(totalCost, ethPrice)}</div>
+                )}
+              </div>
             </div>
             {useMockPricing && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-sm p-2">

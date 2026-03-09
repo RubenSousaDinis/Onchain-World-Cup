@@ -13,6 +13,8 @@ import { InlineLoader, NoSearchResults } from "@/components/states"
 import { useAccount } from "wagmi"
 import { getDefaultChainId } from "@/lib/chain-config"
 import { useQualificationEndTime } from "@/lib/contracts/qualification"
+import { useOnboardingContext } from "@/providers/onboarding-provider"
+import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
 const QualificationVoteModal = dynamic(
   () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
@@ -58,9 +60,12 @@ export default function QualificationPage() {
   const isFetchingUserStatsRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
-  const autoVoteHandledRef = useRef(false)
+  const [pendingVoteCountry, setPendingVoteCountry] = useState<Country | null>(null)
+  const prevOnboardingOpenRef = useRef(false)
 
   const { chain, address } = useAccount()
+  const { hasCompletedOnboarding, isOnboardingOpen, showOnboarding } = useOnboardingContext()
+  const ethPrice = useEthPrice()
   const chainId = chain?.id || getDefaultChainId() // Use configured default chain
   const { data: endTimeFromContract, isLoading: isLoadingEndTime } = useQualificationEndTime(chainId)
 
@@ -136,19 +141,15 @@ export default function QualificationPage() {
     )
   }, [allCountries, searchQuery])
 
-  // Auto-open vote modal when arriving from onboarding with ?vote=CODE
+  // When onboarding closes (was open → now closed), open the pending vote modal
   useEffect(() => {
-    if (autoVoteHandledRef.current || allCountries.length === 0) return
-    const params = new URLSearchParams(window.location.search)
-    const voteCode = params.get("vote")
-    if (!voteCode) return
-    autoVoteHandledRef.current = true
-    const country = allCountries.find((c) => c.code === voteCode.toUpperCase())
-    if (country) {
-      setSelectedCountry(country)
+    if (prevOnboardingOpenRef.current && !isOnboardingOpen && pendingVoteCountry) {
+      setSelectedCountry(pendingVoteCountry)
       setVoteModalOpen(true)
+      setPendingVoteCountry(null)
     }
-  }, [allCountries])
+    prevOnboardingOpenRef.current = isOnboardingOpen
+  }, [isOnboardingOpen, pendingVoteCountry])
 
   const { sentinelRef, shouldLoadMore } = useInfiniteScroll({
     hasMore: displayedCountries < filteredCountries.length,
@@ -369,8 +370,13 @@ export default function QualificationPage() {
   }, [shouldLoadMore, filteredCountries.length])
 
   const handleVote = (country: Country) => {
-    setSelectedCountry(country)
-    setVoteModalOpen(true)
+    if (!hasCompletedOnboarding) {
+      setPendingVoteCountry(country)
+      showOnboarding({ name: country.name, flag: country.flag })
+    } else {
+      setSelectedCountry(country)
+      setVoteModalOpen(true)
+    }
   }
 
   const getMomentumIcon = (momentum: string) => {
@@ -474,6 +480,9 @@ export default function QualificationPage() {
                 <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
                   {formatEth(totalPrizePool)} ETH
                 </div>
+                {ethToUsd(totalPrizePool, ethPrice) && (
+                  <div className="text-sm text-muted-foreground mt-1">{ethToUsd(totalPrizePool, ethPrice)}</div>
+                )}
               </div>
 
               {/* User Stats - Only show if logged in and has votes */}
