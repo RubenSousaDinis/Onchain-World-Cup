@@ -45,11 +45,13 @@ export async function GET(request: NextRequest) {
     const getCountryStats = unstable_cache(
       async () => {
         // Build orderBy based on sort parameter
+        // Tiebreakers: ETH desc, then first-vote block asc (earliest voter wins the tie)
+        const tiebreakers = [{ totalEth: "desc" as const }, { firstVoteBlock: "asc" as const }]
         let orderBy: any
         if (sort === "votes") {
-          orderBy = { totalVotes: order }
+          orderBy = [{ totalVotes: order }, ...tiebreakers]
         } else if (sort === "eth") {
-          orderBy = { totalEth: order }
+          orderBy = [{ totalEth: order }, { totalVotes: order }, { firstVoteBlock: "asc" as const }]
         } else {
           orderBy = { countryCode: order }
         }
@@ -78,6 +80,7 @@ export async function GET(request: NextRequest) {
           country_code: stat.countryCode,
           total_votes: stat.totalVotes,
           total_eth: stat.totalEth,
+          first_vote_block: stat.firstVoteBlock ? Number(stat.firstVoteBlock) : null,
           qualified: stat.qualified,
           created_at: stat.createdAt.toISOString(),
           updated_at: stat.updatedAt.toISOString(),

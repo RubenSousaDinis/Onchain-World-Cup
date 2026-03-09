@@ -156,6 +156,7 @@ export async function processVotePlacedEvents(events: VotePlacedLog[]) {
             data: {
               totalVotes: { increment: voteCount },
               totalEth: (parseFloat(existingCountryStats.totalEth) + parseFloat(totalCostEth)).toString(),
+              // firstVoteBlock is only set on creation — never overwritten
             },
           })
         } else {
@@ -164,6 +165,7 @@ export async function processVotePlacedEvents(events: VotePlacedLog[]) {
               countryCode,
               totalVotes: voteCount,
               totalEth: totalCostEth,
+              firstVoteBlock: blockNumber,
               qualified: false,
             },
           })
