@@ -93,8 +93,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       webhookUrl: webhook,
     },
     miniapp: {
-      // Base Sepolia (testnet) is required for the app
-      requiredChains: ["eip155:84532"],
+      requiredChains: ["eip155:8453", "eip155:84532"],
       // Require Ethereum provider for wallet interactions
       requiredCapabilities: ["wallet.getEthereumProvider"],
     },
@@ -192,8 +191,8 @@ export function getManifestConfig(): ManifestConfig {
     splashBackgroundColor: "#0a1628",
     // Account association should be set via environment variables
     // These are generated using Farcaster's signing tool
-    accountAssociationHeader: process.env.FARCASTER_ACCOUNT_ASSOCIATION_HEADER,
-    accountAssociationPayload: process.env.FARCASTER_ACCOUNT_ASSOCIATION_PAYLOAD,
-    accountAssociationSignature: process.env.FARCASTER_ACCOUNT_ASSOCIATION_SIGNATURE,
+    accountAssociationHeader: process.env.FARCASTER_HEADER,
+    accountAssociationPayload: process.env.FARCASTER_PAYLOAD,
+    accountAssociationSignature: process.env.FARCASTER_SIGNATURE,
   }
 }
