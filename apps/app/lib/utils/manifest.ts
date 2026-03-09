@@ -23,10 +23,16 @@ export interface FrameManifest {
   webhookUrl?: string
   // Base Mini App discovery fields
   tagline?: string
+  subtitle?: string
+  description?: string
   primaryCategory?: string
   tags?: string[]
   heroImageUrl?: string
   screenshotUrls?: string[]
+  ogTitle?: string
+  ogDescription?: string
+  ogImageUrl?: string
+  noindex?: boolean
 }
 
 export interface MiniAppManifest {
@@ -54,10 +60,16 @@ export interface ManifestConfig {
   accountAssociationSignature?: string
   // Base Mini App discovery fields
   tagline?: string
+  subtitle?: string
+  description?: string
   primaryCategory?: string
   tags?: string[]
   heroImageUrl?: string
   screenshotUrls?: string[]
+  ogTitle?: string
+  ogDescription?: string
+  ogImageUrl?: string
+  noindex?: boolean
 }
 
 /**
@@ -79,10 +91,16 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     accountAssociationPayload = "REPLACE_WITH_SIGNED_PAYLOAD",
     accountAssociationSignature = "REPLACE_WITH_SIGNATURE",
     tagline,
+    subtitle,
+    description,
     primaryCategory,
     tags,
     heroImageUrl,
     screenshotUrls,
+    ogTitle,
+    ogDescription,
+    ogImageUrl,
+    noindex,
   } = config
 
   // Construct full URLs
@@ -109,10 +127,16 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       splashBackgroundColor,
       webhookUrl: webhook,
       ...(tagline && { tagline }),
+      ...(subtitle && { subtitle }),
+      ...(description && { description }),
       ...(primaryCategory && { primaryCategory }),
       ...(tags && { tags }),
       ...(heroImageUrl && { heroImageUrl }),
       ...(screenshotUrls && { screenshotUrls }),
+      ...(ogTitle && { ogTitle }),
+      ...(ogDescription && { ogDescription }),
+      ...(ogImageUrl && { ogImageUrl }),
+      ...(noindex !== undefined && { noindex }),
     },
     miniapp: {
       requiredChains: ["eip155:8453", "eip155:84532"],
@@ -220,8 +244,14 @@ export function getManifestConfig(): ManifestConfig {
     accountAssociationSignature: process.env.FARCASTER_SIGNATURE,
     // Base Mini App discovery fields
     tagline: "Vote on World Cup 2026 matches",
+    subtitle: "Onchain World Cup 2026",
+    description: "Vote on World Cup 2026 matches and win ETH on Base. Pick winners before kick-off, earn more for voting early. Fully onchain, no custody.",
     primaryCategory: "games",
     tags: ["soccer", "worldcup", "voting", "onchain", "sports"],
     heroImageUrl: `${baseUrl}/splash_social.png`,
+    // screenshotUrls: [] — add portrait screenshots (1284×2778px) when available
+    ogTitle: "Onchain World Cup",
+    ogDescription: "Vote on World Cup 2026 matches and win ETH on Base.",
+    ogImageUrl: `${baseUrl}/splash_social.png`,
   }
 }
