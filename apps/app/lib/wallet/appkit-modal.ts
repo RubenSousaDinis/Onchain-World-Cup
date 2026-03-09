@@ -161,6 +161,11 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
           payload: e.data.payload,
           origin: e.origin,
         })
+        // Specifically highlight READY so we know the iframe loaded successfully
+        if (type === '@w3m-frame/READY' || type === '@w3m-app/READY') {
+          // eslint-disable-next-line no-console
+          console.warn('[AppKit] ✅ w3m-iframe READY — iframe loaded and initialised, MPC wallet available')
+        }
       }
       // Also log @w3m-app/ messages (page → iframe, echoed back in some SDK versions)
       if (type.startsWith('@w3m-app/')) {
