@@ -35,7 +35,10 @@ const baseMainnetRpcUrl = process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL || "https
 export const wagmiAdapter = new WagmiAdapter({
   networks: [base, baseSepolia, mainnet],
   projectId,
-  ssr: true,
+  // ssr: true is intentionally NOT set — the official Reown example does not use it,
+  // and pairing it with cookieToInitialState in WagmiProvider is required when enabled.
+  // Without cookieToInitialState, wagmi writes a state cookie server-side but the
+  // client never reads it, causing extra reconnection cycles on every page load.
   connectors: [
     farcasterMiniApp(),
     // Coinbase Wallet is NOT added here — Reown AppKit discovers it
