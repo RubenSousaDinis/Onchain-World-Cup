@@ -21,6 +21,12 @@ export interface FrameManifest {
   splashImageUrl?: string
   splashBackgroundColor?: string
   webhookUrl?: string
+  // Base Mini App discovery fields
+  tagline?: string
+  primaryCategory?: string
+  tags?: string[]
+  heroImageUrl?: string
+  screenshotUrls?: string[]
 }
 
 export interface MiniAppManifest {
@@ -46,6 +52,12 @@ export interface ManifestConfig {
   accountAssociationHeader?: string
   accountAssociationPayload?: string
   accountAssociationSignature?: string
+  // Base Mini App discovery fields
+  tagline?: string
+  primaryCategory?: string
+  tags?: string[]
+  heroImageUrl?: string
+  screenshotUrls?: string[]
 }
 
 /**
@@ -66,6 +78,11 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
     accountAssociationHeader = "REPLACE_WITH_SIGNED_HEADER",
     accountAssociationPayload = "REPLACE_WITH_SIGNED_PAYLOAD",
     accountAssociationSignature = "REPLACE_WITH_SIGNATURE",
+    tagline,
+    primaryCategory,
+    tags,
+    heroImageUrl,
+    screenshotUrls,
   } = config
 
   // Construct full URLs
@@ -91,6 +108,11 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
+      ...(tagline && { tagline }),
+      ...(primaryCategory && { primaryCategory }),
+      ...(tags && { tags }),
+      ...(heroImageUrl && { heroImageUrl }),
+      ...(screenshotUrls && { screenshotUrls }),
     },
     miniapp: {
       requiredChains: ["eip155:8453", "eip155:84532"],
@@ -184,6 +206,8 @@ export function validateManifest(manifest: unknown): string[] {
 export function getManifestConfig(): ManifestConfig {
   const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || 'app.onchainworldcup.xyz'
 
+  const baseUrl = appDomain.startsWith('http') ? appDomain : `https://${appDomain}`
+
   return {
     appName: "Onchain World Cup",
     appDomain,
@@ -194,5 +218,10 @@ export function getManifestConfig(): ManifestConfig {
     accountAssociationHeader: process.env.FARCASTER_HEADER,
     accountAssociationPayload: process.env.FARCASTER_PAYLOAD,
     accountAssociationSignature: process.env.FARCASTER_SIGNATURE,
+    // Base Mini App discovery fields
+    tagline: "Vote on World Cup 2026 matches",
+    primaryCategory: "games",
+    tags: ["soccer", "worldcup", "voting", "onchain", "sports"],
+    heroImageUrl: `${baseUrl}/splash_social.png`,
   }
 }
