@@ -63,10 +63,11 @@ export function initAppKit(): ReturnType<typeof createAppKit> {
       url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
       icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
     },
-    // Enable verbose logging for the secure iframe (w3m-iframe) that handles
-    // MPC wallet creation during social/email login. This surfaces errors from
-    // secure.walletconnect.org that are otherwise swallowed silently.
-    enableAuthLogger: true,
+    // enableAuthLogger is intentionally disabled in production.
+    // When true it adds enableLogger=true to the w3m-iframe URL, which was found
+    // to trigger a degraded code path inside the iframe that uses eval() —
+    // blocked by secure.walletconnect.org's own CSP, causing social login to hang.
+    enableAuthLogger: false,
     features: {
       analytics: true,
       email: true,
