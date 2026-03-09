@@ -82,6 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="talentapp:project_verification" content="2e581704055118519a0958d4f165995663863c847f0648cbdda67a0e480b243c221dd024dd1aac7561dc60ae62ca8c36fa9c866d4a3e8aee46afc7e481d3ae71" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* fonts.gstatic.com preconnect removed — next/font self-hosts Barlow Condensed */}
         {/* Google Tag Manager */}
