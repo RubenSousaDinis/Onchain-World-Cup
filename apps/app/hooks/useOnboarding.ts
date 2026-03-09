@@ -2,47 +2,37 @@
 
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
-import { usePathname } from "next/navigation"
 import { useUserStats } from "@/hooks/use-leaderboard"
 
 const ONBOARDING_KEY = "onboardingCompleted"
-const ONBOARDING_SESSION_KEY = "onboardingShownThisSession"
+
+export interface OnboardingCountry {
+  name: string
+  flag: string
+}
 
 /**
- * Hook to manage onboarding state
- * Checks if user has completed onboarding and provides controls to show/hide it
- * Uses database for connected wallets, localStorage for guests
+ * Hook to manage onboarding state.
+ * Does NOT auto-trigger — callers invoke showOnboarding() explicitly
+ * (e.g. on a user's first vote attempt).
  */
 export function useOnboarding() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true) // Default to true to avoid flash
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true) // Default true to avoid flash
+  const [onboardingCountry, setOnboardingCountry] = useState<OnboardingCountry | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { address, isConnected } = useAccount()
-  const pathname = usePathname()
 
-  // Share the TanStack Query cache with useAchievements and the profile page.
-  // All three use the same ['user-stats', address] key, so only one HTTP request
-  // is made on mount regardless of how many components call this data.
   const { data: userData, isLoading: isUserLoading } = useUserStats(isConnected && address ? address : "")
 
-  // Update onboarding status in database
   const updateOnboardingStatus = async (walletAddress: string, completed: boolean) => {
     try {
       const response = await fetch(`/api/users/${walletAddress}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          onboarding_completed: completed,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboarding_completed: completed }),
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to update onboarding status")
-      }
-
-      return true
+      return response.ok
     } catch (error) {
       console.error("Error updating onboarding status:", error)
       return false
@@ -54,65 +44,29 @@ export function useOnboarding() {
       setIsLoading(true)
 
       if (isConnected && address) {
-        // Wait for the shared TanStack Query to resolve before reading the status
         if (isUserLoading) return
 
-        // User is connected - read onboarding status from shared query cache
         const dbCompleted = userData?.data
           ? (userData.data as any).onboarding_completed_at != null
           : false
 
-        // Migration: If database says not completed, check localStorage
+        // Migration: sync localStorage → database
         if (!dbCompleted && typeof window !== "undefined") {
           const localCompleted = localStorage.getItem(ONBOARDING_KEY) === "true"
-
           if (localCompleted) {
-            // Migrate localStorage state to database
-            console.log("Migrating onboarding status from localStorage to database for", address)
             await updateOnboardingStatus(address, true)
-            setHasCompletedOnboarding(true)
-
-            // Clear localStorage after successful migration
             localStorage.removeItem(ONBOARDING_KEY)
+            setHasCompletedOnboarding(true)
             setIsLoading(false)
             return
           }
         }
 
         setHasCompletedOnboarding(dbCompleted)
-
-        // Auto-show onboarding for first-time users (only on homepage, once per session)
-        if (!dbCompleted) {
-          if (pathname === "/" && !sessionStorage.getItem(ONBOARDING_SESSION_KEY)) {
-            sessionStorage.setItem(ONBOARDING_SESSION_KEY, "true")
-            const timer = setTimeout(() => {
-              setIsOnboardingOpen(true)
-            }, 500)
-            setIsLoading(false)
-            return () => clearTimeout(timer)
-          }
-          setIsLoading(false)
-          return
-        }
       } else {
-        // User not connected - check localStorage
         if (typeof window !== "undefined") {
           const completed = localStorage.getItem(ONBOARDING_KEY) === "true"
           setHasCompletedOnboarding(completed)
-
-          // Auto-show onboarding for first-time users (only on homepage, once per session)
-          if (!completed) {
-            if (pathname === "/" && !sessionStorage.getItem(ONBOARDING_SESSION_KEY)) {
-              sessionStorage.setItem(ONBOARDING_SESSION_KEY, "true")
-              const timer = setTimeout(() => {
-                setIsOnboardingOpen(true)
-              }, 500)
-              setIsLoading(false)
-              return () => clearTimeout(timer)
-            }
-            setIsLoading(false)
-            return
-          }
         }
       }
 
@@ -120,9 +74,10 @@ export function useOnboarding() {
     }
 
     checkOnboardingStatus()
-  }, [address, isConnected, pathname, isUserLoading, userData])
+  }, [address, isConnected, isUserLoading, userData])
 
-  const showOnboarding = () => {
+  const showOnboarding = (country?: OnboardingCountry) => {
+    setOnboardingCountry(country || null)
     setIsOnboardingOpen(true)
   }
 
@@ -130,7 +85,6 @@ export function useOnboarding() {
     setIsOnboardingOpen(false)
     setHasCompletedOnboarding(true)
 
-    // Save to database if connected, otherwise localStorage
     if (isConnected && address) {
       await updateOnboardingStatus(address, true)
     } else if (typeof window !== "undefined") {
@@ -142,7 +96,6 @@ export function useOnboarding() {
     setHasCompletedOnboarding(false)
     setIsOnboardingOpen(true)
 
-    // Clear from database if connected, otherwise localStorage
     if (isConnected && address) {
       await updateOnboardingStatus(address, false)
     } else if (typeof window !== "undefined") {
@@ -153,6 +106,7 @@ export function useOnboarding() {
   return {
     isOnboardingOpen,
     hasCompletedOnboarding,
+    onboardingCountry,
     isLoading,
     showOnboarding,
     hideOnboarding,
