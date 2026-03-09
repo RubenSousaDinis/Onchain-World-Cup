@@ -25,26 +25,10 @@ let _modal: ReturnType<typeof createAppKit> | null = null
 export function initAppKit(): ReturnType<typeof createAppKit> {
   if (_modal) return _modal
 
-  // Clear any persisted AppKit network selection from localStorage.
-  // AppKit persists the last-used network and restores it on next visit,
-  // overriding defaultNetwork. If the user previously selected Base Sepolia,
-  // social login would hang because the embedded wallet (MPC) doesn't support
-  // testnets. Clearing this forces AppKit to use defaultNetwork (Base mainnet).
-  if (typeof window !== 'undefined') {
-    try {
-      const keysToCheck = ['@appkit/active_caip_network', '@w3m/active_caip_network']
-      for (const key of keysToCheck) {
-        const stored = localStorage.getItem(key)
-        if (stored && stored.includes('84532')) {
-          localStorage.removeItem(key)
-          // eslint-disable-next-line no-console
-          console.warn('[AppKit] cleared persisted testnet network to prevent social login hang')
-        }
-      }
-    } catch {
-      // localStorage may be unavailable (SSR, iframe restrictions)
-    }
-  }
+  // NOTE: We intentionally do NOT clear persisted Sepolia network from localStorage.
+  // Social login hang on Sepolia is already prevented by appKitNetworks = [base] (mainnet-only).
+  // Clearing localStorage would break regular wallet users (MetaMask) who legitimately
+  // test on Base Sepolia — their stored network would be reset to mainnet on every load.
 
   _modal = createAppKit({
     adapters: [wagmiAdapter],
