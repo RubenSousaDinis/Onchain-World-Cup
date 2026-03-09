@@ -34,13 +34,10 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // COOP: same-origin-allow-popups is explicitly required by Reown docs for social login.
-          // Without it, the browser uses a degraded OAuth code path inside the w3m-iframe that
-          // relies on eval() for MPC key operations — which is blocked by the iframe's own CSP,
-          // causing the social login to hang silently after OAuth completes.
-          // same-origin-allow-popups (not same-origin) preserves the opener reference on the
-          // OAuth callback popup so window.opener.postMessage works correctly.
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          // COOP is intentionally NOT set (defaults to unsafe-none).
+          // The working Reown example has zero custom COOP headers and social login works.
+          // same-origin-allow-popups was tested and caused the w3m-iframe to be hidden from
+          // Chrome DevTools frame selector (BCG isolation side-effect) without fixing the hang.
           { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
             key: "Strict-Transport-Security",

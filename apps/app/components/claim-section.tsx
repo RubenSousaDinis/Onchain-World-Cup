@@ -18,7 +18,7 @@ import type { Address } from "viem"
 
 interface ClaimSectionProps {
   address: Address | undefined
-  totalVotes: number
+  totalVotes?: number
 }
 
 function useCountdown(endTimestamp: bigint | undefined) {
@@ -123,8 +123,8 @@ export function ClaimSection({ address, totalVotes }: ClaimSectionProps) {
     }
   }
 
-  // Don't render if no votes or contract not available
-  if (!contractAvailable || !address || totalVotes === 0) return null
+  // Don't render if contract not available or no wallet connected
+  if (!contractAvailable || !address) return null
 
   const isLoading = isLoadingClaimable || isLoadingHasClaimed || isLoadingFinalized || isLoadingEndTime
 
