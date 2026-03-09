@@ -36,6 +36,7 @@ export interface FrameManifest {
 }
 
 export interface MiniAppManifest {
+  version: "1"
   requiredChains?: string[] // Array of CAIP-2 identifiers (e.g., ["eip155:84532", "eip155:8453"])
   requiredCapabilities?: string[] // Array of SDK method paths (e.g., ["wallet.switchEthereumChain"])
 }
@@ -139,6 +140,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       ...(noindex !== undefined && { noindex }),
     },
     miniapp: {
+      version: "1",
       requiredChains: ["eip155:8453", "eip155:84532"],
       requiredCapabilities: ["wallet.getEthereumProvider"],
     },
