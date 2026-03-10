@@ -121,8 +121,8 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
             letterSpacing: 2,
           }}
         >
-          <GlowText color={theme.gold}>32 NATIONS</GlowText>
-          {"  ·  "}48 MATCHES
+          <GlowText color={theme.gold}>48 NATIONS</GlowText>
+          {"  ·  "}104 MATCHES
         </div>
       </div>
 

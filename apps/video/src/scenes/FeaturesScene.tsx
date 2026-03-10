@@ -42,8 +42,8 @@ const FEATURES = [
   },
   {
     icon: "🌍",
-    title: "32 NATIONS",
-    desc: "All World Cup 2026 teams. 48 matches to vote on.",
+    title: "48 NATIONS",
+    desc: "All World Cup 2026 teams. 104 matches to vote on.",
     color: theme.white,
   },
 ];
