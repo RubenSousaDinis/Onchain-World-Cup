@@ -10,8 +10,8 @@ const H = 1080;
 const W_VERTICAL = 1080;
 const H_VERTICAL = 1920;
 
-// Total duration: ~25 seconds (180+150+120+120+180 frames)
-const DURATION_SECS = 25;
+// Total duration: ~24s (180+150+120+180+180 - 4×20 overlap = 730 frames)
+const DURATION_FRAMES = 730;
 
 export const Root: React.FC = () => {
   return (
@@ -19,7 +19,7 @@ export const Root: React.FC = () => {
       <Composition
         id="TeaserVideo"
         component={TeaserVideo}
-        durationInFrames={FPS * DURATION_SECS}
+        durationInFrames={DURATION_FRAMES}
         fps={FPS}
         width={W}
         height={H}
@@ -28,7 +28,7 @@ export const Root: React.FC = () => {
       <Composition
         id="TeaserVideo9x16"
         component={TeaserVideo}
-        durationInFrames={FPS * DURATION_SECS}
+        durationInFrames={DURATION_FRAMES}
         fps={FPS}
         width={W_VERTICAL}
         height={H_VERTICAL}

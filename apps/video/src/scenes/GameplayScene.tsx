@@ -72,9 +72,6 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
     },
   }));
 
-  // "Live" blinking cursor
-  const blink = frame % 30 < 15 ? 1 : 0;
-
   return (
     <AbsoluteFill
       style={{
@@ -110,8 +107,7 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
             textTransform: "uppercase",
           }}
         >
-          🌍 GROUP STAGE — LIVE
-          <span style={{ opacity: blink, marginLeft: 8 }}>█</span>
+          🌍 GROUP STAGE
         </div>
         <div
           style={{
