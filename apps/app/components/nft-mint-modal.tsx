@@ -2,7 +2,8 @@
 
 import { X, Award, Download, ExternalLink } from "lucide-react"
 import { useEffect } from "react"
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useAccount, useReadContract, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import type React from "react"
 import { useNotifications } from "@/components/notifications"
 import { parseEther } from "viem"
@@ -33,7 +34,7 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
   const achievementId = milestone?.id ?? ""
 
   const { address } = useAccount()
-  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { writeContract, data: hash, isPending } = useWriteContractAttributed()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
   const { success, error, info } = useNotifications()
 

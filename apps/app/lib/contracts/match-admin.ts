@@ -1,6 +1,7 @@
 "use client"
 
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useReadContract, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { Address } from "viem"
 import { WORLD_CUP_MATCH_ABI } from "@/lib/contracts/match-abi"
 
@@ -60,7 +61,7 @@ export function useMatchPlatformAddress(contractAddress: Address | undefined) {
 // ============================================================================
 
 export function useMatchPause(contractAddress: Address) {
-  const { data: hash, isPending, writeContract, error } = useWriteContract()
+  const { data: hash, isPending, writeContract, error } = useWriteContractAttributed()
   const receipt = useWaitForTransactionReceipt({ hash })
 
   const pause = () =>
@@ -81,7 +82,7 @@ export function useMatchPause(contractAddress: Address) {
 }
 
 export function useMatchSetPlatformFee(contractAddress: Address) {
-  const { data: hash, isPending, writeContract, error } = useWriteContract()
+  const { data: hash, isPending, writeContract, error } = useWriteContractAttributed()
   const receipt = useWaitForTransactionReceipt({ hash })
 
   const setPlatformFee = (basisPoints: bigint) =>
@@ -96,7 +97,7 @@ export function useMatchSetPlatformFee(contractAddress: Address) {
 }
 
 export function useMatchSetPlatformAddress(contractAddress: Address) {
-  const { data: hash, isPending, writeContract, error } = useWriteContract()
+  const { data: hash, isPending, writeContract, error } = useWriteContractAttributed()
   const receipt = useWaitForTransactionReceipt({ hash })
 
   const setPlatformAddress = (newAddress: Address) =>

@@ -7,7 +7,8 @@ function isMobileBrowser(): boolean {
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
 import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet, CreditCard } from "lucide-react"
-import { useAccount, useConnect, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
+import { useAccount, useConnect, useWaitForTransactionReceipt, useBalance } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { parseEther, formatEther } from "viem"
 import { useQualificationVotePrice } from "@/lib/hooks/use-vote-price"
 import { useNotifications } from "@/components/notifications"
@@ -62,7 +63,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const ethPrice = useEthPrice()
 
   // Contract interaction hooks
-  const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContract()
+  const { writeContract, data: hash, isPending, isError: isWriteError, error: writeError, reset: resetWrite } = useWriteContractAttributed()
   const { isSuccess: isConfirmed, isError: isReceiptError, error: receiptError } = useWaitForTransactionReceipt({
     hash: hash,
     confirmations: 2, // Wait for 2 block confirmations to ensure transaction is propagated
