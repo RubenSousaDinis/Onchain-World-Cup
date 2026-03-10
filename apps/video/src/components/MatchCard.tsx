@@ -23,7 +23,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 }) => {
   const total = home.votes + away.votes || 1;
   const homePct = Math.round((home.votes / total) * 100);
-  const awayPct = 100 - homePct;
 
   return (
     <div
@@ -41,8 +40,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <div
         style={{
           background: theme.greenDim,
-          padding: "6px 14px",
-          fontSize: 11,
+          padding: "8px 16px",
+          fontSize: 16,
           letterSpacing: 2,
           color: theme.greenBright,
           textTransform: "uppercase",
@@ -62,14 +61,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       >
         {/* Home */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: 48 }}>{home.flag}</div>
+          <div style={{ fontSize: 52 }}>{home.flag}</div>
           <div
             style={{
               color: theme.white,
-              fontSize: 13,
-              marginTop: 6,
-              letterSpacing: 1,
+              fontSize: 18,
+              marginTop: 8,
+              letterSpacing: 2,
               textTransform: "uppercase",
+              fontWeight: "bold",
             }}
           >
             {home.name}
@@ -80,7 +80,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         <div
           style={{
             color: theme.greenDim,
-            fontSize: 22,
+            fontSize: 26,
             fontWeight: "bold",
             padding: "0 16px",
           }}
@@ -90,14 +90,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
         {/* Away */}
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{ fontSize: 48 }}>{away.flag}</div>
+          <div style={{ fontSize: 52 }}>{away.flag}</div>
           <div
             style={{
               color: theme.white,
-              fontSize: 13,
-              marginTop: 6,
-              letterSpacing: 1,
+              fontSize: 18,
+              marginTop: 8,
+              letterSpacing: 2,
               textTransform: "uppercase",
+              fontWeight: "bold",
             }}
           >
             {away.name}
@@ -106,10 +107,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       </div>
 
       {/* Vote bar */}
-      <div style={{ padding: "0 24px 8px" }}>
+      <div style={{ padding: "0 24px 10px" }}>
         <div
           style={{
-            height: 6,
+            height: 8,
             background: theme.bgPanel,
             display: "flex",
             overflow: "hidden",
@@ -121,7 +122,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               width: `${homePct}%`,
               background: theme.green,
               boxShadow: `0 0 6px ${theme.green}`,
-              transition: "width 0.3s",
             }}
           />
           <div
@@ -136,8 +136,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginTop: 4,
-            fontSize: 11,
+            marginTop: 6,
+            fontSize: 16,
             color: theme.grayLight,
           }}
         >
@@ -156,23 +156,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <div
         style={{
           borderTop: `1px solid ${theme.greenDim}`,
-          padding: "8px 24px",
+          padding: "10px 24px",
           display: "flex",
           justifyContent: "space-between",
-          fontSize: 11,
+          fontSize: 16,
           color: theme.grayLight,
         }}
       >
         <span>
           PRIZE POOL{" "}
           <GlowText color={theme.gold}>
-            {(
-              parseFloat(home.eth) + parseFloat(away.eth)
-            ).toFixed(3)}{" "}
-            ETH
+            {(parseFloat(home.eth) + parseFloat(away.eth)).toFixed(3)} ETH
           </GlowText>
         </span>
-        <span style={{ color: theme.greenDim, letterSpacing: 1 }}>
+        <span style={{ color: theme.green, letterSpacing: 1 }}>
           ⬡ BASE
         </span>
       </div>

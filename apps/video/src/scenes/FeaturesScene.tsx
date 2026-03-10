@@ -6,7 +6,6 @@ import {
   spring,
 } from "remotion";
 import { theme } from "../theme";
-import { GlowText } from "../components/GlowText";
 import { ScanlineOverlay } from "../components/ScanlineOverlay";
 
 const FEATURES = [
@@ -24,26 +23,26 @@ const FEATURES = [
   },
   {
     icon: "📈",
-    title: "DYNAMIC PRICING",
-    desc: "Early voters get more votes for less ETH.",
+    title: "EARLY VOTER EDGE",
+    desc: "Vote early — get more votes for less ETH.",
     color: theme.yellow,
-  },
-  {
-    icon: "🏅",
-    title: "NFT REWARDS",
-    desc: "Earn achievement NFTs for your predictions.",
-    color: theme.gold,
   },
   {
     icon: "📱",
     title: "FARCASTER NATIVE",
-    desc: "Play directly in Warpcast. No wallet setup needed.",
+    desc: "Play directly in Warpcast. Zero setup.",
     color: theme.greenBright,
+  },
+  {
+    icon: "🏅",
+    title: "NFT REWARDS",
+    desc: "Earn onchain achievement NFTs.",
+    color: theme.gold,
   },
   {
     icon: "🌍",
     title: "48 NATIONS",
-    desc: "All World Cup 2026 teams. 104 matches to vote on.",
+    desc: "104 matches. Every game. Vote on all of them.",
     color: theme.white,
   },
 ];
@@ -57,157 +56,174 @@ export const FeaturesScene: React.FC<FeaturesSceneProps> = ({ aspect }) => {
   const { fps } = useVideoConfig();
   const isVertical = aspect === "9:16";
 
-  const titleOpacity = interpolate(frame, [0, 20], [0, 1], {
+  const titleOpacity = interpolate(frame, [0, 18], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  const featureAnimations = FEATURES.map((_, i) =>
-    spring({
-      frame: frame - 10 - i * 8,
-      fps,
-      from: 0,
-      to: 1,
-      config: { damping: 15, stiffness: 150, mass: 1 },
-    })
-  );
-
-  const featureX = FEATURES.map((_, i) =>
-    interpolate(frame, [10 + i * 8, 30 + i * 8], [-40, 0], {
+  const cardAnimations = FEATURES.map((_, i) => ({
+    opacity: interpolate(frame, [12 + i * 9, 30 + i * 9], [0, 1], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-    })
-  );
+    }),
+    y: interpolate(frame, [12 + i * 9, 30 + i * 9], [24, 0], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    }),
+    scale: spring({
+      frame: frame - 12 - i * 9,
+      fps,
+      from: 0.92,
+      to: 1,
+      config: { damping: 16, stiffness: 180, mass: 0.8 },
+    }),
+  }));
 
   return (
     <AbsoluteFill
       style={{
-        background: theme.bg,
+        background: "#020b02",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: isVertical ? "60px 48px" : "60px 120px",
+        padding: isVertical ? "52px 48px" : "52px 100px",
       }}
     >
       <ScanlineOverlay />
-
-      {/* Subtle grid */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `linear-gradient(${theme.greenDim}10 1px, transparent 1px), linear-gradient(90deg, ${theme.greenDim}10 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
 
       {/* Title */}
       <div
         style={{
           opacity: titleOpacity,
           textAlign: "center",
-          marginBottom: isVertical ? 52 : 44,
+          marginBottom: isVertical ? 36 : 32,
         }}
       >
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 32 : 26,
-            letterSpacing: 4,
-            color: theme.grayLight,
+            fontSize: isVertical ? 36 : 38,
+            fontWeight: "bold",
+            letterSpacing: 5,
+            color: theme.white,
             textTransform: "uppercase",
-            marginBottom: 8,
           }}
         >
           WHY ONCHAIN WORLD CUP?
         </div>
         <div
           style={{
-            width: isVertical ? 180 : 150,
+            width: 200,
             height: 2,
             background: `linear-gradient(90deg, transparent, ${theme.green}, transparent)`,
-            margin: "0 auto",
+            margin: "10px auto 0",
           }}
         />
       </div>
 
-      {/* Feature grid */}
+      {/* 2×3 grid — larger cards, more breathing room */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: isVertical ? "1fr 1fr" : "repeat(3, 1fr)",
-          gap: isVertical ? "24px 28px" : "20px 40px",
+          gap: isVertical ? "20px 24px" : "18px 32px",
           width: "100%",
-          maxWidth: isVertical ? 700 : 1100,
+          maxWidth: isVertical ? 720 : 1400,
         }}
       >
-        {FEATURES.map((f, i) => (
-          <div
-            key={i}
-            style={{
-              opacity: featureAnimations[i],
-              transform: `translateX(${featureX[i]}px)`,
-              border: `1px solid ${f.color}33`,
-              background: `linear-gradient(135deg, ${f.color}08 0%, transparent 100%)`,
-              padding: isVertical ? "20px 18px" : "16px 18px",
-              display: "flex",
-              gap: 14,
-              alignItems: "flex-start",
-            }}
-          >
-            <div style={{ fontSize: isVertical ? 28 : 24, lineHeight: 1, flexShrink: 0 }}>
-              {f.icon}
-            </div>
-            <div>
+        {FEATURES.map((f, i) => {
+          const anim = cardAnimations[i];
+          return (
+            <div
+              key={i}
+              style={{
+                opacity: anim.opacity,
+                transform: `translateY(${anim.y}px) scale(${anim.scale})`,
+                background: `${f.color}12`,
+                border: `1px solid ${f.color}55`,
+                borderLeft: `3px solid ${f.color}`,
+                padding: isVertical ? "18px 20px" : "20px 24px",
+                display: "flex",
+                gap: 16,
+                alignItems: "flex-start",
+              }}
+            >
               <div
                 style={{
-                  fontFamily: theme.fontMono,
-                  fontSize: isVertical ? 13 : 11,
-                  letterSpacing: 2,
-                  color: f.color,
-                  textTransform: "uppercase",
-                  marginBottom: 4,
-                  textShadow: `0 0 8px ${f.color}88`,
+                  fontSize: isVertical ? 32 : 34,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                  marginTop: 2,
                 }}
               >
-                {f.title}
+                {f.icon}
               </div>
-              <div
-                style={{
-                  fontFamily: theme.fontMono,
-                  fontSize: isVertical ? 13 : 11,
-                  color: theme.grayLight,
-                  lineHeight: 1.5,
-                }}
-              >
-                {f.desc}
+              <div>
+                <div
+                  style={{
+                    fontFamily: theme.fontMono,
+                    fontSize: isVertical ? 18 : 20,
+                    fontWeight: "bold",
+                    letterSpacing: 2,
+                    color: f.color,
+                    textTransform: "uppercase",
+                    marginBottom: 6,
+                    textShadow: `0 0 10px ${f.color}66`,
+                  }}
+                >
+                  {f.title}
+                </div>
+                <div
+                  style={{
+                    fontFamily: theme.fontMono,
+                    fontSize: isVertical ? 16 : 18,
+                    color: theme.white,
+                    lineHeight: 1.5,
+                    opacity: 0.85,
+                  }}
+                >
+                  {f.desc}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Base logo line */}
+      {/* Footer */}
       <div
         style={{
-          opacity: interpolate(frame, [140, 160], [0, 1], {
+          opacity: interpolate(frame, [90, 108], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
-          marginTop: isVertical ? 44 : 32,
+          marginTop: isVertical ? 32 : 26,
           fontFamily: theme.fontMono,
-          fontSize: isVertical ? 14 : 12,
-          color: theme.gray,
-          letterSpacing: 3,
+          fontSize: isVertical ? 16 : 18,
+          color: theme.grayLight,
+          letterSpacing: 4,
           textTransform: "uppercase",
         }}
       >
         Powered by{" "}
-        <GlowText color={theme.blue}>Base</GlowText>
-        {"  ·  "}
-        Built on{" "}
-        <GlowText color={theme.greenBright}>Ethereum</GlowText>
+        <span
+          style={{
+            color: theme.blue,
+            textShadow: `0 0 8px ${theme.blue}`,
+          }}
+        >
+          Base
+        </span>
+        {"  ·  "}Built on{" "}
+        <span
+          style={{
+            color: theme.greenBright,
+            textShadow: `0 0 8px ${theme.greenBright}`,
+          }}
+        >
+          Ethereum
+        </span>
       </div>
     </AbsoluteFill>
   );

@@ -86,8 +86,8 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
   });
   const ctaPulse = 1 + 0.025 * Math.sin((frame / 20) * Math.PI * 2);
 
-  const rowHeight = isVertical ? 42 : 34;
-  const fontSize = isVertical ? 15 : 13;
+  const rowHeight = isVertical ? 52 : 44;
+  const fontSize = isVertical ? 19 : 18;
 
   return (
     <AbsoluteFill
@@ -154,11 +154,11 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
         style={{
           opacity: subtitleOpacity,
           fontFamily: theme.fontMono,
-          fontSize: isVertical ? 14 : 12,
+          fontSize: isVertical ? 18 : 17,
           color: theme.grayLight,
           letterSpacing: 3,
           textTransform: "uppercase",
-          marginBottom: isVertical ? 28 : 20,
+          marginBottom: isVertical ? 28 : 16,
         }}
       >
         48 nations compete · Your votes decide the rankings
@@ -184,7 +184,7 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
             paddingBottom: 6,
             borderBottom: `1px solid ${theme.greenDim}`,
             fontFamily: theme.fontMono,
-            fontSize: 10,
+            fontSize: 14,
             letterSpacing: 2,
             color: theme.gray,
             textTransform: "uppercase",

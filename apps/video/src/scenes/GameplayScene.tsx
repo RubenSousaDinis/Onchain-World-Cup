@@ -104,7 +104,7 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 18 : 15,
+            fontSize: isVertical ? 22 : 20,
             letterSpacing: 3,
             color: theme.greenBright,
             textTransform: "uppercase",
@@ -116,7 +116,7 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 14 : 12,
+            fontSize: isVertical ? 18 : 16,
             color: theme.grayLight,
             letterSpacing: 2,
           }}
@@ -164,7 +164,7 @@ export const GameplayScene: React.FC<GameplaySceneProps> = ({ aspect }) => {
             extrapolateRight: "clamp",
           }),
           fontFamily: theme.fontMono,
-          fontSize: isVertical ? 18 : 14,
+          fontSize: isVertical ? 22 : 18,
           color: theme.grayLight,
           letterSpacing: 2,
           marginTop: isVertical ? 40 : 24,
