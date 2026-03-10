@@ -18,7 +18,7 @@ const FEATURES = [
   {
     icon: "⚡",
     title: "INSTANT PAYOUTS",
-    desc: "Winners claim ETH automatically. No middlemen.",
+    desc: "Winners claim ETH automatically. Fully trustless.",
     color: theme.green,
   },
   {

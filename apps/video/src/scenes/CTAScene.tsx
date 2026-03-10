@@ -193,7 +193,7 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
             opacity: 0.75,
           }}
         >
-          Vote · Win ETH · No middlemen
+          Vote · Win ETH · Onchain
         </div>
       </div>
 
