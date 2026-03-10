@@ -18,7 +18,10 @@
     "app:prisma:studio": "npm run prisma:studio --workspace=@onchain-world-cup/app",
     "app:prisma:push": "npm run prisma:push --workspace=@onchain-world-cup/app",
     "app:prisma:pull": "npm run prisma:pull --workspace=@onchain-world-cup/app",
-    "app:prisma:migrate": "npm run prisma:migrate --workspace=@onchain-world-cup/app"
+    "app:prisma:migrate": "npm run prisma:migrate --workspace=@onchain-world-cup/app",
+    "video:studio": "npm run start --workspace=@onchain-world-cup/video",
+    "video:render": "npm run render --workspace=@onchain-world-cup/video",
+    "video:render:9x16": "npm run render:9x16 --workspace=@onchain-world-cup/video"
   },
   "devDependencies": {
     "@octokit/rest": "^22.0.1",
