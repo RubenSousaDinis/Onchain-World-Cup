@@ -35,8 +35,8 @@ const FEATURES = [
   },
   {
     icon: "🏅",
-    title: "NFT REWARDS",
-    desc: "Earn onchain achievement NFTs.",
+    title: "ACHIEVEMENT NFTS",
+    desc: "Mint onchain proof of your best predictions.",
     color: theme.gold,
   },
   {
