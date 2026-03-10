@@ -8,7 +8,6 @@ import {
   staticFile,
 } from "remotion";
 import { theme } from "../theme";
-import { GlowText } from "../components/GlowText";
 import { ScanlineOverlay } from "../components/ScanlineOverlay";
 
 interface IntroSceneProps {
@@ -91,18 +90,8 @@ export const IntroScene: React.FC<IntroSceneProps> = ({ aspect }) => {
     config: { damping: 10, stiffness: 240, mass: 0.7 },
   });
 
-  // ── Launch date fades up ─────────────────────────────────────────────────
-  const launchY = interpolate(frame, [44, 62], [20, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const launchOpacity = interpolate(frame, [44, 62], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
   // ── Tagline fades in ─────────────────────────────────────────────────────
-  const tagOpacity = interpolate(frame, [58, 76], [0, 1], {
+  const tagOpacity = interpolate(frame, [44, 62], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -243,22 +232,6 @@ export const IntroScene: React.FC<IntroSceneProps> = ({ aspect }) => {
         }}
       >
         WORLD CUP 2026
-      </div>
-
-      {/* Launch date */}
-      <div
-        style={{
-          opacity: launchOpacity,
-          transform: `translateY(${launchY}px)`,
-          marginTop: 20,
-          fontFamily: theme.fontMono,
-          fontSize: isVertical ? 22 : 20,
-          letterSpacing: 3,
-          textTransform: "uppercase",
-        }}
-      >
-        Mainnet launching{" "}
-        <GlowText color={theme.gold}>March 27</GlowText>
       </div>
 
       {/* Tagline */}

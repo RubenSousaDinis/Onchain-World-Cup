@@ -1,16 +1,18 @@
 import { AbsoluteFill, Series } from "remotion";
 import { theme } from "./theme";
 import { IntroScene } from "./scenes/IntroScene";
+import { HookScene } from "./scenes/HookScene";
 import { GameplayScene } from "./scenes/GameplayScene";
 import { FeaturesScene } from "./scenes/FeaturesScene";
 import { CTAScene } from "./scenes/CTAScene";
 
 // Scene durations (frames @ 30fps)
 export const SCENE = {
-  INTRO: 90,       // 3s
-  GAMEPLAY: 150,   // 5s
-  FEATURES: 180,   // 6s
-  CTA: 180,        // 6s
+  INTRO: 90,      // 3s
+  HOOK: 120,      // 4s  — "What would be the onchain World Cup winner?"
+  GAMEPLAY: 150,  // 5s
+  FEATURES: 150,  // 5s
+  CTA: 180,       // 6s
 };
 
 interface TeaserVideoProps {
@@ -25,6 +27,10 @@ export const TeaserVideo: React.FC<TeaserVideoProps> = ({ aspect }) => {
       <Series>
         <Series.Sequence durationInFrames={SCENE.INTRO}>
           <IntroScene aspect={aspect} />
+        </Series.Sequence>
+
+        <Series.Sequence durationInFrames={SCENE.HOOK}>
+          <HookScene aspect={aspect} />
         </Series.Sequence>
 
         <Series.Sequence durationInFrames={SCENE.GAMEPLAY}>
