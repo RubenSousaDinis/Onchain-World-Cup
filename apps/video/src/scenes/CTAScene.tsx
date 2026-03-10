@@ -55,16 +55,6 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
     extrapolateRight: "clamp",
   });
 
-  // Hash ticker
-  const ticker = interpolate(frame, [90, 130], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const hashChars = "0x1a2b3c4d5e6f7890abcdef".slice(
-    0,
-    Math.floor(ticker * 22)
-  );
-
   // Radial glow intensifies
   const glowIntensity = interpolate(frame, [0, 90], [0.04, 0.18], {
     extrapolateLeft: "clamp",
@@ -207,22 +197,6 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         </div>
       </div>
 
-      {/* Hash ticker */}
-      <div
-        style={{
-          opacity: interpolate(frame, [90, 110], [0, 0.6], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          }),
-          fontFamily: theme.fontMono,
-          fontSize: 14,
-          color: theme.greenDim,
-          letterSpacing: 2,
-          marginTop: 20,
-        }}
-      >
-        TX: {hashChars}
-      </div>
     </AbsoluteFill>
   );
 };
