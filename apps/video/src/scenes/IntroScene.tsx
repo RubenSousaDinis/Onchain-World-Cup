@@ -4,6 +4,8 @@ import {
   useVideoConfig,
   interpolate,
   spring,
+  Img,
+  staticFile,
 } from "remotion";
 import { theme } from "../theme";
 import { GlowText } from "../components/GlowText";
@@ -17,8 +19,8 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Trophy bounces in
-  const trophyScale = spring({
+  // Logo bounces in
+  const logoScale = spring({
     frame,
     fps,
     from: 0,
@@ -42,18 +44,14 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
     extrapolateRight: "clamp",
   });
 
-  // Tagline
-  const tagOpacity = interpolate(frame, [50, 70], [0, 1], {
+  // Launch date
+  const launchOpacity = interpolate(frame, [50, 70], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Background pulse
-  const bgGlow = interpolate(
-    frame % 60,
-    [0, 30, 60],
-    [0.03, 0.08, 0.03]
-  );
+  const bgGlow = interpolate(frame % 60, [0, 30, 60], [0.03, 0.08, 0.03]);
 
   return (
     <AbsoluteFill
@@ -63,12 +61,11 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 0,
       }}
     >
       <ScanlineOverlay />
 
-      {/* Grid lines (retro stadium pitch feel) */}
+      {/* Grid lines */}
       <div
         style={{
           position: "absolute",
@@ -82,17 +79,23 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
         }}
       />
 
-      {/* Trophy */}
+      {/* App logo */}
       <div
         style={{
-          fontSize: 100,
-          transform: `scale(${trophyScale})`,
-          lineHeight: 1,
-          marginBottom: 16,
-          filter: `drop-shadow(0 0 24px ${theme.gold})`,
+          transform: `scale(${logoScale})`,
+          marginBottom: 20,
+          filter: `drop-shadow(0 0 32px ${theme.gold}88) drop-shadow(0 0 64px rgba(0,100,255,0.3))`,
         }}
       >
-        🏆
+        <Img
+          src={staticFile("logo.jpg")}
+          style={{
+            width: 160,
+            height: 160,
+            borderRadius: 36,
+            display: "block",
+          }}
+        />
       </div>
 
       {/* Title */}
@@ -149,11 +152,11 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
         WORLD CUP 2026
       </div>
 
-      {/* Tagline */}
+      {/* Launch date */}
       <div
         style={{
-          opacity: tagOpacity,
-          marginTop: 28,
+          opacity: launchOpacity,
+          marginTop: 24,
           fontSize: 18,
           color: theme.grayLight,
           letterSpacing: 3,
@@ -161,11 +164,8 @@ export const IntroScene: React.FC<IntroSceneProps> = () => {
           textTransform: "uppercase",
         }}
       >
-        <GlowText color={theme.green}>Vote</GlowText>
-        {"  ·  "}
-        <GlowText color={theme.gold}>Win ETH</GlowText>
-        {"  ·  "}
-        <GlowText color={theme.blue}>Onchain</GlowText>
+        Mainnet launching{" "}
+        <GlowText color={theme.gold}>March 27</GlowText>
       </div>
     </AbsoluteFill>
   );

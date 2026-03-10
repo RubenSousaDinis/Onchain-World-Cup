@@ -4,6 +4,8 @@ import {
   useVideoConfig,
   interpolate,
   spring,
+  Img,
+  staticFile,
 } from "remotion";
 import { theme } from "../theme";
 import { GlowText } from "../components/GlowText";
@@ -18,8 +20,8 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
   const { fps } = useVideoConfig();
   const isVertical = aspect === "9:16";
 
-  // Trophy scale
-  const trophyScale = spring({
+  // Logo scale
+  const logoScale = spring({
     frame,
     fps,
     from: 0,
@@ -37,24 +39,24 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
     extrapolateRight: "clamp",
   });
 
-  // CTA button pulse
-  const ctaScale = spring({
+  // Date badge pulse
+  const dateBadgeScale = spring({
     frame: frame - 50,
     fps,
     from: 0,
     to: 1,
     config: { damping: 8, stiffness: 200, mass: 0.6 },
   });
-  const ctaPulse = 1 + 0.025 * Math.sin((frame / 30) * Math.PI * 2);
+  const datePulse = 1 + 0.02 * Math.sin((frame / 30) * Math.PI * 2);
 
-  // URL fade in
-  const urlOpacity = interpolate(frame, [80, 100], [0, 1], {
+  // URL + tagline fade in
+  const bottomOpacity = interpolate(frame, [80, 105], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // Hash ticker
-  const ticker = interpolate(frame, [90, 120], [0, 1], {
+  const ticker = interpolate(frame, [90, 130], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -77,7 +79,6 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 0,
       }}
     >
       <ScanlineOverlay />
@@ -96,32 +97,38 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         }}
       />
 
-      {/* Trophy */}
+      {/* App logo */}
       <div
         style={{
-          fontSize: isVertical ? 110 : 90,
-          transform: `scale(${trophyScale})`,
-          lineHeight: 1,
-          marginBottom: 20,
-          filter: `drop-shadow(0 0 32px ${theme.gold}) drop-shadow(0 0 64px ${theme.gold}66)`,
+          transform: `scale(${logoScale})`,
+          marginBottom: 24,
+          filter: `drop-shadow(0 0 32px ${theme.gold}99) drop-shadow(0 0 80px rgba(0,100,255,0.4))`,
         }}
       >
-        🏆
+        <Img
+          src={staticFile("logo.jpg")}
+          style={{
+            width: isVertical ? 180 : 150,
+            height: isVertical ? 180 : 150,
+            borderRadius: isVertical ? 40 : 34,
+            display: "block",
+          }}
+        />
       </div>
 
-      {/* Main CTA text */}
+      {/* Main text */}
       <div
         style={{
           opacity: titleOpacity,
           transform: `translateY(${titleY}px)`,
           textAlign: "center",
-          marginBottom: 32,
+          marginBottom: 36,
         }}
       >
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 52 : 64,
+            fontSize: isVertical ? 52 : 60,
             fontWeight: "bold",
             color: theme.white,
             letterSpacing: 2,
@@ -134,7 +141,7 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 52 : 64,
+            fontSize: isVertical ? 52 : 60,
             fontWeight: "bold",
             letterSpacing: 2,
             textTransform: "uppercase",
@@ -145,56 +152,64 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         >
           goes onchain.
         </div>
-        <div
-          style={{
-            fontFamily: theme.fontMono,
-            fontSize: isVertical ? 20 : 18,
-            color: theme.grayLight,
-            letterSpacing: 3,
-            marginTop: 16,
-            textTransform: "uppercase",
-          }}
-        >
-          Vote your team. Win real ETH. No middlemen.
-        </div>
       </div>
 
-      {/* CTA Button */}
+      {/* Launch date badge — the hero element */}
       <div
         style={{
-          transform: `scale(${ctaScale * ctaPulse})`,
-          background: theme.green,
-          color: theme.bg,
+          transform: `scale(${dateBadgeScale * datePulse})`,
+          background: theme.gold,
+          color: "#000",
           fontFamily: theme.fontMono,
           fontWeight: "bold",
-          fontSize: isVertical ? 22 : 20,
+          fontSize: isVertical ? 28 : 26,
           letterSpacing: 4,
           textTransform: "uppercase",
-          padding: isVertical ? "18px 56px" : "14px 52px",
-          boxShadow: `0 0 24px ${theme.green}, 0 0 60px ${theme.green}66`,
+          padding: isVertical ? "18px 56px" : "16px 52px",
+          boxShadow: `0 0 32px ${theme.gold}, 0 0 80px ${theme.gold}66`,
           marginBottom: 32,
         }}
       >
-        PLAY NOW →
+        MAINNET · MARCH 27
       </div>
 
-      {/* URL */}
+      {/* URL + tagline */}
       <div
         style={{
-          opacity: urlOpacity,
-          fontFamily: theme.fontMono,
-          fontSize: isVertical ? 18 : 15,
-          color: theme.grayLight,
-          letterSpacing: 2,
+          opacity: bottomOpacity,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
         }}
       >
-        <GlowText color={theme.greenBright}>onchainworldcup.xyz</GlowText>
+        <div
+          style={{
+            fontFamily: theme.fontMono,
+            fontSize: isVertical ? 18 : 15,
+            color: theme.grayLight,
+            letterSpacing: 2,
+          }}
+        >
+          <GlowText color={theme.greenBright}>onchainworldcup.xyz</GlowText>
+        </div>
+        <div
+          style={{
+            fontFamily: theme.fontMono,
+            fontSize: isVertical ? 14 : 12,
+            color: theme.gray,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+          }}
+        >
+          Vote · Win ETH · No middlemen
+        </div>
       </div>
 
       {/* Hash ticker */}
       <div
         style={{
-          opacity: interpolate(frame, [90, 110], [0, 0.5], {
+          opacity: interpolate(frame, [90, 110], [0, 0.4], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
@@ -202,7 +217,7 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
           fontSize: 10,
           color: theme.greenDim,
           letterSpacing: 2,
-          marginTop: 16,
+          marginTop: 20,
         }}
       >
         TX: {hashChars}
