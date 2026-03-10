@@ -180,15 +180,15 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 8,
+          gap: 12,
         }}
       >
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 18 : 15,
-            color: theme.grayLight,
-            letterSpacing: 2,
+            fontSize: isVertical ? 28 : 26,
+            fontWeight: "bold",
+            letterSpacing: 3,
           }}
         >
           <GlowText color={theme.greenBright}>onchainworldcup.xyz</GlowText>
@@ -196,10 +196,11 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 14 : 12,
-            color: theme.gray,
-            letterSpacing: 3,
+            fontSize: isVertical ? 20 : 18,
+            color: theme.white,
+            letterSpacing: 4,
             textTransform: "uppercase",
+            opacity: 0.75,
           }}
         >
           Vote · Win ETH · No middlemen
@@ -209,12 +210,12 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
       {/* Hash ticker */}
       <div
         style={{
-          opacity: interpolate(frame, [90, 110], [0, 0.4], {
+          opacity: interpolate(frame, [90, 110], [0, 0.6], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
           fontFamily: theme.fontMono,
-          fontSize: 10,
+          fontSize: 14,
           color: theme.greenDim,
           letterSpacing: 2,
           marginTop: 20,
