@@ -3,7 +3,8 @@
 import { useState, useEffect, type KeyboardEvent } from "react"
 import { formatEth } from "@/lib/utils"
 import { X, TrendingUp, Users, Zap, AlertTriangle, Minus, Plus, Info, Wallet, CreditCard } from "lucide-react"
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect, useBalance } from "wagmi"
+import { useAccount, useWaitForTransactionReceipt, useConnect, useBalance } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { parseEther, formatEther, zeroAddress } from "viem"
 import { useReferral } from "@/hooks/use-referral"
 import { useFarcaster } from "@/lib/farcaster-provider"
@@ -51,7 +52,7 @@ export function VoteModal({
     query: { enabled: !!address && !!chain?.id && isOpen },
   })
   const walletBalance = balanceData ? parseFloat(formatEther(balanceData.value)) : 0
-  const { data: hash, writeContract, isPending, error: writeError } = useWriteContract()
+  const { data: hash, writeContract, isPending, error: writeError } = useWriteContractAttributed()
   const { isLoading: isConfirming, isSuccess, isError: isConfirmError } = useWaitForTransactionReceipt({
     hash,
   })

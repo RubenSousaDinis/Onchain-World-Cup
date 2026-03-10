@@ -1,6 +1,7 @@
 "use client"
 
-import { useChainId, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useChainId, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { formatEther } from "viem"
 import {
   getQualificationAddress,
@@ -22,7 +23,7 @@ export function QualificationContractPanel() {
   const { data: endTime } = useQualificationEndTime(chainId)
   const { data: isPaused, refetch: refetchPaused } = usePaused(chainId)
 
-  const { data: hash, isPending, writeContract } = useWriteContract()
+  const { data: hash, isPending, writeContract } = useWriteContractAttributed()
   const { isLoading: confirming } = useWaitForTransactionReceipt({ hash })
 
   if (!available) {

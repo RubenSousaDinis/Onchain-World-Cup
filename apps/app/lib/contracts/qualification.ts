@@ -9,7 +9,8 @@
  * - Base Mainnet (production): NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
  */
 
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useReadContract, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { Address, parseEther, formatEther } from "viem"
 import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
 
@@ -352,7 +353,7 @@ export function usePaused(chainId: number) {
  * @param value - ETH value to send (must match or exceed calculated cost)
  */
 export function useVote() {
-  const { data: hash, isPending, writeContract } = useWriteContract()
+  const { data: hash, isPending, writeContract } = useWriteContractAttributed()
 
   const vote = async (
     chainId: number,
@@ -416,7 +417,7 @@ export function useHasClaimed(chainId: number, userAddress: Address | undefined)
  * Claim winnings after qualification is finalized
  */
 export function useClaim() {
-  const { data: hash, isPending, writeContract } = useWriteContract()
+  const { data: hash, isPending, writeContract } = useWriteContractAttributed()
 
   const claim = async (chainId: number) => {
     const address = getQualificationAddress(chainId)

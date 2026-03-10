@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi"
+import { useReadContract, useWaitForTransactionReceipt, useChainId } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { formatEther, isAddress } from "viem"
 import { getAddressExplorerUrl } from "@/lib/admin"
 
@@ -34,7 +35,7 @@ function AchievementNFTPanel({ address, chainId }: { address: `0x${string}`; cha
   const { data: owner } = useReadContract({ address, abi: ACHIEVEMENT_NFT_ABI, functionName: "owner" })
   const { data: contractName } = useReadContract({ address, abi: ACHIEVEMENT_NFT_ABI, functionName: "name" })
 
-  const { writeContract, data: txHash, isPending } = useWriteContract()
+  const { writeContract, data: txHash, isPending } = useWriteContractAttributed()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
   const handleSetRecipient = () => {

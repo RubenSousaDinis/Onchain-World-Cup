@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useChainId, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useChainId, useWaitForTransactionReceipt } from "wagmi"
+import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { formatEther } from "viem"
 import { formatEth } from "@/lib/utils"
 import {
@@ -47,13 +48,13 @@ export function QualificationTab() {
   const [addCodesInput, setAddCodesInput] = useState("")
   const [addSelected, setAddSelected] = useState<Set<string>>(new Set())
 
-  const { data: finalizeHash, isPending: finalizePending, writeContract: writeFinalizeContract } = useWriteContract()
+  const { data: finalizeHash, isPending: finalizePending, writeContract: writeFinalizeContract } = useWriteContractAttributed()
   const { isLoading: finalizeConfirming } = useWaitForTransactionReceipt({ hash: finalizeHash })
 
-  const { data: sweepHash, isPending: sweepPending, writeContract: writeSweepContract } = useWriteContract()
+  const { data: sweepHash, isPending: sweepPending, writeContract: writeSweepContract } = useWriteContractAttributed()
   const { isLoading: sweepConfirming } = useWaitForTransactionReceipt({ hash: sweepHash })
 
-  const { data: addHash, isPending: addPending, writeContract: writeAddContract } = useWriteContract()
+  const { data: addHash, isPending: addPending, writeContract: writeAddContract } = useWriteContractAttributed()
   const { isLoading: addConfirming } = useWaitForTransactionReceipt({ hash: addHash })
 
   useEffect(() => {
