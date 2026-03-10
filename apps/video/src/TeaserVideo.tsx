@@ -8,9 +8,9 @@ import { CTAScene } from "./scenes/CTAScene";
 
 // Scene durations (frames @ 30fps)
 export const SCENE = {
-  HOOK: 120,      // 4s  — "What would be the onchain World Cup winner?"
-  GAMEPLAY: 150,  // 5s  — live match cards
+  HOOK: 180,      // 6s  — "What would be the onchain World Cup winner?"
   QUALIFY: 150,   // 5s  — "Help your country qualify"
+  GAMEPLAY: 120,  // 4s  — live match cards
   FEATURES: 120,  // 4s  — 6 features
   CTA: 180,       // 6s  — March 27 launch
 };
@@ -29,12 +29,12 @@ export const TeaserVideo: React.FC<TeaserVideoProps> = ({ aspect }) => {
           <HookScene aspect={aspect} />
         </Series.Sequence>
 
-        <Series.Sequence durationInFrames={SCENE.GAMEPLAY}>
-          <GameplayScene aspect={aspect} />
-        </Series.Sequence>
-
         <Series.Sequence durationInFrames={SCENE.QUALIFY}>
           <QualifyScene aspect={aspect} />
+        </Series.Sequence>
+
+        <Series.Sequence durationInFrames={SCENE.GAMEPLAY}>
+          <GameplayScene aspect={aspect} />
         </Series.Sequence>
 
         <Series.Sequence durationInFrames={SCENE.FEATURES}>

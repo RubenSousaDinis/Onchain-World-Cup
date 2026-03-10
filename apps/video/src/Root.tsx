@@ -10,8 +10,8 @@ const H = 1080;
 const W_VERTICAL = 1080;
 const H_VERTICAL = 1920;
 
-// Total duration: ~24 seconds (120+150+150+120+180 frames)
-const DURATION_SECS = 24;
+// Total duration: ~25 seconds (180+150+120+120+180 frames)
+const DURATION_SECS = 25;
 
 export const Root: React.FC = () => {
   return (

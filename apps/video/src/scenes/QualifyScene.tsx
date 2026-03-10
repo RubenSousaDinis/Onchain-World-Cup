@@ -9,19 +9,32 @@ import { theme } from "../theme";
 import { GlowText } from "../components/GlowText";
 import { ScanlineOverlay } from "../components/ScanlineOverlay";
 
-// Simulated qualification leaderboard
+// Vote leaderboard — higher votes = higher rank
+// Numbers are relative; bar width is normalized to the leader
 const STANDINGS = [
-  { flag: "🇧🇷", name: "BRAZIL",    pct: 94, votes: 12847 },
-  { flag: "🇦🇷", name: "ARGENTINA", pct: 88, votes: 11230 },
-  { flag: "🇫🇷", name: "FRANCE",    pct: 81, votes: 9104  },
-  { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", name: "ENGLAND",  pct: 73, votes: 8421  },
-  { flag: "🇵🇹", name: "PORTUGAL",  pct: 61, votes: 6783  },
-  { flag: "🇩🇪", name: "GERMANY",   pct: 54, votes: 5910  },
-  { flag: "🇪🇸", name: "SPAIN",     pct: 47, votes: 4992  },
+  { flag: "🇧🇷", name: "BRAZIL",    votes: 12847 },
+  { flag: "🇦🇷", name: "ARGENTINA", votes: 11230 },
+  { flag: "🇫🇷", name: "FRANCE",    votes: 9104  },
+  { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", name: "ENGLAND",  votes: 8421  },
+  { flag: "🇵🇹", name: "PORTUGAL",  votes: 6783  },
+  { flag: "🇩🇪", name: "GERMANY",   votes: 5910  },
+  { flag: "🇪🇸", name: "SPAIN",     votes: 4992  },
+  { flag: "🇺🇸", name: "USA",       votes: 4201  },
 ];
 
-// Qualification threshold line
-const QUALIFY_PCT = 70;
+const MAX_VOTES = STANDINGS[0].votes;
+
+// Bar colours cycle through a few greens for visual variety
+const BAR_COLORS = [
+  theme.greenBright,
+  theme.green,
+  theme.green,
+  "#00aa33",
+  "#009922",
+  "#008811",
+  "#007700",
+  "#006600",
+];
 
 interface QualifySceneProps {
   aspect: "16:9" | "9:16";
@@ -49,33 +62,31 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
 
   // ── Rows animate in staggered ────────────────────────────────────────────
   const rowAnimations = STANDINGS.map((_, i) => ({
-    opacity: interpolate(frame, [20 + i * 7, 36 + i * 7], [0, 1], {
+    opacity: interpolate(frame, [18 + i * 7, 34 + i * 7], [0, 1], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
-    x: interpolate(frame, [20 + i * 7, 36 + i * 7], [-60, 0], {
+    x: interpolate(frame, [18 + i * 7, 34 + i * 7], [-70, 0], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
-    // Bar fills up after row appears
-    barWidth: interpolate(frame, [30 + i * 7, 60 + i * 7], [0, 1], {
+    barProgress: interpolate(frame, [28 + i * 7, 70 + i * 5], [0, 1], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }),
   }));
 
-  // ── "VOTE NOW" call to action ─────────────────────────────────────────────
-  const ctaOpacity = interpolate(frame, [95, 110], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+  // ── "VOTE FOR YOURS" CTA ─────────────────────────────────────────────────
+  const ctaScale = spring({
+    frame: frame - 100,
+    fps,
+    from: 0,
+    to: 1,
+    config: { damping: 8, stiffness: 220, mass: 0.7 },
   });
-  const ctaPulse = 1 + 0.03 * Math.sin((frame / 20) * Math.PI * 2);
+  const ctaPulse = 1 + 0.025 * Math.sin((frame / 20) * Math.PI * 2);
 
-  // ── Threshold label pulse ─────────────────────────────────────────────────
-  const thresholdBlink = frame % 30 < 15 ? 1 : 0.4;
-
-  const rowHeight = isVertical ? 44 : 36;
-  const barTrackHeight = isVertical ? 10 : 8;
+  const rowHeight = isVertical ? 42 : 34;
   const fontSize = isVertical ? 15 : 13;
 
   return (
@@ -106,13 +117,13 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
         style={{
           transform: `scale(${headlineScale})`,
           textAlign: "center",
-          marginBottom: isVertical ? 8 : 4,
+          marginBottom: 4,
         }}
       >
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 54 : 62,
+            fontSize: isVertical ? 52 : 60,
             fontWeight: "bold",
             color: theme.white,
             letterSpacing: 2,
@@ -125,7 +136,7 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
         <div
           style={{
             fontFamily: theme.fontMono,
-            fontSize: isVertical ? 54 : 62,
+            fontSize: isVertical ? 52 : 60,
             fontWeight: "bold",
             letterSpacing: 2,
             textTransform: "uppercase",
@@ -134,7 +145,7 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
             textShadow: `0 0 16px ${theme.greenBright}, 0 0 48px ${theme.green}88`,
           }}
         >
-          qualify.
+          top the charts.
         </div>
       </div>
 
@@ -143,14 +154,14 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
         style={{
           opacity: subtitleOpacity,
           fontFamily: theme.fontMono,
-          fontSize: isVertical ? 15 : 13,
+          fontSize: isVertical ? 14 : 12,
           color: theme.grayLight,
           letterSpacing: 3,
           textTransform: "uppercase",
-          marginBottom: isVertical ? 32 : 24,
+          marginBottom: isVertical ? 28 : 20,
         }}
       >
-        Vote to push your nation into the tournament
+        48 nations compete · Your votes decide the rankings
       </div>
 
       {/* Leaderboard */}
@@ -160,8 +171,8 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
           maxWidth: isVertical ? 640 : 960,
           display: "flex",
           flexDirection: "column",
-          gap: isVertical ? 8 : 6,
-          marginBottom: isVertical ? 28 : 20,
+          gap: isVertical ? 6 : 4,
+          marginBottom: isVertical ? 24 : 18,
         }}
       >
         {/* Column headers */}
@@ -179,17 +190,18 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
             textTransform: "uppercase",
           }}
         >
-          <span style={{ width: 28 }}>#</span>
-          <span style={{ width: 32 }}></span>
+          <span style={{ width: 24 }}>#</span>
+          <span style={{ width: 32 }} />
           <span style={{ flex: 1 }}>Nation</span>
-          <span style={{ width: 80, textAlign: "right" }}>Votes</span>
-          <span style={{ width: isVertical ? 160 : 200 }}>Qualification</span>
+          <span style={{ width: 90, textAlign: "right" }}>Votes</span>
+          <span style={{ width: isVertical ? 160 : 220 }} />
         </div>
 
         {STANDINGS.map((s, i) => {
           const anim = rowAnimations[i];
-          const isQualified = s.pct >= QUALIFY_PCT;
-          const barColor = isQualified ? theme.green : theme.yellow;
+          const barPct = (s.votes / MAX_VOTES) * 100 * anim.barProgress;
+          const barColor = BAR_COLORS[i];
+          const isLeader = i === 0;
 
           return (
             <div
@@ -201,22 +213,17 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
                 alignItems: "center",
                 gap: 12,
                 height: rowHeight,
-                borderLeft: isQualified
-                  ? `2px solid ${theme.green}`
-                  : `2px solid transparent`,
-                paddingLeft: isQualified ? 6 : 8,
-                background: isQualified
-                  ? `${theme.green}08`
-                  : "transparent",
+                background: isLeader ? `${theme.greenBright}0a` : "transparent",
               }}
             >
               {/* Rank */}
               <span
                 style={{
-                  width: 28,
+                  width: 24,
                   fontFamily: theme.fontMono,
                   fontSize: fontSize,
-                  color: theme.gray,
+                  color: isLeader ? theme.greenBright : theme.gray,
+                  fontWeight: isLeader ? "bold" : "normal",
                 }}
               >
                 {i + 1}
@@ -234,87 +241,45 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
                   fontFamily: theme.fontMono,
                   fontSize: fontSize,
                   letterSpacing: 1,
-                  color: isQualified ? theme.white : theme.grayLight,
+                  color: isLeader ? theme.white : theme.grayLight,
                   textTransform: "uppercase",
+                  fontWeight: isLeader ? "bold" : "normal",
                 }}
               >
                 {s.name}
-                {isQualified && (
-                  <span
-                    style={{
-                      marginLeft: 8,
-                      fontSize: 9,
-                      color: theme.green,
-                      letterSpacing: 2,
-                    }}
-                  >
-                    ✓ QUALIFYING
-                  </span>
-                )}
               </span>
 
               {/* Vote count */}
               <span
                 style={{
-                  width: 80,
+                  width: 90,
                   textAlign: "right",
                   fontFamily: theme.fontMono,
                   fontSize: fontSize,
-                  color: theme.grayLight,
+                  color: isLeader ? theme.greenBright : theme.grayLight,
                 }}
               >
-                {Math.round(s.votes * anim.barWidth).toLocaleString()}
+                {Math.round(s.votes * anim.barProgress).toLocaleString()}
               </span>
 
-              {/* Progress bar */}
-              <div
-                style={{
-                  width: isVertical ? 160 : 200,
-                  position: "relative",
-                }}
-              >
+              {/* Bar */}
+              <div style={{ width: isVertical ? 160 : 220 }}>
                 <div
                   style={{
-                    height: barTrackHeight,
+                    height: isVertical ? 10 : 8,
                     background: theme.bgPanel,
                     border: `1px solid ${theme.greenDim}`,
-                    position: "relative",
                     overflow: "hidden",
                   }}
                 >
                   <div
                     style={{
-                      width: `${s.pct * anim.barWidth}%`,
+                      width: `${barPct}%`,
                       height: "100%",
                       background: barColor,
-                      boxShadow: `0 0 6px ${barColor}`,
-                      transition: "width 0.1s",
+                      boxShadow: isLeader ? `0 0 8px ${barColor}` : "none",
                     }}
                   />
-                  {/* Qualification threshold line */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      bottom: 0,
-                      left: `${QUALIFY_PCT}%`,
-                      width: 2,
-                      background: theme.white,
-                      opacity: thresholdBlink * anim.barWidth,
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    marginTop: 2,
-                    fontFamily: theme.fontMono,
-                    fontSize: 9,
-                    color: barColor,
-                  }}
-                >
-                  {Math.round(s.pct * anim.barWidth)}%
                 </div>
               </div>
             </div>
@@ -325,17 +290,16 @@ export const QualifyScene: React.FC<QualifySceneProps> = ({ aspect }) => {
       {/* CTA */}
       <div
         style={{
-          opacity: ctaOpacity,
-          transform: `scale(${ctaPulse})`,
+          transform: `scale(${ctaScale * ctaPulse})`,
           fontFamily: theme.fontMono,
           fontSize: isVertical ? 18 : 16,
           letterSpacing: 4,
           textTransform: "uppercase",
-          color: theme.greenBright,
-          textShadow: `0 0 12px ${theme.greenBright}`,
         }}
       >
-        <GlowText color={theme.greenBright}>Every vote moves the bar →</GlowText>
+        <GlowText color={theme.greenBright}>
+          Vote for yours →
+        </GlowText>
       </div>
     </AbsoluteFill>
   );
