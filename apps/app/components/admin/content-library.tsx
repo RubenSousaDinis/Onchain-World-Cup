@@ -1,6 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
+import Link from "next/link"
 
 interface ContentPost {
   id: string
@@ -14,6 +15,128 @@ interface ContentPost {
   performanceRating: string | null
   performanceNotes: string | null
   createdAt: string
+}
+
+interface FullContentPost extends ContentPost {
+  content: string
+  metadata: unknown
+}
+
+interface GeneratedBlog {
+  title: string
+  excerpt: string
+  sections: { heading: string; body: string }[]
+  cta: string
+  tags: string[]
+  estimatedReadTime: number
+}
+
+interface GeneratedTweet {
+  number: number
+  text: string
+  isHook: boolean
+}
+
+interface GeneratedThread {
+  title: string
+  tweets: GeneratedTweet[]
+  hashtags: string[]
+  estimatedImpressions: string
+}
+
+function BlogView({ blog }: { blog: GeneratedBlog }) {
+  return (
+    <div className="space-y-4">
+      <div className="border-b border-border/20 pb-3">
+        <p className="text-sm text-muted-foreground mt-1">{blog.excerpt}</p>
+        <div className="flex gap-2 mt-2 flex-wrap">
+          {blog.tags?.map((tag) => (
+            <span key={tag} className="text-xs bg-[var(--nav-purple)] px-2 py-0.5 rounded">#{tag}</span>
+          ))}
+          {blog.estimatedReadTime && (
+            <span className="text-xs text-muted-foreground">{blog.estimatedReadTime} min read</span>
+          )}
+        </div>
+      </div>
+      {blog.sections?.map((section, i) => (
+        <div key={i}>
+          <h3 className="font-semibold mb-1 text-sm text-[var(--cm-highlight)]">{section.heading}</h3>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{section.body}</p>
+        </div>
+      ))}
+      {blog.cta && (
+        <div className="border-t border-border/20 pt-3">
+          <p className="text-sm font-medium cm-highlight">{blog.cta}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ThreadView({ thread }: { thread: GeneratedThread }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2 flex-wrap mb-1">
+        {thread.hashtags?.map((tag) => (
+          <span key={tag} className="text-xs bg-[var(--nav-purple)] px-2 py-0.5 rounded">#{tag}</span>
+        ))}
+        {thread.estimatedImpressions && (
+          <span className="text-xs text-muted-foreground">Est. reach: {thread.estimatedImpressions}</span>
+        )}
+      </div>
+      {thread.tweets?.map((tweet) => (
+        <div
+          key={tweet.number}
+          className={`p-3 border rounded ${tweet.isHook ? "border-[var(--cm-highlight)] bg-[var(--nav-purple)]/30" : "border-border/30"}`}
+        >
+          <div className="flex items-start gap-2">
+            <span className="text-xs text-muted-foreground font-mono w-5 shrink-0">{tweet.number}/</span>
+            <p className="text-sm whitespace-pre-wrap leading-relaxed flex-1">{tweet.text}</p>
+          </div>
+          <div className="flex justify-end mt-1">
+            <span className={`text-xs ${tweet.text.length > 260 ? "text-red-400" : "text-muted-foreground"}`}>
+              {tweet.text.length}/280
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ContentViewer({ postId, type }: { postId: string; type: string }) {
+  const [post, setPost] = useState<FullContentPost | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch(`/api/admin/content/${postId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.data) setPost(d.data)
+        else setError("Failed to load content")
+      })
+      .catch(() => setError("Failed to load content"))
+      .finally(() => setLoading(false))
+  }, [postId])
+
+  if (loading) return <p className="text-xs text-muted-foreground p-4">Loading...</p>
+  if (error) return <p className="text-xs text-red-400 p-4">{error}</p>
+  if (!post) return null
+
+  const metadata = post.metadata as GeneratedBlog | GeneratedThread | null
+
+  return (
+    <div className="p-4 max-h-[500px] overflow-y-auto">
+      {type === "blog" && metadata ? (
+        <BlogView blog={metadata as GeneratedBlog} />
+      ) : type === "twitter_thread" && metadata ? (
+        <ThreadView thread={metadata as GeneratedThread} />
+      ) : (
+        <pre className="text-xs text-muted-foreground whitespace-pre-wrap">{post.content}</pre>
+      )}
+    </div>
+  )
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -132,6 +255,7 @@ export function ContentLibrary() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [page, setPage] = useState(0)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const PAGE_SIZE = 15
 
@@ -227,7 +351,8 @@ export function ContentLibrary() {
             </thead>
             <tbody>
               {posts.map((post) => (
-                <tr key={post.id} className="cm-hover-row border-b border-border/10">
+                <React.Fragment key={post.id}>
+                <tr className="cm-hover-row border-b border-border/10">
                   <td className="px-3 py-2 text-sm max-w-xs">
                     <div className="truncate">{post.title}</div>
                     {post.topic && (
@@ -264,6 +389,18 @@ export function ContentLibrary() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex gap-1 flex-wrap">
+                      <Link
+                        href={`/admin/content/${post.id}`}
+                        className="text-xs px-2 py-0.5 border border-[var(--cm-highlight)]/50 text-[var(--cm-highlight)] hover:bg-[var(--nav-purple)]/30"
+                      >
+                        Open
+                      </Link>
+                      <button
+                        onClick={() => setExpandedId(expandedId === post.id ? null : post.id)}
+                        className="text-xs px-2 py-0.5 border border-border/40 text-muted-foreground hover:text-foreground"
+                      >
+                        {expandedId === post.id ? "Hide" : "Preview"}
+                      </button>
                       {post.status === "draft" && (
                         <button
                           onClick={() => handleStatusChange(post.id, "published")}
@@ -298,6 +435,27 @@ export function ContentLibrary() {
                     </div>
                   </td>
                 </tr>
+                {expandedId === post.id && (
+                  <tr className="border-b border-border/20 bg-[var(--nav-purple)]/10">
+                    <td colSpan={7} className="px-3">
+                      <div className="border border-border/20 rounded my-2">
+                        <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            {post.type === "twitter_thread" ? "Thread tweets" : "Blog content"}
+                          </span>
+                          <button
+                            onClick={() => setExpandedId(null)}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Close
+                          </button>
+                        </div>
+                        <ContentViewer postId={post.id} type={post.type} />
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

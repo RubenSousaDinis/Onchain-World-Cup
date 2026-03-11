@@ -123,11 +123,45 @@ function PhaseSection({ phase, label }: { phase: PhaseCalendar; label: string })
   )
 }
 
+const STORAGE_KEY = "owc_marketing_plan"
+
+interface SavedPlan {
+  plan: MarketingPlanData
+  generatedAt: string
+  savedAt: string
+}
+
 export function MarketingPlan() {
   const [plan, setPlan] = useState<MarketingPlanData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [generatedAt, setGeneratedAt] = useState<string | null>(null)
+  const [savedAt, setSavedAt] = useState<string | null>(null)
+  const [hasSaved, setHasSaved] = useState(false)
+
+  // Load from localStorage on mount
+  useState(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const saved: SavedPlan = JSON.parse(raw)
+        setPlan(saved.plan)
+        setGeneratedAt(saved.generatedAt)
+        setSavedAt(saved.savedAt)
+        setHasSaved(true)
+      }
+    } catch {
+      // ignore corrupt data
+    }
+  })
+
+  const savePlan = (planData: MarketingPlanData, genAt: string) => {
+    const now = new Date().toISOString()
+    const saved: SavedPlan = { plan: planData, generatedAt: genAt, savedAt: now }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved))
+    setSavedAt(now)
+    setHasSaved(true)
+  }
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -138,11 +172,20 @@ export function MarketingPlan() {
       if (!res.ok) throw new Error(data.error || "Failed")
       setPlan(data.plan)
       setGeneratedAt(data.generatedAt)
+      savePlan(data.plan, data.generatedAt)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error")
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleClear = () => {
+    localStorage.removeItem(STORAGE_KEY)
+    setPlan(null)
+    setGeneratedAt(null)
+    setSavedAt(null)
+    setHasSaved(false)
   }
 
   if (!plan) {
@@ -172,24 +215,40 @@ export function MarketingPlan() {
     )
   }
 
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h4 className="font-semibold cm-highlight">AI Marketing Plan</h4>
-          {generatedAt && (
-            <p className="text-xs text-muted-foreground">
-              Generated {new Date(generatedAt).toLocaleString()}
-            </p>
-          )}
+          <div className="flex gap-3 mt-0.5">
+            {generatedAt && (
+              <p className="text-xs text-muted-foreground">
+                Generated {new Date(generatedAt).toLocaleString()}
+              </p>
+            )}
+            {savedAt && (
+              <p className="text-xs text-green-400">
+                Saved {new Date(savedAt).toLocaleString()}
+              </p>
+            )}
+          </div>
         </div>
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="text-xs px-3 py-1.5 border border-border/30 text-muted-foreground hover:text-foreground disabled:opacity-40"
-        >
-          {loading ? "Regenerating..." : "Regenerate"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="text-xs px-3 py-1.5 border border-border/30 text-muted-foreground hover:text-foreground disabled:opacity-40"
+          >
+            {loading ? "Regenerating..." : "Regenerate"}
+          </button>
+          <button
+            onClick={handleClear}
+            className="text-xs px-3 py-1.5 border border-red-500/30 text-red-400/70 hover:text-red-400"
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
       {/* Executive Summary */}
