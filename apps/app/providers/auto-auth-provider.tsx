@@ -252,8 +252,7 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       // signing iframe to conflict with the connection UI, hanging the modal.
       if (isEmbedded) {
         try {
-          const { initAppKit } = await import("@/lib/wallet/appkit-modal")
-          const appKit = initAppKit()
+          const { modal: appKit } = await import("@/lib/wallet/appkit-modal")
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if (typeof (appKit as any).close === "function") {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
