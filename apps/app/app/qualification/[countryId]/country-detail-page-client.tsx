@@ -1,10 +1,22 @@
 "use client"
 
 import { useState, useEffect } from "react"
+
+const LAUNCH_DATE = new Date("2026-03-27T13:00:00Z")
+
+function computeTimeLeft() {
+  const diff = Math.max(0, Math.floor((LAUNCH_DATE.getTime() - Date.now()) / 1000))
+  return {
+    days: Math.floor(diff / 86400),
+    hours: Math.floor((diff % 86400) / 3600),
+    minutes: Math.floor((diff % 3600) / 60),
+    seconds: diff % 60,
+  }
+}
 import { formatEth } from "@/lib/utils"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Minus, Clock, Users, Share2, Info, Trophy } from "lucide-react"
+import { Minus, Clock, Users, Share2, Info, Trophy, ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
 import { VoteModal } from "@/components/vote-modal"
 import { ShareModal } from "@/components/share-modal"
@@ -16,6 +28,87 @@ interface CountryData {
   code: string
   name: string
   flagEmoji: string
+}
+
+interface GroupTeam {
+  countryCode: string
+  countryName: string
+  flagEmoji: string
+  qualRank: number
+  position: number
+  points: number
+}
+
+function GroupPanel({
+  groupAssignment,
+  groupTeams,
+  countryCode,
+}: {
+  groupAssignment: string
+  groupTeams: GroupTeam[]
+  countryCode: string
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
+      <div className="cm-section-header px-4 py-2 flex items-center gap-2">
+        <Trophy className="w-4 h-4" />
+        <h3 className="text-sm font-bold">{groupAssignment.toUpperCase()} TEAMS</h3>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {groupTeams.map((team) => (
+            <Link
+              key={team.countryCode}
+              href={`/qualification/${team.countryCode.toLowerCase()}`}
+              className={`cm-hover-row p-3 rounded-sm flex items-center justify-between gap-2 ${
+                team.countryCode.toLowerCase() === countryCode.toLowerCase()
+                  ? "border-2 border-accent bg-accent/10"
+                  : ""
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="text-2xl flex-shrink-0">{team.flagEmoji}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm lg:text-base truncate">{team.countryName}</div>
+                  <div className="text-xs text-muted-foreground">Rank #{team.qualRank}</div>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className="text-sm font-mono font-bold cm-highlight">{team.points} pts</div>
+                <div className="text-xs text-muted-foreground">Pos #{team.position}</div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-4 flex items-center gap-1.5 text-xs text-accent hover:text-accent/80 transition-colors"
+        >
+          {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {expanded ? "Show less" : "How are groups determined?"}
+        </button>
+
+        {expanded && (
+          <div className="mt-3 bg-secondary/40 border border-accent/20 rounded-sm p-4 text-sm text-foreground/80 space-y-2">
+            <p>
+              <strong className="cm-highlight">Groups are seeded from qualification standings.</strong> The 48 countries
+              that receive the most community votes during the qualification phase are ranked #1–#48. Teams are then
+              distributed into groups based on that ranking — top-ranked teams are spread across different groups so
+              that no single group is stacked with all the frontrunners.
+            </p>
+            <p>
+              The earlier you vote and the more support your country receives, the better its seeding — which affects
+              who it faces in the group stage.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export function CountryDetailPageClient({
@@ -42,7 +135,7 @@ export function CountryDetailPageClient({
     totalVotes: 0,
     change: 0,
     momentum: "stable" as const,
-    contractAddress: process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA as `0x${string}` || "0x0000000000000000000000000000000000000000" as `0x${string}`,
+    contractAddress: process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET as `0x${string}` || "0x0000000000000000000000000000000000000000" as `0x${string}`,
   } : null
 
   const [voteModalOpen, setVoteModalOpen] = useState(false)
@@ -63,21 +156,9 @@ export function CountryDetailPageClient({
     }>
   } | null>(null)
   const [groupAssignment, setGroupAssignment] = useState<string | null>(null)
-  const [groupTeams, setGroupTeams] = useState<Array<{
-    countryCode: string
-    countryName: string
-    flagEmoji: string
-    qualRank: number
-    position: number
-    points: number
-  }>>([])
+  const [groupTeams, setGroupTeams] = useState<GroupTeam[]>([])
 
-  const [timeRemaining, setTimeRemaining] = useState({
-    days: 14,
-    hours: 7,
-    minutes: 32,
-    seconds: 45,
-  })
+  const [timeRemaining, setTimeRemaining] = useState(computeTimeLeft)
 
   useEffect(() => {
     if (!country) return
@@ -122,25 +203,7 @@ export function CountryDetailPageClient({
   }, [countryId, country?.code])
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        let { days, hours, minutes, seconds } = prev
-        seconds--
-        if (seconds < 0) {
-          seconds = 59
-          minutes--
-        }
-        if (minutes < 0) {
-          minutes = 59
-          hours--
-        }
-        if (hours < 0) {
-          hours = 23
-          days--
-        }
-        return { days, hours, minutes, seconds }
-      })
-    }, 1000)
+    const timer = setInterval(() => setTimeRemaining(computeTimeLeft()), 1000)
     return () => clearInterval(timer)
   }, [])
 
@@ -245,8 +308,8 @@ export function CountryDetailPageClient({
               <div className="flex items-center gap-3">
                 <Clock className="w-6 h-6 text-accent" />
                 <div>
-                  <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
-                  <p className="text-xs lg:text-sm text-muted-foreground">Top 48 advance to tournament</p>
+                  <h3 className="text-sm lg:text-base font-bold cm-highlight">Voting Starts In</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">Vote early for the best prices</p>
                 </div>
               </div>
               <div className="flex gap-2 lg:gap-4">
@@ -347,39 +410,7 @@ export function CountryDetailPageClient({
         </div>
 
         {groupAssignment && groupTeams.length > 0 && (
-          <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6">
-            <div className="cm-section-header px-4 py-2 flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              <h3 className="text-sm font-bold">{groupAssignment.toUpperCase()} TEAMS</h3>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {groupTeams.map((team) => (
-                  <Link
-                    key={team.countryCode}
-                    href={`/qualification/${team.countryCode.toLowerCase()}`}
-                    className={`cm-hover-row p-3 rounded-sm flex items-center justify-between gap-2 ${
-                      team.countryCode.toLowerCase() === country.code.toLowerCase()
-                        ? 'border-2 border-accent bg-accent/10'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-2xl flex-shrink-0">{team.flagEmoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm lg:text-base truncate">{team.countryName}</div>
-                        <div className="text-xs text-muted-foreground">Rank #{team.qualRank}</div>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-sm font-mono font-bold cm-highlight">{team.points} pts</div>
-                      <div className="text-xs text-muted-foreground">Pos #{team.position}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
+          <GroupPanel groupAssignment={groupAssignment} groupTeams={groupTeams} countryCode={country.code} />
         )}
 
         {countryStats && countryStats.topVoters && countryStats.topVoters.length > 0 && (

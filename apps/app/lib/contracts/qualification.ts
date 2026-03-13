@@ -5,7 +5,6 @@
  * Provides both read and write functions with proper error handling.
  *
  * CONTRACT ADDRESSES (from environment variables):
- * - Base Sepolia (testnet): NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
  * - Base Mainnet (production): NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
  */
 
@@ -19,17 +18,14 @@ import { WORLD_CUP_QUALIFICATION_ABI } from "@/lib/contracts/qualification-abi"
  * Reads from environment variables based on chain ID
  */
 export function getQualificationAddress(chainId: number): Address {
-  // Get address from environment variables
-  const address = chainId === 84532
-    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA // Base Sepolia
-    : chainId === 8453
+  const address = chainId === 8453
     ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET // Base Mainnet
     : null
 
   if (!address) {
     throw new Error(
       `WorldCupQualification contract address not configured for chain ${chainId}. ` +
-      `Please set ${chainId === 84532 ? 'NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA' : 'NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET'} in your .env file.`
+      `Please set NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET in your .env file.`
     )
   }
 
@@ -55,9 +51,7 @@ function getQualificationAddressSafe(chainId: number): Address | null {
  * Check if contract is deployed on the current chain
  */
 export function isQualificationContractAvailable(chainId: number): boolean {
-  const address = chainId === 84532
-    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
-    : chainId === 8453
+  const address = chainId === 8453
     ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET
     : null
 

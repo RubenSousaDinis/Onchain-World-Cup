@@ -72,7 +72,7 @@ export default function ContactPage() {
               </li>
               <li>
                 <a
-                  href="https://warpcast.com/onchainworldcup"
+                  href="https://farcaster.xyz/onchainworldcup"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors flex items-center gap-3"

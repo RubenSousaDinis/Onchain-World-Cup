@@ -19,9 +19,7 @@ export function isAdminAddress(address: string | undefined): boolean {
  * Get the BaseScan explorer base URL for a given chain ID
  */
 export function getExplorerUrl(chainId: number): string {
-  return chainId === 8453
-    ? "https://basescan.org"
-    : "https://sepolia.basescan.org"
+  return "https://basescan.org"
 }
 
 /**

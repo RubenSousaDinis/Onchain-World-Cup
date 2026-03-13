@@ -42,8 +42,8 @@ export const openApiSpec = {
           {
             name: 'chainId',
             in: 'query',
-            schema: { type: 'integer', enum: [84532, 8453], default: 84532 },
-            description: 'Chain ID (84532 for Base Sepolia, 8453 for Base Mainnet)',
+            schema: { type: 'integer', enum: [8453], default: 8453 },
+            description: 'Chain ID (8453 for Base Mainnet)',
           },
         ],
         responses: {
@@ -81,8 +81,8 @@ export const openApiSpec = {
                 properties: {
                   chainId: {
                     type: 'integer',
-                    enum: [84532, 8453],
-                    description: 'Chain ID (84532 for Base Sepolia, 8453 for Base Mainnet)',
+                    enum: [8453],
+                    description: 'Chain ID (8453 for Base Mainnet)',
                   },
                 },
               },

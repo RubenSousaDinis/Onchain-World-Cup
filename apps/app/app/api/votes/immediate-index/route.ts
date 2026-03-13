@@ -23,7 +23,7 @@ import { resolveEnsName } from "@/lib/server/ens"
  *   - txHash: string (transaction hash)
  *   - contractAddress: string
  *   - walletAddress: string
- *   - chainId: number (8453 or 84532)
+ *   - chainId: number (8453 for Base Mainnet)
  *   - countryCode: string (e.g., "BR", "AR")
  *   - voteCount: number
  *   - totalCostEth: string
@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Validate chain ID
-    if (chainId !== 8453 && chainId !== 84532) {
+    if (chainId !== 8453) {
       console.error("[Immediate Index] Invalid chain ID:", chainId)
-      return NextResponse.json({ error: "Invalid chain ID - must be Base (8453) or Base Sepolia (84532)" }, { status: 400 })
+      return NextResponse.json({ error: "Invalid chain ID - must be Base Mainnet (8453)" }, { status: 400 })
     }
 
     // 5. Check if transaction already indexed (first quick check)

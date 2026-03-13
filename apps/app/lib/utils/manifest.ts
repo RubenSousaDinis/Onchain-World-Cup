@@ -112,7 +112,7 @@ export function generateManifest(config: ManifestConfig): FarcasterManifest {
       splashImageUrl: splash,
       splashBackgroundColor,
       webhookUrl: webhook,
-      requiredChains: ["eip155:8453", "eip155:84532"],
+      requiredChains: ["eip155:8453"],
       requiredCapabilities: ["wallet.getEthereumProvider"],
       ...(tagline && { tagline }),
       ...(subtitle && { subtitle }),

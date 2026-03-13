@@ -118,7 +118,7 @@ export async function processVotePlacedEvents(events: VotePlacedLog[]) {
             txHash,
             contractAddress: event.address.toLowerCase(),
             walletAddress: voterAddress,
-            chainId: event.blockNumber! > 0n ? (event.blockNumber! > 10000000n ? 8453 : 84532) : 84532, // Heuristic: Base Mainnet has higher block numbers
+            chainId: 8453,
             syncType: "cron",
             status: "confirmed",
             blockNumber,

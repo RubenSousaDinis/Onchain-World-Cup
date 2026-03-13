@@ -173,7 +173,7 @@ export function ShareModal({ isOpen, onClose, type, data }: ShareModalProps) {
   }
 
   const shareToFarcaster = () => {
-    const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareData.text + "\n\n" + shareData.url)}`
+    const castUrl = `https://farcaster.xyz/~/compose?text=${encodeURIComponent(shareData.text + "\n\n" + shareData.url)}`
     window.open(castUrl, "_blank")
   }
 
