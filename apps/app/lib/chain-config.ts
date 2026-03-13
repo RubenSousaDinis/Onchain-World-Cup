@@ -3,30 +3,20 @@
  * Provides default chain ID and chain-related helper functions
  */
 
-import { base, baseSepolia } from "wagmi/chains"
+import { base } from "wagmi/chains"
 
 /**
- * Get the default chain ID from environment variable
- * Falls back to Base Sepolia (84532) if not set
+ * Get the default chain ID (always Base mainnet)
  */
 export function getDefaultChainId(): number {
-  const envChainId = process.env.NEXT_PUBLIC_DEFAULT_CHAIN_ID
-  if (envChainId) {
-    const parsed = parseInt(envChainId, 10)
-    if (!isNaN(parsed)) {
-      return parsed
-    }
-  }
-  // Default to Base mainnet
   return 8453
 }
 
 /**
- * Get the default chain object based on the default chain ID
+ * Get the default chain object
  */
 export function getDefaultChain() {
-  const chainId = getDefaultChainId()
-  return chainId === 8453 ? base : baseSepolia
+  return base
 }
 
 /**
@@ -34,7 +24,7 @@ export function getDefaultChain() {
  */
 export function isDefaultChain(chainId: number | undefined): boolean {
   if (!chainId) return false
-  return chainId === getDefaultChainId()
+  return chainId === 8453
 }
 
 /**
@@ -43,8 +33,6 @@ export function isDefaultChain(chainId: number | undefined): boolean {
 export function getNetworkName(chainId: number | undefined): string {
   if (!chainId) return "Unknown"
   switch (chainId) {
-    case 84532:
-      return "Base Sepolia"
     case 8453:
       return "Base"
     default:

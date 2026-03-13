@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Validate env vars
     const privateKey = process.env.PRIVATE_KEY
-    const rpcUrl = process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org"
+    const rpcUrl = process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL || "https://mainnet.base.org"
     const eventHubAddress = process.env.NEXT_PUBLIC_EVENT_HUB_ADDRESS
     const platformAddress = process.env.PLATFORM_WALLET_ADDRESS
     const platformFeeBps = parseInt(process.env.PLATFORM_FEE_BPS || "500")

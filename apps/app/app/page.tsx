@@ -49,14 +49,14 @@ export default async function HomePage() {
                   The World Cup, decided onchain.
                 </p>
                 <p className="text-sm lg:text-base text-foreground/70 mb-5">
-                  Vote with ETH on Base network • Community determines qualification • Winners share prize pool
+                  Voting opens March 27 at 1pm UTC • Vote with ETH on Base • Winners share prize pool
                 </p>
                 <a
                   href="/qualification"
                   className="inline-flex items-center gap-2 cm-nav-tab px-5 py-2.5 rounded-sm font-bold uppercase text-sm tracking-wide"
                 >
                   <Trophy className="w-4 h-4" aria-hidden="true" />
-                  Vote Now
+                  View Countries
                 </a>
               </div>
             </div>

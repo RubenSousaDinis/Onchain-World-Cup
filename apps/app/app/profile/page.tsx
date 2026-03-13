@@ -18,7 +18,7 @@ import { ClaimSection } from "@/components/claim-section"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
 import Link from "next/link"
-import { base, baseSepolia } from "wagmi/chains"
+import { base } from "wagmi/chains"
 import { useClaimable, isQualificationContractAvailable } from "@/lib/contracts/qualification"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 import { formatEther } from "viem"
@@ -102,8 +102,7 @@ function MyBetsContent() {
   }
 
   const getExplorerUrl = (txHash: string) => {
-    const base = chainId === baseSepolia.id ? "https://sepolia.basescan.org" : "https://basescan.org"
-    return `${base}/tx/${txHash}`
+    return `https://basescan.org/tx/${txHash}`
   }
 
   // Fetch referrals when tab is active (lazy, once per session)
@@ -166,7 +165,7 @@ function MyBetsContent() {
   }
   const handleShareFarcaster = () => {
     window.open(
-      `https://warpcast.com/~/compose?text=${encodeURIComponent(`${shareText}\n\n${referralLink}`)}`,
+      `https://farcaster.xyz/~/compose?text=${encodeURIComponent(`${shareText}\n\n${referralLink}`)}`,
       "_blank",
       "noopener,noreferrer"
     )

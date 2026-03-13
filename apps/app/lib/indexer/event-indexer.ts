@@ -15,13 +15,12 @@
  */
 
 import { createPublicClient, http, type Log, parseAbiItem, type AbiEvent } from "viem"
-import { base, baseSepolia } from "viem/chains"
+import { base } from "viem/chains"
 import { getQualificationAddress } from "@/lib/contracts/qualification"
 import { prisma } from "@/lib/prisma"
 
 // Chain configuration
 const CHAIN_CONFIG = {
-  84532: { chain: baseSepolia, rpc: process.env.NEXT_PUBLIC_BASE_RPC_URL || "https://sepolia.base.org" },
   8453: { chain: base, rpc: process.env.BASE_MAINNET_RPC_URL || "https://mainnet.base.org" },
 }
 

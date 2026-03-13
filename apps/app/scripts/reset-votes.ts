@@ -2,7 +2,8 @@
  * Reset all vote-related data from the database.
  *
  * Clears: referrals, qualification_votes, country_stats, user_stats,
- *         indexed_transactions, indexer_state
+ *         indexed_transactions, indexer_state,
+ *         group_standings, groups, tournament_phases, tournaments
  *
  * Run from apps/app:
  *   npm run reset:votes
@@ -31,9 +32,11 @@ async function main() {
   await deleteMany("user_stats", () => prisma.userStat.deleteMany())
   await deleteMany("indexed_transactions", () => prisma.indexedTransaction.deleteMany())
   await deleteMany("indexer_state", () => prisma.indexerState.deleteMany())
+  // group_standings and groups cascade from tournament deletion
+  await deleteMany("tournaments (cascades groups + standings + phases)", () => prisma.tournament.deleteMany())
 
   console.log("\n✨ Database reset complete.")
-  console.log("   Next: update NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA in .env.local")
+  console.log("   Next: update NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET in .env.local")
 }
 
 main()

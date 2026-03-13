@@ -39,8 +39,7 @@ export async function GET(request: NextRequest) {
 
     console.log("[Cron] Starting scheduled indexer sync")
 
-    // Default to Base Sepolia in development, use env var in production
-    const chainId = parseInt(process.env.INDEXER_CHAIN_ID || "84532")
+    const chainId = parseInt(process.env.INDEXER_CHAIN_ID || "8453")
 
     // Fetch events from blockchain
     const eventsData = await indexEvents(chainId)

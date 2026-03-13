@@ -6,7 +6,7 @@ function isMobileBrowser(): boolean {
   if (typeof navigator === "undefined") return false
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)
 }
-import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet, CreditCard } from "lucide-react"
+import { X, TrendingUp, Zap, AlertTriangle, Minus, Plus, Wallet, CreditCard, Rocket } from "lucide-react"
 import { useAccount, useConnect, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { useWriteContractAttributed } from "@/hooks/use-write-contract-attributed"
 import { parseEther, formatEther } from "viem"
@@ -24,6 +24,41 @@ import { AchievementUnlockedModal } from "@/components/achievement-unlocked-moda
 import { type ComputedAchievement } from "@/lib/achievements"
 import { formatEth } from "@/lib/utils"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
+
+const LAUNCH_DATE = new Date("2026-03-27T13:00:00Z")
+
+function computeTimeLeft(end: Date) {
+  const diff = Math.max(0, Math.floor((end.getTime() - Date.now()) / 1000))
+  return {
+    days: Math.floor(diff / 86400),
+    hours: Math.floor((diff % 86400) / 3600),
+    minutes: Math.floor((diff % 3600) / 60),
+    seconds: diff % 60,
+  }
+}
+
+function PreLaunchCountdown() {
+  const [t, setT] = useState(() => computeTimeLeft(LAUNCH_DATE))
+  useEffect(() => {
+    const id = setInterval(() => setT(computeTimeLeft(LAUNCH_DATE)), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className="flex justify-center gap-3">
+      {[{ v: t.days, l: "DAYS" }, { v: t.hours, l: "HRS" }, { v: t.minutes, l: "MIN" }, { v: t.seconds, l: "SEC" }].map(
+        ({ v, l }, i) => (
+          <div key={l} className="flex items-center gap-3">
+            {i > 0 && <span className="text-xl font-bold text-muted-foreground">:</span>}
+            <div className="text-center">
+              <div className="text-xl font-bold cm-highlight">{v}</div>
+              <div className="text-xs text-muted-foreground">{l}</div>
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  )
+}
 
 interface QualificationVoteModalProps {
   isOpen: boolean
@@ -53,6 +88,8 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const [newAchievements, setNewAchievements] = useState<ComputedAchievement[]>([])
   const [votedSuccessfully, setVotedSuccessfully] = useState(false)
   const lastVoteDataRef = useRef<{votes: number, amount: string, countryCode: string} | null>(null)
+
+  const isPreLaunch = Date.now() < LAUNCH_DATE.getTime()
 
   const { address, isConnected, chain } = useAccount()
   const { connect, connectors } = useConnect()
@@ -423,7 +460,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (!contractAddress || contractAddress === "0x0000000000000000000000000000000000000000") {
       error(
         "Contract Not Available",
-        `The qualification contract is not deployed on ${chain?.name || "this network"} yet. Please try again later or switch to Base Sepolia testnet.`
+        `The qualification contract is not available yet. Voting opens March 27 at 1pm UTC.`
       )
       return
     }
@@ -519,6 +556,17 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               </p>
             </div>
           </div>
+
+          {/* Pre-launch banner */}
+          {isPreLaunch && (
+            <div className="bg-accent/10 border border-accent/30 rounded-sm p-4 text-center space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <Rocket className="w-4 h-4 text-accent" />
+                <span className="text-sm font-bold text-accent uppercase tracking-wide">Voting opens March 27 at 1pm UTC</span>
+              </div>
+              <PreLaunchCountdown />
+            </div>
+          )}
 
           {/* Wallet Balance & Network */}
           {isConnected && balanceData && (
@@ -761,10 +809,12 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
               ) : (
                 <button
                   onClick={handleVote}
-                  disabled={isPending || isProcessing || isWaitingForWallet || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0)}
+                  disabled={isPreLaunch || isPending || isProcessing || isWaitingForWallet || isAutoConnecting || voteCount < 1 || (!useMockPricing && totalCost <= 0)}
                   className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isPending
+                  {isPreLaunch
+                    ? "Voting opens March 27"
+                    : isPending
                     ? "Confirming..."
                     : isProcessing
                     ? isIndexing ? "Indexing..." : "Processing..."

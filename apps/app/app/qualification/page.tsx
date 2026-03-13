@@ -4,7 +4,7 @@ import { useState, useEffect, Fragment, useRef, useMemo } from "react"
 import Link from "next/link"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search, AlertTriangle, CheckCircle2, XCircle, RefreshCw } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Clock, Trophy, Loader2, Share2, Search, AlertTriangle, CheckCircle2, XCircle, RefreshCw, Rocket } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
 import { countries as countriesData } from "@/lib/countries"
@@ -15,6 +15,8 @@ import { getDefaultChainId } from "@/lib/chain-config"
 import { useQualificationEndTime } from "@/lib/contracts/qualification"
 import { useOnboardingContext } from "@/providers/onboarding-provider"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
+
+const LAUNCH_DATE = new Date("2026-03-27T13:00:00Z")
 
 const QualificationVoteModal = dynamic(
   () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
@@ -42,6 +44,39 @@ type Country = {
   eth: number
   firstVoteBlock: number | null
   momentum: string
+}
+
+function computeTimeLeft(end: Date) {
+  const diffSecs = Math.max(0, Math.floor((end.getTime() - Date.now()) / 1000))
+  return {
+    days: Math.floor(diffSecs / 86400),
+    hours: Math.floor((diffSecs % 86400) / 3600),
+    minutes: Math.floor((diffSecs % 3600) / 60),
+    seconds: diffSecs % 60,
+  }
+}
+
+function VotingStartCountdown() {
+  const [t, setT] = useState(() => computeTimeLeft(LAUNCH_DATE))
+  useEffect(() => {
+    const id = setInterval(() => setT(computeTimeLeft(LAUNCH_DATE)), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className="flex gap-2 lg:gap-4">
+      {[{ v: t.days, l: "DAYS" }, { v: t.hours, l: "HRS" }, { v: t.minutes, l: "MIN" }, { v: t.seconds, l: "SEC" }].map(
+        ({ v, l }, i) => (
+          <div key={l} className="flex items-center gap-2 lg:gap-4">
+            {i > 0 && <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>}
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold cm-highlight">{v}</div>
+              <div className="text-xs text-muted-foreground">{l}</div>
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  )
 }
 
 export default function QualificationPage() {
@@ -94,9 +129,7 @@ export default function QualificationPage() {
   }
 
   // Get contract address based on chain
-  const contractAddress = (chainId === 84532
-    ? process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_SEPOLIA
-    : process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET) as `0x${string}` | undefined
+  const contractAddress = process.env.NEXT_PUBLIC_QUALIFICATION_CONTRACT_MAINNET as `0x${string}` | undefined
 
   // Calculate average votes for momentum calculation
   const totalVotes = countryStats.reduce((sum, stat) => sum + (stat.total_votes || 0), 0)
@@ -480,81 +513,96 @@ export default function QualificationPage() {
           </div>
         )}
 
-        {/* Prize Pool - Prominent Display */}
-        <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-[box-shadow] duration-300 ${prizePoolUpdating ? 'shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
-          <div className="bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 p-6 lg:p-8">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              {/* Total Prize Pool */}
-              <div className="flex flex-col items-center text-center flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
-                  <h3 className="text-base lg:text-xl font-bold text-accent uppercase">Total Prize Pool</h3>
-                  <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
+        {/* Prize Pool - only show when there's actual ETH in the pool */}
+        {totalPrizePool > 0 && (
+          <div className={`cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent transition-[box-shadow] duration-300 ${prizePoolUpdating ? 'shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]' : ''}`}>
+            <div className="bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 p-6 lg:p-8">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div className="flex flex-col items-center text-center flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
+                    <h3 className="text-base lg:text-xl font-bold text-accent uppercase">Total Prize Pool</h3>
+                    <Trophy className="w-6 h-6 lg:w-8 lg:h-8 text-accent" />
+                  </div>
+                  <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
+                    {formatEth(totalPrizePool)} ETH
+                  </div>
+                  {ethToUsd(totalPrizePool, ethPrice) && (
+                    <div className="text-sm text-muted-foreground mt-1">{ethToUsd(totalPrizePool, ethPrice)}</div>
+                  )}
                 </div>
-                <div className={`text-5xl lg:text-7xl font-bold cm-highlight transition-all duration-300 ${prizePoolUpdating ? 'scale-110' : ''}`}>
-                  {formatEth(totalPrizePool)} ETH
-                </div>
-                {ethToUsd(totalPrizePool, ethPrice) && (
-                  <div className="text-sm text-muted-foreground mt-1">{ethToUsd(totalPrizePool, ethPrice)}</div>
+
+                {address && userVotes > 0 && (
+                  <>
+                    <div className="hidden lg:block w-px h-24 bg-accent/30" />
+                    <div className="flex flex-col items-center text-center flex-1">
+                      <h3 className="text-base lg:text-xl font-bold text-accent uppercase mb-2">Your Contribution</h3>
+                      <div className="text-3xl lg:text-4xl font-bold cm-highlight mb-1">
+                        {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
+                      </div>
+                      <div className="text-xl lg:text-2xl font-bold text-foreground/70">
+                        {formatEth(userSpentEth)} ETH
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
-
-              {/* User Stats - Only show if logged in and has votes */}
-              {address && userVotes > 0 && (
-                <>
-                  <div className="hidden lg:block w-px h-24 bg-accent/30" />
-                  <div className="flex flex-col items-center text-center flex-1">
-                    <h3 className="text-base lg:text-xl font-bold text-accent uppercase mb-2">Your Contribution</h3>
-                    <div className="text-3xl lg:text-4xl font-bold cm-highlight mb-1">
-                      {userVotes.toLocaleString()} Vote{userVotes !== 1 ? 's' : ''}
-                    </div>
-                    <div className="text-xl lg:text-2xl font-bold text-foreground/70">
-                      {formatEth(userSpentEth)} ETH
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Countdown Timer */}
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
           <div className="bg-secondary/40 p-4 lg:p-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <Clock className="w-6 h-6 text-accent" />
-                <div>
-                  <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
-                  <p className="text-sm lg:text-base text-muted-foreground">Vote early for better prices</p>
-                </div>
-              </div>
-              {isLoadingEndTime || !qualificationEndTime ? (
-                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">--:--:--:--</div>
-              ) : Math.floor(Date.now() / 1000) >= qualificationEndTime ? (
-                <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">Ended</div>
+              {totalPrizePool === 0 ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <Rocket className="w-6 h-6 text-accent" />
+                    <div>
+                      <h3 className="text-sm lg:text-base font-bold cm-highlight">Voting Starts In</h3>
+                      <p className="text-sm lg:text-base text-muted-foreground">Vote early for the best prices</p>
+                    </div>
+                  </div>
+                  <VotingStartCountdown />
+                </>
               ) : (
-                <div className="flex gap-2 lg:gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
-                    <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
+                <>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-6 h-6 text-accent" />
+                    <div>
+                      <h3 className="text-sm lg:text-base font-bold cm-highlight">Qualification Ends In</h3>
+                      <p className="text-sm lg:text-base text-muted-foreground">Vote early for better prices</p>
+                    </div>
                   </div>
-                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                  <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
-                    <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
-                  </div>
-                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                  <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
-                    <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
-                  </div>
-                  <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
-                  <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
-                    <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
-                  </div>
-                </div>
+                  {isLoadingEndTime || !qualificationEndTime ? (
+                    <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">--:--:--:--</div>
+                  ) : Math.floor(Date.now() / 1000) >= qualificationEndTime ? (
+                    <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">Ended</div>
+                  ) : (
+                    <div className="flex gap-2 lg:gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.days}</div>
+                        <div className="text-xs lg:text-xs text-muted-foreground">DAYS</div>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                      <div className="text-center">
+                        <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.hours}</div>
+                        <div className="text-xs lg:text-xs text-muted-foreground">HRS</div>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                      <div className="text-center">
+                        <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.minutes}</div>
+                        <div className="text-xs lg:text-xs text-muted-foreground">MIN</div>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-bold text-muted-foreground">:</div>
+                      <div className="text-center">
+                        <div className="text-2xl lg:text-3xl font-bold cm-highlight">{timeRemaining.seconds}</div>
+                        <div className="text-xs lg:text-xs text-muted-foreground">SEC</div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

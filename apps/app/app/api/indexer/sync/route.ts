@@ -22,7 +22,7 @@ export async function OPTIONS() {
  * RATE LIMITED: 5 requests per minute
  *
  * Body:
- *   - chainId: number (84532 for Base Sepolia, 8453 for Base Mainnet)
+ *   - chainId: number (8453 for Base Mainnet)
  *
  * This endpoint:
  * 1. Fetches new blockchain events from the contract
@@ -53,10 +53,10 @@ export async function POST(request: NextRequest) {
     const { chainId } = body
 
     // Validate chainId
-    if (!chainId || (chainId !== 84532 && chainId !== 8453)) {
+    if (!chainId || chainId !== 8453) {
       return jsonResponse(
         {
-          error: "Invalid chainId. Must be 84532 (Base Sepolia) or 8453 (Base Mainnet)",
+          error: "Invalid chainId. Must be 8453 (Base Mainnet)",
         },
         400
       )
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
  * RATE LIMITED: 20 requests per minute
  *
  * Query params:
- *   - chainId: number (optional, defaults to 84532)
+ *   - chainId: number (optional, defaults to 8453)
  */
 export async function GET(request: NextRequest) {
   // Check rate limit (20 requests per minute)
@@ -124,12 +124,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url)
-    const chainId = parseInt(searchParams.get("chainId") || "84532")
+    const chainId = parseInt(searchParams.get("chainId") || "8453")
 
-    if (chainId !== 84532 && chainId !== 8453) {
+    if (chainId !== 8453) {
       return jsonResponse(
         {
-          error: "Invalid chainId. Must be 84532 (Base Sepolia) or 8453 (Base Mainnet)",
+          error: "Invalid chainId. Must be 8453 (Base Mainnet)",
         },
         400
       )
