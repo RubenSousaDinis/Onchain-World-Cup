@@ -40,3 +40,32 @@ export const modal = createAppKit({
   },
   allowUnsupportedChain: true,
 })
+
+// ---------- Social login diagnostics ----------
+// Logs key AppKit events and w3m-iframe postMessages to the console.
+// Uses console.warn so logs survive Next.js removeConsole in production.
+if (typeof window !== "undefined") {
+  // Track w3m-iframe messages (iframe ↔ page)
+  window.addEventListener("message", (e) => {
+    if (typeof e.data?.type !== "string") return
+    const t = e.data.type as string
+    if (t.startsWith("@w3m-frame/") || t.startsWith("@w3m-app/")) {
+      // eslint-disable-next-line no-console
+      console.warn(`[w3m] ${t}`, e.data.payload ?? "")
+    }
+  })
+
+  modal.subscribeEvents((event) => {
+    const name = event.data.event
+    // eslint-disable-next-line no-console
+    console.warn("[AppKit]", name)
+    if (name === "SOCIAL_LOGIN_REQUEST_USER_DATA") {
+      // eslint-disable-next-line no-console
+      console.warn("[AppKit] ⏳ APP_CONNECT_SOCIAL sent — waiting for FRAME_CONNECT_SOCIAL_SUCCESS…")
+      setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.warn("[AppKit] ⚠️ 30s elapsed — iframe still hasn't responded")
+      }, 30_000)
+    }
+  })
+}
