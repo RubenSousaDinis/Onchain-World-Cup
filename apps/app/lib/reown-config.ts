@@ -1,25 +1,4 @@
-/**
- * BACKWARD COMPATIBILITY LAYER
- *
- * `config` and `wagmiAdapter` come from the lightweight wagmi-core module.
- * `modal` is a lazy proxy: the heavy AppKit bundle is loaded on demand
- * (Web3Provider's useEffect starts loading it after first paint, so by
- * the time a user can click Connect Wallet it is always ready).
- *
- * Callers of modal.open() need no changes — the API is identical.
- */
-
 export { wagmiAdapter, wagmiConfig as config } from "./wallet/wagmi-core"
 
-/**
- * Lazy modal proxy.
- * Initialises AppKit on first call if not already done.
- * Safe to call from any "use client" component.
- */
-export const modal = {
-  open: async (options?: { view?: string }) => {
-    const { initAppKit } = await import("./wallet/appkit-modal")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return initAppKit().open(options as any)
-  },
-}
+// Re-export modal directly — createAppKit() is called at module level in appkit-modal.ts
+export { modal } from "./wallet/appkit-modal"
