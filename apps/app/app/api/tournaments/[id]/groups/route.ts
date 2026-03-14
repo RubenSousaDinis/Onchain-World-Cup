@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { requireAuth } from '@/lib/api-utils'
 
 /**
  * GET /api/tournaments/[id]/groups
@@ -76,8 +77,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const { id: tournamentId } = await params
     const body = await request.json()
