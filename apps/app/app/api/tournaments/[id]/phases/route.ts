@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { requireAuth } from '@/lib/api-utils'
 
 /**
  * GET /api/tournaments/[id]/phases
@@ -45,8 +46,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const { id: tournamentId } = await params
     const body = await request.json()
@@ -108,8 +111,10 @@ export async function PATCH(
   request: NextRequest,
   _context: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const { searchParams } = new URL(request.url)
     const phaseId = searchParams.get('phaseId')

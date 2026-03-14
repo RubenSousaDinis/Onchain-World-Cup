@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { requireAuth } from '@/lib/api-utils'
 
 /**
  * GET /api/tournaments
@@ -55,8 +56,10 @@ export async function GET(request: NextRequest) {
  * Create a new tournament (admin only)
  */
 export async function POST(request: NextRequest) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const body = await request.json()
 

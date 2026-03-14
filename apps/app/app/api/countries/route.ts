@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { countries } from '@/lib/countries'
 import { prisma } from '@/lib/prisma'
-import { handleOptions, addCorsHeaders } from '@/lib/api-utils'
+import { handleOptions, addCorsHeaders, requireAuth } from '@/lib/api-utils'
 import { createClient } from '@supabase/supabase-js'
 
 function getSupabaseClient() {
@@ -112,8 +112,10 @@ export async function GET(request: NextRequest) {
  *   - qualified: boolean (default: false)
  */
 export async function POST(request: NextRequest) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication/authorization check
     const supabase = getSupabaseClient()
     const body = await request.json()
 
