@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-options'
+import { isAdminAddress } from '@/lib/admin'
 import { getSupabaseClient } from '@/lib/server/supabase'
-import { requireAuth } from '@/lib/api-utils'
 
 /**
  * GET /api/tournaments/[id]/groups
@@ -77,8 +79,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = requireAuth(request)
-  if (authError) return authError
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   try {
     const supabase = getSupabaseClient()
