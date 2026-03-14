@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-options'
+import { isAdminAddress } from '@/lib/admin'
 import { getSupabaseClient } from '@/lib/server/supabase'
 
 /**
@@ -55,8 +58,12 @@ export async function GET(request: NextRequest) {
  * Create a new tournament (admin only)
  */
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const body = await request.json()
 

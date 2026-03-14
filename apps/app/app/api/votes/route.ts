@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/server/supabase'
+import { requireAuth } from '@/lib/api-utils'
 
 /**
  * GET /api/votes
@@ -84,8 +85,10 @@ export async function GET(request: NextRequest) {
  *   - block_number: number
  */
 export async function POST(request: NextRequest) {
+  const authError = requireAuth(request)
+  if (authError) return authError
+
   try {
-    // TODO: Add authentication check - only allow from trusted indexer
     const supabase = getSupabaseClient()
     const body = await request.json()
 

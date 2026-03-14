@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth-options'
+import { isAdminAddress } from '@/lib/admin'
 import { getSupabaseClient } from '@/lib/server/supabase'
 
 /**
@@ -45,8 +48,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const { id: tournamentId } = await params
     const body = await request.json()
@@ -108,8 +115,12 @@ export async function PATCH(
   request: NextRequest,
   _context: { params: Promise<{ id: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.walletAddress || !isAdminAddress(session.user.walletAddress)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
-    // TODO: Add authentication check
     const supabase = getSupabaseClient()
     const { searchParams } = new URL(request.url)
     const phaseId = searchParams.get('phaseId')
