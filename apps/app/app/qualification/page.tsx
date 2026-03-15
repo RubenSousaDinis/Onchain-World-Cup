@@ -416,7 +416,10 @@ export default function QualificationPage() {
     }
   }, [shouldLoadMore, filteredCountries.length])
 
+  const isPreLaunch = Date.now() < LAUNCH_DATE.getTime()
+
   const handleVote = (country: Country) => {
+    if (isPreLaunch) return
     if (!hasCompletedOnboarding) {
       setPendingVoteCountry(country)
       showOnboarding({ name: country.name, flag: country.flag })
@@ -555,7 +558,7 @@ export default function QualificationPage() {
         <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/30">
           <div className="bg-secondary/40 p-4 lg:p-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              {totalPrizePool === 0 ? (
+              {isPreLaunch ? (
                 <>
                   <div className="flex items-center gap-3">
                     <Rocket className="w-6 h-6 text-accent" />
@@ -674,15 +677,15 @@ export default function QualificationPage() {
                       return (
                         <Fragment key={country.rank}>
                           <tr
-                            className={`border-b border-border hover:bg-accent/5 transition-colors ${
+                            className={`border-b border-border transition-colors ${isPreLaunch ? "" : "hover:bg-accent/5"} ${
                               isAtRisk ? "bg-yellow-500/10" : ""
                             } ${isQualified && !isAtRisk ? "bg-green-500/5" : ""} ${
                               !isQualified && !isAtRisk ? "bg-red-500/5" : ""
                             }`}
                             onClick={() => handleVote(country)}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleVote(country) } }}
-                            tabIndex={0}
-                            style={{ cursor: "pointer" }}
+                            tabIndex={isPreLaunch ? -1 : 0}
+                            style={{ cursor: isPreLaunch ? "default" : "pointer" }}
                           >
                             <td className="p-2 lg:p-3">
                               <div className="flex items-center gap-2">
@@ -715,9 +718,11 @@ export default function QualificationPage() {
                                     e.stopPropagation()
                                     handleVote(country)
                                   }}
-                                  className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold"
+                                  disabled={isPreLaunch}
+                                  title={isPreLaunch ? "Voting opens March 27" : undefined}
+                                  className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
-                                  VOTE
+                                  {isPreLaunch ? "MAR 27" : "VOTE"}
                                 </button>
                               </div>
                             </td>
