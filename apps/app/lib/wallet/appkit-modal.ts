@@ -13,11 +13,11 @@
 
 import { createAppKit } from "@reown/appkit/react"
 import { base } from "@reown/appkit/networks"
-import { wagmiAdapter, projectId, appKitNetworks } from "./wagmi-core"
+import { wagmiAdapter, projectId, networks } from "./wagmi-core"
 
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
-  networks: [...appKitNetworks],
+  networks,
   defaultNetwork: base,
   projectId,
   metadata: {
