@@ -42,10 +42,9 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // COOP is intentionally NOT set (defaults to unsafe-none).
-          // The working Reown example has zero custom COOP headers and social login works.
-          // same-origin-allow-popups was tested and caused the w3m-iframe to be hidden from
-          // Chrome DevTools frame selector (BCG isolation side-effect) without fixing the hang.
+          // COOP must be explicitly set to unsafe-none — Vercel injects same-origin by default,
+          // which blocks window.closed polling on the OAuth popup and causes social login to hang.
+          { key: "Cross-Origin-Opener-Policy", value: "unsafe-none" },
           { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
             key: "Strict-Transport-Security",
