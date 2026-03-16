@@ -1,6 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import Script from "next/script"
+import { headers } from "next/headers"
 import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
 import { FarcasterProvider } from "@/lib/farcaster-provider"
@@ -74,11 +75,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headersObj = await headers()
+  const cookies = headersObj.get("cookie")
+
   return (
     <html lang="en">
       <head>
@@ -151,7 +155,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <SkipToContent />
         <QueryProvider>
           <SessionProvider>
-            <Web3Provider>
+            <Web3Provider cookies={cookies}>
               <FarcasterProvider>
                 <NotificationProvider>
                   <AutoAuthProvider>
