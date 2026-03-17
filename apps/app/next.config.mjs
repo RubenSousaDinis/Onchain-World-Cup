@@ -42,10 +42,11 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // COOP is intentionally NOT set (defaults to unsafe-none).
-          // The working Reown example has zero custom COOP headers and social login works.
-          // same-origin-allow-popups was tested and caused the w3m-iframe to be hidden from
-          // Chrome DevTools frame selector (BCG isolation side-effect) without fixing the hang.
+          // Explicitly set COOP to unsafe-none so the OAuth popup (Google/Apple)
+          // can communicate back via window.opener / window.closed detection.
+          // Without this, the browser may apply a stricter default that severs
+          // the popup↔opener link, causing social login to hang forever.
+          { key: "Cross-Origin-Opener-Policy", value: "unsafe-none" },
           { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
             key: "Strict-Transport-Security",
@@ -75,6 +76,9 @@ const nextConfig = {
     ]
   },
   webpack: (config, { webpack }) => {
+    // Required by AppKit — prevents webpack from bundling Node-only modules
+    config.externals.push('pino-pretty', 'lokijs', 'encoding')
+
     const emptyModulePath = path.resolve(__dirname, 'empty-module.js')
 
     // Replace test files and test directories with empty module
