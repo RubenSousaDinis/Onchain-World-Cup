@@ -38,7 +38,6 @@ export const modal = createAppKit({
     "--w3m-accent": "hsl(142.1 76.2% 36.3%)",
     "--w3m-border-radius-master": "2px",
   },
-  allowUnsupportedChain: true,
 })
 
 // ---------- Social login diagnostics ----------
