@@ -129,8 +129,8 @@ export function useSIWEAuth() {
    * Standard SIWE authentication for web
    */
   const loginWithSIWE = async () => {
-    console.log("[SIWE Auth] Starting SIWE authentication...")
-    console.log("[SIWE Auth] Wallet state:", { address, chainId: chain?.id, defaultChainId })
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Starting SIWE authentication...", { address, chainId: chain?.id, defaultChainId, connectorId: connector?.id, connectorType: connector?.type })
 
     if (!address) {
       const error = "Wallet not connected"
@@ -147,10 +147,12 @@ export function useSIWEAuth() {
     }
 
     // Fetch nonce from server
-    console.log("[SIWE Auth] Fetching nonce from /api/auth/nonce...")
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Fetching nonce from /api/auth/nonce...")
     const nonceResponse = await fetch("/api/auth/nonce")
     const nonceData = await nonceResponse.json()
-    console.log("[SIWE Auth] Nonce response:", nonceData)
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Nonce response:", nonceData)
     const { nonce } = nonceData
 
     // Create SIWE message with default chain ID
@@ -167,13 +169,8 @@ export function useSIWEAuth() {
       nonce,
     })
 
-    console.log("[SIWE Auth] SIWE message created:", {
-      domain: message.domain,
-      address: message.address,
-      uri: message.uri,
-      chainId: message.chainId,
-    })
-    console.log("[SIWE Auth] Requesting signature from wallet...")
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Requesting personal_sign from connector:", { connectorId: connector?.id, connectorType: connector?.type, address: message.address, chainId: message.chainId })
 
     // Sign directly via the connector's provider using personal_sign.
     // We bypass wagmi's signMessageAsync because it calls getConnectorClient
@@ -212,8 +209,8 @@ export function useSIWEAuth() {
       }
     }
 
-    console.log("[SIWE Auth] Signature received:", signature.slice(0, 20) + "...")
-    console.log("[SIWE Auth] Calling signIn with credentials...")
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Signature received, calling next-auth signIn...")
 
     // Authenticate with next-auth
     const result = await signIn("credentials", {
@@ -223,7 +220,8 @@ export function useSIWEAuth() {
       redirect: false,
     })
 
-    console.log("[SIWE Auth] signIn result:", result)
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] signIn result:", result)
 
     if (result?.error) {
       console.error("[SIWE Auth] signIn returned error:", result.error)
@@ -235,7 +233,8 @@ export function useSIWEAuth() {
       throw new Error("Sign in failed")
     }
 
-    console.log("[SIWE Auth] Login successful for:", address)
+    // eslint-disable-next-line no-console
+    console.warn("[SIWE Auth] Login successful for:", address)
     return result
   }
 
@@ -243,22 +242,28 @@ export function useSIWEAuth() {
    * Unified login method that chooses the right authentication method
    */
   const login = async () => {
-    console.log("[useSIWEAuth] login() called, state:", {
+    // eslint-disable-next-line no-console
+    console.warn("[useSIWEAuth] login() called, state:", {
       address,
       chain: chain?.id,
+      connectorId: connector?.id,
+      connectorType: connector?.type,
+      connectorName: connector?.name,
       isFarcasterMiniApp,
       fid,
-      isLoggingIn
+      isLoggingIn,
     })
 
     setIsLoggingIn(true)
     try {
       // Choose authentication method based on context
       if (isFarcasterMiniApp && fid) {
-        console.log("[Auth] Using Farcaster authentication (SIWF)")
+        // eslint-disable-next-line no-console
+        console.warn("[Auth] Using Farcaster authentication (SIWF)")
         return await loginWithFarcaster()
       } else {
-        console.log("[Auth] Using wallet authentication (SIWE)")
+        // eslint-disable-next-line no-console
+        console.warn("[Auth] Using wallet authentication (SIWE)")
         return await loginWithSIWE()
       }
     } catch (error) {
