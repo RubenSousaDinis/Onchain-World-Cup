@@ -74,13 +74,22 @@ if (typeof window !== "undefined") {
     return popup
   }
 
-  // Track ALL w3m-iframe messages with timestamps and full origin
+  // Track ALL messages — w3m-frame, Magic SDK, and any from the OAuth popup
   window.addEventListener("message", (e) => {
-    if (typeof e.data?.type !== "string") return
-    const t = e.data.type as string
-    if (t.startsWith("@w3m-frame/") || t.startsWith("@w3m-app/")) {
+    const t = typeof e.data?.type === "string" ? e.data.type : null
+
+    // w3m-frame and w3m-app messages (AppKit internal)
+    if (t && (t.startsWith("@w3m-frame/") || t.startsWith("@w3m-app/"))) {
       // eslint-disable-next-line no-console
       console.warn(`[w3m ${ts()}] ${t}`, "origin:", e.origin, "payload:", e.data.payload ?? e.data)
+      return
+    }
+
+    // Any other message from WalletConnect/Reown/Magic origins — could be popup→parent signal
+    const wc = e.origin.includes("walletconnect") || e.origin.includes("reown") || e.origin.includes("magic.link") || e.origin.includes("web3modal")
+    if (wc) {
+      // eslint-disable-next-line no-console
+      console.warn(`[w3m OTHER MSG ${ts()}] origin:`, e.origin, "data:", JSON.stringify(e.data)?.slice(0, 300))
     }
   })
 
