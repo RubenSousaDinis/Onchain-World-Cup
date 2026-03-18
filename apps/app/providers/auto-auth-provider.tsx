@@ -45,8 +45,15 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   const [showMobileSignPrompt, setShowMobileSignPrompt] = useState(false)
   const [isSigningInProgress, setIsSigningInProgress] = useState(false)
 
+  // Detect OAuth popup context (social login callback opens our app in a popup).
+  // Skip ALL auth logic in that case — any modal.close() call would destroy the
+  // social login handshake before FRAME_CONNECT_SOCIAL_SUCCESS can fire.
+  const isOAuthPopup = typeof window !== "undefined" && window.opener !== null
+
   // Sign out when wallet disconnects (but not during reconnection/connection)
   useEffect(() => {
+    if (isOAuthPopup) return
+
     console.log("[AutoAuth] Disconnect check:", { isConnected, isReconnecting, status, isAuthenticated })
 
     // Don't logout during reconnection - wait for wagmi to finish
@@ -67,6 +74,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
   // Sign out when wallet address changes (user switched wallets)
   // IMPORTANT: Skip this check in Farcaster context - embedded wallet addresses can differ
   useEffect(() => {
+    if (isOAuthPopup) return
+
     // Don't check wallet mismatch in Farcaster - the SDK manages wallet state
     if (isFarcasterMiniApp) {
       console.log("[AutoAuth] Skipping wallet mismatch check - Farcaster context")
@@ -165,6 +174,8 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Trigger authentication when wallet connects
   useEffect(() => {
+    if (isOAuthPopup) return
+
     console.log("[AutoAuth] Effect triggered - State:", {
       isConnected,
       isReconnecting,
