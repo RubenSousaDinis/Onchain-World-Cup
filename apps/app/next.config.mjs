@@ -42,11 +42,10 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          // Explicitly set COOP to unsafe-none so the OAuth popup (Google/Apple)
-          // can communicate back via window.opener / window.closed detection.
-          // Without this, the browser may apply a stricter default that severs
-          // the popup↔opener link, causing social login to hang forever.
-          { key: "Cross-Origin-Opener-Policy", value: "unsafe-none" },
+          // same-origin-allow-popups: required for AppKit social login OAuth flows.
+          // Preserves the opener↔popup reference so AppKit can detect when the OAuth
+          // popup closes and receive the auth result. Per Reown CSP docs.
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "Cross-Origin-Embedder-Policy", value: "unsafe-none" },
           {
             key: "Strict-Transport-Security",
@@ -57,12 +56,9 @@ const nextConfig = {
             // unsafe-inline + unsafe-eval required by Next.js inline scripts and wagmi/viem
             // frame-ancestors * required for Farcaster Mini App embedding
             // connect-src https: wss: covers Base RPC, WalletConnect, analytics
-            // frame-src *.reown.com covers secure/auth/api subdomains used by
-            //   AppKit's embedded wallet (MPC keys) and social OAuth iframes.
-            //   *.magic.link is required because Reown's embedded wallet uses Magic Link
-            //   SDK internally for MPC key management — without it the auth.magic.link
-            //   iframe is silently blocked by CSP and social login hangs forever.
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://*.reown.com https://*.magic.link; frame-ancestors *; worker-src blob:;",
+            // frame-src: 'self' + WalletConnect verify/secure + *.reown.com (embedded wallet)
+            //   + *.magic.link (Reown uses Magic Link internally for MPC key management)
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; connect-src 'self' https: wss:; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.reown.com; frame-src 'self' https://verify.walletconnect.org https://verify.walletconnect.com https://secure.walletconnect.com https://secure.walletconnect.org https://*.reown.com https://*.magic.link; frame-ancestors *; worker-src blob:;",
           },
         ],
       },
