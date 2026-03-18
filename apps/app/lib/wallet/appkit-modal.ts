@@ -26,7 +26,7 @@ export const modal = createAppKit({
     url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
     icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
   },
-  enableAuthLogger: false,
+  enableAuthLogger: true,
   features: {
     analytics: true,
     email: true,
@@ -41,30 +41,64 @@ export const modal = createAppKit({
 })
 
 // ---------- Social login diagnostics ----------
-// Logs key AppKit events and w3m-iframe postMessages to the console.
+// Logs key AppKit events and ALL w3m-iframe postMessages with timestamps.
 // Uses console.warn so logs survive Next.js removeConsole in production.
 if (typeof window !== "undefined") {
-  // Track w3m-iframe messages (iframe ↔ page)
+  const ts = () => `+${((performance.now()) / 1000).toFixed(2)}s`
+
+  // Intercept window.open to detect when AppKit opens the OAuth popup.
+  // Logs the popup URL and monitors when it actually closes vs COOP false-positive.
+  const _originalOpen = window.open.bind(window)
+  window.open = function(...args) {
+    const popup = _originalOpen(...args)
+    const url = typeof args[0] === "string" ? args[0] : String(args[0])
+    if (url.includes("accounts.google") || url.includes("appleid.apple") || url.includes("github.com") || url.includes("x.com") || url.includes("twitter.com") || url.includes("walletconnect")) {
+      // eslint-disable-next-line no-console
+      console.warn(`[w3m popup] ${ts()} opened →`, url.slice(0, 80))
+      if (popup) {
+        // Poll to report when popup ACTUALLY closes (using try/catch to distinguish real vs COOP-blocked)
+        const checker = setInterval(() => {
+          try {
+            const closed = popup.closed
+            // eslint-disable-next-line no-console
+            console.warn(`[w3m popup] ${ts()} closed=${closed} (REAL check succeeded)`)
+            if (closed) clearInterval(checker)
+          } catch {
+            // eslint-disable-next-line no-console
+            console.warn(`[w3m popup] ${ts()} closed=COOP_BLOCKED (context severed — premature trigger risk)`)
+          }
+        }, 500)
+        setTimeout(() => clearInterval(checker), 120_000)
+      }
+    }
+    return popup
+  }
+
+  // Track ALL w3m-iframe messages with timestamps and full origin
   window.addEventListener("message", (e) => {
     if (typeof e.data?.type !== "string") return
     const t = e.data.type as string
     if (t.startsWith("@w3m-frame/") || t.startsWith("@w3m-app/")) {
       // eslint-disable-next-line no-console
-      console.warn(`[w3m] ${t}`, e.data.payload ?? "")
+      console.warn(`[w3m ${ts()}] ${t}`, "origin:", e.origin, "payload:", e.data.payload ?? e.data)
     }
   })
 
   modal.subscribeEvents((event) => {
     const name = event.data.event
     // eslint-disable-next-line no-console
-    console.warn("[AppKit]", name)
+    console.warn(`[AppKit ${ts()}]`, name, event.data)
     if (name === "SOCIAL_LOGIN_REQUEST_USER_DATA") {
       // eslint-disable-next-line no-console
-      console.warn("[AppKit] ⏳ APP_CONNECT_SOCIAL sent — waiting for FRAME_CONNECT_SOCIAL_SUCCESS…")
-      setTimeout(() => {
+      console.warn(`[AppKit ${ts()}] ⏳ APP_CONNECT_SOCIAL sent — waiting for FRAME_CONNECT_SOCIAL_SUCCESS…`)
+      // Log every 5s to see if iframe ever responds
+      let elapsed = 0
+      const interval = setInterval(() => {
+        elapsed += 5
         // eslint-disable-next-line no-console
-        console.warn("[AppKit] ⚠️ 30s elapsed — iframe still hasn't responded")
-      }, 30_000)
+        console.warn(`[AppKit] ⏳ ${elapsed}s elapsed — iframe still hasn't responded`)
+        if (elapsed >= 60) clearInterval(interval)
+      }, 5_000)
     }
   })
 }
