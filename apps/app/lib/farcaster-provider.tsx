@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react"
 import { useConnect, useAccount } from "wagmi"
+import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
 
 // Debug logging - only enable in development
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
@@ -40,7 +41,7 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   })
 
-  const { connect, connectors } = useConnect()
+  const { connect } = useConnect()
   const { isConnected } = useAccount()
   const autoConnectAttempted = useRef(false)
 
@@ -165,29 +166,28 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
     ) {
       autoConnectAttempted.current = true
 
-      // Use the official Farcaster wagmi connector (wraps sdk.wallet.ethProvider)
-      const connector = connectors.find((c) => c.id === "farcaster")
-      if (connector) {
-        console.log("[FarcasterProvider] Auto-connecting wallet via Farcaster connector...")
-        connect(
-          { connector },
-          {
-            onSuccess: () => {
-              console.log("[FarcasterProvider] Wallet auto-connected via Farcaster connector!")
-              setContext((prev) => ({ ...prev, isAutoConnecting: false }))
-            },
-            onError: (err) => {
-              console.error("[FarcasterProvider] Wallet auto-connect failed:", err)
-              setContext((prev) => ({ ...prev, isAutoConnecting: false }))
-            },
-          }
-        )
-      } else {
-        console.warn("[FarcasterProvider] No Farcaster connector found - available connectors:", connectors.map(c => `${c.name}(${c.id})`))
-        setContext((prev) => ({ ...prev, isAutoConnecting: false }))
-      }
+      // Instantiate the Farcaster connector directly rather than looking it up
+      // in the pre-registered wagmi connectors list. The farcasterMiniApp()
+      // connector is intentionally NOT added to WagmiAdapter.connectors because
+      // doing so causes AppKit's social login (w3mAuth) to hang indefinitely —
+      // AppKit's embedded wallet connector conflicts with custom connectors.
+      console.log("[FarcasterProvider] Auto-connecting wallet via Farcaster connector...")
+      const connector = farcasterMiniApp()
+      connect(
+        { connector },
+        {
+          onSuccess: () => {
+            console.log("[FarcasterProvider] Wallet auto-connected via Farcaster connector!")
+            setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+          },
+          onError: (err) => {
+            console.error("[FarcasterProvider] Wallet auto-connect failed:", err)
+            setContext((prev) => ({ ...prev, isAutoConnecting: false }))
+          },
+        }
+      )
     }
-  }, [context.isFrameContext, context.sdkReady, isConnected, connect, connectors])
+  }, [context.isFrameContext, context.sdkReady, isConnected, connect])
 
   // Clear isAutoConnecting when wallet connects
   useEffect(() => {
