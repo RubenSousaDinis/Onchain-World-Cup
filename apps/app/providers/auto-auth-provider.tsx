@@ -239,41 +239,29 @@ export function AutoAuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    const isEmbedded = isEmbeddedWalletConnector(connector)
+
+    // Embedded wallets (social/email login via AppKit) are authenticated through
+    // the OAuth provider — no SIWE signature required. Triggering personal_sign
+    // while the MPC wallet is still initialising post-login hangs the iframe.
+    if (isEmbedded) {
+      console.log("[AutoAuth] Embedded wallet (social/email login) — skipping SIWE")
+      hasTriggeredAuth.current = true
+      return
+    }
+
     console.log("[AutoAuth] Wallet connected and not authenticated → Triggering authentication")
     hasTriggeredAuth.current = true
 
     const mobile = isMobileBrowser()
-    const isEmbedded = isEmbeddedWalletConnector(connector)
     // Detect WalletConnect-based connection (MetaMask mobile, etc.)
     const isWalletConnect = connector?.type === "walletConnect" || connector?.id === "walletConnect"
     // On mobile WalletConnect: try auto-sign, but show a manual prompt if it fails
     const isMobileWalletConnect = mobile && isWalletConnect && !isFarcasterMiniApp
 
-    // Embedded wallets (social/email login) need a longer delay — the AppKit modal
-    // must finish its MPC wallet initialisation and close before we send a
-    // personal_sign request, otherwise the signing iframe conflicts with the
-    // still-open connection modal and the UI hangs.
-    const delay = isEmbedded ? 3000 : isMobileWalletConnect ? 2000 : 1000
+    const delay = isMobileWalletConnect ? 2000 : 1000
     const timer = setTimeout(async () => {
-      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect, isEmbedded })
-
-      // Close the AppKit modal before triggering SIWE for embedded wallets.
-      // The modal may still be open from the social login flow — sending a
-      // personal_sign while the modal is open causes the embedded wallet's
-      // signing iframe to conflict with the connection UI, hanging the modal.
-      if (isEmbedded) {
-        try {
-          const { modal: appKit } = await import("@/lib/wallet/appkit-modal")
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if (typeof (appKit as any).close === "function") {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (appKit as any).close()
-            console.log("[AutoAuth] Closed AppKit modal before SIWE sign")
-          }
-        } catch {
-          // Non-critical — proceed with sign-in even if modal close fails
-        }
-      }
+      console.log("[AutoAuth] Current state:", { address, isConnected, isAuthenticated, isFarcasterMiniApp, mobile, isWalletConnect })
 
       if (!isFarcasterMiniApp) {
         info("Authentication Required", "Please sign the message to authenticate with your wallet")
