@@ -27,5 +27,11 @@
     "@octokit/rest": "^22.0.1",
     "turbo": "^2.7.4"
   },
-  "packageManager": "npm@10.9.2"
+  "dependencies": {
+    "@reown/appkit": "1.8.19"
+  },
+  "packageManager": "npm@10.9.2",
+  "overrides": {
+    "@reown/appkit": "1.8.19"
+  }
 }
