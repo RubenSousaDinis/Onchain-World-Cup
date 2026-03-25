@@ -10,6 +10,7 @@ import { NotificationProvider } from "@/components/notifications/notification-pr
 import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { TooltipProvider } from "@radix-ui/react-tooltip"
 import { ReferralCapture } from "@/components/referral-capture"
+import { AutoAuthProvider } from "@/providers/auto-auth-provider"
 import { generateMiniAppMetadata } from "@/lib/utils/miniapp-metadata"
 import { Barlow_Condensed } from "next/font/google"
 
@@ -152,7 +153,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <Web3Provider cookies={cookies}>
             <NotificationProvider>
               <TooltipProvider delayDuration={300}>
-                <OnboardingProvider>{children}</OnboardingProvider>
+                <AutoAuthProvider>
+                  <OnboardingProvider>{children}</OnboardingProvider>
+                </AutoAuthProvider>
               </TooltipProvider>
             </NotificationProvider>
           </Web3Provider>

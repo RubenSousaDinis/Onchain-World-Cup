@@ -25,7 +25,7 @@ const FarcasterContext = createContext<FarcasterContextType>({
   isFarcasterMiniApp: false,
   isAutoConnecting: false,
   sdkReady: false,
-  isLoading: true,
+  isLoading: false,
 })
 
 export function useFarcaster() {
