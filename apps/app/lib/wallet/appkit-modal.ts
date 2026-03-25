@@ -23,7 +23,13 @@ export const modal = createAppKit({
   metadata: {
     name: "Onchain World Cup",
     description: "Vote on World Cup 2026 matches with ETH on Base network",
-    url: process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz",
+    // Use the actual origin at runtime so the metadata URL always matches
+    // the deployment URL. Reown's backend validates metadata.url against the
+    // project's registered allowed domains — a mismatch causes APP_CONNECT_SOCIAL
+    // to hang indefinitely (FRAME_CONNECT_SOCIAL_SUCCESS never fires).
+    url: typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_DOMAIN || "https://app.onchainworldcup.xyz"),
     icons: ["https://app.onchainworldcup.xyz/logo.jpg"],
   },
   enableAuthLogger: true,
@@ -73,6 +79,17 @@ if (typeof window !== "undefined") {
     }
     return popup
   }
+
+  // Capture-phase listener: fires before ALL other listeners (including any SDK
+  // that could call stopImmediatePropagation). Confirms whether @w3m-frame messages
+  // arrive at the window at all, regardless of which handler processes them.
+  window.addEventListener("message", (e) => {
+    const t = typeof e.data?.type === "string" ? e.data.type : null
+    if (t?.startsWith("@w3m-frame/") || t?.startsWith("@w3m-app/")) {
+      // eslint-disable-next-line no-console
+      console.warn(`[w3m CAPTURE ${ts()}] ${t}`, "origin:", e.origin)
+    }
+  }, { capture: true })
 
   // Track ALL messages — w3m-frame, Magic SDK, and any from the OAuth popup
   window.addEventListener("message", (e) => {
