@@ -4,11 +4,7 @@ import Script from "next/script"
 import { headers } from "next/headers"
 import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
-import { FarcasterProvider } from "@/lib/farcaster-provider"
-import { FarcasterReady } from "@/components/farcaster-ready"
-import { QueryProvider } from "@/providers/query-provider"
 import { SessionProvider } from "@/providers/session-provider"
-import { AutoAuthProvider } from "@/providers/auto-auth-provider"
 import { SkipToContent } from "@/components/accessibility/skip-to-content"
 import { NotificationProvider } from "@/components/notifications/notification-provider"
 import { OnboardingProvider } from "@/providers/onboarding-provider"
@@ -150,24 +146,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-        <FarcasterReady />
         <ReferralCapture />
         <SkipToContent />
-        <QueryProvider>
-          <SessionProvider>
-            <Web3Provider cookies={cookies}>
-              <FarcasterProvider>
-                <NotificationProvider>
-                  <AutoAuthProvider>
-                    <TooltipProvider delayDuration={300}>
-                      <OnboardingProvider>{children}</OnboardingProvider>
-                    </TooltipProvider>
-                  </AutoAuthProvider>
-                </NotificationProvider>
-              </FarcasterProvider>
-            </Web3Provider>
-          </SessionProvider>
-        </QueryProvider>
+        <SessionProvider>
+          <Web3Provider cookies={cookies}>
+            <NotificationProvider>
+              <TooltipProvider delayDuration={300}>
+                <OnboardingProvider>{children}</OnboardingProvider>
+              </TooltipProvider>
+            </NotificationProvider>
+          </Web3Provider>
+        </SessionProvider>
         <footer className="hidden lg:block border-t border-border/30 mt-auto py-3 px-6 lg:ml-24 lg:px-8 text-xs text-muted-foreground">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p>ETH voting is irreversible. Smart contract transactions cannot be undone. Only vote with ETH you can afford to lose.</p>
