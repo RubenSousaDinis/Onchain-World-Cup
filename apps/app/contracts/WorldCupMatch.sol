@@ -87,6 +87,7 @@ contract WorldCupMatch is Ownable, ReentrancyGuard {
     uint256 public constant MAX_VOTES_PER_TX = 100;
     uint256 public constant MAX_FEE_PERCENT = 2000; // Max 20%
     uint256 public constant REFERRAL_FEE_BPS = 100; // 1%
+    uint256 public constant CLAIM_DEADLINE = 90 days;
 
     // Winner tracking
     bool public matchFinalized;
@@ -336,6 +337,7 @@ contract WorldCupMatch is Ownable, ReentrancyGuard {
      */
     function withdrawWinnings() external whenNotPaused nonReentrant {
         require(block.timestamp >= votingEndTime, "Voting not ended yet");
+        require(block.timestamp < votingEndTime + CLAIM_DEADLINE, "Claim period expired");
 
         if (!matchFinalized) {
             _finalizeMatch();
@@ -392,6 +394,17 @@ contract WorldCupMatch is Ownable, ReentrancyGuard {
     function unpause() external onlyOwner {
         paused = false;
         emit Unpaused();
+    }
+
+    /**
+     * @dev Sweep unclaimed funds after claim deadline expires
+     */
+    function sweepUnclaimed() external onlyOwner {
+        require(block.timestamp >= votingEndTime + CLAIM_DEADLINE, "Claim period not expired");
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to sweep");
+        (bool ok, ) = platformAddress.call{value: balance}("");
+        require(ok, "Sweep failed");
     }
 
     // ========== VIEW FUNCTIONS ==========

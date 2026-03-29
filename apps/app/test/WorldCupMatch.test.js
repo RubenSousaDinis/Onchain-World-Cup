@@ -658,6 +658,60 @@ describe("WorldCupMatch", function () {
     });
   });
 
+  describe("Withdrawal Deadline & Sweep", function () {
+    beforeEach(async function () {
+      // Create a match with votes, team 0 wins (more ETH on team 0)
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+
+      // Fast forward past voting end
+      await time.increase(24 * 3600 + 1);
+    });
+
+    it("Should allow withdrawal before deadline", async function () {
+      await worldCupMatch.connect(voter1).withdrawWinnings();
+      expect(await worldCupMatch.hasWithdrawn(voter1.address)).to.be.true;
+    });
+
+    it("Should reject withdrawal after 90-day deadline", async function () {
+      // Fast forward 90 days + 1 second past votingEndTime
+      await time.increase(90 * 24 * 3600);
+
+      await expect(
+        worldCupMatch.connect(voter1).withdrawWinnings()
+      ).to.be.revertedWith("Claim period expired");
+    });
+
+    it("Should allow owner to sweep after deadline", async function () {
+      // Fast forward 90 days past votingEndTime
+      await time.increase(90 * 24 * 3600);
+
+      const contractBalance = await ethers.provider.getBalance(await worldCupMatch.getAddress());
+      expect(contractBalance).to.be.greaterThan(0);
+
+      const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
+      await worldCupMatch.connect(owner).sweepUnclaimed();
+      const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
+
+      expect(platformBalanceAfter - platformBalanceBefore).to.equal(contractBalance);
+      expect(await ethers.provider.getBalance(await worldCupMatch.getAddress())).to.equal(0);
+    });
+
+    it("Should reject sweep before deadline", async function () {
+      await expect(
+        worldCupMatch.connect(owner).sweepUnclaimed()
+      ).to.be.revertedWith("Claim period not expired");
+    });
+
+    it("Should reject sweep by non-owner", async function () {
+      await time.increase(90 * 24 * 3600);
+      await expect(
+        worldCupMatch.connect(voter1).sweepUnclaimed()
+      ).to.be.revertedWithCustomError(worldCupMatch, "OwnableUnauthorizedAccount");
+    });
+  });
+
   describe("Reentrancy Protection", function () {
     it("Should prevent reentrancy on withdrawWinnings", async function () {
       const ReentrancyAttacker = await ethers.getContractFactory("ReentrancyAttacker");
