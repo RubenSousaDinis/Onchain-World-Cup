@@ -5,6 +5,8 @@ import type * as worldCupMatchSol from "./WorldCupMatch.sol";
 export type { worldCupMatchSol };
 import type * as interfaces from "./interfaces";
 export type { interfaces };
+import type * as test from "./test";
+export type { test };
 export type { AchievementNFT } from "./AchievementNFT";
 export type { MatchNFT } from "./MatchNFT";
 export type { WorldCupEventHub } from "./WorldCupEventHub";

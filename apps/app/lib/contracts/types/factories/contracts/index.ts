@@ -3,6 +3,7 @@
 /* eslint-disable */
 export * as worldCupMatchSol from "./WorldCupMatch.sol";
 export * as interfaces from "./interfaces";
+export * as test from "./test";
 export { AchievementNFT__factory } from "./AchievementNFT__factory";
 export { MatchNFT__factory } from "./MatchNFT__factory";
 export { WorldCupEventHub__factory } from "./WorldCupEventHub__factory";

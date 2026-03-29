@@ -94,6 +94,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MatchNFT__factory>;
     getContractFactory(
+      name: "IWorldCupMatchAttack",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IWorldCupMatchAttack__factory>;
+    getContractFactory(
+      name: "ReentrancyAttacker",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ReentrancyAttacker__factory>;
+    getContractFactory(
       name: "WorldCupEventHub",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.WorldCupEventHub__factory>;
@@ -215,6 +223,16 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.MatchNFT>;
     getContractAt(
+      name: "IWorldCupMatchAttack",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IWorldCupMatchAttack>;
+    getContractAt(
+      name: "ReentrancyAttacker",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ReentrancyAttacker>;
+    getContractAt(
       name: "WorldCupEventHub",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -321,6 +339,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MatchNFT>;
     deployContract(
+      name: "IWorldCupMatchAttack",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldCupMatchAttack>;
+    deployContract(
+      name: "ReentrancyAttacker",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyAttacker>;
+    deployContract(
       name: "WorldCupEventHub",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.WorldCupEventHub>;
@@ -441,6 +467,16 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.MatchNFT>;
+    deployContract(
+      name: "IWorldCupMatchAttack",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IWorldCupMatchAttack>;
+    deployContract(
+      name: "ReentrancyAttacker",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyAttacker>;
     deployContract(
       name: "WorldCupEventHub",
       args: any[],

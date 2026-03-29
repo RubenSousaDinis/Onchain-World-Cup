@@ -46,6 +46,10 @@ export type { IWorldCupQualification } from "./contracts/interfaces/IWorldCupQua
 export { IWorldCupQualification__factory } from "./factories/contracts/interfaces/IWorldCupQualification__factory";
 export type { MatchNFT } from "./contracts/MatchNFT";
 export { MatchNFT__factory } from "./factories/contracts/MatchNFT__factory";
+export type { IWorldCupMatchAttack } from "./contracts/test/ReentrancyAttacker.sol/IWorldCupMatchAttack";
+export { IWorldCupMatchAttack__factory } from "./factories/contracts/test/ReentrancyAttacker.sol/IWorldCupMatchAttack__factory";
+export type { ReentrancyAttacker } from "./contracts/test/ReentrancyAttacker.sol/ReentrancyAttacker";
+export { ReentrancyAttacker__factory } from "./factories/contracts/test/ReentrancyAttacker.sol/ReentrancyAttacker__factory";
 export type { WorldCupEventHub } from "./contracts/WorldCupEventHub";
 export { WorldCupEventHub__factory } from "./factories/contracts/WorldCupEventHub__factory";
 export type { WorldCupMatch } from "./contracts/WorldCupMatch.sol/WorldCupMatch";

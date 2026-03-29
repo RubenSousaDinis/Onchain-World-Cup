@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title IWorldCupEventHub
@@ -34,7 +35,7 @@ interface IWorldCupEventHub {
  * - Emergency pause capability
  * - Unified event logging through EventHub
  */
-contract WorldCupMatch is Ownable {
+contract WorldCupMatch is Ownable, ReentrancyGuard {
     // Event Hub for unified logging
     IWorldCupEventHub public immutable eventHub;
 
@@ -196,7 +197,7 @@ contract WorldCupMatch is Ownable {
      * @param numVotes Number of votes to purchase (1-100)
      * @param referrer Address of referrer (address(0) for none)
      */
-    function vote(uint8 teamIndex, uint256 numVotes, address referrer) external payable whenNotPaused {
+    function vote(uint8 teamIndex, uint256 numVotes, address referrer) external payable whenNotPaused nonReentrant {
         require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
         require(getCurrentPhase() > 0, "Voting is closed");
         require(!matchFinalized, "Match already finalized");
@@ -333,7 +334,7 @@ contract WorldCupMatch is Ownable {
     /**
      * @dev Withdraw winnings (auto-finalizes if needed)
      */
-    function withdrawWinnings() external whenNotPaused {
+    function withdrawWinnings() external whenNotPaused nonReentrant {
         require(block.timestamp >= votingEndTime, "Voting not ended yet");
 
         if (!matchFinalized) {
