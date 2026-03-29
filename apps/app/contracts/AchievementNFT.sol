@@ -4,65 +4,75 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title AchievementNFT
  * @dev ERC721 NFT contract for minting Onchain World Cup 2026 achievement milestone NFTs.
- * Single mint() function accepting a tokenURI pointing to ERC-721 compliant JSON metadata.
  * Mint fee (0.001 ETH) is forwarded directly to feeRecipient on each mint.
+ * Mints require a valid signature from the authorizedSigner (backend).
  */
 contract AchievementNFT is ERC721URIStorage, Ownable {
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
     uint256 public constant MINT_PRICE = 0.001 ether;
     uint256 private _tokenIdCounter;
 
     address public feeRecipient;
+    address public authorizedSigner;
 
     struct NFTMetadata {
         uint256 mintedAt;
-        string data; // JSON string with achievement data
+        string data;
     }
 
     mapping(uint256 => NFTMetadata) public nftMetadata;
     mapping(address => uint256[]) public userNFTs;
-    mapping(address => mapping(string => uint256)) public mintCount; // user => achievementId => number of times minted
+    mapping(address => mapping(string => uint256)) public mintCount;
 
     event NFTMinted(address indexed user, uint256 indexed tokenId, string tokenURI);
     event FeeRecipientUpdated(address indexed oldRecipient, address indexed newRecipient);
+    event AuthorizedSignerUpdated(address indexed oldSigner, address indexed newSigner);
 
-    constructor(address _feeRecipient) ERC721("OWC26 Achievements", "OWC26A") Ownable(msg.sender) {
+    constructor(address _feeRecipient, address _authorizedSigner) ERC721("OWC26 Achievements", "OWC26A") Ownable(msg.sender) {
         require(_feeRecipient != address(0), "Invalid fee recipient");
+        require(_authorizedSigner != address(0), "Invalid signer");
         feeRecipient = _feeRecipient;
+        authorizedSigner = _authorizedSigner;
     }
 
-    /**
-     * @dev Update the fee recipient address
-     */
     function setFeeRecipient(address _feeRecipient) external onlyOwner {
         require(_feeRecipient != address(0), "Invalid fee recipient");
         emit FeeRecipientUpdated(feeRecipient, _feeRecipient);
         feeRecipient = _feeRecipient;
     }
 
-    /**
-     * @dev Mint an achievement NFT. Forwards 0.001 ETH to feeRecipient.
-     * Each address can only mint each achievementId once.
-     * @param to Address to mint to
-     * @param _tokenURI URL pointing to ERC-721 JSON metadata
-     * @param achievementId Unique identifier for the achievement (prevents duplicate mints)
-     * @param metadata JSON string with achievement data stored on-chain
-     */
+    function setAuthorizedSigner(address _authorizedSigner) external onlyOwner {
+        require(_authorizedSigner != address(0), "Invalid signer");
+        emit AuthorizedSignerUpdated(authorizedSigner, _authorizedSigner);
+        authorizedSigner = _authorizedSigner;
+    }
+
     function mint(
         address to,
         string memory _tokenURI,
         string memory achievementId,
-        string memory metadata
+        string memory metadata,
+        bytes memory signature
     ) public payable returns (uint256) {
         require(msg.value >= MINT_PRICE, "Insufficient payment: 0.001 ETH required");
+        require(mintCount[to][achievementId] == 0, "Already minted this achievement");
+
+        bytes32 messageHash = keccak256(abi.encodePacked(to, achievementId, _tokenURI, address(this)));
+        bytes32 ethSignedHash = messageHash.toEthSignedMessageHash();
+        address recovered = ethSignedHash.recover(signature);
+        require(recovered == authorizedSigner, "Invalid signature");
 
         (bool ok, ) = feeRecipient.call{value: MINT_PRICE}("");
         require(ok, "Fee transfer failed");
 
-        // Refund overpayment
         if (msg.value > MINT_PRICE) {
             (bool refundOk, ) = msg.sender.call{value: msg.value - MINT_PRICE}("");
             require(refundOk, "Refund failed");
