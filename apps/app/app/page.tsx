@@ -49,7 +49,7 @@ export default async function HomePage() {
                   The World Cup, decided onchain.
                 </p>
                 <p className="text-sm lg:text-base text-foreground/70 mb-5">
-                  Voting opens March 27 at 1pm UTC • Vote with ETH on Base • Winners share prize pool
+                  Voting opens April 6 at 10am CT • Vote with ETH on Base • Winners share prize pool
                 </p>
                 <a
                   href="/qualification"

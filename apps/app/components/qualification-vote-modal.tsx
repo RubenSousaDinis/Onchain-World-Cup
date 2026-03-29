@@ -25,7 +25,7 @@ import { type ComputedAchievement } from "@/lib/achievements"
 import { formatEth } from "@/lib/utils"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
-const LAUNCH_DATE = new Date("2026-03-27T13:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-06T15:00:00Z")
 
 function computeTimeLeft(end: Date) {
   const diff = Math.max(0, Math.floor((end.getTime() - Date.now()) / 1000))
@@ -460,7 +460,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     if (!contractAddress || contractAddress === "0x0000000000000000000000000000000000000000") {
       error(
         "Contract Not Available",
-        `The qualification contract is not available yet. Voting opens March 27 at 1pm UTC.`
+        `The qualification contract is not available yet. Voting opens April 6 at 10am CT.`
       )
       return
     }
@@ -562,7 +562,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
             <div className="bg-accent/10 border border-accent/30 rounded-sm p-4 text-center space-y-2">
               <div className="flex items-center justify-center gap-2">
                 <Rocket className="w-4 h-4 text-accent" />
-                <span className="text-sm font-bold text-accent uppercase tracking-wide">Voting opens March 27 at 1pm UTC</span>
+                <span className="text-sm font-bold text-accent uppercase tracking-wide">Voting opens April 6 at 10am CT</span>
               </div>
               <PreLaunchCountdown />
             </div>
@@ -813,7 +813,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
                   className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold py-3 rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPreLaunch
-                    ? "Voting opens March 27"
+                    ? "Voting opens April 6"
                     : isPending
                     ? "Confirming..."
                     : isProcessing
