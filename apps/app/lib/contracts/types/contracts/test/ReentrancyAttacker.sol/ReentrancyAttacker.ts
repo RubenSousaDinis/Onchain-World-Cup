@@ -23,7 +23,11 @@ import type {
 
 export interface ReentrancyAttackerInterface extends Interface {
   getFunction(
-    nameOrSignature: "attack_vote" | "attack_withdraw" | "attacking" | "target"
+    nameOrSignature:
+      | "attack_vote"
+      | "attack_withdraw"
+      | "attacking"
+      | "matchTarget"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -35,7 +39,10 @@ export interface ReentrancyAttackerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "attacking", values?: undefined): string;
-  encodeFunctionData(functionFragment: "target", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "matchTarget",
+    values?: undefined
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "attack_vote",
@@ -46,7 +53,10 @@ export interface ReentrancyAttackerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "attacking", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "target", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "matchTarget",
+    data: BytesLike
+  ): Result;
 }
 
 export interface ReentrancyAttacker extends BaseContract {
@@ -102,7 +112,7 @@ export interface ReentrancyAttacker extends BaseContract {
 
   attacking: TypedContractMethod<[], [boolean], "view">;
 
-  target: TypedContractMethod<[], [string], "view">;
+  matchTarget: TypedContractMethod<[], [string], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
@@ -122,7 +132,7 @@ export interface ReentrancyAttacker extends BaseContract {
     nameOrSignature: "attacking"
   ): TypedContractMethod<[], [boolean], "view">;
   getFunction(
-    nameOrSignature: "target"
+    nameOrSignature: "matchTarget"
   ): TypedContractMethod<[], [string], "view">;
 
   filters: {};
