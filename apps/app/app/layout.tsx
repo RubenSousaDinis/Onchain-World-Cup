@@ -11,7 +11,9 @@ import { OnboardingProvider } from "@/providers/onboarding-provider"
 import { TooltipProvider } from "@radix-ui/react-tooltip"
 import { ReferralCapture } from "@/components/referral-capture"
 import { AutoAuthProvider } from "@/providers/auto-auth-provider"
+import { FarcasterProvider } from "@/lib/farcaster-provider"
 import { generateMiniAppMetadata } from "@/lib/utils/miniapp-metadata"
+import { FarcasterReady } from "@/components/farcaster-ready"
 import { Barlow_Condensed } from "next/font/google"
 
 // Barlow Condensed - geometric condensed sans-serif, very similar to Handel Gothic
@@ -147,17 +149,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+        <FarcasterReady />
         <ReferralCapture />
         <SkipToContent />
         <SessionProvider>
           <Web3Provider cookies={cookies}>
-            <NotificationProvider>
-              <TooltipProvider delayDuration={300}>
-                <AutoAuthProvider>
-                  <OnboardingProvider>{children}</OnboardingProvider>
-                </AutoAuthProvider>
-              </TooltipProvider>
-            </NotificationProvider>
+            <FarcasterProvider>
+              <NotificationProvider>
+                <TooltipProvider delayDuration={300}>
+                  <AutoAuthProvider>
+                    <OnboardingProvider>{children}</OnboardingProvider>
+                  </AutoAuthProvider>
+                </TooltipProvider>
+              </NotificationProvider>
+            </FarcasterProvider>
           </Web3Provider>
         </SessionProvider>
         <footer className="hidden lg:block border-t border-border/30 mt-auto py-3 px-6 lg:ml-24 lg:px-8 text-xs text-muted-foreground">
