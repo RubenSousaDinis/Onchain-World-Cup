@@ -18,9 +18,22 @@ const CONTENDERS = [
   { flag: "🇵🇹", name: "PORTUGAL" },
   { flag: "🇩🇪", name: "GERMANY" },
   { flag: "🇪🇸", name: "SPAIN" },
+  { flag: "🇳🇱", name: "NETHERLANDS" },
+  { flag: "🇮🇹", name: "ITALY" },
+  { flag: "🇧🇪", name: "BELGIUM" },
+  { flag: "🇭🇷", name: "CROATIA" },
+  { flag: "🇺🇸", name: "USA" },
+  { flag: "🇲🇽", name: "MEXICO" },
+  { flag: "🇯🇵", name: "JAPAN" },
+  { flag: "🇰🇷", name: "SOUTH KOREA" },
+  { flag: "🇳🇬", name: "NIGERIA" },
+  { flag: "🇸🇳", name: "SENEGAL" },
+  { flag: "🇲🇦", name: "MOROCCO" },
+  { flag: "🇺🇾", name: "URUGUAY" },
+  { flag: "🇨🇴", name: "COLOMBIA" },
 ];
 
-const QUESTION = "What would be the\nonchain World Cup winner?";
+const QUESTION = "What would be the\nOnchain World Cup winner?";
 
 interface HookSceneProps {
   aspect: "16:9" | "9:16";
@@ -41,13 +54,13 @@ export const HookScene: React.FC<HookSceneProps> = ({ aspect }) => {
   // ── Contenders cycle in rows ──────────────────────────────────────────────
   // Each contender appears staggered after question starts
   const contenderOpacities = CONTENDERS.map((_, i) =>
-    interpolate(frame, [40 + i * 6, 55 + i * 6], [0, 1], {
+    interpolate(frame, [40 + i * 3, 50 + i * 3], [0, 1], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     })
   );
   const contenderX = CONTENDERS.map((_, i) =>
-    interpolate(frame, [40 + i * 6, 55 + i * 6], [30, 0], {
+    interpolate(frame, [40 + i * 3, 50 + i * 3], [30, 0], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     })
@@ -137,8 +150,8 @@ export const HookScene: React.FC<HookSceneProps> = ({ aspect }) => {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: isVertical ? "16px 24px" : "12px 32px",
-          maxWidth: isVertical ? 640 : 900,
+          gap: isVertical ? "10px 14px" : "10px 20px",
+          maxWidth: isVertical ? 640 : 1100,
           marginBottom: isVertical ? 44 : 36,
         }}
       >
@@ -153,15 +166,15 @@ export const HookScene: React.FC<HookSceneProps> = ({ aspect }) => {
               gap: 10,
               border: `1px solid ${theme.greenDim}`,
               background: `${theme.bgCard}`,
-              padding: isVertical ? "10px 18px" : "8px 16px",
+              padding: isVertical ? "8px 14px" : "6px 12px",
               fontFamily: theme.fontMono,
-              fontSize: isVertical ? 16 : 14,
+              fontSize: isVertical ? 13 : 12,
               letterSpacing: 2,
               color: theme.grayLight,
               textTransform: "uppercase",
             }}
           >
-            <span style={{ fontSize: isVertical ? 24 : 22 }}>{c.flag}</span>
+            <span style={{ fontSize: isVertical ? 20 : 18 }}>{c.flag}</span>
             {c.name}
           </div>
         ))}

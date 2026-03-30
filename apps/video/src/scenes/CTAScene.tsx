@@ -160,7 +160,7 @@ export const CTAScene: React.FC<CTASceneProps> = ({ aspect }) => {
           marginBottom: 32,
         }}
       >
-        MAINNET · MARCH 27
+        MAINNET · APRIL 6
       </div>
 
       {/* URL + tagline */}
