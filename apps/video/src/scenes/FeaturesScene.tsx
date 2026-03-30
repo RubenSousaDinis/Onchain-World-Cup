@@ -206,16 +206,7 @@ export const FeaturesScene: React.FC<FeaturesSceneProps> = ({ aspect }) => {
           textTransform: "uppercase",
         }}
       >
-        Powered by{" "}
-        <span
-          style={{
-            color: theme.blue,
-            textShadow: `0 0 8px ${theme.blue}`,
-          }}
-        >
-          Base
-        </span>
-        {"  ·  "}Built on{" "}
+        Built on{" "}
         <span
           style={{
             color: theme.greenBright,

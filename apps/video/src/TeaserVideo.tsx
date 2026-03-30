@@ -21,7 +21,7 @@ export const SCENE = {
   QUALIFY: 150,   // 5s  — "Help your country top the charts"
   GAMEPLAY: 120,  // 4s  — live match cards
   FEATURES: 180,  // 6s  — 6 features (was 4s, extended for readability)
-  CTA: 180,       // 6s  — March 27 launch
+  CTA: 180,       // 6s  — April 6 launch
 };
 
 // Transition duration shared across all cuts
