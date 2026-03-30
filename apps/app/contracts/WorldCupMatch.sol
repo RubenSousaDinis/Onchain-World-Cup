@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title IWorldCupEventHub
@@ -34,7 +35,7 @@ interface IWorldCupEventHub {
  * - Emergency pause capability
  * - Unified event logging through EventHub
  */
-contract WorldCupMatch is Ownable {
+contract WorldCupMatch is Ownable, ReentrancyGuard {
     // Event Hub for unified logging
     IWorldCupEventHub public immutable eventHub;
 
@@ -86,6 +87,7 @@ contract WorldCupMatch is Ownable {
     uint256 public constant MAX_VOTES_PER_TX = 100;
     uint256 public constant MAX_FEE_PERCENT = 2000; // Max 20%
     uint256 public constant REFERRAL_FEE_BPS = 100; // 1%
+    uint256 public constant CLAIM_DEADLINE = 90 days;
 
     // Winner tracking
     bool public matchFinalized;
@@ -196,7 +198,7 @@ contract WorldCupMatch is Ownable {
      * @param numVotes Number of votes to purchase (1-100)
      * @param referrer Address of referrer (address(0) for none)
      */
-    function vote(uint8 teamIndex, uint256 numVotes, address referrer) external payable whenNotPaused {
+    function vote(uint8 teamIndex, uint256 numVotes, address referrer) external payable whenNotPaused nonReentrant {
         require(teamIndex == 0 || teamIndex == 1, "Invalid team index");
         require(getCurrentPhase() > 0, "Voting is closed");
         require(!matchFinalized, "Match already finalized");
@@ -333,8 +335,9 @@ contract WorldCupMatch is Ownable {
     /**
      * @dev Withdraw winnings (auto-finalizes if needed)
      */
-    function withdrawWinnings() external whenNotPaused {
+    function withdrawWinnings() external whenNotPaused nonReentrant {
         require(block.timestamp >= votingEndTime, "Voting not ended yet");
+        require(block.timestamp < votingEndTime + CLAIM_DEADLINE, "Claim period expired");
 
         if (!matchFinalized) {
             _finalizeMatch();
@@ -391,6 +394,17 @@ contract WorldCupMatch is Ownable {
     function unpause() external onlyOwner {
         paused = false;
         emit Unpaused();
+    }
+
+    /**
+     * @dev Sweep unclaimed funds after claim deadline expires
+     */
+    function sweepUnclaimed() external onlyOwner {
+        require(block.timestamp >= votingEndTime + CLAIM_DEADLINE, "Claim period not expired");
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to sweep");
+        (bool ok, ) = platformAddress.call{value: balance}("");
+        require(ok, "Sweep failed");
     }
 
     // ========== VIEW FUNCTIONS ==========

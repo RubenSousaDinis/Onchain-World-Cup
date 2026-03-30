@@ -13,6 +13,7 @@ contract WorldCupEventHub is Ownable {
     // Registry of authorized match contracts
     mapping(address => bool) public authorizedMatches;
     address[] public allMatches;
+    address public authorizedFactory;
 
     // Global events emitted by all matches
     event GlobalMatchCreated(
@@ -63,14 +64,28 @@ contract WorldCupEventHub is Ownable {
 
     event MatchAuthorized(address indexed matchAddress);
     event MatchDeauthorized(address indexed matchAddress);
+    event AuthorizedFactoryUpdated(address indexed oldFactory, address indexed newFactory);
 
     constructor() Ownable(msg.sender) {}
+
+    /**
+     * @dev Set the authorized factory address
+     * @param _factory Address of the factory contract (address(0) to disable)
+     */
+    function setAuthorizedFactory(address _factory) external onlyOwner {
+        emit AuthorizedFactoryUpdated(authorizedFactory, _factory);
+        authorizedFactory = _factory;
+    }
 
     /**
      * @dev Authorize a match contract to emit events
      * @param matchAddress Address of the match contract
      */
-    function authorizeMatch(address matchAddress) external onlyOwner {
+    function authorizeMatch(address matchAddress) external {
+        require(
+            msg.sender == owner() || msg.sender == authorizedFactory,
+            "Not authorized"
+        );
         require(matchAddress != address(0), "Invalid match address");
         require(!authorizedMatches[matchAddress], "Already authorized");
 

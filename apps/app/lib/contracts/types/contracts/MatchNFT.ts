@@ -36,10 +36,12 @@ export interface MatchNFTInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "approve"
+      | "authorizedSigner"
       | "balanceOf"
       | "getApproved"
       | "getNFTMetadata"
       | "getUserNFTs"
+      | "hasMinted"
       | "isApprovedForAll"
       | "mint"
       | "name"
@@ -50,6 +52,7 @@ export interface MatchNFTInterface extends Interface {
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
+      | "setAuthorizedSigner"
       | "supportsInterface"
       | "symbol"
       | "tokenURI"
@@ -63,6 +66,7 @@ export interface MatchNFTInterface extends Interface {
     nameOrSignatureOrTopic:
       | "Approval"
       | "ApprovalForAll"
+      | "AuthorizedSignerUpdated"
       | "BatchMetadataUpdate"
       | "MetadataUpdate"
       | "NFTMinted"
@@ -73,6 +77,10 @@ export interface MatchNFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "authorizedSigner",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
@@ -91,12 +99,16 @@ export interface MatchNFTInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "hasMinted",
+    values: [AddressLike, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [AddressLike, string, string]
+    values: [AddressLike, string, string, string, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -125,6 +137,10 @@ export interface MatchNFTInterface extends Interface {
     values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "setAuthorizedSigner",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -151,6 +167,10 @@ export interface MatchNFTInterface extends Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "authorizedSigner",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -164,6 +184,7 @@ export interface MatchNFTInterface extends Interface {
     functionFragment: "getUserNFTs",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "hasMinted", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
@@ -190,6 +211,10 @@ export interface MatchNFTInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setAuthorizedSigner",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -246,6 +271,19 @@ export namespace ApprovalForAllEvent {
     owner: string;
     operator: string;
     approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AuthorizedSignerUpdatedEvent {
+  export type InputTuple = [oldSigner: AddressLike, newSigner: AddressLike];
+  export type OutputTuple = [oldSigner: string, newSigner: string];
+  export interface OutputObject {
+    oldSigner: string;
+    newSigner: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -379,6 +417,8 @@ export interface MatchNFT extends BaseContract {
     "nonpayable"
   >;
 
+  authorizedSigner: TypedContractMethod<[], [string], "view">;
+
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
@@ -391,6 +431,12 @@ export interface MatchNFT extends BaseContract {
 
   getUserNFTs: TypedContractMethod<[user: AddressLike], [bigint[]], "view">;
 
+  hasMinted: TypedContractMethod<
+    [arg0: AddressLike, arg1: string],
+    [boolean],
+    "view"
+  >;
+
   isApprovedForAll: TypedContractMethod<
     [owner: AddressLike, operator: AddressLike],
     [boolean],
@@ -398,7 +444,13 @@ export interface MatchNFT extends BaseContract {
   >;
 
   mint: TypedContractMethod<
-    [to: AddressLike, _tokenURI: string, metadata: string],
+    [
+      to: AddressLike,
+      _tokenURI: string,
+      matchId: string,
+      metadata: string,
+      signature: BytesLike
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -436,6 +488,12 @@ export interface MatchNFT extends BaseContract {
 
   setApprovalForAll: TypedContractMethod<
     [operator: AddressLike, approved: boolean],
+    [void],
+    "nonpayable"
+  >;
+
+  setAuthorizedSigner: TypedContractMethod<
+    [_authorizedSigner: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -482,6 +540,9 @@ export interface MatchNFT extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "authorizedSigner"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
   getFunction(
@@ -498,6 +559,9 @@ export interface MatchNFT extends BaseContract {
     nameOrSignature: "getUserNFTs"
   ): TypedContractMethod<[user: AddressLike], [bigint[]], "view">;
   getFunction(
+    nameOrSignature: "hasMinted"
+  ): TypedContractMethod<[arg0: AddressLike, arg1: string], [boolean], "view">;
+  getFunction(
     nameOrSignature: "isApprovedForAll"
   ): TypedContractMethod<
     [owner: AddressLike, operator: AddressLike],
@@ -507,7 +571,13 @@ export interface MatchNFT extends BaseContract {
   getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
-    [to: AddressLike, _tokenURI: string, metadata: string],
+    [
+      to: AddressLike,
+      _tokenURI: string,
+      matchId: string,
+      metadata: string,
+      signature: BytesLike
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -557,6 +627,13 @@ export interface MatchNFT extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "setAuthorizedSigner"
+  ): TypedContractMethod<
+    [_authorizedSigner: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
@@ -599,6 +676,13 @@ export interface MatchNFT extends BaseContract {
     ApprovalForAllEvent.InputTuple,
     ApprovalForAllEvent.OutputTuple,
     ApprovalForAllEvent.OutputObject
+  >;
+  getEvent(
+    key: "AuthorizedSignerUpdated"
+  ): TypedContractEvent<
+    AuthorizedSignerUpdatedEvent.InputTuple,
+    AuthorizedSignerUpdatedEvent.OutputTuple,
+    AuthorizedSignerUpdatedEvent.OutputObject
   >;
   getEvent(
     key: "BatchMetadataUpdate"
@@ -657,6 +741,17 @@ export interface MatchNFT extends BaseContract {
       ApprovalForAllEvent.InputTuple,
       ApprovalForAllEvent.OutputTuple,
       ApprovalForAllEvent.OutputObject
+    >;
+
+    "AuthorizedSignerUpdated(address,address)": TypedContractEvent<
+      AuthorizedSignerUpdatedEvent.InputTuple,
+      AuthorizedSignerUpdatedEvent.OutputTuple,
+      AuthorizedSignerUpdatedEvent.OutputObject
+    >;
+    AuthorizedSignerUpdated: TypedContractEvent<
+      AuthorizedSignerUpdatedEvent.InputTuple,
+      AuthorizedSignerUpdatedEvent.OutputTuple,
+      AuthorizedSignerUpdatedEvent.OutputObject
     >;
 
     "BatchMetadataUpdate(uint256,uint256)": TypedContractEvent<

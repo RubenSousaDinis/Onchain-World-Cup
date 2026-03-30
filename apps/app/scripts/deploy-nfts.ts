@@ -12,17 +12,19 @@ async function main() {
   const chainId = hre.network.config.chainId
 
   const feeRecipient = deployer.address
+  const authorizedSigner = deployer.address // Initial signer — update via setAuthorizedSigner() after deploy
 
   console.log("Deploying NFT contracts")
   console.log("Network:", hre.network.name)
   console.log("Deployer:", deployer.address)
   console.log("Fee recipient:", feeRecipient)
+  console.log("Authorized signer:", authorizedSigner)
   console.log("Balance:", hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)), "ETH")
 
   // ── Deploy AchievementNFT ──────────────────────────────────────────────────
   console.log("\n========== Deploying AchievementNFT ==========")
   const AchievementNFT = await hre.ethers.getContractFactory("AchievementNFT")
-  const achievement = await AchievementNFT.deploy(feeRecipient)
+  const achievement = await AchievementNFT.deploy(feeRecipient, authorizedSigner)
   await achievement.waitForDeployment()
   const achievementAddress = await achievement.getAddress()
   console.log("✅ AchievementNFT deployed to:", achievementAddress)
@@ -51,7 +53,7 @@ async function main() {
       await hre.run("verify:verify", {
         address: achievementAddress,
         contract: "contracts/AchievementNFT.sol:AchievementNFT",
-        constructorArguments: [feeRecipient],
+        constructorArguments: [feeRecipient, authorizedSigner],
       })
       console.log("✅ AchievementNFT verified!")
     } catch (err: unknown) {
@@ -60,7 +62,7 @@ async function main() {
         console.log("✅ AchievementNFT already verified.")
       } else {
         console.log("❌ Verification failed:", msg)
-        console.log(`   Verify manually: npx hardhat verify --network ${hre.network.name} --contract contracts/AchievementNFT.sol:AchievementNFT ${achievementAddress} ${feeRecipient}`)
+        console.log(`   Verify manually: npx hardhat verify --network ${hre.network.name} --contract contracts/AchievementNFT.sol:AchievementNFT ${achievementAddress} ${feeRecipient} ${authorizedSigner}`)
       }
     }
   }

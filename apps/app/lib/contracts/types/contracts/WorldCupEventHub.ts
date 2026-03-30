@@ -28,6 +28,7 @@ export interface WorldCupEventHubInterface extends Interface {
     nameOrSignature:
       | "allMatches"
       | "authorizeMatch"
+      | "authorizedFactory"
       | "authorizedMatches"
       | "deauthorizeMatch"
       | "getAllMatches"
@@ -41,11 +42,13 @@ export interface WorldCupEventHubInterface extends Interface {
       | "logWinningsWithdrawn"
       | "owner"
       | "renounceOwnership"
+      | "setAuthorizedFactory"
       | "transferOwnership"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "AuthorizedFactoryUpdated"
       | "GlobalMatchCreated"
       | "GlobalMatchFinalized"
       | "GlobalPlatformFeeTransferred"
@@ -64,6 +67,10 @@ export interface WorldCupEventHubInterface extends Interface {
   encodeFunctionData(
     functionFragment: "authorizeMatch",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "authorizedFactory",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "authorizedMatches",
@@ -122,6 +129,10 @@ export interface WorldCupEventHubInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "setAuthorizedFactory",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
@@ -129,6 +140,10 @@ export interface WorldCupEventHubInterface extends Interface {
   decodeFunctionResult(functionFragment: "allMatches", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "authorizeMatch",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "authorizedFactory",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -181,9 +196,26 @@ export interface WorldCupEventHubInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setAuthorizedFactory",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+}
+
+export namespace AuthorizedFactoryUpdatedEvent {
+  export type InputTuple = [oldFactory: AddressLike, newFactory: AddressLike];
+  export type OutputTuple = [oldFactory: string, newFactory: string];
+  export interface OutputObject {
+    oldFactory: string;
+    newFactory: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace GlobalMatchCreatedEvent {
@@ -436,6 +468,8 @@ export interface WorldCupEventHub extends BaseContract {
     "nonpayable"
   >;
 
+  authorizedFactory: TypedContractMethod<[], [string], "view">;
+
   authorizedMatches: TypedContractMethod<
     [arg0: AddressLike],
     [boolean],
@@ -510,6 +544,12 @@ export interface WorldCupEventHub extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
+  setAuthorizedFactory: TypedContractMethod<
+    [_factory: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   transferOwnership: TypedContractMethod<
     [newOwner: AddressLike],
     [void],
@@ -526,6 +566,9 @@ export interface WorldCupEventHub extends BaseContract {
   getFunction(
     nameOrSignature: "authorizeMatch"
   ): TypedContractMethod<[matchAddress: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "authorizedFactory"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "authorizedMatches"
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
@@ -602,9 +645,19 @@ export interface WorldCupEventHub extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "setAuthorizedFactory"
+  ): TypedContractMethod<[_factory: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
 
+  getEvent(
+    key: "AuthorizedFactoryUpdated"
+  ): TypedContractEvent<
+    AuthorizedFactoryUpdatedEvent.InputTuple,
+    AuthorizedFactoryUpdatedEvent.OutputTuple,
+    AuthorizedFactoryUpdatedEvent.OutputObject
+  >;
   getEvent(
     key: "GlobalMatchCreated"
   ): TypedContractEvent<
@@ -670,6 +723,17 @@ export interface WorldCupEventHub extends BaseContract {
   >;
 
   filters: {
+    "AuthorizedFactoryUpdated(address,address)": TypedContractEvent<
+      AuthorizedFactoryUpdatedEvent.InputTuple,
+      AuthorizedFactoryUpdatedEvent.OutputTuple,
+      AuthorizedFactoryUpdatedEvent.OutputObject
+    >;
+    AuthorizedFactoryUpdated: TypedContractEvent<
+      AuthorizedFactoryUpdatedEvent.InputTuple,
+      AuthorizedFactoryUpdatedEvent.OutputTuple,
+      AuthorizedFactoryUpdatedEvent.OutputObject
+    >;
+
     "GlobalMatchCreated(address,string,string,uint256,uint256)": TypedContractEvent<
       GlobalMatchCreatedEvent.InputTuple,
       GlobalMatchCreatedEvent.OutputTuple,

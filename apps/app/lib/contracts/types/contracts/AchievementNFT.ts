@@ -37,6 +37,7 @@ export interface AchievementNFTInterface extends Interface {
     nameOrSignature:
       | "MINT_PRICE"
       | "approve"
+      | "authorizedSigner"
       | "balanceOf"
       | "feeRecipient"
       | "getApproved"
@@ -53,6 +54,7 @@ export interface AchievementNFTInterface extends Interface {
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
+      | "setAuthorizedSigner"
       | "setFeeRecipient"
       | "supportsInterface"
       | "symbol"
@@ -67,6 +69,7 @@ export interface AchievementNFTInterface extends Interface {
     nameOrSignatureOrTopic:
       | "Approval"
       | "ApprovalForAll"
+      | "AuthorizedSignerUpdated"
       | "BatchMetadataUpdate"
       | "FeeRecipientUpdated"
       | "MetadataUpdate"
@@ -82,6 +85,10 @@ export interface AchievementNFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "authorizedSigner",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
@@ -109,7 +116,7 @@ export interface AchievementNFTInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [AddressLike, string, string, string]
+    values: [AddressLike, string, string, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "mintCount",
@@ -140,6 +147,10 @@ export interface AchievementNFTInterface extends Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [AddressLike, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAuthorizedSigner",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "setFeeRecipient",
@@ -173,6 +184,10 @@ export interface AchievementNFTInterface extends Interface {
 
   decodeFunctionResult(functionFragment: "MINT_PRICE", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "authorizedSigner",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "feeRecipient",
@@ -217,6 +232,10 @@ export interface AchievementNFTInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setAuthorizedSigner",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -277,6 +296,19 @@ export namespace ApprovalForAllEvent {
     owner: string;
     operator: string;
     approved: boolean;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace AuthorizedSignerUpdatedEvent {
+  export type InputTuple = [oldSigner: AddressLike, newSigner: AddressLike];
+  export type OutputTuple = [oldSigner: string, newSigner: string];
+  export interface OutputObject {
+    oldSigner: string;
+    newSigner: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -428,6 +460,8 @@ export interface AchievementNFT extends BaseContract {
     "nonpayable"
   >;
 
+  authorizedSigner: TypedContractMethod<[], [string], "view">;
+
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
 
   feeRecipient: TypedContractMethod<[], [string], "view">;
@@ -453,7 +487,8 @@ export interface AchievementNFT extends BaseContract {
       to: AddressLike,
       _tokenURI: string,
       achievementId: string,
-      metadata: string
+      metadata: string,
+      signature: BytesLike
     ],
     [bigint],
     "payable"
@@ -498,6 +533,12 @@ export interface AchievementNFT extends BaseContract {
 
   setApprovalForAll: TypedContractMethod<
     [operator: AddressLike, approved: boolean],
+    [void],
+    "nonpayable"
+  >;
+
+  setAuthorizedSigner: TypedContractMethod<
+    [_authorizedSigner: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -553,6 +594,9 @@ export interface AchievementNFT extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "authorizedSigner"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
   getFunction(
@@ -585,7 +629,8 @@ export interface AchievementNFT extends BaseContract {
       to: AddressLike,
       _tokenURI: string,
       achievementId: string,
-      metadata: string
+      metadata: string,
+      signature: BytesLike
     ],
     [bigint],
     "payable"
@@ -639,6 +684,13 @@ export interface AchievementNFT extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "setAuthorizedSigner"
+  ): TypedContractMethod<
+    [_authorizedSigner: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "setFeeRecipient"
   ): TypedContractMethod<[_feeRecipient: AddressLike], [void], "nonpayable">;
   getFunction(
@@ -684,6 +736,13 @@ export interface AchievementNFT extends BaseContract {
     ApprovalForAllEvent.InputTuple,
     ApprovalForAllEvent.OutputTuple,
     ApprovalForAllEvent.OutputObject
+  >;
+  getEvent(
+    key: "AuthorizedSignerUpdated"
+  ): TypedContractEvent<
+    AuthorizedSignerUpdatedEvent.InputTuple,
+    AuthorizedSignerUpdatedEvent.OutputTuple,
+    AuthorizedSignerUpdatedEvent.OutputObject
   >;
   getEvent(
     key: "BatchMetadataUpdate"
@@ -749,6 +808,17 @@ export interface AchievementNFT extends BaseContract {
       ApprovalForAllEvent.InputTuple,
       ApprovalForAllEvent.OutputTuple,
       ApprovalForAllEvent.OutputObject
+    >;
+
+    "AuthorizedSignerUpdated(address,address)": TypedContractEvent<
+      AuthorizedSignerUpdatedEvent.InputTuple,
+      AuthorizedSignerUpdatedEvent.OutputTuple,
+      AuthorizedSignerUpdatedEvent.OutputObject
+    >;
+    AuthorizedSignerUpdated: TypedContractEvent<
+      AuthorizedSignerUpdatedEvent.InputTuple,
+      AuthorizedSignerUpdatedEvent.OutputTuple,
+      AuthorizedSignerUpdatedEvent.OutputObject
     >;
 
     "BatchMetadataUpdate(uint256,uint256)": TypedContractEvent<

@@ -27,6 +27,7 @@ export interface WorldCupMatchInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "BASE_PRICE"
+      | "CLAIM_DEADLINE"
       | "LINEAR_INCREMENT"
       | "MAX_FEE_PERCENT"
       | "MAX_VOTES_PER_TX"
@@ -58,6 +59,7 @@ export interface WorldCupMatchInterface extends Interface {
       | "renounceOwnership"
       | "setPlatformAddress"
       | "setPlatformFee"
+      | "sweepUnclaimed"
       | "team1Name"
       | "team1Phase1Votes"
       | "team1TotalETH"
@@ -94,6 +96,10 @@ export interface WorldCupMatchInterface extends Interface {
 
   encodeFunctionData(
     functionFragment: "BASE_PRICE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "CLAIM_DEADLINE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -208,6 +214,10 @@ export interface WorldCupMatchInterface extends Interface {
     functionFragment: "setPlatformFee",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "sweepUnclaimed",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "team1Name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "team1Phase1Votes",
@@ -273,6 +283,10 @@ export interface WorldCupMatchInterface extends Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "BASE_PRICE", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "CLAIM_DEADLINE",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "LINEAR_INCREMENT",
     data: BytesLike
@@ -380,6 +394,10 @@ export interface WorldCupMatchInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setPlatformFee",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "sweepUnclaimed",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "team1Name", data: BytesLike): Result;
@@ -642,6 +660,8 @@ export interface WorldCupMatch extends BaseContract {
 
   BASE_PRICE: TypedContractMethod<[], [bigint], "view">;
 
+  CLAIM_DEADLINE: TypedContractMethod<[], [bigint], "view">;
+
   LINEAR_INCREMENT: TypedContractMethod<[], [bigint], "view">;
 
   MAX_FEE_PERCENT: TypedContractMethod<[], [bigint], "view">;
@@ -776,6 +796,8 @@ export interface WorldCupMatch extends BaseContract {
     "nonpayable"
   >;
 
+  sweepUnclaimed: TypedContractMethod<[], [void], "nonpayable">;
+
   team1Name: TypedContractMethod<[], [string], "view">;
 
   team1Phase1Votes: TypedContractMethod<[], [bigint], "view">;
@@ -834,6 +856,9 @@ export interface WorldCupMatch extends BaseContract {
 
   getFunction(
     nameOrSignature: "BASE_PRICE"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "CLAIM_DEADLINE"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "LINEAR_INCREMENT"
@@ -984,6 +1009,9 @@ export interface WorldCupMatch extends BaseContract {
   getFunction(
     nameOrSignature: "setPlatformFee"
   ): TypedContractMethod<[newFeePercent: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "sweepUnclaimed"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "team1Name"
   ): TypedContractMethod<[], [string], "view">;

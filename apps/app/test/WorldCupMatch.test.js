@@ -98,22 +98,22 @@ describe("WorldCupMatch", function () {
 
     it("Should increase price linearly by 0.0001 ETH per vote", async function () {
       // First vote: 0.001 ETH
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
       expect(await worldCupMatch.calculateVotePrice(0)).to.equal(parseEth("0.0011"));
 
       // Second vote: 0.0011 ETH
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
       expect(await worldCupMatch.calculateVotePrice(0)).to.equal(parseEth("0.0012"));
 
       // Third vote: 0.0012 ETH
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0012") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0012") });
       expect(await worldCupMatch.calculateVotePrice(0)).to.equal(parseEth("0.0013"));
     });
 
     it("Should track vote count correctly after 10 votes", async function () {
       for (let i = 0; i < 10; i++) {
         const price = await worldCupMatch.calculateVotePrice(0);
-        await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+        await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
       }
 
       expect(await worldCupMatch.team1VoteCount()).to.equal(10);
@@ -126,9 +126,9 @@ describe("WorldCupMatch", function () {
 
     it("Should track ETH separately from vote count", async function () {
       // Vote 3 times
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0011") });
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0012") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0012") });
 
       // Vote count should be 3
       expect(await worldCupMatch.team1VoteCount()).to.equal(3);
@@ -140,8 +140,8 @@ describe("WorldCupMatch", function () {
     });
 
     it("Should allow different voters on different teams", async function () {
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await worldCupMatch.connect(voter2).vote(1, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       expect(await worldCupMatch.team1VoteCount()).to.equal(1);
       expect(await worldCupMatch.team2VoteCount()).to.equal(1);
@@ -154,7 +154,7 @@ describe("WorldCupMatch", function () {
       const overpayment = parseEth("0.01"); // Send 10x the required amount
 
       const balanceBefore = await ethers.provider.getBalance(voter1.address);
-      const tx = await worldCupMatch.connect(voter1).vote(0, 1, { value: overpayment });
+      const tx = await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: overpayment });
       const receipt = await tx.wait();
       const gasCost = receipt.gasUsed * receipt.gasPrice;
 
@@ -170,20 +170,20 @@ describe("WorldCupMatch", function () {
       const platformFee = (price * 1000n) / 10000n; // 10%
       const prizePool = price - platformFee; // 90%
 
-      await expect(worldCupMatch.connect(voter1).vote(0, 1, { value: price }))
+      await expect(worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price }))
         .to.emit(worldCupMatch, "VotesPlaced")
         .withArgs(voter1.address, 0, 1, price, platformFee, prizePool);
     });
 
     it("Should revert if insufficient payment", async function () {
       await expect(
-        worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0009") })
+        worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0009") })
       ).to.be.revertedWith("Insufficient payment");
     });
 
     it("Should revert for invalid team index", async function () {
       await expect(
-        worldCupMatch.connect(voter1).vote(2, 1, { value: parseEth("0.001") })
+        worldCupMatch.connect(voter1).vote(2, 1, ethers.ZeroAddress, { value: parseEth("0.001") })
       ).to.be.revertedWith("Invalid team index");
     });
   });
@@ -191,8 +191,8 @@ describe("WorldCupMatch", function () {
   describe("Phase 2: Exponential Pricing (2-24 hours)", function () {
     beforeEach(async function () {
       // Place some votes in Phase 1
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
 
       // Fast forward to Phase 2 (2 hours + 1 second)
       await time.increase(2 * 3600 + 1);
@@ -205,7 +205,7 @@ describe("WorldCupMatch", function () {
     it("Should store Phase 1 end state on first Phase 2 vote", async function () {
       // First vote in Phase 2
       const price = await worldCupMatch.calculateVotePrice(0);
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
 
       const phase1Details = await worldCupMatch.getPhase1Details();
       expect(phase1Details.ended).to.be.true;
@@ -221,14 +221,14 @@ describe("WorldCupMatch", function () {
       let price = await worldCupMatch.calculateVotePrice(0);
       expect(price).to.equal(phase1EndPrice);
 
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
 
       // Second Phase 2 vote should be 1.1x higher
       price = await worldCupMatch.calculateVotePrice(0);
       const expected1 = (phase1EndPrice * 11n) / 10n;
       expect(price).to.equal(expected1);
 
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
 
       // Third Phase 2 vote should be 1.1x higher again
       price = await worldCupMatch.calculateVotePrice(0);
@@ -243,7 +243,7 @@ describe("WorldCupMatch", function () {
       // Add 3 more votes in Phase 2
       for (let i = 0; i < 3; i++) {
         const price = await worldCupMatch.calculateVotePrice(0);
-        await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+        await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
       }
 
       // Total should be 5
@@ -261,7 +261,7 @@ describe("WorldCupMatch", function () {
         const diff = price > expectedPrice ? price - expectedPrice : expectedPrice - price;
         expect(diff).to.be.lessThan(parseEth("0.000001"));
 
-        await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+        await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
 
         // Calculate next expected price (1.1x)
         expectedPrice = (expectedPrice * 11n) / 10n;
@@ -278,7 +278,7 @@ describe("WorldCupMatch", function () {
       expect(await worldCupMatch.getCurrentPhase()).to.equal(1);
 
       // Vote in Phase 1
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Fast forward to Phase 2
       await time.increase(2 * 3600 + 1);
@@ -290,7 +290,7 @@ describe("WorldCupMatch", function () {
 
       // First Phase 2 vote should trigger phase end
       const price = await worldCupMatch.calculateVotePrice(0);
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: price });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: price });
 
       const phase1DetailsAfter = await worldCupMatch.getPhase1Details();
       expect(phase1DetailsAfter.ended).to.be.true;
@@ -303,7 +303,7 @@ describe("WorldCupMatch", function () {
       expect(await worldCupMatch.getCurrentPhase()).to.equal(0);
 
       await expect(
-        worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") })
+        worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") })
       ).to.be.revertedWith("Voting is closed");
     });
   });
@@ -311,13 +311,13 @@ describe("WorldCupMatch", function () {
   describe("Match Finalization", function () {
     beforeEach(async function () {
       // Voter1 votes for team 0 with 0.001 ETH (gets 1 vote)
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Voter2 votes for team 0 with 0.0011 ETH (gets 1 vote)
-      await worldCupMatch.connect(voter2).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter2).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
 
       // Voter3 votes for team 1 with 0.001 ETH (gets 1 vote)
-      await worldCupMatch.connect(voter3).vote(1, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter3).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Fast forward past voting end
       await time.increase(24 * 3600 + 1);
@@ -353,8 +353,8 @@ describe("WorldCupMatch", function () {
       const newMatch = await deployNewMatch("A", "B", deployTime, platform.address);
 
       // Equal ETH on both teams
-      await newMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await newMatch.connect(voter2).vote(1, 1, { value: parseEth("0.001") });
+      await newMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await newMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       await time.increase(24 * 3600 + 1);
 
@@ -379,14 +379,14 @@ describe("WorldCupMatch", function () {
   describe("Payout Calculations (CRITICAL: Based on Vote Count)", function () {
     beforeEach(async function () {
       // Voter1: Buys 1 vote at 0.001 ETH
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Voter2: Buys 1 vote at 0.0011 ETH (more expensive, same votes)
-      await worldCupMatch.connect(voter2).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter2).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
 
       // Voter3: Buys 2 votes at 0.0012 and 0.0013 ETH
-      await worldCupMatch.connect(voter3).vote(0, 1, { value: parseEth("0.0012") });
-      await worldCupMatch.connect(voter3).vote(0, 1, { value: parseEth("0.0013") });
+      await worldCupMatch.connect(voter3).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0012") });
+      await worldCupMatch.connect(voter3).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0013") });
 
       // Team 0: 4 votes total, 0.0046 ETH total
       // Voter1: 1 vote (0.001 ETH)
@@ -424,12 +424,12 @@ describe("WorldCupMatch", function () {
       const newMatch = await deployNewMatch("A", "B", deployTime, platform.address);
 
       // Voter1 votes once for team 0: 0.001 ETH
-      await newMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await newMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Voter2 votes twice for team 1: 0.001 + 0.0011 = 0.0021 ETH
       // Team 1 will have more ETH and win
-      await newMatch.connect(voter2).vote(1, 1, { value: parseEth("0.001") });
-      await newMatch.connect(voter2).vote(1, 1, { value: parseEth("0.0011") });
+      await newMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await newMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
 
       await time.increase(24 * 3600 + 1);
       // Trigger auto-finalization via withdrawal (voter2 is the winner)
@@ -444,8 +444,8 @@ describe("WorldCupMatch", function () {
       const deployTime = await time.latest();
       const newMatch = await deployNewMatch("A", "B", deployTime, platform.address);
 
-      await newMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await newMatch.connect(voter1).vote(1, 1, { value: parseEth("0.001") });
+      await newMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await newMatch.connect(voter1).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       await time.increase(24 * 3600 + 1);
       // Trigger auto-finalization via withdrawal
@@ -462,10 +462,10 @@ describe("WorldCupMatch", function () {
     beforeEach(async function () {
       // Create winning scenario
       // Team 0 gets more votes/ETH and wins
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
-      await worldCupMatch.connect(voter2).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter2).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
       // Team 1 gets less ETH
-      await worldCupMatch.connect(voter3).vote(1, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter3).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       await time.increase(24 * 3600 + 1);
       // No need to finalize manually - will auto-finalize on first withdrawal
@@ -497,7 +497,7 @@ describe("WorldCupMatch", function () {
     it("Should revert withdrawal before voting ends", async function () {
       const newMatch = await deployNewMatch("A", "B", await time.latest(), platform.address);
 
-      await newMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await newMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Try to withdraw before voting ends (auto-finalization will be blocked)
       await expect(newMatch.connect(voter1).withdrawWinnings()).to.be.revertedWith(
@@ -529,7 +529,7 @@ describe("WorldCupMatch", function () {
       const expectedFee = (votePrice * 1000n) / 10000n; // 10% (1000 basis points)
 
       const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: votePrice });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: votePrice });
       const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
 
       expect(platformBalanceAfter - platformBalanceBefore).to.equal(expectedFee);
@@ -539,8 +539,8 @@ describe("WorldCupMatch", function () {
       const votePrice1 = parseEth("0.001"); // First vote for team 0
       const votePrice2 = parseEth("0.001"); // First vote for team 1 (also 0.001 ETH)
 
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: votePrice1 });
-      await worldCupMatch.connect(voter2).vote(1, 1, { value: votePrice2 });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: votePrice1 });
+      await worldCupMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: votePrice2 });
 
       const expectedTotalFee = (votePrice1 * 1000n) / 10000n + (votePrice2 * 1000n) / 10000n;
       expect(await worldCupMatch.totalPlatformFeesCollected()).to.equal(expectedTotalFee);
@@ -550,7 +550,7 @@ describe("WorldCupMatch", function () {
       const votePrice = parseEth("0.001");
       const expectedFee = (votePrice * 1000n) / 10000n;
 
-      await expect(worldCupMatch.connect(voter1).vote(0, 1, { value: votePrice }))
+      await expect(worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: votePrice }))
         .to.emit(worldCupMatch, "PlatformFeeTransferred")
         .withArgs(platform.address, expectedFee);
     });
@@ -559,7 +559,7 @@ describe("WorldCupMatch", function () {
       const votePrice = parseEth("0.001");
       const expectedPrizePool = votePrice - (votePrice * 1000n) / 10000n; // 90%
 
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: votePrice });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: votePrice });
 
       expect(await worldCupMatch.team1TotalETH()).to.equal(expectedPrizePool);
     });
@@ -567,8 +567,8 @@ describe("WorldCupMatch", function () {
 
   describe("View Functions", function () {
     beforeEach(async function () {
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") }); // First vote team 0
-      await worldCupMatch.connect(voter1).vote(1, 1, { value: parseEth("0.001") }); // First vote team 1
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") }); // First vote team 0
+      await worldCupMatch.connect(voter1).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") }); // First vote team 1
     });
 
     it("Should return correct match details", async function () {
@@ -605,7 +605,7 @@ describe("WorldCupMatch", function () {
     it("Should return voter count", async function () {
       expect(await worldCupMatch.getVoterCount()).to.equal(1);
 
-      await worldCupMatch.connect(voter2).vote(0, 1, { value: parseEth("0.0012") });
+      await worldCupMatch.connect(voter2).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0012") });
       expect(await worldCupMatch.getVoterCount()).to.equal(2);
     });
 
@@ -620,13 +620,13 @@ describe("WorldCupMatch", function () {
   describe("Early Voter Advantage (Real-world Scenario)", function () {
     it("Should demonstrate early voters get better returns", async function () {
       // Alice votes early: 1 vote at 0.001 ETH
-      await worldCupMatch.connect(voter1).vote(0, 1, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
 
       // Bob votes later: 1 vote at 0.0011 ETH
-      await worldCupMatch.connect(voter2).vote(0, 1, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter2).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
 
       // Charlie votes even later: 1 vote at 0.0012 ETH
-      await worldCupMatch.connect(voter3).vote(0, 1, { value: parseEth("0.0012") });
+      await worldCupMatch.connect(voter3).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0012") });
 
       // Total: 3 votes, 0.0033 ETH
       // Prize pool: 90% = 0.00297 ETH
@@ -655,6 +655,82 @@ describe("WorldCupMatch", function () {
 
       expect(aliceROI).to.be.greaterThan(bobROI);
       expect(bobROI).to.be.greaterThan(charlieROI);
+    });
+  });
+
+  describe("Withdrawal Deadline & Sweep", function () {
+    beforeEach(async function () {
+      // Create a match with votes, team 0 wins (more ETH on team 0)
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+      await worldCupMatch.connect(voter1).vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.0011") });
+      await worldCupMatch.connect(voter2).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+
+      // Fast forward past voting end
+      await time.increase(24 * 3600 + 1);
+    });
+
+    it("Should allow withdrawal before deadline", async function () {
+      await worldCupMatch.connect(voter1).withdrawWinnings();
+      expect(await worldCupMatch.hasWithdrawn(voter1.address)).to.be.true;
+    });
+
+    it("Should reject withdrawal after 90-day deadline", async function () {
+      // Fast forward 90 days + 1 second past votingEndTime
+      await time.increase(90 * 24 * 3600);
+
+      await expect(
+        worldCupMatch.connect(voter1).withdrawWinnings()
+      ).to.be.revertedWith("Claim period expired");
+    });
+
+    it("Should allow owner to sweep after deadline", async function () {
+      // Fast forward 90 days past votingEndTime
+      await time.increase(90 * 24 * 3600);
+
+      const contractBalance = await ethers.provider.getBalance(await worldCupMatch.getAddress());
+      expect(contractBalance).to.be.greaterThan(0);
+
+      const platformBalanceBefore = await ethers.provider.getBalance(platform.address);
+      await worldCupMatch.connect(owner).sweepUnclaimed();
+      const platformBalanceAfter = await ethers.provider.getBalance(platform.address);
+
+      expect(platformBalanceAfter - platformBalanceBefore).to.equal(contractBalance);
+      expect(await ethers.provider.getBalance(await worldCupMatch.getAddress())).to.equal(0);
+    });
+
+    it("Should reject sweep before deadline", async function () {
+      await expect(
+        worldCupMatch.connect(owner).sweepUnclaimed()
+      ).to.be.revertedWith("Claim period not expired");
+    });
+
+    it("Should reject sweep by non-owner", async function () {
+      await time.increase(90 * 24 * 3600);
+      await expect(
+        worldCupMatch.connect(voter1).sweepUnclaimed()
+      ).to.be.revertedWithCustomError(worldCupMatch, "OwnableUnauthorizedAccount");
+    });
+  });
+
+  describe("Reentrancy Protection", function () {
+    it("Should prevent reentrancy on withdrawWinnings", async function () {
+      const ReentrancyAttacker = await ethers.getContractFactory("ReentrancyAttacker");
+      const attacker = await ReentrancyAttacker.deploy(await worldCupMatch.getAddress());
+      await attacker.waitForDeployment();
+
+      const attackerAddress = await attacker.getAddress();
+
+      // Attacker votes for team 0
+      await attacker.attack_vote(0, 1, ethers.ZeroAddress, { value: parseEth("0.01") });
+
+      // Another voter votes for team 1 with less ETH so team 0 wins
+      await worldCupMatch.connect(voter1).vote(1, 1, ethers.ZeroAddress, { value: parseEth("0.001") });
+
+      // Fast forward past voting end
+      await time.increase(24 * 3600 + 1);
+
+      // Attacker tries to re-enter during withdrawal — should revert
+      await expect(attacker.attack_withdraw()).to.be.reverted;
     });
   });
 });

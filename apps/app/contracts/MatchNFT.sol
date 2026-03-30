@@ -4,38 +4,61 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /**
  * @title MatchNFT
  * @dev ERC721 NFT contract for minting Onchain World Cup 2026 match result NFTs.
- * Single mint() function accepting a tokenURI pointing to ERC-721 compliant JSON metadata.
+ * Mints require a valid signature from the authorizedSigner (backend).
  */
 contract MatchNFT is ERC721URIStorage, Ownable {
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
     uint256 private _tokenIdCounter;
+
+    address public authorizedSigner;
 
     struct NFTMetadata {
         uint256 mintedAt;
-        string data; // JSON string with match result data
+        string data;
     }
 
     mapping(uint256 => NFTMetadata) public nftMetadata;
     mapping(address => uint256[]) public userNFTs;
+    mapping(address => mapping(string => bool)) public hasMinted;
 
     event NFTMinted(address indexed user, uint256 indexed tokenId, string tokenURI);
+    event AuthorizedSignerUpdated(address indexed oldSigner, address indexed newSigner);
 
-    constructor() ERC721("OWC26 Match Results", "OWC26M") Ownable(msg.sender) {}
+    constructor(address _authorizedSigner) ERC721("OWC26 Match Results", "OWC26M") Ownable(msg.sender) {
+        require(_authorizedSigner != address(0), "Invalid signer");
+        authorizedSigner = _authorizedSigner;
+    }
 
-    /**
-     * @dev Mint a match result NFT
-     * @param to Address to mint to
-     * @param _tokenURI URL pointing to ERC-721 JSON metadata
-     * @param metadata JSON string with match result data stored on-chain
-     */
+    function setAuthorizedSigner(address _authorizedSigner) external onlyOwner {
+        require(_authorizedSigner != address(0), "Invalid signer");
+        emit AuthorizedSignerUpdated(authorizedSigner, _authorizedSigner);
+        authorizedSigner = _authorizedSigner;
+    }
+
     function mint(
         address to,
         string memory _tokenURI,
-        string memory metadata
+        string memory matchId,
+        string memory metadata,
+        bytes memory signature
     ) public returns (uint256) {
+        require(!hasMinted[to][matchId], "Already minted for this match");
+
+        bytes32 messageHash = keccak256(abi.encodePacked(to, matchId, _tokenURI, address(this)));
+        bytes32 ethSignedHash = messageHash.toEthSignedMessageHash();
+        address recovered = ethSignedHash.recover(signature);
+        require(recovered == authorizedSigner, "Invalid signature");
+
+        hasMinted[to][matchId] = true;
+
         uint256 newTokenId = ++_tokenIdCounter;
 
         _safeMint(to, newTokenId);
