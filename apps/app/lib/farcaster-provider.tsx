@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from "react"
 import { useConnect, useAccount } from "wagmi"
 import { farcasterMiniApp } from "@farcaster/miniapp-wagmi-connector"
+import { modal } from "@/lib/wallet/appkit-modal"
 
 // Debug logging - only enable in development
 const DEBUG = process.env.NEXT_PUBLIC_DEBUG === "true"
@@ -196,6 +197,22 @@ export function FarcasterProvider({ children }: { children: ReactNode }) {
       setContext((prev) => ({ ...prev, isAutoConnecting: false }))
     }
   }, [isConnected, context.isAutoConnecting])
+
+  // Suppress AppKit's "unsupported network" modal in Farcaster context.
+  // During SIWF signing, Privy's embedded wallet briefly switches to Optimism
+  // for the signing ceremony then back to Base. AppKit sees the intermediate
+  // chain change as unsupported and opens the switch network UI in a loop.
+  // In Farcaster the wallet manages its own chains — close any such modal.
+  useEffect(() => {
+    if (!context.isFarcasterMiniApp) return
+    const unsubscribe = modal.subscribeEvents((event) => {
+      if (event.data.event === "SWITCH_NETWORK") {
+        console.log("[FarcasterProvider] Suppressing AppKit SWITCH_NETWORK modal in Farcaster context")
+        modal.close()
+      }
+    })
+    return () => unsubscribe()
+  }, [context.isFarcasterMiniApp])
 
   return <FarcasterContext.Provider value={context}>{children}</FarcasterContext.Provider>
 }
