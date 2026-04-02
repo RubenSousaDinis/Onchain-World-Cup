@@ -9,9 +9,14 @@
  * Usage: npm run seed:wc-matches
  */
 
+import dotenv from 'dotenv'
+import * as path from 'path'
+
+// Load .env.local before importing anything that reads env vars
+dotenv.config({ path: path.join(__dirname, '../.env.local') })
+
 import { getSupabaseClient } from '../lib/server/supabase'
 import * as fs from 'fs'
-import * as path from 'path'
 
 interface WCMatch {
   round: string
