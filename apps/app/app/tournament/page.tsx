@@ -7,7 +7,7 @@ import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Clock, RefreshCw, Loader2 } from "lucide-react"
 import { InlineLoader } from "@/components/states"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { ScheduleTab } from "@/components/schedule-tab"
+import { RealWorldCupTab } from "@/components/real-wc-tab"
 
 type Team = {
   countryCode: string
@@ -38,12 +38,12 @@ type GroupsResponse = {
 }
 
 const TABS = [
-  { label: "Groups", value: "groups" },
-  { label: "Schedule", value: "schedule" },
+  { label: "Real World Cup", value: "real" },
+  { label: "Onchain World Cup", value: "onchain" },
 ]
 
 export default function TournamentPage() {
-  const [activeTab, setActiveTab] = useState("groups")
+  const [activeTab, setActiveTab] = useState<"real" | "onchain">("real")
   const [groups, setGroups] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -76,22 +76,16 @@ export default function TournamentPage() {
 
   useEffect(() => {
     fetchGroups()
-
-    // Auto-refresh every 5 minutes
     const interval = setInterval(() => fetchGroups(true), 5 * 60 * 1000)
-
     return () => clearInterval(interval)
   }, [])
 
-  // Calculate time until next update
   useEffect(() => {
     if (!nextUpdate) return
-
     const timer = setInterval(() => {
       const now = new Date().getTime()
       const next = new Date(nextUpdate).getTime()
       const diff = next - now
-
       if (diff > 0) {
         const minutes = Math.floor(diff / (60 * 1000))
         const seconds = Math.floor((diff % (60 * 1000)) / 1000)
@@ -100,15 +94,14 @@ export default function TournamentPage() {
         setTimeUntilUpdate("Now")
       }
     }, 1000)
-
     return () => clearInterval(timer)
   }, [nextUpdate])
 
   const getRankColor = (rank: number): string => {
-    if (rank <= 12) return "text-yellow-500" // Pot 1
-    if (rank <= 24) return "text-gray-400" // Pot 2
-    if (rank <= 36) return "text-orange-500" // Pot 3
-    return "text-red-500" // Pot 4
+    if (rank <= 12) return "text-yellow-500"
+    if (rank <= 24) return "text-gray-400"
+    if (rank <= 36) return "text-orange-500"
+    return "text-red-500"
   }
 
   return (
@@ -133,13 +126,19 @@ export default function TournamentPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <RetroNavTabs tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* Toggle */}
+          <RetroNavTabs
+            tabs={TABS}
+            activeTab={activeTab}
+            onTabChange={(tab) => setActiveTab(tab as "real" | "onchain")}
+          />
 
-          {/* Groups Tab */}
-          {activeTab === "groups" && (
+          {/* Real World Cup */}
+          {activeTab === "real" && <RealWorldCupTab />}
+
+          {/* Onchain World Cup */}
+          {activeTab === "onchain" && (
             <>
-              {/* Refreshing Indicator */}
               {isRefreshing && (
                 <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
                   <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
@@ -151,7 +150,6 @@ export default function TournamentPage() {
                 </div>
               )}
 
-              {/* Cache Status */}
               {lastCalculated && (
                 <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border border-accent/30">
                   <div className="bg-secondary/40 p-3 lg:p-4">
@@ -173,7 +171,6 @@ export default function TournamentPage() {
                 </div>
               )}
 
-              {/* Seeding Legend */}
               <div className="mb-4 lg:mb-6 grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
                 <div className="cm-panel rounded-sm p-2 lg:p-3 bg-yellow-500/5 border border-yellow-500/20">
                   <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">POT 1</div>
@@ -193,7 +190,6 @@ export default function TournamentPage() {
                 </div>
               </div>
 
-              {/* Groups Grid */}
               {isLoading ? (
                 <div className="cm-panel rounded-sm border border-border overflow-hidden p-12 text-center">
                   <InlineLoader text="Loading tournament groups..." />
@@ -205,7 +201,6 @@ export default function TournamentPage() {
                       key={group.id}
                       className="cm-panel rounded-sm border-2 border-accent/30 overflow-hidden hover:border-accent/60 transition-colors"
                     >
-                      {/* Group Header */}
                       <div className="bg-accent/20 border-b-2 border-accent/30 p-3 lg:p-4">
                         <div className="flex items-center gap-2">
                           <Trophy className="w-5 h-5 text-accent" />
@@ -214,8 +209,6 @@ export default function TournamentPage() {
                           </h3>
                         </div>
                       </div>
-
-                      {/* Teams List */}
                       <div className="p-3 lg:p-4 space-y-2">
                         {group.teams.map((team) => {
                           const isTBD = team.countryCode.startsWith("TBD")
@@ -269,7 +262,6 @@ export default function TournamentPage() {
                 </div>
               )}
 
-              {/* Info Footer */}
               {!isLoading && groups.length > 0 && (
                 <div className="mt-6 lg:mt-8 cm-panel rounded-sm p-4 lg:p-6 bg-secondary/40 border border-accent/20">
                   <div className="flex items-start gap-3">
@@ -290,9 +282,6 @@ export default function TournamentPage() {
               )}
             </>
           )}
-
-          {/* Schedule Tab */}
-          {activeTab === "schedule" && <ScheduleTab />}
         </main>
       </div>
     </div>
