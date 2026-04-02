@@ -60,5 +60,7 @@ export type { IEventHubFactory } from "./contracts/WorldCupMatchFactory.sol/IEve
 export { IEventHubFactory__factory } from "./factories/contracts/WorldCupMatchFactory.sol/IEventHubFactory__factory";
 export type { WorldCupMatchFactory } from "./contracts/WorldCupMatchFactory.sol/WorldCupMatchFactory";
 export { WorldCupMatchFactory__factory } from "./factories/contracts/WorldCupMatchFactory.sol/WorldCupMatchFactory__factory";
+export type { WorldCupNFT } from "./contracts/WorldCupNFT";
+export { WorldCupNFT__factory } from "./factories/contracts/WorldCupNFT__factory";
 export type { WorldCupQualification } from "./contracts/WorldCupQualification";
 export { WorldCupQualification__factory } from "./factories/contracts/WorldCupQualification__factory";
