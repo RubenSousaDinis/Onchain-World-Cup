@@ -67,10 +67,14 @@ function deriveGroups(matches: WCMatch[]): [string, string[]][] {
 }
 
 function parseMatchTime(date: string, time: string): Date {
+  // time format: "13:00 UTC-6" or "20:00 UTC+3"
+  // Build ISO 8601 with offset so JS handles midnight crossings correctly
   const m = time.match(/(\d+):(\d+)\s+UTC([+-]\d+)/)
   if (!m) return new Date(`${date}T00:00:00Z`)
-  const utcHours = parseInt(m[1]) - parseInt(m[3])
-  return new Date(`${date}T${String(utcHours).padStart(2, "0")}:${m[2]}:00Z`)
+  const offsetHours = parseInt(m[3])
+  const sign = offsetHours >= 0 ? "+" : "-"
+  const absHours = String(Math.abs(offsetHours)).padStart(2, "0")
+  return new Date(`${date}T${m[1]}:${m[2]}:00${sign}${absHours}:00`)
 }
 
 function groupMatchesByDate(matches: WCMatch[]): [string, WCMatch[]][] {
