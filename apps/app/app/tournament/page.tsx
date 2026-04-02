@@ -6,6 +6,8 @@ import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Clock, RefreshCw, Loader2 } from "lucide-react"
 import { InlineLoader } from "@/components/states"
+import { RetroNavTabs } from "@/components/retro-nav-tabs"
+import { ScheduleTab } from "@/components/schedule-tab"
 
 type Team = {
   countryCode: string
@@ -35,7 +37,13 @@ type GroupsResponse = {
   nextUpdate: string
 }
 
+const TABS = [
+  { label: "Groups", value: "groups" },
+  { label: "Schedule", value: "schedule" },
+]
+
 export default function TournamentPage() {
+  const [activeTab, setActiveTab] = useState("groups")
   const [groups, setGroups] = useState<Group[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -115,168 +123,176 @@ export default function TournamentPage() {
             <div className="soccer-field-bg p-4 lg:p-6">
               <div className="mb-2">
                 <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-                  <span className="cm-highlight">Tournament Groups</span>
+                  <span className="cm-highlight">Tournament</span>
                 </h1>
                 <h2 className="text-xl lg:text-2xl font-bold mb-3 text-accent">World Cup 2026</h2>
               </div>
-              <p className="text-sm lg:text-base text-foreground/80 mb-2">
-                Groups are dynamically calculated based on current qualification standings
-              </p>
-              <p className="text-sm lg:text-base text-foreground/70">
-                12 groups of 4 teams • Snake draft seeding • Updates hourly
+              <p className="text-sm lg:text-base text-foreground/80">
+                Groups, fixtures, and match schedule for the 2026 World Cup
               </p>
             </div>
           </div>
 
-          {/* Refreshing Indicator */}
-          {isRefreshing && (
-            <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
-              <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
-                <div className="px-6 py-3 flex items-center gap-3">
-                  <Loader2 className="w-5 h-5 text-accent animate-spin" />
-                  <span className="text-sm lg:text-base font-bold text-accent">Updating groups...</span>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Tabs */}
+          <RetroNavTabs tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
 
-          {/* Cache Status */}
-          {lastCalculated && (
-            <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border border-accent/30">
-              <div className="bg-secondary/40 p-3 lg:p-4">
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-accent" />
-                    <span className="text-sm lg:text-base font-bold text-foreground">
-                      Last Updated: {new Date(lastCalculated).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm lg:text-base text-muted-foreground">
-                      Next update in: <span className="font-bold cm-highlight">{timeUntilUpdate}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Seeding Legend */}
-          <div className="mb-4 lg:mb-6 grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
-            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-yellow-500/5 border border-yellow-500/20">
-              <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">POT 1</div>
-              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 1-12</div>
-            </div>
-            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-gray-400/5 border border-gray-400/20">
-              <div className="text-xs lg:text-sm font-bold text-gray-400 mb-1">POT 2</div>
-              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 13-24</div>
-            </div>
-            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-orange-500/5 border border-orange-500/20">
-              <div className="text-xs lg:text-sm font-bold text-orange-500 mb-1">POT 3</div>
-              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 25-36</div>
-            </div>
-            <div className="cm-panel rounded-sm p-2 lg:p-3 bg-red-500/5 border border-red-500/20">
-              <div className="text-xs lg:text-sm font-bold text-red-500 mb-1">POT 4</div>
-              <div className="text-xs lg:text-sm text-muted-foreground">Ranks 37-48</div>
-            </div>
-          </div>
-
-          {/* Groups Grid */}
-          {isLoading ? (
-            <div className="cm-panel rounded-sm border border-border overflow-hidden p-12 text-center">
-              <InlineLoader text="Loading tournament groups..." />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {groups.map((group) => (
-                <div
-                  key={group.id}
-                  className="cm-panel rounded-sm border-2 border-accent/30 overflow-hidden hover:border-accent/60 transition-colors"
-                >
-                  {/* Group Header */}
-                  <div className="bg-accent/20 border-b-2 border-accent/30 p-3 lg:p-4">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-5 h-5 text-accent" />
-                      <h3 className="text-xl lg:text-2xl font-bold cm-highlight">
-                        {group.displayName}
-                      </h3>
+          {/* Groups Tab */}
+          {activeTab === "groups" && (
+            <>
+              {/* Refreshing Indicator */}
+              {isRefreshing && (
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+                  <div className="cm-panel rounded-sm overflow-hidden border-2 border-accent bg-accent/10 shadow-lg">
+                    <div className="px-6 py-3 flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                      <span className="text-sm lg:text-base font-bold text-accent">Updating groups...</span>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Teams List */}
-                  <div className="p-3 lg:p-4 space-y-2">
-                    {group.teams.map((team) => {
-                      const isTBD = team.countryCode.startsWith("TBD")
-                      const teamContent = (
-                        <>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="text-xl lg:text-2xl flex-shrink-0">{team.flagEmoji}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-bold text-sm lg:text-base truncate">
-                                {team.countryName}
-                              </div>
-                              {!isTBD && (
-                                <div className={`text-xs lg:text-sm font-bold ${getRankColor(team.qualRank)}`}>
-                                  Rank #{team.qualRank}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {!isTBD && (
-                            <div className="text-xs lg:text-sm font-bold text-muted-foreground flex-shrink-0 ml-2">
-                              {team.points} PTS
-                            </div>
-                          )}
-                        </>
-                      )
-
-                      if (isTBD) {
-                        return (
-                          <div
-                            key={team.countryCode}
-                            className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/20 opacity-50"
-                          >
-                            {teamContent}
-                          </div>
-                        )
-                      }
-
-                      return (
-                        <Link
-                          key={team.countryCode}
-                          href={`/qualification/${team.countryCode.toLowerCase()}`}
-                          className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/40 hover:bg-accent/10 transition-colors"
-                        >
-                          {teamContent}
-                        </Link>
-                      )
-                    })}
+              {/* Cache Status */}
+              {lastCalculated && (
+                <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border border-accent/30">
+                  <div className="bg-secondary/40 p-3 lg:p-4">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-accent" />
+                        <span className="text-sm lg:text-base font-bold text-foreground">
+                          Last Updated: {new Date(lastCalculated).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm lg:text-base text-muted-foreground">
+                          Next update in: <span className="font-bold cm-highlight">{timeUntilUpdate}</span>
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          {/* Info Footer */}
-          {!isLoading && groups.length > 0 && (
-            <div className="mt-6 lg:mt-8 cm-panel rounded-sm p-4 lg:p-6 bg-secondary/40 border border-accent/20">
-              <div className="flex items-start gap-3">
-                <Trophy className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <div className="text-sm lg:text-base text-foreground/80 space-y-2">
-                  <p>
-                    <span className="font-bold cm-highlight">Snake Draft Seeding:</span> Groups are balanced using a snake draft pattern to ensure competitive fairness.
-                  </p>
-                  <p>
-                    <span className="font-bold cm-highlight">Dynamic Updates:</span> As qualification voting continues, groups will be recalculated hourly to reflect the latest standings.
-                  </p>
-                  <p>
-                    <span className="font-bold cm-highlight">TBD Teams:</span> Placeholder teams will be replaced as countries secure their qualification through voting.
-                  </p>
+              {/* Seeding Legend */}
+              <div className="mb-4 lg:mb-6 grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+                <div className="cm-panel rounded-sm p-2 lg:p-3 bg-yellow-500/5 border border-yellow-500/20">
+                  <div className="text-xs lg:text-sm font-bold text-yellow-500 mb-1">POT 1</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Ranks 1-12</div>
+                </div>
+                <div className="cm-panel rounded-sm p-2 lg:p-3 bg-gray-400/5 border border-gray-400/20">
+                  <div className="text-xs lg:text-sm font-bold text-gray-400 mb-1">POT 2</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Ranks 13-24</div>
+                </div>
+                <div className="cm-panel rounded-sm p-2 lg:p-3 bg-orange-500/5 border border-orange-500/20">
+                  <div className="text-xs lg:text-sm font-bold text-orange-500 mb-1">POT 3</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Ranks 25-36</div>
+                </div>
+                <div className="cm-panel rounded-sm p-2 lg:p-3 bg-red-500/5 border border-red-500/20">
+                  <div className="text-xs lg:text-sm font-bold text-red-500 mb-1">POT 4</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Ranks 37-48</div>
                 </div>
               </div>
-            </div>
+
+              {/* Groups Grid */}
+              {isLoading ? (
+                <div className="cm-panel rounded-sm border border-border overflow-hidden p-12 text-center">
+                  <InlineLoader text="Loading tournament groups..." />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                  {groups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="cm-panel rounded-sm border-2 border-accent/30 overflow-hidden hover:border-accent/60 transition-colors"
+                    >
+                      {/* Group Header */}
+                      <div className="bg-accent/20 border-b-2 border-accent/30 p-3 lg:p-4">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="w-5 h-5 text-accent" />
+                          <h3 className="text-xl lg:text-2xl font-bold cm-highlight">
+                            {group.displayName}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Teams List */}
+                      <div className="p-3 lg:p-4 space-y-2">
+                        {group.teams.map((team) => {
+                          const isTBD = team.countryCode.startsWith("TBD")
+                          const teamContent = (
+                            <>
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <span className="text-xl lg:text-2xl flex-shrink-0">{team.flagEmoji}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-bold text-sm lg:text-base truncate">
+                                    {team.countryName}
+                                  </div>
+                                  {!isTBD && (
+                                    <div className={`text-xs lg:text-sm font-bold ${getRankColor(team.qualRank)}`}>
+                                      Rank #{team.qualRank}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              {!isTBD && (
+                                <div className="text-xs lg:text-sm font-bold text-muted-foreground flex-shrink-0 ml-2">
+                                  {team.points} PTS
+                                </div>
+                              )}
+                            </>
+                          )
+
+                          if (isTBD) {
+                            return (
+                              <div
+                                key={team.countryCode}
+                                className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/20 opacity-50"
+                              >
+                                {teamContent}
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <Link
+                              key={team.countryCode}
+                              href={`/qualification/${team.countryCode.toLowerCase()}`}
+                              className="flex items-center justify-between p-2 lg:p-3 rounded-sm bg-secondary/40 hover:bg-accent/10 transition-colors"
+                            >
+                              {teamContent}
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Info Footer */}
+              {!isLoading && groups.length > 0 && (
+                <div className="mt-6 lg:mt-8 cm-panel rounded-sm p-4 lg:p-6 bg-secondary/40 border border-accent/20">
+                  <div className="flex items-start gap-3">
+                    <Trophy className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                    <div className="text-sm lg:text-base text-foreground/80 space-y-2">
+                      <p>
+                        <span className="font-bold cm-highlight">Snake Draft Seeding:</span> Groups are balanced using a snake draft pattern to ensure competitive fairness.
+                      </p>
+                      <p>
+                        <span className="font-bold cm-highlight">Dynamic Updates:</span> As qualification voting continues, groups will be recalculated hourly to reflect the latest standings.
+                      </p>
+                      <p>
+                        <span className="font-bold cm-highlight">TBD Teams:</span> Placeholder teams will be replaced as countries secure their qualification through voting.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
+
+          {/* Schedule Tab */}
+          {activeTab === "schedule" && <ScheduleTab />}
         </main>
       </div>
     </div>
