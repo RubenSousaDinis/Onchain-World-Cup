@@ -14,6 +14,7 @@ import * as path from 'path'
 
 // Load .env.local before importing anything that reads env vars
 dotenv.config({ path: path.join(__dirname, '../.env.local') })
+dotenv.config({ path: path.join(__dirname, '../.env') })
 
 import { getSupabaseClient } from '../lib/server/supabase'
 import * as fs from 'fs'
