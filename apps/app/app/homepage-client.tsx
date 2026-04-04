@@ -20,7 +20,7 @@ import { useAccount } from "wagmi"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
-const LAUNCH_DATE = new Date("2026-04-06T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
 
 type CountryStats = {
   country_code: string
@@ -175,7 +175,7 @@ export function HomePageClient() {
             <Rocket className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />
             <div>
               <p className="text-xs lg:text-sm font-bold text-accent uppercase tracking-wide">
-                Mainnet Launching April 6, 2026
+                Mainnet Launching April 14, 2026
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Voting goes live on Base. Get ready.
@@ -200,7 +200,7 @@ export function HomePageClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 lg:p-5">
             {/* Follow on X */}
             <a
-              href="https://x.com/OnchainC29697"
+              href="https://x.com/OnchainWorldCup"
               target="_blank"
               rel="noopener noreferrer"
               className="cm-panel rounded-sm border border-border/50 hover:border-accent/50 p-4 flex items-center gap-3 transition-colors duration-200 group"
@@ -219,7 +219,7 @@ export function HomePageClient() {
 
             {/* Share the launch tweet */}
             <a
-              href="https://x.com/OnchainC29697"
+              href="https://x.com/OnchainWorldCup"
               target="_blank"
               rel="noopener noreferrer"
               className="cm-panel rounded-sm border border-border/50 hover:border-accent/50 p-4 flex items-center gap-3 transition-colors duration-200 group"
@@ -521,7 +521,7 @@ export function HomePageClient() {
                 <QuickActionCard
                   icon={Trophy}
                   title="Vote for Qualification"
-                  description="Opens April 6 — mainnet launch"
+                  description="Opens April 14 — mainnet launch"
                   href="/qualification"
                   variant="disabled"
                 />
@@ -573,7 +573,7 @@ export function HomePageClient() {
         title={isPreLaunch ? "Early Voting Advantage" : "Early Voting Advantage"}
         description={
           isPreLaunch
-            ? "Voting opens April 6 on Base mainnet. Early voters get the best prices — prices increase as more people vote. Follow us to be notified the moment voting goes live."
+            ? "Voting opens April 14 on Base mainnet. Early voters get the best prices — prices increase as more people vote. Follow us to be notified the moment voting goes live."
             : "Vote prices increase as more people vote. Early voters get the best prices and have a better chance of winning if their team succeeds. Don't wait - vote now!"
         }
         action={

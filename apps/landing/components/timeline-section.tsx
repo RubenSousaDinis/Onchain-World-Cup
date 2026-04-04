@@ -2,7 +2,7 @@ import { Calendar } from "lucide-react"
 
 const milestones = [
   {
-    date: "Late March 2026",
+    date: "April 14, 2026",
     title: "Mainnet Launch & Qualification",
     description: "Real ETH voting opens on Base mainnet. Back your country to earn a spot in the top 48.",
     status: "upcoming" as const,
@@ -126,7 +126,7 @@ export function TimelineSection() {
         {/* Call to action */}
         <div className="mt-12 text-center">
           <p className="text-lg font-semibold text-primary">
-            Mainnet launches late March — be ready to back your country
+            Mainnet launches April 14 — be ready to back your country
           </p>
         </div>
       </div>

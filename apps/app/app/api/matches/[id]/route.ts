@@ -1,65 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/server/supabase'
+import { prisma } from '@/lib/prisma'
+import countriesData from '@/data/countries.json'
 import { isAuthenticated } from '@/lib/api-auth'
+
+const countryByCode = new Map(countriesData.map(c => [c.code, c]))
+
+function enrichTeam(code: string) {
+  const info = countryByCode.get(code)
+  return { code, name: info?.name ?? code, flag_emoji: info?.flagEmoji ?? '🏳️' }
+}
 
 /**
  * GET /api/matches/[id]
- * Fetch a single match by ID with full details
  */
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = getSupabaseClient()
     const { id } = await params
 
-    const { data, error } = await supabase
-      .from('matches')
-      .select(`
-        *,
-        team1:countries!matches_team1_id_fkey(id, name, code, flag_emoji, fifa_rank),
-        team2:countries!matches_team2_id_fkey(id, name, code, flag_emoji, fifa_rank),
-        votes(
-          id,
-          voter_address,
-          team_index,
-          vote_count,
-          total_cost_eth,
-          created_at
-        )
-      `)
-      .eq('id', id)
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Match not found' },
-          { status: 404 }
-        )
-      }
-
-      console.error('Supabase error fetching match:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch match', details: error.message },
-        { status: 500 }
-      )
+    const match = await prisma.match.findUnique({ where: { id } })
+    if (!match) {
+      return NextResponse.json({ error: 'Match not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ data })
+    return NextResponse.json({
+      id: match.id,
+      team1: enrichTeam(match.team1Code),
+      team2: enrichTeam(match.team2Code),
+      contract_address: match.contractAddress,
+      match_start_time: match.matchStartTime,
+      voting_end_time:  match.votingEndTime,
+      match_end_time:   match.matchEndTime,
+      status:       match.status,
+      match_type:   match.matchType,
+      winning_team: match.winningTeam,
+      team1_score:  match.team1Score,
+      team2_score:  match.team2Score,
+      team1_votes:  0,
+      team2_votes:  0,
+      recent_votes: [],
+    })
   } catch (error) {
-    console.error('Unexpected error in GET /api/matches/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in GET /api/matches/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 /**
- * PATCH /api/matches/[id]
- * Update a match (admin only - add auth check)
+ * PATCH /api/matches/[id] — update status/scores (admin only)
  */
 export async function PATCH(
   request: NextRequest,
@@ -70,48 +60,23 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabase = getSupabaseClient()
     const { id } = await params
     const body = await request.json()
+    const { status, winning_team, team1_score, team2_score } = body
 
-    // Only allow updating certain fields
-    const allowedFields = ['status', 'winning_team'] as const
-    const updates: Record<string, unknown> = {}
-
-    for (const field of allowedFields) {
-      if (field in body) {
-        updates[field] = body[field]
-      }
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { error: 'No valid fields to update' },
-        { status: 400 }
-      )
-    }
-
-    const { data, error } = await supabase
-      .from('matches')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Supabase error updating match:', error)
-      return NextResponse.json(
-        { error: 'Failed to update match', details: error.message },
-        { status: 500 }
-      )
-    }
+    const data = await prisma.match.update({
+      where: { id },
+      data: {
+        ...(status       !== undefined ? { status }                          : {}),
+        ...(winning_team !== undefined ? { winningTeam: winning_team }       : {}),
+        ...(team1_score  !== undefined ? { team1Score:  team1_score }        : {}),
+        ...(team2_score  !== undefined ? { team2Score:  team2_score }        : {}),
+      },
+    })
 
     return NextResponse.json({ data })
   } catch (error) {
-    console.error('Unexpected error in PATCH /api/matches/[id]:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in PATCH /api/matches/[id]:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

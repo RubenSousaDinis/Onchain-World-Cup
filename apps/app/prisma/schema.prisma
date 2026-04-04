@@ -271,6 +271,28 @@ model Referral {
   @@map("referrals")
 }
 
+model Match {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  team1Code       String   @map("team1_code")
+  team2Code       String   @map("team2_code")
+  contractAddress String   @default("0x0000000000000000000000000000000000000000") @map("contract_address")
+  matchStartTime  DateTime @map("match_start_time") @db.Timestamptz(6)
+  votingEndTime   DateTime @map("voting_end_time") @db.Timestamptz(6)
+  matchEndTime    DateTime @map("match_end_time") @db.Timestamptz(6)
+  status          String   @default("upcoming")
+  matchType       String   @default("onchain") @map("match_type") // 'real' | 'onchain'
+  winningTeam     Int?     @map("winning_team")
+  team1Score      Int?     @map("team1_score")
+  team2Score      Int?     @map("team2_score")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status])
+  @@index([matchStartTime])
+  @@index([matchType])
+  @@map("matches")
+}
+
 model ContentPost {
   id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   type              String    // "blog" | "twitter_thread"

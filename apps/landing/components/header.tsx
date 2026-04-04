@@ -47,7 +47,7 @@ export function Header() {
             Launch App
           </a>
           <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
-            <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
+            <a href="https://x.com/OnchainWorldCup" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter">
               <Twitter className="h-5 w-5" aria-hidden="true" />
             </a>
           </Button>

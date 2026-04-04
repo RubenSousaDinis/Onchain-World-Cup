@@ -53,7 +53,7 @@ export default function ContactPage() {
         </a>
 
         <a
-          href="https://x.com/OnchainC29697"
+          href="https://x.com/OnchainWorldCup"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-4 rounded-sm border border-border p-5 hover:border-primary transition-colors"
@@ -61,7 +61,7 @@ export default function ContactPage() {
           <Twitter className="h-6 w-6 text-primary shrink-0" />
           <div>
             <p className="font-bold">X (Twitter)</p>
-            <p className="text-sm text-muted-foreground">@OnchainC29697</p>
+            <p className="text-sm text-muted-foreground">@OnchainWorldCup</p>
           </div>
         </a>
 

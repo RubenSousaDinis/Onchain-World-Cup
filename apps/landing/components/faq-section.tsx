@@ -55,12 +55,12 @@ export function FAQSection() {
     {
       question: "What chain is this on?",
       answer:
-        "Onchain World Cup is built on Base, an Ethereum Layer 2 network developed by Coinbase. Base offers very low transaction fees (typically under $0.01 per vote), fast confirmations, and the full security guarantees of Ethereum. The platform is currently live on Base Sepolia testnet, with mainnet launching late March 2026. All smart contracts are open source and publicly verifiable on Basescan. You will need ETH on the Base network to vote — you can bridge ETH from Ethereum mainnet or buy directly on Base via Coinbase or other supported exchanges.",
+        "Onchain World Cup is built on Base, an Ethereum Layer 2 network developed by Coinbase. Base offers very low transaction fees (typically under $0.01 per vote), fast confirmations, and the full security guarantees of Ethereum. The platform is currently live on Base Sepolia testnet, with mainnet launching April 14, 2026. All smart contracts are open source and publicly verifiable on Basescan. You will need ETH on the Base network to vote — you can bridge ETH from Ethereum mainnet or buy directly on Base via Coinbase or other supported exchanges.",
     },
     {
       question: "Where can I follow updates?",
       answer:
-        "Follow us on X (Twitter) at @OnchainC29697 for real-time announcements, phase updates, and leaderboard highlights. We are also active on Farcaster at /onchainworldcup for onchain-native discussions and Farcaster Mini App updates. For direct enquiries or partnership proposals, email onchainworldcup@gmail.com. All major announcements (phase transitions, fee changes, new features) will be posted across all channels simultaneously.",
+        "Follow us on X (Twitter) at @OnchainWorldCup for real-time announcements, phase updates, and leaderboard highlights. We are also active on Farcaster at /onchainworldcup for onchain-native discussions and Farcaster Mini App updates. For direct enquiries or partnership proposals, email onchainworldcup@gmail.com. All major announcements (phase transitions, fee changes, new features) will be posted across all channels simultaneously.",
     },
   ]
 

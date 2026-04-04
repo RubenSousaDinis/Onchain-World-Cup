@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Calendar, MapPin, Clock, Trophy } from "lucide-react"
 import { CountdownTimerLarge } from "@/components/countdown-timer-large"
 import { InlineLoader } from "@/components/states"
+import countriesData from "@/data/countries.json"
 
 type WCMatch = {
   round: string
@@ -23,8 +24,8 @@ type WCScheduleData = {
 
 type OnchainMatch = {
   id: string
-  team1: { id: string; name: string; code: string; flag_emoji: string }
-  team2: { id: string; name: string; code: string; flag_emoji: string }
+  team1: { code: string; name: string; flag_emoji: string }
+  team2: { code: string; name: string; flag_emoji: string }
   match_start_time: string
   status: string
 }
@@ -37,8 +38,26 @@ type OnchainMatchesResponse = {
 // Mexico vs South Africa — June 11, 2026 at 13:00 UTC-6 = 19:00 UTC
 const FIRST_MATCH_DATE = new Date("2026-06-11T19:00:00Z")
 
+// Maps openfootball fixture names → canonical names in data/countries.json
+const FIXTURE_NAME_ALIASES: Record<string, string> = {
+  "usa":                  "united states",
+  "bosnia & herzegovina": "bosnia and herzegovina",
+}
+
+const countryByName = new Map(countriesData.map(c => [c.name.toLowerCase(), c]))
+
+function resolveCountry(rawName: string) {
+  const key = FIXTURE_NAME_ALIASES[rawName.toLowerCase()] ?? rawName.toLowerCase()
+  return countryByName.get(key) ?? null
+}
+
 function normalize(name: string): string {
   return name.toLowerCase().trim()
+}
+
+function normalizeFixture(name: string): string {
+  const n = normalize(name)
+  return FIXTURE_NAME_ALIASES[n] ?? n
 }
 
 function buildMatchLookup(matches: OnchainMatch[]): Map<string, string> {
@@ -67,8 +86,6 @@ function deriveGroups(matches: WCMatch[]): [string, string[]][] {
 }
 
 function parseMatchTime(date: string, time: string): Date {
-  // time format: "13:00 UTC-6" or "20:00 UTC+3"
-  // Build ISO 8601 with offset so JS handles midnight crossings correctly
   const m = time.match(/(\d+):(\d+)\s+UTC([+-]\d+)/)
   if (!m) return new Date(`${date}T00:00:00Z`)
   const offsetHours = parseInt(m[3])
@@ -98,7 +115,7 @@ export function RealWorldCupTab() {
         if (!r.ok) throw new Error("schedule fetch failed")
         return r.json() as Promise<WCScheduleData>
       }),
-      fetch("/api/matches?limit=200").then((r) => {
+      fetch("/api/matches?limit=200&type=real").then((r) => {
         if (!r.ok) return { data: [], count: 0 } as OnchainMatchesResponse
         return r.json() as Promise<OnchainMatchesResponse>
       }),
@@ -157,14 +174,31 @@ export function RealWorldCupTab() {
               </div>
             </div>
             <div className="p-3 lg:p-4 space-y-2">
-              {teams.map((team) => (
-                <div
-                  key={team}
-                  className="flex items-center p-2 lg:p-3 rounded-sm bg-secondary/40"
-                >
-                  <span className="font-bold text-sm lg:text-base">{team}</span>
-                </div>
-              ))}
+              {teams.map((team) => {
+                const country = resolveCountry(team)
+                const teamEl = (
+                  <div className="flex items-center gap-2">
+                    {country && <span className="text-xl flex-shrink-0">{country.flagEmoji}</span>}
+                    <span className="font-bold text-sm lg:text-base">{team}</span>
+                  </div>
+                )
+                if (country) {
+                  return (
+                    <Link
+                      key={team}
+                      href={`/qualification/${country.code.toLowerCase()}`}
+                      className="flex items-center p-2 lg:p-3 rounded-sm bg-secondary/40 hover:bg-accent/10 transition-colors"
+                    >
+                      {teamEl}
+                    </Link>
+                  )
+                }
+                return (
+                  <div key={team} className="flex items-center p-2 lg:p-3 rounded-sm bg-secondary/40">
+                    {teamEl}
+                  </div>
+                )
+              })}
             </div>
           </div>
         ))}
@@ -197,8 +231,10 @@ export function RealWorldCupTab() {
                 hour: "2-digit",
                 minute: "2-digit",
               })
-              const lookupKey = `${normalize(match.team1)}|${normalize(match.team2)}`
+              const lookupKey = `${normalizeFixture(match.team1)}|${normalizeFixture(match.team2)}`
               const matchId = matchLookup.get(lookupKey)
+              const team1Country = resolveCountry(match.team1)
+              const team2Country = resolveCountry(match.team2)
 
               const inner = (
                 <>
@@ -219,11 +255,17 @@ export function RealWorldCupTab() {
                   </div>
                   <div className="p-3 lg:p-4 bg-secondary/10">
                     <div className="flex items-center gap-3">
-                      <span className="text-sm lg:text-base font-bold flex-1">{match.team1}</span>
+                      <div className="flex items-center gap-2 flex-1">
+                        {team1Country && <span className="text-xl flex-shrink-0">{team1Country.flagEmoji}</span>}
+                        <span className="text-sm lg:text-base font-bold">{match.team1}</span>
+                      </div>
                       <div className="bg-secondary px-3 lg:px-4 py-1 rounded-sm flex-shrink-0">
                         <span className="text-xs lg:text-sm font-bold cm-highlight">VS</span>
                       </div>
-                      <span className="text-sm lg:text-base font-bold flex-1 text-right">{match.team2}</span>
+                      <div className="flex items-center justify-end gap-2 flex-1">
+                        <span className="text-sm lg:text-base font-bold text-right">{match.team2}</span>
+                        {team2Country && <span className="text-xl flex-shrink-0">{team2Country.flagEmoji}</span>}
+                      </div>
                     </div>
                   </div>
                 </>

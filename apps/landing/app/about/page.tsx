@@ -126,12 +126,12 @@ export default function AboutPage() {
           <li>
             X (Twitter):{" "}
             <a
-              href="https://x.com/OnchainC29697"
+              href="https://x.com/OnchainWorldCup"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:text-foreground"
             >
-              @OnchainC29697
+              @OnchainWorldCup
             </a>
           </li>
           <li>

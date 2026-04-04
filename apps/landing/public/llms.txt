@@ -28,6 +28,6 @@ This is not a prediction market — it is a community support mechanism.
 
 - Landing page: https://onchainworldcup.xyz
 - App (vote here): https://app.onchainworldcup.xyz
-- X (Twitter): https://x.com/OnchainC29697
+- X (Twitter): https://x.com/OnchainWorldCup
 - Farcaster: https://warpcast.com/onchainworldcup
 - Contact: onchainworldcup@gmail.com

@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@OnchainC29697",
+    site: "@OnchainWorldCup",
   },
 }
 
@@ -131,7 +131,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "foundingDate": "2025",
               "email": "onchainworldcup@gmail.com",
               "sameAs": [
-                "https://x.com/OnchainC29697",
+                "https://x.com/OnchainWorldCup",
                 "https://farcaster.xyz/onchainworldcup",
               ],
             }),
@@ -171,7 +171,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div className="flex items-center gap-4">
               {/* Social links */}
               <nav aria-label="Social" className="flex items-center gap-3">
-                <a href="https://x.com/OnchainC29697" target="_blank" rel="noopener noreferrer" aria-label="Follow on X" className="hover:text-foreground transition-colors">
+                <a href="https://x.com/OnchainWorldCup" target="_blank" rel="noopener noreferrer" aria-label="Follow on X" className="hover:text-foreground transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
                 <a href="https://farcaster.xyz/onchainworldcup" target="_blank" rel="noopener noreferrer" aria-label="Follow on Farcaster" className="hover:text-foreground transition-colors">

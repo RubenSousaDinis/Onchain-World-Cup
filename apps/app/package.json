@@ -22,7 +22,6 @@
     "deploy:nfts:sepolia": "hardhat run scripts/deploy-nfts.ts --network baseSepolia",
     "deploy:nfts:mainnet": "hardhat run scripts/deploy-nfts.ts --network baseMainnet",
     "backfill:ens": "tsx scripts/backfill-ens-names.ts",
-    "seed:countries": "tsx scripts/seed-countries.ts",
     "seed:wc-matches": "tsx scripts/seed-wc-matches.ts",
     "reset:votes": "tsx scripts/reset-votes.ts",
     "seed:wc2026-votes": "hardhat run scripts/seed-wc2026-votes.ts --network baseSepolia",
