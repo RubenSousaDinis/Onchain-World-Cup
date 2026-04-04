@@ -1,14 +1,18 @@
 # Paragraph Posts — Onchain World Cup
 
-**Platform:** Paragraph (paragraph.xyz)  
+**Platform:** Paragraph (paragraph.xyz)
+**Publication URL:** https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e  
 **Tone:** Informed, direct, community-native. Not hype. Not corporate.  
 **Link to app:** https://app.onchainworldcup.xyz  
 **Link to landing:** https://www.onchainworldcup.xyz
 
 ---
 
-## Post 1 — Publish April 4 (Today)
+## Post 1 — April 4 ✅ Published
 **Title:** Introducing Onchain World Cup
+**URL:** https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
+**Tags:** base, onchain, ethereum, worldcup, football, web3
+**Preview:** We're building a new kind of World Cup. Not a prediction market. Not a fantasy game. Not a tournament simulator. Something simpler and more interesting: a community vote, on Base, where fan support decides everything. Here's how it works. 211 nations. 48 spots. Every eligible national team starts on an equal footing. There are no seeds, no rankings, no automatic qualifiers. The only thing that matters is how much support a country can generate from its global fanbase. Fans vote with ETH. The ...
 
 **Subtitle:** The World Cup, decided onchain. No FIFA. No matches. Just community.
 
@@ -56,6 +60,8 @@ One week to decide which 48 countries make it. After that, the bracket is set.
 
 ## Post 2 — Publish April 9
 **Title:** How to Win at Onchain World Cup
+**Tags:** base, onchain, ethereum, worldcup, football, strategy
+**Preview:** Onchain World Cup isn't pure speculation. The mechanics reward specific behaviours — and understanding them gives you a real edge. Here's how to think about the qualification phase. Qualification runs April 14–21. The 48 countries with the most votes advance. Your goal is to hold votes in qualifying countries when the phase ends. Votes for countries that don't qualify earn nothing. Votes for countries that do qualify earn a share of the unified prize pool — proportional to your vote count ...
 
 **Subtitle:** A strategy guide for the qualification phase.
 
@@ -118,6 +124,8 @@ Qualification opens April 14 at 10am CT. Closes April 21.
 
 ## Post 3 — Publish April 14 (Launch Day)
 **Title:** We're Live. Qualification Voting Is Open.
+**Tags:** base, onchain, ethereum, worldcup, football, web3
+**Preview:** Onchain World Cup is live on Base. As of 10am CT today, qualification voting is open. 211 national teams are competing for 48 spots in the Onchain World Cup bracket — and the community decides who makes it. Vote with ETH for the countries you want to qualify. The 48 countries with the most votes advance. 90% of all ETH collected is returned to supporters of qualifying countries, proportional to votes cast. Earlier votes are cheaper. Each country has its own pricing curve starting at ...
 
 **Subtitle:** 211 nations. 48 spots. One week.
 
@@ -151,6 +159,8 @@ Vote now and find out.
 
 ## Post 4 — Publish April 17 (Mid-qualification update)
 **Title:** Qualification Halfway: What the Leaderboard Tells Us
+**Tags:** base, onchain, ethereum, worldcup, football, community
+**Preview:** ⚠️ Fill in with real data before publishing. We're halfway through the Onchain World Cup qualification phase, and the leaderboard is already telling an interesting story. [Top country] leads with [X] votes. [Surprise country] is sitting at #[X]. The battle for spots 40–55 is still wide open — countries on the bubble can still be pushed in or out by a coordinated last push. Four days remain. Qualification closes April 21 at 15:00 UTC. After that, the bracket is locked ...
 
 **Subtitle:** Four days in. Four days left. Here's what's happening.
 

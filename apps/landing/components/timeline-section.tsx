@@ -71,7 +71,7 @@ export function TimelineSection() {
                   </div>
 
                   {/* Content */}
-                  <div className="w-full rounded-lg border border-border bg-card p-6 text-center transition-[colors,box-shadow] duration-200 hover:border-primary hover:shadow-lg">
+                  <div className="w-full flex-1 rounded-lg border border-border bg-card p-6 text-center transition-[colors,box-shadow] duration-200 hover:border-primary hover:shadow-lg">
                     <div
                       className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
                         milestone.status === "upcoming" ? "text-primary" : "text-muted-foreground"
