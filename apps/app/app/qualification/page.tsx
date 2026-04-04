@@ -16,7 +16,7 @@ import { useQualificationEndTime } from "@/lib/contracts/qualification"
 import { useOnboardingContext } from "@/providers/onboarding-provider"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
-const LAUNCH_DATE = new Date("2026-04-06T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
 
 const QualificationVoteModal = dynamic(
   () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),
@@ -719,10 +719,10 @@ export default function QualificationPage() {
                                     handleVote(country)
                                   }}
                                   disabled={isPreLaunch}
-                                  title={isPreLaunch ? "Voting opens April 6" : undefined}
+                                  title={isPreLaunch ? "Voting opens April 14" : undefined}
                                   className="cm-nav-tab px-3 lg:px-4 py-1.5 lg:py-2 text-sm lg:text-base font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
-                                  {isPreLaunch ? "APR 6" : "VOTE"}
+                                  {isPreLaunch ? "APR 9" : "VOTE"}
                                 </button>
                               </div>
                             </td>

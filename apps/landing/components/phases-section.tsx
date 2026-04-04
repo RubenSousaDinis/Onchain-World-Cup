@@ -16,7 +16,7 @@ export function PhasesSection() {
                   <h4 className="mb-2 font-semibold text-primary">Phase 1: Qualification Phase</h4>
                   <ul className="space-y-1 text-sm text-foreground/80">
                     <li>• Testnet live: mid-February 2026</li>
-                    <li>• <span className="font-semibold text-primary">Mainnet launch: late March 2026</span></li>
+                    <li>• <span className="font-semibold text-primary">Mainnet launch: April 14, 2026</span></li>
                     <li>• Qualification runs until mid-April 2026</li>
                     <li>• Fans vote for national teams with ETH</li>
                     <li>• Linear pricing: 0.001 ETH + (vote count × 0.0005 ETH)</li>

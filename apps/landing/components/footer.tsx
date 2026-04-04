@@ -14,7 +14,7 @@ export function Footer() {
 
           <nav className="flex gap-6 items-center" aria-label="Social media links">
             <Link
-              href="https://x.com/OnchainC29697"
+              href="https://x.com/OnchainWorldCup"
               className="text-foreground transition-opacity hover:opacity-70"
               target="_blank"
               rel="noopener noreferrer"

@@ -60,8 +60,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@OnchainC29697",
-    creator: "@OnchainC29697",
+    site: "@OnchainWorldCup",
+    creator: "@OnchainWorldCup",
   },
 }
 
@@ -119,7 +119,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               "email": "onchainworldcup@gmail.com",
               "description": "Community-driven football tournament on the Base blockchain. Vote with ETH to qualify countries for World Cup 2026.",
               "sameAs": [
-                "https://x.com/OnchainC29697",
+                "https://x.com/OnchainWorldCup",
                 "https://warpcast.com/onchainworldcup",
               ],
             }),
