@@ -168,21 +168,45 @@ export function HomePageClient() {
         </div>
       )}
 
-      {/* Launch Countdown Banner */}
+      {/* Launch Countdown / Urgency Banner */}
       <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-accent/40 bg-accent/5">
         <div className="p-4 lg:p-5 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <Rocket className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />
-            <div>
-              <p className="text-xs lg:text-sm font-bold text-accent uppercase tracking-wide">
-                Mainnet Launching April 14, 2026
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Voting goes live on Base. Get ready.
-              </p>
-            </div>
-          </div>
-          <CountdownTimer endDate={LAUNCH_DATE} />
+          {isPreLaunch ? (
+            <>
+              <div className="flex items-center gap-3">
+                <Rocket className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="text-xs lg:text-sm font-bold text-accent uppercase tracking-wide">
+                    Mainnet Launching April 14, 2026
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Voting goes live on Base. Get ready.
+                  </p>
+                </div>
+              </div>
+              <CountdownTimer endDate={LAUNCH_DATE} />
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-accent shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="text-xs lg:text-sm font-bold text-accent uppercase tracking-wide">
+                    Voting Live · Prices Rise With Every Vote
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    First vote: 0.001 ETH. Early voters get better prices and a bigger share of winnings.
+                  </p>
+                </div>
+              </div>
+              {qualEndDate && (
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <p className="text-xs text-muted-foreground uppercase font-bold tracking-wide">Qual. ends in</p>
+                  <CountdownTimer endDate={qualEndDate} showSeconds={false} />
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -274,6 +298,95 @@ export function HomePageClient() {
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" aria-hidden="true" />
             </a>
 
+          </div>
+        </div>
+      )}
+
+      {/* Post-launch Conversion Panel */}
+      {!isPreLaunch && (
+        <div className="cm-panel rounded-sm overflow-hidden mb-4 lg:mb-6 border-2 border-primary/30">
+          <div className="bg-secondary/30 p-4 lg:p-5 border-b border-border/30">
+            <h2 className="text-sm lg:text-base font-bold uppercase tracking-wide cm-highlight">
+              Voting Is Live — Back Your Country Now
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Prices increase with every vote. Earlier is cheaper.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 lg:p-5">
+            {/* Vote for a Country — primary action */}
+            <Link
+              href="/qualification"
+              className="cm-panel rounded-sm border-2 border-accent/50 hover:border-accent bg-accent/5 p-4 flex items-center gap-3 transition-colors duration-200 group"
+            >
+              <div className="flex-shrink-0 w-10 h-10 rounded-sm bg-accent/20 border border-accent/50 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-accent" aria-hidden="true" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold uppercase text-accent mb-0.5">Primary Action</div>
+                <div className="text-sm font-bold text-foreground group-hover:text-accent transition-colors">Vote for a Country</div>
+                <div className="text-xs text-muted-foreground">From 0.001 ETH · prices rise</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
+            </Link>
+
+            {/* Share on X */}
+            <a
+              href={`https://x.com/intent/tweet?text=${encodeURIComponent("Backing my country on @OnchainWorldCup — the World Cup decided by fans onchain ⚽ Vote early, prices rise with every vote → app.onchainworldcup.xyz")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cm-panel rounded-sm border border-border/50 hover:border-accent/50 p-4 flex items-center gap-3 transition-colors duration-200 group"
+            >
+              <div className="flex-shrink-0 w-10 h-10 rounded-sm bg-foreground/5 border border-border/50 flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-foreground" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-0.5">X / Twitter</div>
+                <div className="text-sm font-bold text-foreground group-hover:text-accent transition-colors">Share on X</div>
+                <div className="text-xs text-muted-foreground">Rally your country's fans</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" aria-hidden="true" />
+            </a>
+
+            {/* Share on Farcaster */}
+            <a
+              href={`https://warpcast.com/~/compose?text=${encodeURIComponent("Backing my country on @onchainworldcup — the World Cup decided by fans onchain ⚽ Vote early, prices rise with every vote → app.onchainworldcup.xyz")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cm-panel rounded-sm border border-border/50 hover:border-accent/50 p-4 flex items-center gap-3 transition-colors duration-200 group"
+            >
+              <div className="flex-shrink-0 w-10 h-10 rounded-sm bg-[#8A63D2]/10 border border-[#8A63D2]/30 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 1000 1000" fill="currentColor" className="text-[#8A63D2]" aria-hidden="true">
+                  <path d="M257.778 155.556H742.222V844.445H671.111V528.889H670.414C662.554 441.677 589.258 373.333 500 373.333C410.742 373.333 337.446 441.677 329.586 528.889H328.889V844.445H257.778V155.556Z"/>
+                  <path d="M128.889 253.333L157.778 351.111H182.222V746.667C169.949 746.667 160 756.616 160 768.889V795.556H155.556C143.283 795.556 133.333 805.505 133.333 817.778V844.445H382.222V817.778C382.222 805.505 372.273 795.556 360 795.556H355.556V768.889C355.556 756.616 345.606 746.667 333.333 746.667H306.667V253.333H128.889Z"/>
+                  <path d="M675.556 746.667C663.283 746.667 653.333 756.616 653.333 768.889V795.556H648.889C636.616 795.556 626.667 805.505 626.667 817.778V844.445H875.556V817.778C875.556 805.505 865.606 795.556 853.333 795.556H848.889V768.889C848.889 756.616 838.94 746.667 826.667 746.667V351.111H851.111L880 253.333H702.222V746.667H675.556Z"/>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-0.5">Farcaster</div>
+                <div className="text-sm font-bold text-foreground group-hover:text-accent transition-colors">Share on Farcaster</div>
+                <div className="text-xs text-muted-foreground">Coordinate with your community</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" aria-hidden="true" />
+            </a>
+
+            {/* View Leaderboard */}
+            <Link
+              href="/leaderboard"
+              className="cm-panel rounded-sm border border-border/50 hover:border-accent/50 p-4 flex items-center gap-3 transition-colors duration-200 group"
+            >
+              <div className="flex-shrink-0 w-10 h-10 rounded-sm bg-foreground/5 border border-border/50 flex items-center justify-center">
+                <Award className="w-5 h-5 text-foreground" aria-hidden="true" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold uppercase text-muted-foreground mb-0.5">Leaderboard</div>
+                <div className="text-sm font-bold text-foreground group-hover:text-accent transition-colors">View Leaderboard</div>
+                <div className="text-xs text-muted-foreground">See who's leading</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       )}
@@ -570,11 +683,11 @@ export function HomePageClient() {
       {/* Important Info Banner */}
       <InfoBanner
         icon={Zap}
-        title={isPreLaunch ? "Early Voting Advantage" : "Early Voting Advantage"}
+        title={isPreLaunch ? "Early Voting Advantage" : "Prices Rise With Every Vote"}
         description={
           isPreLaunch
             ? "Voting opens April 14 on Base mainnet. Early voters get the best prices — prices increase as more people vote. Follow us to be notified the moment voting goes live."
-            : "Vote prices increase as more people vote. Early voters get the best prices and have a better chance of winning if their team succeeds. Don't wait - vote now!"
+            : "The first vote for any country costs 0.001 ETH. Every subsequent vote adds 0.0005 ETH to that country's price. Vote early — you'll pay less and earn a larger share of winnings if your country qualifies."
         }
         action={
           isPreLaunch ? (

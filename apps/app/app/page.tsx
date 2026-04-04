@@ -16,6 +16,8 @@ import { HomeLazy } from "./home-lazy"
  * so crawlers index it without it taking up visual space.
  */
 
+const LAUNCH_DATE = new Date("2026-04-14T15:00:00Z")
+
 async function getStats() {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_DOMAIN ?? "https://app.onchainworldcup.xyz"
@@ -30,6 +32,7 @@ async function getStats() {
 
 export default async function HomePage() {
   const stats = await getStats()
+  const isPreLaunch = Date.now() < LAUNCH_DATE.getTime()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -49,14 +52,16 @@ export default async function HomePage() {
                   The World Cup, decided onchain.
                 </p>
                 <p className="text-sm lg:text-base text-foreground/70 mb-5">
-                  Voting opens April 14 at 10am CT • Vote with ETH on Base • Winners share prize pool
+                  {isPreLaunch
+                    ? "Voting opens April 14 at 10am CT • Vote with ETH on Base • Winners share prize pool"
+                    : "Voting is live on Base • Earlier votes cost less • Top 48 nations qualify"}
                 </p>
                 <a
                   href="/qualification"
                   className="inline-flex items-center gap-2 cm-nav-tab px-5 py-2.5 rounded-sm font-bold uppercase text-sm tracking-wide"
                 >
                   <Trophy className="w-4 h-4" aria-hidden="true" />
-                  View Countries
+                  {isPreLaunch ? "View Countries" : "Vote for Your Country"}
                 </a>
               </div>
             </div>

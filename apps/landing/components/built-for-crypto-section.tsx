@@ -5,7 +5,7 @@ export function BuiltForCryptoSection() {
     <section className="border-b border-border py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-4 text-4xl font-bold text-primary">Built for Crypto-Native Socials</h2>
+          <h2 className="mb-4 text-4xl font-bold text-primary">Share With Your Fanbase</h2>
           <p className="mb-12 text-lg text-muted-foreground">
             Social momentum is part of the game. Share, rally your community, and watch your country rise.
           </p>

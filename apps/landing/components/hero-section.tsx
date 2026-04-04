@@ -10,17 +10,17 @@ export function HeroSection() {
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-7xl">Onchain World Cup</h1>
           <p className="mb-4 text-2xl font-semibold text-primary md:text-3xl">A World Cup decided by fans — not players</p>
           <p className="mb-3 text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Early supporters shape the tournament.
+            192 nations. Top 48 qualify.
             <br />
-            Back your country with ETH. Top 48 qualify.
+            Back yours with ETH — the earlier you vote, the cheaper it costs.
             <br />
-            Vote now and be first to support your nation.
+            Winners share 90% of the prize pool.
           </p>
           <p className="mb-6 text-base font-semibold text-foreground/70">No odds. No bookmakers. Just community votes.</p>
 
           <div className="mb-10 inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
-            <span className="h-2 w-2 animate-pulse [animation-iteration-count:5] rounded-full bg-primary" />
-            Qualification Open · Testnet Live Now
+            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+            Voting Live · Base Mainnet
           </div>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -29,7 +29,7 @@ export function HeroSection() {
               className="bg-primary px-8 py-6 text-lg font-semibold text-primary-foreground hover:bg-accent"
               asChild
             >
-              <a href={appUrl}>Vote Now</a>
+              <a href={appUrl}>Vote for Your Country</a>
             </Button>
             <Button
               size="lg"
@@ -37,7 +37,7 @@ export function HeroSection() {
               className="border-primary px-8 py-6 text-lg font-semibold text-primary hover:bg-primary hover:text-primary-foreground bg-transparent transition-all"
               asChild
             >
-              <a href="#timeline">View Timeline</a>
+              <a href="#how-it-works">How It Works</a>
             </Button>
           </div>
         </div>
