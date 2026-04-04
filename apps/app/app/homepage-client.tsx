@@ -20,7 +20,7 @@ import { useAccount } from "wagmi"
 import { formatEther } from "viem"
 import { useProjectedEarnings } from "@/hooks/use-projected-earnings"
 
-const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-14T15:00:00Z")
 
 type CountryStats = {
   country_code: string

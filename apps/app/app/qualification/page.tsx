@@ -16,7 +16,7 @@ import { useQualificationEndTime } from "@/lib/contracts/qualification"
 import { useOnboardingContext } from "@/providers/onboarding-provider"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
-const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-14T15:00:00Z")
 
 const QualificationVoteModal = dynamic(
   () => import("@/components/qualification-vote-modal").then((m) => m.QualificationVoteModal),

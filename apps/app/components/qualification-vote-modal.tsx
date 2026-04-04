@@ -25,7 +25,7 @@ import { type ComputedAchievement } from "@/lib/achievements"
 import { formatEth } from "@/lib/utils"
 import { useEthPrice, ethToUsd } from "@/hooks/use-eth-price"
 
-const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-14T15:00:00Z")
 
 function computeTimeLeft(end: Date) {
   const diff = Math.max(0, Math.floor((end.getTime() - Date.now()) / 1000))
