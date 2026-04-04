@@ -15,16 +15,16 @@
 
 ## Account Setup Checklist
 
-- [ ] Twitter bio: `The World Cup, decided onchain. Vote with ETH on Base. Launching April 14 ⚽`
-- [ ] Twitter link field: https://www.onchainworldcup.xyz
-- [ ] Twitter pinned post: teaser video
-- [ ] Farcaster bio: same as Twitter
-- [ ] Farcaster link: https://www.onchainworldcup.xyz
-- [ ] Follow: @base, @coinbase, @jessepollak
+- [x] Twitter bio: `The World Cup, decided onchain. Vote with ETH on Base. Launching April 14 ⚽`
+- [x] Twitter link field: https://www.onchainworldcup.xyz
+- [x] Twitter pinned post: teaser video
+- [x] Farcaster bio: same as Twitter
+- [x] Farcaster link: https://www.onchainworldcup.xyz
+- [x] Follow: @base, @coinbase, @jessepollak
 
 ---
 
-## April 4 — Post 1 (Today)
+## April 4 — Post 1 ✅
 **Twitter + Farcaster** | Attach teaser video | Also post to Farcaster /base channel
 
 **Main post:**
@@ -38,11 +38,13 @@ Onchain World Cup launches April 14 on Base. ⚽⛓️
 
 **Twitter — reply to your own post with:**
 ```
+Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
 https://www.onchainworldcup.xyz
 ```
 
 **Farcaster — include in the post body:**
 ```
+Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
 https://www.onchainworldcup.xyz
 ```
 
