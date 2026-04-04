@@ -5,7 +5,8 @@
 **Twitter:** @OnchainWorldCup  
 **Farcaster:** /onchainworldcup  
 **Landing page:** https://www.onchainworldcup.xyz  
-**App:** https://app.onchainworldcup.xyz
+**App:** https://app.onchainworldcup.xyz  
+**Farcaster mini app:** https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 
 > **Twitter link rule:** Never put links in the main post body — the algorithm suppresses reach.
 > Each Twitter post has a separate **Reply with link** block. Post the main text first, then reply to your own post with the link.
@@ -18,8 +19,8 @@
 - [x] Twitter bio: `The World Cup, decided onchain. Vote with ETH on Base. Launching April 14 ⚽`
 - [x] Twitter link field: https://www.onchainworldcup.xyz
 - [x] Twitter pinned post: teaser video
-- [x] Farcaster bio: same as Twitter
-- [x] Farcaster link: https://www.onchainworldcup.xyz
+- [x] Farcaster bio: `The World Cup, decided onchain. Vote with ETH on Base. Launching April 14 ⚽`
+- [x] Farcaster link: https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 - [x] Follow: @base, @coinbase, @jessepollak
 
 ---
@@ -45,7 +46,7 @@ https://www.onchainworldcup.xyz
 **Farcaster — include in the post body:**
 ```
 Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -111,7 +112,7 @@ How Onchain World Cup works:
 Built on Base. Open-source. Automatic payouts.
 
 Launches April 14.
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -140,7 +141,7 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -166,7 +167,7 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -194,7 +195,7 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -218,7 +219,7 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -246,7 +247,7 @@ https://app.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://app.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -275,7 +276,7 @@ https://app.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://app.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -302,7 +303,7 @@ https://app.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
-https://app.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
@@ -322,6 +323,7 @@ The Onchain World Cup prize pool is growing. 🏆
 Qualification closes April 21 — still time to back your country.
 ```
 Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster reply: `https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup`
 
 ---
 
@@ -339,3 +341,4 @@ Top countries right now:
 [X] days left to vote. Back your team before the price goes up.
 ```
 Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster reply: `https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup`

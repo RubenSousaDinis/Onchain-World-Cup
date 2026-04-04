@@ -10,28 +10,23 @@
 
 ---
 
-## April 4 — The Builder Post (Today)
-**Twitter + Farcaster** | This is your most important post of the whole launch
+## April 4 — The Builder Post ✅
+**Twitter + Farcaster** | Quote-repost @OnchainWorldCup's Post 1 — this text is the caption
 
-**Main post:**
+**Twitter + Farcaster caption:**
 ```
 I've spent the last few months building Onchain World Cup.
 
-The idea is simple: what if the World Cup was decided by fan support on Base — not by what happens on the pitch?
+What if the World Cup was decided by fan support on Base — not by what happens on the pitch?
 
-211 nations compete. You vote with ETH. Top 48 qualify. 90% of the prize pool goes back to the community.
+211 nations compete. Vote with ETH. Top 48 qualify. 90% of the prize pool goes back to the community.
 
-Launching April 14. Would love your support. ⚽
+Launching April 14. ⚽
 ```
 
-**Twitter — reply with:**
+**Farcaster only — add to caption:**
 ```
-https://www.onchainworldcup.xyz
-```
-
-**Farcaster — add to post body:**
-```
-https://www.onchainworldcup.xyz
+https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup
 ```
 
 ---
