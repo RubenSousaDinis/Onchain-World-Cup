@@ -12,4 +12,5 @@ export type { test };
 export type { AchievementNFT } from "./AchievementNFT";
 export type { MatchNFT } from "./MatchNFT";
 export type { WorldCupEventHub } from "./WorldCupEventHub";
+export type { WorldCupNFT } from "./WorldCupNFT";
 export type { WorldCupQualification } from "./WorldCupQualification";

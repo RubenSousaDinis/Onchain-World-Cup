@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 
-const LAUNCH_DATE = new Date("2026-04-06T15:00:00Z")
+const LAUNCH_DATE = new Date("2026-04-09T15:00:00Z")
 
 function computeTimeLeft() {
   const diff = Math.max(0, Math.floor((LAUNCH_DATE.getTime() - Date.now()) / 1000))
