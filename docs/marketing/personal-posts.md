@@ -10,7 +10,7 @@
 
 ---
 
-## April 4 — The Builder Post (Today)
+## April 4 — The Builder Post ✅
 **Twitter + Farcaster** | This is your most important post of the whole launch
 
 **Main post:**
