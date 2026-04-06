@@ -10,6 +10,8 @@
 > **Twitter link rule:** Never put links in the main post body — the algorithm suppresses reach.
 > Each Twitter post has a separate **Reply with link** block. Post the main text first, then reply to your own post with the link.
 > On Farcaster this doesn't apply — links are fine anywhere.
+>
+> **Farcaster channel rule:** Posting to a channel (/base, /onchain, /soccer) requires a **new post** with the channel selected — you cannot recast into a channel. Each channel post below has its own text block. Add the channel-specific opener so it reads as native, not a copy-paste.
 
 ---
 
@@ -44,6 +46,18 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — include in the post body:**
 ```
+Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
+https://www.onchainworldcup.xyz
+```
+
+**Farcaster /base channel — new post (not a recast):**
+```
+Built this on Base, launching April 14 👇
+
+211 nations. 48 World Cup spots. The community decides — with ETH.
+
+Onchain World Cup: a community voting tournament where you back your country and share the prize pool if they qualify.
+
 Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/introducing-onchain-world-cup
 https://www.onchainworldcup.xyz
 ```
@@ -98,8 +112,9 @@ Built with @base 🔵
 
 ---
 
-**Farcaster** | Single post, also post to /base channel
+**Farcaster** | Single post, also post to /base channel as a new post
 
+**Farcaster main feed:**
 ```
 How Onchain World Cup works:
 
@@ -111,6 +126,19 @@ How Onchain World Cup works:
 Built on Base. Open-source. Automatic payouts.
 
 Launches April 14.
+https://www.onchainworldcup.xyz
+```
+
+**Farcaster /base channel — new post (not a recast):**
+```
+How does Onchain World Cup work? Built this on Base 👇
+
+→ 211 nations compete for 48 World Cup spots
+→ Vote with ETH — earlier votes cost less (bonding curve pricing)
+→ Top 48 by vote count qualify
+→ 90% of the prize pool goes back to supporters of qualifying countries
+
+Open-source contracts. Automatic payouts. Launches April 14.
 https://www.onchainworldcup.xyz
 ```
 
@@ -146,7 +174,7 @@ https://www.onchainworldcup.xyz
 ---
 
 ## April 10 — Post 4
-**Twitter + Farcaster** | Also post to Farcaster /soccer channel
+**Twitter + Farcaster** | Also post to Farcaster /soccer channel as a new post
 
 **Main post:**
 ```
@@ -169,10 +197,22 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Farcaster /soccer channel — new post (not a recast):**
+```
+Which country has the most passionate football fans in crypto? ⚽
+
+On Onchain World Cup, the World Cup isn't decided on the pitch — it's decided by community votes.
+
+A small nation with a devoted global fanbase can beat Brazil or Germany.
+
+Launches April 14 on Base.
+https://www.onchainworldcup.xyz
+```
+
 ---
 
 ## April 12 — Post 5
-**Twitter + Farcaster**
+**Twitter + Farcaster** | Also post to Farcaster /base and /onchain channels as new posts
 
 **Main post:**
 ```
@@ -197,10 +237,22 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Farcaster /base and /onchain channels — new post (not a recast):**
+```
+48 hours until Onchain World Cup goes live on Base ⏰
+
+211 nations. 48 World Cup spots. Community decides with ETH.
+
+Gas under $0.01. First vote: 0.001 ETH. Early voters get better prices and a bigger share of the prize pool.
+
+Tuesday 10am CT.
+https://www.onchainworldcup.xyz
+```
+
 ---
 
 ## April 13 — Post 6
-**Twitter + Farcaster**
+**Twitter + Farcaster** | Also post to Farcaster /base and /onchain channels as new posts
 
 **Main post:**
 ```
@@ -221,12 +273,22 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Farcaster /base and /onchain channels — new post (not a recast):**
+```
+Tomorrow at 10am CT — Onchain World Cup goes live on Base.
+
+211 nations competing for 48 World Cup spots. You vote with ETH. Top 48 qualify. 90% of the prize pool goes back to supporters.
+
+Back your country early — prices rise with every vote.
+https://www.onchainworldcup.xyz
+```
+
 ---
 
 ## April 14 — Launch Day
 
 ### Post 7 — Publish at exactly 10am CT
-**Twitter + Farcaster** | Post to Farcaster /base and /onchain channels
+**Twitter + Farcaster** | Post to Farcaster /base, /onchain, and /soccer channels as new posts
 
 **Main post:**
 ```
@@ -246,6 +308,18 @@ https://app.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
+https://app.onchainworldcup.xyz
+```
+
+**Farcaster /base, /onchain, /soccer channels — new post (not a recast):**
+```
+Onchain World Cup is LIVE on Base ⚽🌍
+
+211 nations competing for 48 World Cup spots — decided entirely by community votes.
+
+Vote with ETH. Back your country early — prices rise with every vote. 90% of the prize pool goes back to supporters of qualifying countries.
+
+Qualification closes April 21.
 https://app.onchainworldcup.xyz
 ```
 
