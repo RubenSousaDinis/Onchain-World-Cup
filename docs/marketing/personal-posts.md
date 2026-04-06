@@ -6,7 +6,8 @@
 > **Audience:** 600 Farcaster followers, 90 Twitter followers — Farcaster is your real channel.
 > **Rule:** Personal posts tell the story *behind* the product. Sound like you, not like a brand.
 > Quote-repost the brand account (@OnchainWorldCup) rather than reposting — add your own take each time.
-> **Farcaster extra:** Also post into /base and /onchain channels for reach beyond your 600 followers. Reply to every comment — Farcaster's algorithm heavily rewards conversation.
+> **Farcaster channel rule:** Posting to a channel (/base, /onchain) requires a **new post** with the channel selected — you cannot recast into a channel. Add a short channel-specific opener so it reads as native.
+> Reply to every comment — Farcaster's algorithm heavily rewards conversation.
 
 ---
 
@@ -34,6 +35,18 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Farcaster /base and /onchain channels — new post (not a recast):**
+```
+Spent the last few months building something on Base 👇
+
+What if the World Cup was decided by fan support — not by what happens on the pitch?
+
+211 nations compete. You vote with ETH. Top 48 qualify. 90% of the prize pool goes back to the community.
+
+Launching April 14. Would love your support. ⚽
+https://www.onchainworldcup.xyz
+```
+
 ---
 
 ## April 6 — Quote repost the "how it works" thread
@@ -48,7 +61,7 @@ The early-voter mechanic is the part I'm most excited about. Backing your countr
 ---
 
 ## April 12 — 48 hours out
-**Twitter + Farcaster**
+**Twitter + Farcaster** | Also post to Farcaster /base channel as a new post
 
 **Main post:**
 ```
@@ -66,6 +79,16 @@ https://www.onchainworldcup.xyz
 
 **Farcaster — add to post body:**
 ```
+https://www.onchainworldcup.xyz
+```
+
+**Farcaster /base channel — new post (not a recast):**
+```
+48 hours until the thing I've been building on Base goes live.
+
+Onchain World Cup — a community voting tournament where football fans vote with ETH to decide which 48 of 211 nations qualify.
+
+Tuesday 10am CT. ⚽
 https://www.onchainworldcup.xyz
 ```
 
