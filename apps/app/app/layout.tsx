@@ -87,18 +87,20 @@ export default async function RootLayout({
       <head>
         <meta name="talentapp:project_verification" content="2e581704055118519a0958d4f165995663863c847f0648cbdda67a0e480b243c221dd024dd1aac7561dc60ae62ca8c36fa9c866d4a3e8aee46afc7e481d3ae71" />
         <meta name="base:app_id" content="69af4603e5ff39234477b321" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
         {/* fonts.gstatic.com preconnect removed — next/font self-hosts Barlow Condensed */}
-        {/* Google Tag Manager */}
+        {/* Google Analytics */}
         <Script
-          id="gtm-script"
+          src="https://www.googletagmanager.com/gtag/js?id=G-14FTMVVK49"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="ga-script"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-PSTDFCLL');`,
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-14FTMVVK49');`,
           }}
         />
         <script
@@ -139,16 +141,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
       </head>
       <body className={barlowCondensed.className}>
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PSTDFCLL"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-        {/* End Google Tag Manager (noscript) */}
         <FarcasterReady />
         <ReferralCapture />
         <SkipToContent />
