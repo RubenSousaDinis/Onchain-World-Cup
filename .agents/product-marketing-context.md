@@ -6,6 +6,8 @@
 **Tagline:** The World Cup, decided onchain.  
 **Landing page:** https://www.onchainworldcup.xyz  
 **App:** https://app.onchainworldcup.xyz  
+**Farcaster mini app:** https://farcaster.xyz/miniapps/CoASKHxVy97e/onchain-world-cup  
+**Base App:** https://base.app/app/app.onchainworldcup.xyz  
 **Chain:** Base (Ethereum L2 by Coinbase)  
 **Email:** onchainworldcup@gmail.com
 
@@ -54,7 +56,9 @@ A community voting tournament on Base where fans vote with ETH to determine whic
 - **Farcaster:** /onchainworldcup (farcaster.xyz/~/channel/onchainworldcup)
 - **Founder Twitter:** @RubenDinis12 — 90 followers
 - **Founder Farcaster:** @rubendinis — 600 followers
+- **Base App:** https://base.app/app/app.onchainworldcup.xyz — use this link when sharing within Base App
 - **Primary channel:** Farcaster — crypto-native audience already on Base; founder has real reach there (600 followers) vs minimal Twitter (90)
+- **Also posting on:** Base App
 
 ## Target Audience
 
@@ -79,6 +83,27 @@ A community voting tournament on Base where fans vote with ETH to determine whic
 - Football-first framing when talking to non-crypto audiences
 - Crypto-first framing on Farcaster and Base channels
 - Always: "Onchain World Cup" (never "Crypto World Cup")
+
+## Referral Program
+
+**Mechanic:** Earn 1% of every ETH vote you refer — paid instantly and directly to your wallet when someone votes using your link. No claiming, no waiting.
+
+**How it works:**
+1. Connect wallet and go to your profile
+2. Copy your referral link: `app.onchainworldcup.xyz/r/{your-address}`
+3. Share it anywhere — social, DMs, Farcaster frame
+4. When someone votes via your link, 1% of their vote amount is sent to your wallet on-chain, immediately
+
+**Key facts:**
+- 1% of vote amount (not prize pool) — e.g., vote of 0.001 ETH earns referrer 0.00001 ETH
+- Deducted from platform fee — **the prize pool is not affected**
+- Trustless: handled entirely by the smart contract (`WorldCupMatch.sol`)
+- Referral link also works as a **Farcaster mini app frame** — people can vote directly from the cast
+- Referral dashboard in profile shows total ETH earned + full activity log
+
+**Messaging angle:** Sharing is financially meaningful. You don't just spread the word — you earn from it, on-chain, instantly.
+
+---
 
 ## Competitive Positioning
 

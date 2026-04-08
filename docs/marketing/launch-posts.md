@@ -4,14 +4,17 @@
 **Qualification closes:** April 21, 2026  
 **Twitter:** @OnchainWorldCup  
 **Farcaster:** /onchainworldcup  
+**Base App:** https://base.app/app/app.onchainworldcup.xyz  
 **Landing page:** https://www.onchainworldcup.xyz  
 **App:** https://app.onchainworldcup.xyz
 
 > **Twitter link rule:** Never put links in the main post body — the algorithm suppresses reach.
 > Each Twitter post has a separate **Reply with link** block. Post the main text first, then reply to your own post with the link.
-> On Farcaster this doesn't apply — links are fine anywhere.
+> On Farcaster and Base App this doesn't apply — links are fine anywhere.
 >
 > **Farcaster channel rule:** Posting to a channel (/base, /onchain, /soccer) requires a **new post** with the channel selected — you cannot recast into a channel. Each channel post below has its own text block. Add the channel-specific opener so it reads as native, not a copy-paste.
+>
+> **Base App:** Post the same content as Farcaster. Use `https://base.app/app/app.onchainworldcup.xyz` as the share link (not the direct app URL) when referencing the app inside Base App posts.
 
 ---
 
@@ -27,7 +30,7 @@
 ---
 
 ## April 4 — Post 1 ✅
-**Twitter + Farcaster** | Attach teaser video | Also post to Farcaster /base channel
+**Twitter + Farcaster + Base App** | Attach teaser video | Also post to Farcaster /base channel
 
 **Main post:**
 ```
@@ -50,6 +53,8 @@ Full intro: https://paragraph.com/@0x19c3b6a43425dcd03cb266f4a35e41678452d08e/in
 https://www.onchainworldcup.xyz
 ```
 
+**Base App — same as Farcaster.**
+
 **Farcaster /base channel — new post (not a recast):**
 ```
 Built this on Base, launching April 14 👇
@@ -65,7 +70,7 @@ https://www.onchainworldcup.xyz
 ---
 
 ## April 6 — Post 2
-**Twitter** | Thread — post each block as a separate tweet, in order
+**Twitter + Base App** | Thread — post each block as a separate tweet, in order
 
 **Tweet 1:**
 ```
@@ -107,6 +112,7 @@ Back your country early — the price curve rewards conviction.
 
 Built with @base 🔵
 
+→ Full breakdown: https://app.onchainworldcup.xyz/how-it-works
 → https://www.onchainworldcup.xyz
 ```
 
@@ -126,8 +132,11 @@ How Onchain World Cup works:
 Built on Base. Open-source. Automatic payouts.
 
 Launches April 14.
-https://www.onchainworldcup.xyz
+Full breakdown: https://app.onchainworldcup.xyz/how-it-works
+Website: https://www.onchainworldcup.xyz
 ```
+
+**Base App — same as Farcaster main feed.**
 
 **Farcaster /base channel — new post (not a recast):**
 ```
@@ -139,13 +148,14 @@ How does Onchain World Cup work? Built this on Base 👇
 → 90% of the prize pool goes back to supporters of qualifying countries
 
 Open-source contracts. Automatic payouts. Launches April 14.
+Full breakdown: https://app.onchainworldcup.xyz/how-it-works
 https://www.onchainworldcup.xyz
 ```
 
 ---
 
 ## April 8 — Post 3
-**Twitter + Farcaster**
+**Twitter + Farcaster + Base App**
 
 **Main post:**
 ```
@@ -171,10 +181,12 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Base App — same as Farcaster.**
+
 ---
 
 ## April 10 — Post 4
-**Twitter + Farcaster** | Also post to Farcaster /soccer channel as a new post
+**Twitter + Farcaster + Base App** | Also post to Farcaster /soccer channel as a new post
 
 **Main post:**
 ```
@@ -197,6 +209,8 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Base App — same as Farcaster.**
+
 **Farcaster /soccer channel — new post (not a recast):**
 ```
 Which country has the most passionate football fans in crypto? ⚽
@@ -212,7 +226,7 @@ https://www.onchainworldcup.xyz
 ---
 
 ## April 12 — Post 5
-**Twitter + Farcaster** | Also post to Farcaster /base and /onchain channels as new posts
+**Twitter + Farcaster + Base App** | Also post to Farcaster /base and /onchain channels as new posts
 
 **Main post:**
 ```
@@ -237,6 +251,8 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Base App — same as Farcaster.**
+
 **Farcaster /base and /onchain channels — new post (not a recast):**
 ```
 48 hours until Onchain World Cup goes live on Base ⏰
@@ -252,7 +268,7 @@ https://www.onchainworldcup.xyz
 ---
 
 ## April 13 — Post 6
-**Twitter + Farcaster** | Also post to Farcaster /base and /onchain channels as new posts
+**Twitter + Farcaster + Base App** | Also post to Farcaster /base and /onchain channels as new posts
 
 **Main post:**
 ```
@@ -273,6 +289,8 @@ https://www.onchainworldcup.xyz
 https://www.onchainworldcup.xyz
 ```
 
+**Base App — same as Farcaster.**
+
 **Farcaster /base and /onchain channels — new post (not a recast):**
 ```
 Tomorrow at 10am CT — Onchain World Cup goes live on Base.
@@ -288,7 +306,7 @@ https://www.onchainworldcup.xyz
 ## April 14 — Launch Day
 
 ### Post 7 — Publish at exactly 10am CT
-**Twitter + Farcaster** | Post to Farcaster /base, /onchain, and /soccer channels as new posts
+**Twitter + Farcaster + Base App** | Post to Farcaster /base, /onchain, and /soccer channels as new posts
 
 **Main post:**
 ```
@@ -311,6 +329,11 @@ https://app.onchainworldcup.xyz
 https://app.onchainworldcup.xyz
 ```
 
+**Base App — add to post body:**
+```
+https://base.app/app/app.onchainworldcup.xyz
+```
+
 **Farcaster /base, /onchain, /soccer channels — new post (not a recast):**
 ```
 Onchain World Cup is LIVE on Base ⚽🌍
@@ -326,7 +349,7 @@ https://app.onchainworldcup.xyz
 ---
 
 ### Post 8 — Publish around noon CT
-**Twitter + Farcaster**
+**Twitter + Farcaster + Base App**
 
 **Main post:**
 ```
@@ -352,10 +375,15 @@ https://app.onchainworldcup.xyz
 https://app.onchainworldcup.xyz
 ```
 
+**Base App — add to post body:**
+```
+https://base.app/app/app.onchainworldcup.xyz
+```
+
 ---
 
 ### Post 9 — Publish in the evening
-**Twitter + Farcaster**
+**Twitter + Farcaster + Base App**
 
 **Main post:**
 ```
@@ -379,6 +407,11 @@ https://app.onchainworldcup.xyz
 https://app.onchainworldcup.xyz
 ```
 
+**Base App — add to post body:**
+```
+https://base.app/app/app.onchainworldcup.xyz
+```
+
 ---
 
 ## After Launch — Ongoing Posts
@@ -396,6 +429,7 @@ The Onchain World Cup prize pool is growing. 🏆
 Qualification closes April 21 — still time to back your country.
 ```
 Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
 
 ---
 
@@ -413,3 +447,79 @@ Top countries right now:
 [X] days left to vote. Back your team before the price goes up.
 ```
 Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
+
+---
+
+**Referral — feature announcement**
+**Twitter + Farcaster + Base App**
+
+Main post:
+```
+Every vote you refer earns you 1% — sent directly to your wallet.
+
+Get your referral link from your profile. When someone votes using it, 1% of their vote goes to you on-chain, immediately.
+
+No claiming. No waiting. Automatic.
+```
+
+Twitter reply:
+```
+Get your link: https://app.onchainworldcup.xyz/profile?tab=referrals
+```
+
+Farcaster — add to post body:
+```
+Get your link: https://app.onchainworldcup.xyz/profile?tab=referrals
+```
+
+Base App — add to post body:
+```
+https://base.app/app/app.onchainworldcup.xyz
+```
+
+---
+
+**Referral — Farcaster frame post**
+**Farcaster only** | Post with your own referral link as the URL so it renders as a mini app frame
+
+```
+Share your referral link as a frame — people can vote directly from the cast.
+
+Every vote through your link = 1% of the vote amount sent to your wallet instantly.
+
+Get your link from your profile 👇
+https://app.onchainworldcup.xyz/r/[your-address]
+```
+
+---
+
+**Referral — mechanics explanation**
+**Twitter + Farcaster + Base App**
+
+Main post:
+```
+How referrals work on Onchain World Cup:
+
+→ Go to your profile → copy your referral link
+→ Share it anywhere
+→ When someone votes via your link, 1% of their vote goes straight to your wallet
+→ Doesn't touch the prize pool — comes from the platform fee
+
+On-chain. Instant. Trustless.
+```
+
+Twitter reply:
+```
+https://app.onchainworldcup.xyz/profile?tab=referrals
+```
+
+Farcaster — add to post body:
+```
+https://app.onchainworldcup.xyz/profile?tab=referrals
+```
+
+Base App — add to post body:
+```
+https://base.app/app/app.onchainworldcup.xyz
+```
