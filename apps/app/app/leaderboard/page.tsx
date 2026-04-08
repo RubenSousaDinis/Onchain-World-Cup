@@ -124,7 +124,7 @@ export default function LeaderboardPage() {
       <RetroSidebar />
       <MobileNav />
 
-      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 min-w-0 overflow-x-hidden">
+      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-6 lg:mb-8">
           <div className="soccer-field-bg p-4 lg:p-6">
@@ -169,7 +169,7 @@ export default function LeaderboardPage() {
 
         {/* Category Tabs */}
         <div className="mb-6 lg:mb-8">
-          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide max-w-full">
             <button
               onClick={() => setActiveCategory("successful")}
               className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
