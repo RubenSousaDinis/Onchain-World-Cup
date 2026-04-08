@@ -1,9 +1,10 @@
 "use client"
 
+import React from "react"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
-import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2, Award, RefreshCw, Loader2 } from "lucide-react"
+import { Trophy, Medal, TrendingUp, Zap, Target, Clock, Share2, Award, RefreshCw, Loader2, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll"
@@ -29,6 +30,17 @@ export default function LeaderboardPage() {
   const isFetchingRef = useRef(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const categories: { value: LeaderboardCategory; label: string; icon: React.ElementType }[] = [
+    { value: "successful", label: "Top Spenders", icon: Trophy },
+    { value: "largest", label: "Biggest Vote", icon: Target },
+    { value: "active", label: "Most Votes", icon: Zap },
+    { value: "early", label: "Early Birds", icon: Clock },
+    { value: "achievements", label: "Achievements", icon: Award },
+  ]
+
+  const activeCategory_ = categories.find((c) => c.value === activeCategory)!
 
   const fetchLeaderboard = async (bypassCache = false) => {
     if (isFetchingRef.current) return
@@ -167,55 +179,65 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        {/* Category Tabs */}
+        {/* Category Tabs — dropdown on mobile, tab row on desktop */}
         <div className="mb-6 lg:mb-8">
-          <div className="flex gap-1 flex-wrap overflow-x-auto pb-2 scrollbar-hide max-w-full">
+          {/* Mobile dropdown */}
+          <div className="relative lg:hidden">
             <button
-              onClick={() => setActiveCategory("successful")}
-              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
-                activeCategory === "successful" ? "active" : ""
-              }`}
-              aria-label="View top spenders by total ETH spent in qualification"
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="cm-nav-tab active w-full flex items-center justify-between gap-2 px-4 py-3 rounded-sm text-sm font-bold uppercase tracking-wide"
+              aria-haspopup="listbox"
+              aria-expanded={dropdownOpen}
             >
-              <Trophy className="w-4 h-4" />
-              Top Spenders
+              <span className="flex items-center gap-2">
+                <activeCategory_.icon className="w-4 h-4" />
+                {activeCategory_.label}
+              </span>
+              <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
             </button>
-            <button
-              onClick={() => setActiveCategory("largest")}
-              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
-                activeCategory === "largest" ? "active" : ""
-              }`}
-            >
-              <Target className="w-4 h-4" />
-              Biggest Vote
-            </button>
-            <button
-              onClick={() => setActiveCategory("active")}
-              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
-                activeCategory === "active" ? "active" : ""
-              }`}
-            >
-              <Zap className="w-4 h-4" />
-              Most Votes
-            </button>
-            <button
-              onClick={() => setActiveCategory("early")}
-              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
-                activeCategory === "early" ? "active" : ""
-              }`}
-            >
-              <Clock className="w-4 h-4" />
-              Early Birds
-            </button>
-            <button
-              onClick={() => setActiveCategory("achievements")}
-              className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
-                activeCategory === "achievements" ? "active" : ""
-              }`}
-            >
-              <Award className="w-4 h-4" />
-              Achievements
-            </button>
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 cm-panel rounded-sm border border-border shadow-lg" role="listbox">
+                {categories.map((cat) => {
+                  const Icon = cat.icon
+                  const isActive = cat.value === activeCategory
+                  return (
+                    <button
+                      key={cat.value}
+                      role="option"
+                      aria-selected={isActive}
+                      onClick={() => { setActiveCategory(cat.value); setDropdownOpen(false) }}
+                      className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b border-border last:border-b-0 ${
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-secondary/40 text-foreground"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      {cat.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop tab row */}
+          <div className="hidden lg:flex gap-1">
+            {categories.map((cat) => {
+              const Icon = cat.icon
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setActiveCategory(cat.value)}
+                  className={`cm-nav-tab flex items-center gap-2 px-6 py-3 rounded-sm text-base font-bold uppercase tracking-wide whitespace-nowrap ${
+                    activeCategory === cat.value ? "active" : ""
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {cat.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -326,7 +348,7 @@ export default function LeaderboardPage() {
 
         {/* Complete Rankings Table */}
         {!isLoading && (
-          <div className="cm-panel rounded-sm overflow-hidden max-w-full">
+          <div className="cm-panel rounded-sm overflow-hidden">
           <div className="bg-secondary/40 px-3 lg:px-4 py-3 border-b-2 border-border">
             <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Complete Rankings</h3>
           </div>

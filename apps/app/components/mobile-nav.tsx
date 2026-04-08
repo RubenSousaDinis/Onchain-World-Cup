@@ -3,29 +3,25 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Trophy, Calendar, Users, Wallet, Info } from "lucide-react"
-import { useAccount, useDisconnect } from "wagmi"
+import { Trophy, Calendar, Users, Wallet, Info, User } from "lucide-react"
+import { useAccount } from "wagmi"
 import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
-import { useState } from "react"
-import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
   { icon: Trophy, label: "Qualification", href: "/qualification" },
   { icon: Calendar, label: "Tournament", href: "/tournament" },
   { icon: Users, label: "Leaderboard", href: "/leaderboard" },
-  { icon: Wallet, label: "My Profile", href: "/profile" },
+  { icon: User, label: "My Profile", href: "/profile" },
   { icon: Info, label: "How It Works", href: "/how-it-works" },
 ]
 
 export function MobileNav() {
   const pathname = usePathname()
-  const { address, isConnected, chain } = useAccount()
-  const { disconnect } = useDisconnect()
+  const { isConnected } = useAccount()
   const open = () => modal.open()
-  const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
-  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   return (
     <>
@@ -69,8 +65,8 @@ export function MobileNav() {
             )
           })}
           
-          {/* Wallet Connection Button */}
-          {!isFrameContext && !isConnected && !isAutoConnecting ? (
+          {/* Login button — only when not connected and not inside Farcaster/Base App */}
+          {!isFrameContext && !isConnected && !isAutoConnecting && (
             <button
               onClick={() => open()}
               className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-3 rounded-sm transition-colors cm-nav-tab"
@@ -81,39 +77,9 @@ export function MobileNav() {
                 LOGIN
               </span>
             </button>
-          ) : isConnected ? (
-            <button
-              onClick={() => !isFrameContext && setShowDisconnectConfirm(true)}
-              disabled={isFrameContext}
-              className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-2 rounded-sm transition-colors bg-accent text-accent-foreground disabled:opacity-70"
-              aria-label={
-                isFrameContext && username
-                  ? `Farcaster user ${username}`
-                  : `Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`
-              }
-              title={isFrameContext && (displayName || username) ? `${displayName || username}` : address ? `${address.slice(0, 6)}...${address.slice(-4)}` : undefined}
-            >
-              {isFrameContext && pfpUrl ? (
-                <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
-                  <img src={pfpUrl} alt={username ? `${username} profile` : "Profile"} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <Wallet className="w-5 h-5 shrink-0" aria-hidden="true" />
-              )}
-            </button>
-          ) : isAutoConnecting ? (
-            <div className="flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-3 text-muted-foreground" role="status" aria-live="polite">
-              <Wallet className="w-5 h-5" aria-hidden="true" />
-              <span className="text-xs font-medium text-center leading-tight opacity-0">Connecting...</span>
-            </div>
-          ) : null}
+          )}
         </div>
       </nav>
-      <DisconnectConfirmModal
-        isOpen={showDisconnectConfirm}
-        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
-        onCancel={() => setShowDisconnectConfirm(false)}
-      />
     </>
   )
 }
