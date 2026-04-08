@@ -6,6 +6,7 @@ import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
 import { Trophy, Copy, Check, ExternalLink, Share2, LogOut } from "lucide-react"
 import { useAccount, useChainId, useDisconnect } from "wagmi"
+import { useFarcaster } from "@/lib/farcaster-provider"
 import { useSearchParams, useRouter } from "next/navigation"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
@@ -69,9 +70,12 @@ function truncateAddress(addr: string) {
 
 
 function MyBetsContent() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, connector } = useAccount()
   const { disconnect } = useDisconnect()
   const chainId = useChainId()
+  const { isFarcasterMiniApp } = useFarcaster()
+  const isBaseApp = typeof window !== "undefined" && !!(window as any).ethereum?.isCoinbaseWallet
+  const canDisconnect = !isFarcasterMiniApp && !isBaseApp
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -573,7 +577,7 @@ function MyBetsContent() {
         )}
 
         {/* Logout */}
-        {isConnected && (
+        {isConnected && canDisconnect && (
           <div className="mt-8 pt-6 border-t border-border">
             <button
               onClick={() => setShowDisconnectConfirm(true)}
