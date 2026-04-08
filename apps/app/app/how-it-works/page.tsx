@@ -103,6 +103,108 @@ export default function HowItWorksPage() {
             </div>
           </div>
 
+          <div className="cm-panel rounded-sm border border-border overflow-hidden">
+            <div className="soccer-field-bg px-4 py-6 border-b border-border relative">
+              <div className="absolute top-2 right-4 text-xs lg:text-sm font-bold text-muted-foreground bg-muted/20 px-2 py-1 rounded-sm border border-border">
+                COMING SOON
+              </div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 cm-highlight" />
+                </div>
+                <div>
+                  <div className="text-xs lg:text-sm text-accent font-bold uppercase">Phase 2</div>
+                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Tournament Phase</h2>
+                </div>
+              </div>
+              <p className="text-sm lg:text-base text-muted-foreground">
+                Begins after the qualification phase concludes
+              </p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Flag className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Qualified Countries Enter Groups</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    The 48 qualified nations are organized into groups. The tournament structure mirrors traditional
+                    World Cup format but decided entirely onchain.
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Vote className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Matches Introduced</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    Real head-to-head matches begin. Vote for either team (or both!) in each match. The team with more
+                    votes wins and advances.
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Award className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Prize Pools Activated</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    Each match has its own prize pool. 90% goes to voters of the winning team (proportional to votes),
+                    10% platform fee. Dynamic pricing with linear and exponential phases.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="cm-panel rounded-sm border border-border overflow-hidden">
+            <div className="soccer-field-bg px-4 py-6 border-b border-border relative">
+              <div className="absolute top-2 right-4 text-xs lg:text-sm font-bold text-muted-foreground bg-muted/20 px-2 py-1 rounded-sm border border-border">
+                COMING SOON
+              </div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
+                  <Award className="w-6 h-6 cm-highlight" />
+                </div>
+                <div>
+                  <div className="text-xs lg:text-sm text-accent font-bold uppercase">Phase 3</div>
+                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Finals & Champion</h2>
+                </div>
+              </div>
+              <p className="text-sm lg:text-base text-muted-foreground">The final stage — crowning the Onchain World Cup champion</p>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Trophy className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Knockout Rounds</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    Teams advance through knockout stages — Round of 16, Quarter-finals, Semi-finals, and the grand
+                    Final. Every round decided by community votes.
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Award className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">One Onchain World Cup Champion</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    The final match determines the ultimate winner. The community crowns the first-ever Onchain World
+                    Cup champion — a title earned purely through onchain voting.
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 items-start hover:bg-accent/5 p-2 rounded-sm">
+                <Flag className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <div className="text-sm lg:text-base">
+                  <div className="font-bold mb-1">Crypto-Native Results</div>
+                  <div className="text-sm lg:text-base text-muted-foreground">
+                    All results are independent from real-world football. This is a parallel universe where the
+                    community decides every outcome through transparent, verifiable onchain voting.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Achievements & Levels */}
           <div className="cm-panel rounded-sm border border-border overflow-hidden">
             <div className="soccer-field-bg px-4 py-6 border-b border-border">
@@ -218,100 +320,6 @@ export default function HowItWorksPage() {
                   <li>Copy your referral link and share it</li>
                   <li>Track earnings and referred voters in real time</li>
                 </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="cm-panel rounded-sm border border-border overflow-hidden opacity-70">
-            <div className="soccer-field-bg px-4 py-6 border-b border-border">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
-                  <Trophy className="w-6 h-6 cm-highlight" />
-                </div>
-                <div>
-                  <div className="text-xs lg:text-sm text-muted-foreground font-bold uppercase">Phase 2</div>
-                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Tournament Phase</h2>
-                </div>
-              </div>
-              <p className="text-xs lg:text-sm text-muted-foreground">Coming soon - After qualification concludes</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex gap-3 items-start p-2">
-                <Flag className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">Qualified Countries Enter Groups</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    The 48 qualified nations are organized into groups. The tournament structure mirrors traditional
-                    World Cup format but decided entirely onchain.
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start p-2">
-                <Vote className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">Matches Introduced</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    Real head-to-head matches begin. Vote for either team (or both!) in each match. The team with more
-                    votes wins and advances.
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start p-2">
-                <Award className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">Prize Pools Activated</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    Each match has its own prize pool. 90% goes to voters of the winning team (proportional to votes),
-                    10% platform fee. Dynamic pricing with linear and exponential phases.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="cm-panel rounded-sm border border-border overflow-hidden opacity-50">
-            <div className="soccer-field-bg px-4 py-6 border-b border-border">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-sm bg-primary/80 flex items-center justify-center">
-                  <Award className="w-6 h-6 cm-highlight" />
-                </div>
-                <div>
-                  <div className="text-xs lg:text-sm text-muted-foreground font-bold uppercase">Phase 3</div>
-                  <h2 className="text-xl lg:text-2xl font-bold cm-highlight">Finals & Champion</h2>
-                </div>
-              </div>
-              <p className="text-xs lg:text-sm text-muted-foreground">The final stage - crowning the crypto champion</p>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex gap-3 items-start p-2">
-                <Trophy className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">Knockout Rounds</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    Teams advance through knockout stages - Round of 16, Quarter-finals, Semi-finals, and the grand
-                    Final. Every round decided by community votes.
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start p-2">
-                <Award className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">One Onchain World Cup Champion</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    The final match determines the ultimate winner. The community crowns the first-ever Onchain World
-                    Cup champion - a title earned purely through onchain voting.
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start p-2">
-                <Flag className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <div className="font-bold mb-1">Crypto-Native Results</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">
-                    All results are independent from real-world football. This is a parallel universe where the
-                    community decides every outcome through transparent, verifiable onchain voting.
-                  </div>
-                </div>
               </div>
             </div>
           </div>
