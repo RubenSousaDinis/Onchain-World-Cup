@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useRef } from "react"
-import { WagmiProvider, type Config } from "wagmi"
+import { useEffect, useRef } from "react"
+import { WagmiProvider, useReconnect, type Config } from "wagmi"
 import { cookieToInitialState } from "@wagmi/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { wagmiAdapter } from "@/lib/wallet/wagmi-core"
@@ -11,6 +11,19 @@ import { wagmiAdapter } from "@/lib/wallet/wagmi-core"
 // on the client — matching the official Reown next-wagmi-app-router example.
 // This gives the w3m-iframe maximum time to reach READY before any user interaction.
 import "@/lib/wallet/appkit-modal"
+
+/**
+ * Triggers wagmi's reconnect on mount so connectors like baseAccount can
+ * auto-detect their environment (e.g. Base App in-app browser) and connect.
+ * Without this, baseAccount is registered but never activated on first visit.
+ */
+function WagmiAutoReconnect() {
+  const { reconnect } = useReconnect()
+  useEffect(() => {
+    reconnect()
+  }, [])
+  return null
+}
 
 export function Web3Provider({ children, cookies }: { children: React.ReactNode; cookies: string | null }) {
   // useRef ensures each client session gets its own QueryClient instance
@@ -36,6 +49,7 @@ export function Web3Provider({ children, cookies }: { children: React.ReactNode;
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClientRef.current}>
+        <WagmiAutoReconnect />
         {children}
       </QueryClientProvider>
     </WagmiProvider>
