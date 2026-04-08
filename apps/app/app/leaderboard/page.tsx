@@ -124,7 +124,7 @@ export default function LeaderboardPage() {
       <RetroSidebar />
       <MobileNav />
 
-      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 min-w-0 overflow-x-hidden">
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-6 lg:mb-8">
           <div className="soccer-field-bg p-4 lg:p-6">
@@ -169,7 +169,7 @@ export default function LeaderboardPage() {
 
         {/* Category Tabs */}
         <div className="mb-6 lg:mb-8">
-          <div className="flex gap-1 flex-wrap overflow-x-auto pb-2 scrollbar-hide max-w-full">
+          <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
             <button
               onClick={() => setActiveCategory("successful")}
               className={`cm-nav-tab flex items-center gap-2 px-3 lg:px-6 py-2 lg:py-3 rounded-sm text-sm lg:text-base font-bold uppercase tracking-wide whitespace-nowrap flex-shrink-0 ${
@@ -326,7 +326,7 @@ export default function LeaderboardPage() {
 
         {/* Complete Rankings Table */}
         {!isLoading && (
-          <div className="cm-panel rounded-sm overflow-hidden max-w-full">
+          <div className="cm-panel rounded-sm overflow-hidden">
           <div className="bg-secondary/40 px-3 lg:px-4 py-3 border-b-2 border-border">
             <h3 className="text-sm lg:text-base font-bold cm-highlight uppercase">Complete Rankings</h3>
           </div>

@@ -38,7 +38,7 @@ type GroupsResponse = {
 }
 
 const TABS = [
-  { label: "Real World Cup", value: "real" },
+  { label: "FIFA World Cup 2026", value: "real" },
   { label: "Onchain World Cup", value: "onchain" },
 ]
 
