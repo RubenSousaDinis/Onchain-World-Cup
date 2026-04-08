@@ -4,11 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Trophy, Calendar, Users, Wallet, Info, User } from "lucide-react"
-import { useAccount, useDisconnect } from "wagmi"
+import { useAccount } from "wagmi"
 import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
-import { useState } from "react"
-import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const navItems = [
   { icon: null, label: "Home", href: "/", isLogo: true },
@@ -21,11 +19,9 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname()
-  const { address, isConnected, chain } = useAccount()
-  const { disconnect } = useDisconnect()
+  const { isConnected } = useAccount()
   const open = () => modal.open()
-  const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
-  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   return (
     <>
@@ -69,8 +65,8 @@ export function MobileNav() {
             )
           })}
           
-          {/* Wallet Connection Button — hidden inside Farcaster/Base App */}
-          {!isFrameContext && !isConnected && !isAutoConnecting ? (
+          {/* Login button — only when not connected and not inside Farcaster/Base App */}
+          {!isFrameContext && !isConnected && !isAutoConnecting && (
             <button
               onClick={() => open()}
               className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-3 rounded-sm transition-colors cm-nav-tab"
@@ -81,27 +77,9 @@ export function MobileNav() {
                 LOGIN
               </span>
             </button>
-          ) : !isFrameContext && isConnected ? (
-            <button
-              onClick={() => setShowDisconnectConfirm(true)}
-              className="group relative flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-2 rounded-sm transition-colors bg-accent text-accent-foreground"
-              aria-label={`Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`}
-              title={address ? `${address.slice(0, 6)}...${address.slice(-4)}` : undefined}
-            >
-              <Wallet className="w-5 h-5 shrink-0" aria-hidden="true" />
-            </button>
-          ) : !isFrameContext && isAutoConnecting ? (
-            <div className="flex flex-col items-center justify-center min-h-[44px] min-w-[44px] px-3 text-muted-foreground" role="status" aria-live="polite">
-              <Wallet className="w-5 h-5" aria-hidden="true" />
-            </div>
-          ) : null}
+          )}
         </div>
       </nav>
-      <DisconnectConfirmModal
-        isOpen={showDisconnectConfirm}
-        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
-        onCancel={() => setShowDisconnectConfirm(false)}
-      />
     </>
   )
 }

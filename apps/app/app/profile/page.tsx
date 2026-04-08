@@ -4,8 +4,8 @@ import { Suspense } from "react"
 import { formatEth } from "@/lib/utils"
 import { RetroSidebar } from "@/components/retro-sidebar"
 import { MobileNav } from "@/components/mobile-nav"
-import { Trophy, Copy, Check, ExternalLink, Share2 } from "lucide-react"
-import { useAccount, useChainId } from "wagmi"
+import { Trophy, Copy, Check, ExternalLink, Share2, LogOut } from "lucide-react"
+import { useAccount, useChainId, useDisconnect } from "wagmi"
 import { useSearchParams, useRouter } from "next/navigation"
 import { WalletConnectButton } from "@/components/wallet-connect-button"
 import { UserMilestones } from "@/components/user-milestones"
@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api-client"
 import { NoVotesEmpty, InlineLoader } from "@/components/states"
+import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 import { ClaimSection } from "@/components/claim-section"
 import { RetroNavTabs } from "@/components/retro-nav-tabs"
 import { getCountryName, getCountryFlag } from "@/lib/countries"
@@ -69,7 +70,9 @@ function truncateAddress(addr: string) {
 
 function MyBetsContent() {
   const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
   const chainId = useChainId()
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
   const activeTab = (searchParams.get("tab") as Tab) || "votes"
@@ -568,7 +571,26 @@ function MyBetsContent() {
             )}
           </>
         )}
+
+        {/* Logout */}
+        {isConnected && (
+          <div className="mt-8 pt-6 border-t border-border">
+            <button
+              onClick={() => setShowDisconnectConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold uppercase tracking-wide text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-sm transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Disconnect Wallet
+            </button>
+          </div>
+        )}
       </main>
+
+      <DisconnectConfirmModal
+        isOpen={showDisconnectConfirm}
+        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
+        onCancel={() => setShowDisconnectConfirm(false)}
+      />
 
       {selectedBet && (
         <ShareModal

@@ -4,11 +4,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Calendar, Users, HelpCircle, Wallet, Trophy } from "lucide-react"
-import { useAccount, useDisconnect } from "wagmi"
+import { useAccount } from "wagmi"
 import { modal } from "@/lib/reown-config"
 import { useFarcaster } from "@/lib/farcaster-provider"
-import { useState } from "react"
-import { DisconnectConfirmModal } from "@/components/disconnect-confirm-modal"
 
 const sidebarItems = [
   { icon: Trophy, label: "Qualification", href: "/qualification" },
@@ -20,11 +18,9 @@ const sidebarItems = [
 
 export function RetroSidebar() {
   const pathname = usePathname()
-  const { address, isConnected, chain } = useAccount()
-  const { disconnect } = useDisconnect()
+  const { isConnected } = useAccount()
   const open = () => modal.open()
-  const { isFrameContext, isAutoConnecting, username, displayName, pfpUrl } = useFarcaster()
-  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
+  const { isFrameContext, isAutoConnecting } = useFarcaster()
 
   return (
     <div
@@ -71,8 +67,8 @@ export function RetroSidebar() {
         })}
       </nav>
 
-      <div className="w-full px-2">
-        {!isFrameContext && !isConnected ? (
+      {!isConnected && !isAutoConnecting && !isFrameContext && (
+        <div className="w-full px-2">
           <button
             onClick={() => open()}
             className="cm-nav-tab px-3 py-2 rounded-sm text-xs font-bold w-full"
@@ -81,47 +77,8 @@ export function RetroSidebar() {
             <Wallet className="w-5 h-5 mx-auto mb-1" aria-hidden="true" />
             <div className="text-xs">LOGIN</div>
           </button>
-        ) : isConnected ? (
-          <button
-            onClick={() => !isFrameContext && setShowDisconnectConfirm(true)}
-            disabled={isFrameContext}
-            className="bg-accent text-accent-foreground px-2 py-2 rounded-sm text-xs font-bold w-full disabled:opacity-70"
-            aria-label={
-              isFrameContext && username
-                ? `Farcaster user ${username}`
-                : `Disconnect wallet ${address?.slice(0, 6)}...${address?.slice(-4)}`
-            }
-          >
-            {isFrameContext && (username || pfpUrl) ? (
-              <>
-                {pfpUrl && (
-                  <div className="w-8 h-8 rounded-full overflow-hidden mx-auto mb-1">
-                    <img src={pfpUrl} alt={`${username || "User"} profile`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  </div>
-                )}
-                <div className="truncate">{displayName || username || "Farcaster User"}</div>
-              </>
-            ) : (
-              <>
-                <Wallet className="w-5 h-5 mx-auto mb-1" aria-hidden="true" />
-                <div className="truncate">
-                  {address?.slice(0, 6)}...{address?.slice(-4)}
-                </div>
-                <div className="text-xs opacity-70">{chain?.name || "Connected"}</div>
-              </>
-            )}
-          </button>
-        ) : isAutoConnecting ? (
-          <div className="text-center text-xs text-muted-foreground px-2 py-2" role="status" aria-live="polite">
-            <div>Connecting...</div>
-          </div>
-        ) : null}
-      </div>
-      <DisconnectConfirmModal
-        isOpen={showDisconnectConfirm}
-        onConfirm={() => { disconnect(); setShowDisconnectConfirm(false) }}
-        onCancel={() => setShowDisconnectConfirm(false)}
-      />
+        </div>
+      )}
     </div>
   )
 }
