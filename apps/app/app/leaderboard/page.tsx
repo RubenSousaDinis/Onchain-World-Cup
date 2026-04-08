@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
       <RetroSidebar />
       <MobileNav />
 
-      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 max-w-full overflow-hidden">
+      <main id="main-content" className="flex-1 lg:ml-24 p-4 lg:p-8 pb-20 lg:pb-8 min-w-0 overflow-x-hidden">
         {/* Header */}
         <div className="cm-panel rounded-sm overflow-hidden mb-6 lg:mb-8">
           <div className="soccer-field-bg p-4 lg:p-6">
