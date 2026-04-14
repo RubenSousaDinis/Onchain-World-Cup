@@ -88,6 +88,9 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
   const [newAchievements, setNewAchievements] = useState<ComputedAchievement[]>([])
   const [votedSuccessfully, setVotedSuccessfully] = useState(false)
   const lastVoteDataRef = useRef<{votes: number, amount: string, countryCode: string} | null>(null)
+  // Captures the cost at submit time so the isConfirmed effect isn't affected by
+  // price refetches that fire after the VotePlaced event confirms on-chain.
+  const submittedCostRef = useRef<{ voteCount: number; totalCostEth: string } | null>(null)
 
   const isPreLaunch = Date.now() < LAUNCH_DATE.getTime()
 
@@ -268,8 +271,10 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
     hasVotedRef.current = true // Mark that user has voted this session
 
     const countryName = country.name
-    const votes = voteCount
-    const cost = totalCost.toString()
+    // Use the cost captured at submit time — totalCost may already reflect the
+    // next-batch price by now (VotePlaced event triggers a refetch before this runs).
+    const votes = submittedCostRef.current?.voteCount ?? voteCount
+    const cost = submittedCostRef.current?.totalCostEth ?? totalCost.toString()
 
     // Show success notification
     success(
@@ -337,7 +342,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         setIsIndexing(false)
         setIsProcessing(false)
       })
-  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, refetchVotePrice, refetchBalance])  // Include all dependencies
+  }, [isConfirmed, hash, country, contractAddress, address, chain, success, error, refetchVotePrice, refetchBalance])
 
   // Handle write errors
   useEffect(() => {
@@ -489,6 +494,10 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
       console.log("[Vote Modal] Submitting vote transaction")
       console.log("[Vote Modal] Total cost:", totalCost, "ETH, Wallet balance:", walletBalance, "ETH")
       info("Submitting Vote", `Voting for ${country?.name} with ${voteCount} vote${voteCount !== 1 ? "s" : ""}...`)
+
+      // Snapshot the cost now — after confirmation, totalCost will have updated to
+      // the next-batch price (triggered by VotePlaced event refetch).
+      submittedCostRef.current = { voteCount, totalCostEth: totalCost.toString() }
 
       writeContract({
         address: contractAddress,
