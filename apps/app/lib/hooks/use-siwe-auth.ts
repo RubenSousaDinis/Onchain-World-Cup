@@ -126,6 +126,84 @@ export function useSIWEAuth() {
   }
 
   /**
+   * Base Account (Base App in-app browser) authentication using wallet_connect
+   * with the signInWithEthereum capability. This is required by Base App since
+   * it no longer supports personal_sign for SIWE — messages must be signed via
+   * the wallet_connect method with the signInWithEthereum capability.
+   */
+  const loginWithBaseAccount = async () => {
+    console.warn("[Base Account Auth] Starting Sign In with Base flow...")
+
+    if (!connector) {
+      throw new Error("No wallet connector available")
+    }
+
+    const provider = await connector.getProvider() as {
+      request: (args: { method: string; params: unknown[] }) => Promise<unknown>
+    }
+
+    // Generate a local nonce — it will be embedded in the SIWE message returned
+    // by the Base Account provider so replay attacks are still prevented.
+    const nonce = window.crypto.randomUUID().replace(/-/g, "")
+
+    const chainIdHex = "0x" + defaultChainId.toString(16)
+
+    console.warn("[Base Account Auth] Requesting wallet_connect with signInWithEthereum capability...", { chainIdHex, nonce })
+
+    const authResult = await provider.request({
+      method: "wallet_connect",
+      params: [
+        {
+          version: "1",
+          capabilities: {
+            signInWithEthereum: {
+              nonce,
+              chainId: chainIdHex,
+            },
+          },
+        },
+      ],
+    }) as {
+      accounts: Array<{
+        address: string
+        capabilities: {
+          signInWithEthereum: {
+            message: string
+            signature: string
+          }
+        }
+      }>
+    }
+
+    const { address: siweAddress, capabilities } = authResult.accounts[0]
+    const { message, signature } = capabilities.signInWithEthereum
+
+    console.warn("[Base Account Auth] Received SIWE message and signature from Base Account, calling next-auth signIn...", { siweAddress })
+
+    const result = await signIn("credentials", {
+      message,
+      signature,
+      authType: "base-account",
+      redirect: false,
+    })
+
+    console.warn("[Base Account Auth] signIn result:", result)
+
+    if (result?.error) {
+      console.error("[Base Account Auth] signIn returned error:", result.error)
+      throw new Error(result.error)
+    }
+
+    if (!result?.ok) {
+      console.error("[Base Account Auth] signIn returned NOT OK:", result)
+      throw new Error("Sign in failed")
+    }
+
+    console.warn("[Base Account Auth] Login successful for:", siweAddress)
+    return result
+  }
+
+  /**
    * Standard SIWE authentication for web
    */
   const loginWithSIWE = async () => {
@@ -136,6 +214,12 @@ export function useSIWEAuth() {
       const error = "Wallet not connected"
       console.error("[SIWE Auth] Error:", error)
       throw new Error(error)
+    }
+
+    // Base App's in-app browser uses the baseAccount connector which requires
+    // wallet_connect + signInWithEthereum instead of personal_sign.
+    if (connector?.id === "baseAccount") {
+      return loginWithBaseAccount()
     }
 
     // NOTE: We intentionally do NOT switch chains here. SIWE uses personal_sign

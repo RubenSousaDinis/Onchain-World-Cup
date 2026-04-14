@@ -1,6 +1,8 @@
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { SiweMessage } from "siwe"
+import { createPublicClient, http } from "viem"
+import { base, baseSepolia } from "viem/chains"
 import { revalidateTag } from "next/cache"
 import { prisma } from "@/lib/server/prisma"
 
@@ -82,6 +84,26 @@ export const authOptions: NextAuthOptions = {
               const siwe = new SiweMessage(credentials.message)
               const result = await siwe.verify({ signature: normalizeSignatureS(credentials.signature) })
               if (!result.success) return null
+              walletAddress = siwe.address.toLowerCase()
+            } catch {
+              return null
+            }
+          } else if (authType === "base-account") {
+            // Base App uses smart wallets (ERC-6492). Verify with viem's verifyMessage
+            // which supports counterfactual signature verification for undeployed contracts.
+            // The message is a raw SIWE string (not JSON) returned by the wallet_connect
+            // signInWithEthereum capability.
+            try {
+              const siwe = new SiweMessage(credentials.message)
+              const chainId = siwe.chainId
+              const viemChain = chainId === 8453 ? base : baseSepolia
+              const client = createPublicClient({ chain: viemChain, transport: http() })
+              const valid = await client.verifyMessage({
+                address: siwe.address as `0x${string}`,
+                message: credentials.message,
+                signature: credentials.signature as `0x${string}`,
+              })
+              if (!valid) return null
               walletAddress = siwe.address.toLowerCase()
             } catch {
               return null
