@@ -337,7 +337,7 @@ export function QualificationVoteModal({ isOpen, onClose, country, contractAddre
         setIsIndexing(false)
         setIsProcessing(false)
       })
-  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, refetchVotePrice, refetchBalance])  // Include all dependencies
+  }, [isConfirmed, hash, country, contractAddress, address, chain, voteCount, totalCost, success, error, refetchVotePrice, refetchBalance])
 
   // Handle write errors
   useEffect(() => {
