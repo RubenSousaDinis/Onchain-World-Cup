@@ -149,3 +149,6 @@ typechain-types/
 # pnpm (we use npm)
 pnpm-lock.yaml
 .prisma
+
+# Git worktrees
+.worktrees/
