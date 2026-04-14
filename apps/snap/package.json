@@ -8,6 +8,7 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@farcaster/snap": "latest",
     "@farcaster/snap-hono": "latest",
     "@hono/node-server": "^1.19.14",
     "hono": "^4.7.7"

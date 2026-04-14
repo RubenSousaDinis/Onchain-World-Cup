@@ -1,62 +1,13 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import type { SnapFunction } from "@farcaster/snap";
 import { registerSnapHandler } from "@farcaster/snap-hono";
 
 const app = new Hono();
 
-registerSnapHandler(app, async (ctx) => {
-  const base =
-    process.env.SNAP_PUBLIC_BASE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3003";
+app.use("*", cors({ origin: "*" }));
 
-  if (ctx.action.type === "get") {
-    return {
-      version: "2.0",
-      theme: { accent: "blue" },
-      ui: {
-        root: "page",
-        elements: {
-          page: {
-            type: "stack",
-            props: {},
-            children: ["title", "body", "subtext", "cta"],
-          },
-          title: {
-            type: "text",
-            props: {
-              content: "Onchain World Cup is LIVE ⚽",
-              weight: "bold",
-            },
-          },
-          body: {
-            type: "text",
-            props: {
-              content:
-                "211 nations. 48 spots. The community decides — with ETH on Base.",
-            },
-          },
-          subtext: {
-            type: "text",
-            props: {
-              content: "Qualification closes April 21. Early votes cost less.",
-              size: "sm",
-            },
-          },
-          cta: {
-            type: "button",
-            props: { label: "Vote Now", variant: "primary" },
-            on: {
-              press: {
-                action: "open_url",
-                params: { target: "https://app.onchainworldcup.xyz" },
-              },
-            },
-          },
-        },
-      },
-    };
-  }
-
-  // POST — re-render same snap (shouldn't be reached with open_url, but safe fallback)
+const handler: SnapFunction = async (_ctx) => {
   return {
     version: "2.0",
     theme: { accent: "blue" },
@@ -66,15 +17,32 @@ registerSnapHandler(app, async (ctx) => {
         page: {
           type: "stack",
           props: {},
-          children: ["title", "cta"],
+          children: ["title", "body", "subtext", "cta"],
         },
         title: {
           type: "text",
-          props: { content: "Vote at app.onchainworldcup.xyz", weight: "bold" },
+          props: {
+            content: "Onchain World Cup is LIVE ⚽",
+            weight: "bold",
+          },
+        },
+        body: {
+          type: "text",
+          props: {
+            content:
+              "211 nations. 48 spots. The community decides — with ETH on Base.",
+          },
+        },
+        subtext: {
+          type: "text",
+          props: {
+            content: "Qualification closes April 21. Early votes cost less.",
+            size: "sm",
+          },
         },
         cta: {
           type: "button",
-          props: { label: "Open App", variant: "primary" },
+          props: { label: "Vote Now", variant: "primary" },
           on: {
             press: {
               action: "open_url",
@@ -85,6 +53,8 @@ registerSnapHandler(app, async (ctx) => {
       },
     },
   };
-});
+};
+
+registerSnapHandler(app, handler);
 
 export default app;
