@@ -50,6 +50,7 @@ export const NFT_ABI = [
       { name: '_tokenURI', type: 'string' },
       { name: 'achievementId', type: 'string' },
       { name: 'metadata', type: 'string' },
+      { name: 'signature', type: 'bytes' },
     ],
     outputs: [{ name: '', type: 'uint256' }],
   },

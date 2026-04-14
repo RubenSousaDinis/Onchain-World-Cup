@@ -108,12 +108,30 @@ export function NFTMintModal({ isOpen, onClose, type, data }: NFTMintModalProps)
 
     try {
       const nftAddress = type === "milestone" ? getAchievementNFTAddress() : getMatchNFTAddress()
+
+      // Fetch backend signature — contract requires it from authorizedSigner
+      const sigRes = await fetch("/api/nft/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: address,
+          achievementId,
+          tokenURI: metadataUrl,
+          contractAddress: nftAddress,
+        }),
+      })
+      if (!sigRes.ok) {
+        const { error: sigErr } = await sigRes.json().catch(() => ({ error: "Signature request failed" }))
+        throw new Error(sigErr ?? "Failed to get mint signature")
+      }
+      const { signature } = await sigRes.json()
+
       info("Confirm Transaction", "Please confirm the transaction in your wallet...")
       writeContract({
         address: nftAddress,
         abi: NFT_ABI,
         functionName: "mint",
-        args: [address, metadataUrl, achievementId, JSON.stringify(milestone ?? data.metadata)],
+        args: [address, metadataUrl, achievementId, JSON.stringify(milestone ?? data.metadata), signature],
         value: parseEther("0.001"),
       })
     } catch (err) {
