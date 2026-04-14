@@ -45,7 +45,7 @@ const handler: SnapFunction = async (_ctx) => {
           props: { label: "Vote Now", variant: "primary" },
           on: {
             press: {
-              action: "open_url",
+              action: "open_mini_app",
               params: { target: "https://app.onchainworldcup.xyz" },
             },
           },
