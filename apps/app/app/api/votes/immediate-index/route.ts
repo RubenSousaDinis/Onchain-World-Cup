@@ -5,6 +5,48 @@ import { authOptions } from "@/lib/auth-options"
 import { prisma } from "@/lib/server/prisma"
 import { computeAchievementStats, computeAchievements } from "@/lib/achievements"
 import { resolveEnsName } from "@/lib/server/ens"
+import { decodeEventLog, formatEther, parseAbi } from "viem"
+import { createIndexerClient, bytes8ToCountryCode } from "@/lib/indexer/event-indexer"
+
+const VOTE_PLACED_ABI = parseAbi([
+  "event VotePlaced(address indexed voter, bytes8 indexed country, uint256 votes, uint256 cost, uint256 timestamp)",
+])
+
+/**
+ * Parse the VotePlaced event from a transaction receipt.
+ * Returns the on-chain voteCount, totalCostEth, and countryCode — the ground truth.
+ */
+async function getVoteFromReceipt(txHash: string, voterAddress: string): Promise<{
+  voteCount: number
+  totalCostEth: string
+  countryCode: string
+} | null> {
+  try {
+    const client = createIndexerClient(8453)
+    const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` })
+
+    for (const log of receipt.logs) {
+      try {
+        const decoded = decodeEventLog({ abi: VOTE_PLACED_ABI, data: log.data, topics: log.topics })
+        if (
+          decoded.eventName === "VotePlaced" &&
+          (decoded.args.voter as string).toLowerCase() === voterAddress.toLowerCase()
+        ) {
+          return {
+            voteCount: Number(decoded.args.votes as bigint),
+            totalCostEth: formatEther(decoded.args.cost as bigint),
+            countryCode: bytes8ToCountryCode(decoded.args.country as string),
+          }
+        }
+      } catch {
+        // Not a VotePlaced log — skip
+      }
+    }
+  } catch (err) {
+    console.error("[Immediate Index] Failed to fetch receipt for on-chain verification:", err)
+  }
+  return null
+}
 
 /**
  * POST /api/votes/immediate-index
@@ -98,11 +140,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 6. Verify transaction is for the correct contract (client-provided, validated by session)
-    // Full on-chain verification is done by the cron indexer when it upgrades status to "confirmed".
-    // We trust the txHash here because: (a) the user is authenticated via SIWE, (b) wagmi has
-    // already confirmed the tx is mined before the frontend calls this endpoint, and (c) the cron
-    // job will reject any fraudulent records when it finds a mismatch on-chain.
+    // 6. Read voteCount, totalCostEth, and countryCode from the on-chain VotePlaced event.
+    // This is the ground truth — never trust client-provided values for these fields.
+    const onChain = await getVoteFromReceipt(txHash, walletAddress)
+    if (!onChain) {
+      console.error("[Immediate Index] VotePlaced event not found in receipt for", txHash)
+      return NextResponse.json(
+        { error: "VotePlaced event not found in transaction receipt — transaction may not be confirmed yet" },
+        { status: 422 }
+      )
+    }
+
+    // Override whatever the client sent with the verified on-chain values
+    const verifiedVoteCount = onChain.voteCount
+    const verifiedTotalCostEth = onChain.totalCostEth
+    const verifiedCountryCode = onChain.countryCode
+
+    console.log(`[Immediate Index] On-chain vote: ${verifiedVoteCount} votes for ${verifiedCountryCode} at ${verifiedTotalCostEth} ETH`)
     console.log("[Immediate Index] Creating indexed_transactions and vote records for:", txHash)
 
     // Snapshot current user stats before the transaction for achievement comparison
@@ -138,9 +192,9 @@ export async function POST(request: NextRequest) {
             status: "pending",
             eventType: "qualification",
             metadata: {
-              countryCode,
-              voteCount,
-              totalCostEth,
+              countryCode: verifiedCountryCode,
+              voteCount: verifiedVoteCount,
+              totalCostEth: verifiedTotalCostEth,
             },
             indexedAt: new Date(),
           },
@@ -148,99 +202,99 @@ export async function POST(request: NextRequest) {
 
         // Create vote record (foreign key to indexed_transactions via txHash)
         await tx.qualificationVote.create({
-        data: {
-          countryCode,
-          voterAddress: walletAddress.toLowerCase(),
-          voteCount: parseInt(voteCount.toString()),
-          totalCostEth: totalCostEth.toString(),
-          txHash,
-          blockNumber: BigInt(0), // Will be updated by cron when confirmed
-        },
-      })
-
-      // Update CountryStats
-      const existingCountry = await tx.countryStats.findUnique({
-        where: { countryCode },
-      })
-
-      if (existingCountry) {
-        // Use a single atomic SQL UPDATE so concurrent votes for the same country
-        // never overwrite each other's ETH value (read-modify-write race condition)
-        await tx.$executeRaw`
-          UPDATE country_stats
-          SET
-            total_votes = total_votes + ${parseInt(voteCount.toString())},
-            total_eth   = (total_eth::numeric + ${totalCostEth}::numeric)::text
-          WHERE country_code = ${countryCode}
-        `
-      } else {
-        await tx.countryStats.create({
           data: {
-            countryCode,
-            totalVotes: parseInt(voteCount.toString()),
-            totalEth: totalCostEth.toString(),
-            qualified: false,
-          },
-        })
-      }
-
-      // Update UserStat
-      const existingStats = await tx.userStat.findUnique({
-        where: { walletAddress: walletAddress.toLowerCase() },
-      })
-
-      if (existingStats) {
-        // O(1) check: did this user already vote for this country before this tx?
-        // Uses NOT txHash to exclude the vote record we just created above.
-        // If no prior vote exists we increment countriesVotedFor by 1 atomically.
-        const priorVoteForCountry = await tx.qualificationVote.findFirst({
-          where: {
+            countryCode: verifiedCountryCode,
             voterAddress: walletAddress.toLowerCase(),
-            countryCode,
-            NOT: { txHash },
+            voteCount: verifiedVoteCount,
+            totalCostEth: verifiedTotalCostEth,
+            txHash,
+            blockNumber: BigInt(0), // Will be updated by cron when confirmed
           },
-          select: { id: true },
         })
 
-        // Single atomic SQL UPDATE — ETH fields use DB-level addition to prevent
-        // lost-update race conditions when multiple votes arrive concurrently
-        await tx.$executeRaw`
-          UPDATE user_stats
-          SET
-            qualification_votes    = qualification_votes    + ${parseInt(voteCount.toString())},
-            qualification_spent_eth = (qualification_spent_eth::numeric + ${totalCostEth}::numeric)::text,
-            total_votes            = total_votes            + ${parseInt(voteCount.toString())},
-            total_spent_eth        = (total_spent_eth::numeric + ${totalCostEth}::numeric)::text,
-            countries_voted_for    = countries_voted_for   + ${priorVoteForCountry ? 0 : 1}
-          WHERE wallet_address = ${walletAddress.toLowerCase()}
-        `
+        // Update CountryStats
+        const existingCountry = await tx.countryStats.findUnique({
+          where: { countryCode: verifiedCountryCode },
+        })
 
-        // ENS backfill is a rare, non-critical update — keep as separate ORM call
-        if (ensName) {
-          await tx.userStat.update({
-            where: { walletAddress: walletAddress.toLowerCase() },
-            data: { ensName },
+        if (existingCountry) {
+          // Use a single atomic SQL UPDATE so concurrent votes for the same country
+          // never overwrite each other's ETH value (read-modify-write race condition)
+          await tx.$executeRaw`
+            UPDATE country_stats
+            SET
+              total_votes = total_votes + ${verifiedVoteCount},
+              total_eth   = (total_eth::numeric + ${verifiedTotalCostEth}::numeric)::text
+            WHERE country_code = ${verifiedCountryCode}
+          `
+        } else {
+          await tx.countryStats.create({
+            data: {
+              countryCode: verifiedCountryCode,
+              totalVotes: verifiedVoteCount,
+              totalEth: verifiedTotalCostEth,
+              qualified: false,
+            },
           })
         }
-      } else {
-        await tx.userStat.create({
-          data: {
-            walletAddress: walletAddress.toLowerCase(),
-            qualificationVotes: parseInt(voteCount.toString()),
-            qualificationSpentEth: totalCostEth.toString(),
-            totalVotes: parseInt(voteCount.toString()),
-            totalSpentEth: totalCostEth.toString(),
-            countriesVotedFor: 1,
-            userId: session.user.id,
-            ...(ensName ? { ensName } : {}),
-          },
+
+        // Update UserStat
+        const existingStats = await tx.userStat.findUnique({
+          where: { walletAddress: walletAddress.toLowerCase() },
         })
-      }
+
+        if (existingStats) {
+          // O(1) check: did this user already vote for this country before this tx?
+          // Uses NOT txHash to exclude the vote record we just created above.
+          // If no prior vote exists we increment countriesVotedFor by 1 atomically.
+          const priorVoteForCountry = await tx.qualificationVote.findFirst({
+            where: {
+              voterAddress: walletAddress.toLowerCase(),
+              countryCode: verifiedCountryCode,
+              NOT: { txHash },
+            },
+            select: { id: true },
+          })
+
+          // Single atomic SQL UPDATE — ETH fields use DB-level addition to prevent
+          // lost-update race conditions when multiple votes arrive concurrently
+          await tx.$executeRaw`
+            UPDATE user_stats
+            SET
+              qualification_votes    = qualification_votes    + ${verifiedVoteCount},
+              qualification_spent_eth = (qualification_spent_eth::numeric + ${verifiedTotalCostEth}::numeric)::text,
+              total_votes            = total_votes            + ${verifiedVoteCount},
+              total_spent_eth        = (total_spent_eth::numeric + ${verifiedTotalCostEth}::numeric)::text,
+              countries_voted_for    = countries_voted_for   + ${priorVoteForCountry ? 0 : 1}
+            WHERE wallet_address = ${walletAddress.toLowerCase()}
+          `
+
+          // ENS backfill is a rare, non-critical update — keep as separate ORM call
+          if (ensName) {
+            await tx.userStat.update({
+              where: { walletAddress: walletAddress.toLowerCase() },
+              data: { ensName },
+            })
+          }
+        } else {
+          await tx.userStat.create({
+            data: {
+              walletAddress: walletAddress.toLowerCase(),
+              qualificationVotes: verifiedVoteCount,
+              qualificationSpentEth: verifiedTotalCostEth,
+              totalVotes: verifiedVoteCount,
+              totalSpentEth: verifiedTotalCostEth,
+              countriesVotedFor: 1,
+              userId: session.user.id,
+              ...(ensName ? { ensName } : {}),
+            },
+          })
+        }
 
       // Create referral record if a referrer was provided
       if (referrerAddress && /^0x[0-9a-fA-F]{40}$/.test(referrerAddress)) {
         const REFERRAL_BPS = 0.01 // 1%
-        const referralAmountEth = (parseFloat(totalCostEth) * REFERRAL_BPS).toFixed(8)
+        const referralAmountEth = (parseFloat(verifiedTotalCostEth) * REFERRAL_BPS).toFixed(8)
 
         const existingReferral = await tx.referral.findUnique({ where: { txHash } })
         if (!existingReferral) {
@@ -249,7 +303,7 @@ export async function POST(request: NextRequest) {
               referrerAddress: referrerAddress.toLowerCase(),
               referredAddress: walletAddress.toLowerCase(),
               txHash,
-              voteAmountEth: totalCostEth.toString(),
+              voteAmountEth: verifiedTotalCostEth,
               referralAmountEth,
               contractAddress: contractAddress.toLowerCase(),
               contractType: "qualification",
