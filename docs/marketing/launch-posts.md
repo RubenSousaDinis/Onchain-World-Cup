@@ -236,7 +236,7 @@ https://www.onchainworldcup.xyz
 
 Your ETH backs your team — and if they qualify, you share the prize pool.
 
-Gas on Base is under $0.01. The vote price starts at 0.001 ETH.
+The vote price starts at 0.001 ETH.
 
 Set a reminder for Tuesday 10am CT. ⏰
 ```
@@ -414,44 +414,8 @@ https://base.app/app/app.onchainworldcup.xyz
 
 ---
 
-## After Launch — Ongoing Posts
+## April 15 — Referral feature announcement
 
-Post these whenever there's a natural moment (growing prize pool, country surges, etc.)
-
-**Prize pool update**
-
-Main post:
-```
-The Onchain World Cup prize pool is growing. 🏆
-
-[X] ETH already voted. 90% goes back to the community.
-
-Qualification closes April 21 — still time to back your country.
-```
-Twitter reply: `https://app.onchainworldcup.xyz`
-Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
-
----
-
-**Leaderboard update**
-
-Main post:
-```
-Onchain World Cup qualification update 🌍
-
-Top countries right now:
-1. [Country]
-2. [Country]
-3. [Country]
-
-[X] days left to vote. Back your team before the price goes up.
-```
-Twitter reply: `https://app.onchainworldcup.xyz`
-Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
-
----
-
-**Referral — feature announcement**
 **Twitter + Farcaster + Base App**
 
 Main post:
@@ -480,21 +444,8 @@ https://base.app/app/app.onchainworldcup.xyz
 
 ---
 
-**Referral — Farcaster frame post**
-**Farcaster only** | Post with your own referral link as the URL so it renders as a mini app frame
+## April 16 — Referral mechanics explanation
 
-```
-Share your referral link as a frame — people can vote directly from the cast.
-
-Every vote through your link = 1% of the vote amount sent to your wallet instantly.
-
-Get your link from your profile 👇
-https://app.onchainworldcup.xyz/r/[your-address]
-```
-
----
-
-**Referral — mechanics explanation**
 **Twitter + Farcaster + Base App**
 
 Main post:
@@ -523,3 +474,77 @@ Base App — add to post body:
 ```
 https://base.app/app/app.onchainworldcup.xyz
 ```
+
+---
+
+## April 17 — Referral Farcaster frame post
+
+**Farcaster only** | Post with your own referral link as the URL so it renders as a mini app frame
+
+```
+Share your referral link as a frame — people can vote directly from the cast.
+
+Every vote through your link = 1% of the vote amount sent to your wallet instantly.
+
+Get your link from your profile 👇
+https://app.onchainworldcup.xyz/r/[your-address]
+```
+
+---
+
+## April 18 — Prize pool update
+
+**Twitter + Farcaster + Base App**
+
+Main post:
+```
+The Onchain World Cup prize pool is growing. 🏆
+
+[X] ETH already voted. 90% goes back to the community.
+
+Qualification closes April 21 — still time to back your country.
+```
+Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
+
+---
+
+## April 19 — Leaderboard update
+
+**Twitter + Farcaster + Base App**
+
+Main post:
+```
+Onchain World Cup qualification update 🌍
+
+Top countries right now:
+1. [Country]
+2. [Country]
+3. [Country]
+
+[X] days left to vote. Back your team before the price goes up.
+```
+Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`
+
+---
+
+## April 20 — Final push (qualification closes tomorrow)
+
+**Twitter + Farcaster + Base App**
+
+Main post:
+```
+Onchain World Cup qualification closes tomorrow. 🌍
+
+[X] ETH in the prize pool. 90% goes back to the community.
+
+Top countries right now:
+1. [Country]
+2. [Country]
+3. [Country]
+
+Last chance to back your country.
+```
+Twitter reply: `https://app.onchainworldcup.xyz`
+Farcaster + Base App: `https://base.app/app/app.onchainworldcup.xyz`

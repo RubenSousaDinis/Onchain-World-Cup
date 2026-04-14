@@ -153,7 +153,7 @@ export interface WorldCupQualificationInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "finalizeQualification",
-    values: [BytesLike[]]
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getQualificationDetails",
@@ -659,11 +659,7 @@ export interface WorldCupQualification extends BaseContract {
 
   feeRecipient: TypedContractMethod<[], [string], "view">;
 
-  finalizeQualification: TypedContractMethod<
-    [_qualifiedCountries: BytesLike[]],
-    [void],
-    "nonpayable"
-  >;
+  finalizeQualification: TypedContractMethod<[], [void], "nonpayable">;
 
   getQualificationDetails: TypedContractMethod<
     [],
@@ -819,11 +815,7 @@ export interface WorldCupQualification extends BaseContract {
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "finalizeQualification"
-  ): TypedContractMethod<
-    [_qualifiedCountries: BytesLike[]],
-    [void],
-    "nonpayable"
-  >;
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "getQualificationDetails"
   ): TypedContractMethod<

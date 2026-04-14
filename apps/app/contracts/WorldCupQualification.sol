@@ -332,36 +332,66 @@ contract WorldCupQualification is Ownable, ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev Finalize qualification with top 48 countries
-     * @param _qualifiedCountries Array of exactly 48 country codes that qualified
-     * @notice CRITICAL: Countries must have votes to qualify (trust guarantee)
+     * @dev Finalize qualification by automatically selecting the top 48 countries by vote count.
+     *
+     * Selection is fully deterministic and requires no owner input:
+     *   1. All country vote counts are cached in memory (gas efficient).
+     *   2. A partial selection sort finds the top QUALIFICATION_SPOTS entries.
+     *   3. Tiebreaker: lower bytes8 country code ranks higher.
+     *   4. Reverts if fewer than 48 countries received at least one vote.
+     *
+     * This removes all owner discretion over which countries qualify, ensuring
+     * the outcome is decided entirely by community votes.
      */
-    function finalizeQualification(bytes8[] calldata _qualifiedCountries)
+    function finalizeQualification()
         external
         onlyOwner
         onlyAfterEnd
     {
         require(!qualificationFinalized, "Already finalized");
-        require(
-            _qualifiedCountries.length == QUALIFICATION_SPOTS,
-            "Must specify exactly 48 countries"
-        );
 
-        for (uint256 i = 0; i < _qualifiedCountries.length; i++) {
-            bytes8 country = _qualifiedCountries[i];
-            require(validCountry[country], "Invalid country");
-            require(countryVotes[country] > 0, "Country has no votes");
-            require(!isQualified[country], "Duplicate country");
+        uint256 n = allCountries.length;
 
+        // Cache countries and their vote counts in memory to avoid repeated SLOADs
+        bytes8[] memory countries = new bytes8[](n);
+        uint256[] memory votes = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            countries[i] = allCountries[i];
+            votes[i] = countryVotes[allCountries[i]];
+        }
+
+        // Partial selection sort: find the top QUALIFICATION_SPOTS by votes.
+        // Tiebreaker: lower bytes8 code ranks higher (deterministic).
+        for (uint256 i = 0; i < QUALIFICATION_SPOTS; i++) {
+            uint256 bestIdx = i;
+            for (uint256 j = i + 1; j < n; j++) {
+                if (
+                    votes[j] > votes[bestIdx] ||
+                    (votes[j] == votes[bestIdx] && countries[j] < countries[bestIdx])
+                ) {
+                    bestIdx = j;
+                }
+            }
+            // Swap into position i
+            (countries[i], countries[bestIdx]) = (countries[bestIdx], countries[i]);
+            (votes[i], votes[bestIdx]) = (votes[bestIdx], votes[i]);
+        }
+
+        // The 48th slot must have at least one vote — guarantees community decided
+        require(votes[QUALIFICATION_SPOTS - 1] > 0, "Not enough countries with votes");
+
+        // Register qualified countries
+        for (uint256 i = 0; i < QUALIFICATION_SPOTS; i++) {
+            bytes8 country = countries[i];
             isQualified[country] = true;
-            totalQualifiedVotes += countryVotes[country];
+            totalQualifiedVotes += votes[i];
             qualifiedCountries.push(country);
         }
 
         qualificationFinalized = true;
 
         emit QualificationEnded();
-        emit QualificationFinalized(_qualifiedCountries);
+        emit QualificationFinalized(qualifiedCountries);
         emit PrizesDistributed(totalPrizePool);
     }
 
