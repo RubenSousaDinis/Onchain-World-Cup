@@ -149,7 +149,7 @@ https://base.app/app/app.onchainworldcup.xyz
 
 ---
 
-## Post-Launch — Referral feature (post anytime after launch)
+## April 15 — Referral feature
 **Twitter + Farcaster + Base App**
 
 **Main post:**
